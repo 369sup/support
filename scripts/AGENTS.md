@@ -1,0 +1,36 @@
+# Repository Script Workflow
+
+This file governs `scripts/**`. Cross-platform requirements are inherited from
+the root `AGENTS.md`.
+
+## Script contract
+
+- Resolve repository paths from the script location, not the caller's working
+  directory, personal paths, or shell expansion.
+- Keep scripts deterministic and non-interactive. Validate external input and
+  fail with a nonzero exit code plus an actionable message.
+- A checker reports without rewriting source. A generator writes only its
+  declared outputs. Do not hide dependency installation, cleanup, or
+  destructive migration inside either.
+- Never read or print credentials, environment files, or customer data unless
+  that reviewed input is the script's explicit purpose.
+
+## Architecture automation
+
+- `architecture-checker.mjs` owns reusable checking and rendering functions.
+- `check-architecture.mjs` is the repository CLI wrapper.
+- `generate-module-map.mjs` writes only
+  `docs/architecture/module-map.md` from the JSON catalog.
+- Architecture behavior retains stable `ARCH-*` identifiers and focused
+  positive and negative fixtures.
+
+## Validation
+
+```text
+pnpm test:architecture
+pnpm architecture
+pnpm architecture:docs
+```
+
+Inspect generated diffs and run `pnpm check` when practical. Mutation tests use
+temporary directories and clean them in teardown.

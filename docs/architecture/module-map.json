@@ -1,0 +1,245 @@
+{
+  "version": 1,
+  "contexts": [
+    {
+      "subdomain": "core-domain",
+      "name": "repositories",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Repository identity, ownership, profile, visibility, and lifecycle.",
+      "officialSources": [
+        "https://docs.github.com/en/repositories/creating-and-managing-repositories/about-repositories"
+      ]
+    },
+    {
+      "subdomain": "core-domain",
+      "name": "repository-access",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Repository grants, roles, principals, and effective access.",
+      "officialSources": [
+        "https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/repository-roles-for-an-organization"
+      ]
+    },
+    {
+      "subdomain": "core-domain",
+      "name": "repository-features",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Repository product feature enablement and configuration.",
+      "officialSources": [
+        "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository"
+      ]
+    },
+    {
+      "subdomain": "core-domain",
+      "name": "repository-metadata",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Topics, custom-property values, and social preview metadata.",
+      "officialSources": [
+        "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository"
+      ]
+    },
+    {
+      "subdomain": "core-domain",
+      "name": "repository-relations",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Fork, template, generated-from, and redirect relationships.",
+      "officialSources": [
+        "https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/about-permissions-and-visibility-of-forks"
+      ]
+    },
+    {
+      "subdomain": "collaboration",
+      "name": "issues",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Issue lifecycle, assignment, hierarchy, transfer, and work tracking.",
+      "officialSources": [
+        "https://docs.github.com/en/issues/tracking-your-work-with-issues/about-issues"
+      ]
+    },
+    {
+      "subdomain": "collaboration",
+      "name": "work-taxonomy",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Repository labels, milestones, and work classification.",
+      "officialSources": [
+        "https://docs.github.com/en/issues/using-labels-and-milestones-to-track-work"
+      ]
+    },
+    {
+      "subdomain": "collaboration",
+      "name": "discussions",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Discussion categories, questions, answers, polls, pins, and lifecycle.",
+      "officialSources": [
+        "https://docs.github.com/en/discussions/collaborating-with-your-community-using-discussions/about-discussions"
+      ]
+    },
+    {
+      "subdomain": "collaboration",
+      "name": "conversations",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Comments, reactions, mentions, revisions, and conversation locks.",
+      "officialSources": [
+        "https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/viewing-all-of-your-issues-and-pull-requests"
+      ]
+    },
+    {
+      "subdomain": "collaboration",
+      "name": "community-health",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Community profile and contribution-resource completeness.",
+      "officialSources": [
+        "https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions"
+      ]
+    },
+    {
+      "subdomain": "collaboration",
+      "name": "moderation",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Content reports, interaction limits, and moderation decisions.",
+      "officialSources": [
+        "https://docs.github.com/en/communities/moderating-comments-and-conversations"
+      ]
+    },
+    {
+      "subdomain": "engagement-and-delivery",
+      "name": "repository-engagement",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Repository stars and public engagement signals.",
+      "officialSources": [
+        "https://docs.github.com/en/get-started/exploring-projects-on-github/saving-repositories-with-stars"
+      ]
+    },
+    {
+      "subdomain": "engagement-and-delivery",
+      "name": "subscriptions",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Repository and conversation notification subscription preferences.",
+      "officialSources": [
+        "https://docs.github.com/en/account-and-profile/managing-subscriptions-and-notifications-on-github"
+      ]
+    },
+    {
+      "subdomain": "engagement-and-delivery",
+      "name": "releases",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Release metadata, publication lifecycle, and asset references.",
+      "officialSources": [
+        "https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases"
+      ]
+    },
+    {
+      "subdomain": "engagement-and-delivery",
+      "name": "repository-integrations",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Repository webhook configuration and delivery policy.",
+      "officialSources": [
+        "https://docs.github.com/en/webhooks/types-of-webhooks"
+      ]
+    },
+    {
+      "subdomain": "query-and-projections",
+      "name": "repository-search",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Permission-filtered repository search projections.",
+      "officialSources": [
+        "https://docs.github.com/en/search-github/searching-on-github/searching-for-repositories"
+      ]
+    },
+    {
+      "subdomain": "query-and-projections",
+      "name": "repository-activity",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "User-visible repository activity timelines.",
+      "officialSources": [
+        "https://docs.github.com/en/repositories/viewing-activity-and-data-for-your-repository"
+      ]
+    },
+    {
+      "subdomain": "query-and-projections",
+      "name": "repository-insights",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Repository product statistics, traffic, and trend projections.",
+      "officialSources": [
+        "https://docs.github.com/en/repositories/viewing-activity-and-data-for-your-repository"
+      ]
+    },
+    {
+      "subdomain": "platform",
+      "name": "identity-directory",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Actor, user, team, and organization reference resolution.",
+      "officialSources": [
+        "https://docs.github.com/en/account-and-profile"
+      ]
+    },
+    {
+      "subdomain": "platform",
+      "name": "authorization-policy",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Application authorization decisions across GitHub resource policies.",
+      "officialSources": [
+        "https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles"
+      ]
+    },
+    {
+      "subdomain": "platform",
+      "name": "notification-delivery",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Inbox, email, push, and notification state delivery.",
+      "officialSources": [
+        "https://docs.github.com/en/account-and-profile/managing-subscriptions-and-notifications-on-github"
+      ]
+    },
+    {
+      "subdomain": "platform",
+      "name": "media-storage",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Media and asset references used by repository product features.",
+      "officialSources": [
+        "https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases"
+      ]
+    },
+    {
+      "subdomain": "platform",
+      "name": "audit-log",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Security, governance, and administrative audit records.",
+      "officialSources": [
+        "https://docs.github.com/en/organizations/keeping-your-organization-secure/managing-security-settings-for-your-organization/reviewing-the-audit-log-for-your-organization"
+      ]
+    },
+    {
+      "subdomain": "platform",
+      "name": "messaging-outbox",
+      "kind": "product",
+      "status": "planned",
+      "responsibility": "Reliable publication of domain and integration events.",
+      "officialSources": [
+        "https://docs.github.com/en/webhooks/using-webhooks/best-practices-for-using-webhooks"
+      ]
+    }
+  ]
+}

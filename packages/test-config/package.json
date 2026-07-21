@@ -1,0 +1,24 @@
+{
+  "name": "@support/test-config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./playwright": "./src/playwright.ts",
+    "./vitest-node": "./src/vitest-node.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "catalog:",
+    "@support/typescript-config": "workspace:*",
+    "@types/node": "^20",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@playwright/test": "^1.61.0",
+    "vitest": "^4.1.6"
+  }
+}

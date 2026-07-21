@@ -1,0 +1,39 @@
+{
+  "name": "@support/shadcn",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./lib/class-names": "./src/lib/class-names.ts",
+    "./ui/button": "./src/ui/button.tsx",
+    "./ui/button-variants": "./src/ui/button-variants.ts",
+    "./ui/separator": "./src/ui/separator.tsx"
+  },
+  "scripts": {
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.6.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@support/eslint-config": "workspace:*",
+    "@support/typescript-config": "workspace:*",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "catalog:",
+    "eslint-config-next": "catalog:",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  }
+}
