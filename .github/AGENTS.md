@@ -14,7 +14,7 @@ skills, or plugins.
 .codex/    = local/trusted-project Codex settings, agents, hooks, rules
 .agents/   = repository skills and plugin marketplace
 plugins/   = installable plugin packages
-src/       = product code
+apps/web/src/ = product code
 ```
 
 The `AGENTS.md` here applies to `.github` files only. Repository-wide Codex
@@ -46,8 +46,9 @@ belong beside the source they govern.
 └── SECURITY.md                      # optional vulnerability reporting policy
 ```
 
-Only placeholder READMEs exist initially. Do not add an active workflow,
-template, bot, or policy until its behavior and owners are known.
+The authorized `ci.yml` workflow runs repository verification only. Do not add
+another active workflow, template, bot, or policy until its behavior and owners
+are known.
 
 ## GitHub workflow rules
 
