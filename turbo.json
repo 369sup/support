@@ -5,6 +5,19 @@
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**", "dist/**"]
     },
+    "@support/web#build": {
+      "dependsOn": ["^build"],
+      "env": [
+        "LOG_LEVEL",
+        "NEXT_PUBLIC_SITE_URL",
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_HEADERS",
+        "OTEL_RESOURCE_ATTRIBUTES",
+        "OTEL_SERVICE_NAME",
+        "VERCEL_PROJECT_PRODUCTION_URL"
+      ],
+      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**", "dist/**"]
+    },
     "dev": {
       "cache": false,
       "persistent": true

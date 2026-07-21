@@ -1,6 +1,15 @@
 # Support
 
-A Next.js App Router support application organized as a Turborepo workspace.
+A GitHub-like non-code product platform built with Next.js App Router and
+organized as a Turborepo workspace. The product models users, enterprises,
+organizations, teams, repositories, issues, discussions, projects,
+notifications, permissions, governance, commerce, and integrations.
+
+Git storage and repository content, commits, branches, tags, diffs, merge,
+pull requests and code review, Actions, and other code products are outside the
+product boundary. See the generated
+[`docs/architecture/module-map.md`](docs/architecture/module-map.md) for the
+authoritative context catalog and deferred capabilities.
 
 The product application lives in `apps/web`. Its source has two roots only:
 
@@ -42,8 +51,9 @@ Open <http://localhost:3000>.
 - `pnpm turbo:dry-run` - inspect the package and task graph.
 - `pnpm architecture:docs` - regenerate the human-readable module map.
 
-Set `NEXT_PUBLIC_SITE_URL` in deployed environments so metadata routes emit the
-canonical production URL.
+Vercel deployments use `VERCEL_PROJECT_PRODUCTION_URL` automatically so
+metadata routes emit the canonical production URL. Set `NEXT_PUBLIC_SITE_URL`
+only when a custom canonical URL must override the Vercel production domain.
 
 ## Observability
 
