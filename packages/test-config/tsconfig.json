@@ -1,4 +1,0 @@
-{
-  "extends": "@support/typescript-config/node.json",
-  "include": ["src/**/*.ts"]
-}

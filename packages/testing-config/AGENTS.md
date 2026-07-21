@@ -1,6 +1,6 @@
 # Test Configuration Workflow
 
-This file governs `packages/test-config/**`.
+This file governs `packages/testing-config/**`.
 
 ## Preset contract
 
@@ -23,7 +23,9 @@ implementation dependencies must remain explicit in this package.
 Run:
 
 ```text
-pnpm --filter @support/test-config typecheck
+pnpm --filter @support/testing-config lint
+pnpm --filter @support/testing-config typecheck
+pnpm --filter @support/testing-config test
 pnpm test
 ```
 

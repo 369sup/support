@@ -212,7 +212,7 @@ const noSideEffectImport = {
   },
 };
 
-const typescriptClarityPlugin = {
+export const typescriptClarityPlugin = {
   rules: {
     "no-default-export": noDefaultExport,
     "no-export-all": noExportAll,
@@ -222,5 +222,3 @@ const typescriptClarityPlugin = {
     "no-variable-dynamic-import": noVariableDynamicImport,
   },
 };
-
-export default typescriptClarityPlugin;

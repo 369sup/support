@@ -22,7 +22,7 @@
     "turbo:dry-run": "turbo run lint typecheck test build test:e2e --dry-run"
   },
   "devDependencies": {
-    "@support/test-config": "workspace:*",
+    "@support/testing-config": "workspace:*",
     "turbo": "^2.10.5",
     "typescript": "catalog:",
     "vitest": "catalog:"

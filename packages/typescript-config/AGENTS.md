@@ -5,8 +5,9 @@ This file governs `packages/typescript-config/**`.
 ## Preset contract
 
 - `base.json` owns strict repository-wide compiler defaults.
-- `nextjs.json`, `node.json`, and `react-library.json` add only runtime-specific
-  settings to the base preset.
+- `library.json`, `nextjs.json`, `node.json`, and `react-library.json` add only
+  runtime-specific settings to the base preset. `library.json` is the
+  framework-neutral preset and must not add DOM or Node ambient types.
 - Export presets explicitly from `package.json`; consumers extend the package
   subpath rather than copying settings.
 - Keep this package declarative. Do not add runtime code, product types, path

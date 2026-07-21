@@ -1,0 +1,28 @@
+{
+  "name": "@support/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./events/integration-event": "./src/events/integration-event.ts",
+    "./http/problem-details": "./src/http/problem-details.ts",
+    "./pagination/cursor": "./src/pagination/cursor.ts"
+  },
+  "scripts": {
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@support/eslint-config": "workspace:*",
+    "@support/testing-config": "workspace:*",
+    "@support/typescript-config": "workspace:*",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

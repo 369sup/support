@@ -2,7 +2,7 @@ import { RuleTester } from "eslint";
 import tseslint from "typescript-eslint";
 import { afterAll, describe, it } from "vitest";
 
-import architecture from "./architecture-boundaries.mjs";
+import { architectureBoundariesPlugin } from "../src/eslint-rules/architecture-boundaries.mjs";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;
@@ -19,7 +19,7 @@ const ruleTester = new RuleTester({
 
 ruleTester.run(
   "enforce-import-boundaries",
-  architecture.rules["enforce-import-boundaries"],
+  architectureBoundariesPlugin.rules["enforce-import-boundaries"],
   {
     valid: [
       {
@@ -94,7 +94,7 @@ ruleTester.run(
 
 ruleTester.run(
   "no-domain-ambient-infrastructure",
-  architecture.rules["no-domain-ambient-infrastructure"],
+  architectureBoundariesPlugin.rules["no-domain-ambient-infrastructure"],
   {
     valid: [
       {
@@ -122,7 +122,7 @@ ruleTester.run(
 
 ruleTester.run(
   "public-entrypoint-contract",
-  architecture.rules["public-entrypoint-contract"],
+  architectureBoundariesPlugin.rules["public-entrypoint-contract"],
   {
     valid: [
       {

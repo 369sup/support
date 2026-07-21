@@ -1,10 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
-type PlaywrightConfigOptions = {
+interface PlaywrightConfigOptions {
   baseURL: string;
   testDir: string;
   webServerCommand: string;
-};
+}
 
 export function createPlaywrightConfig({
   baseURL,

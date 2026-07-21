@@ -1,0 +1,23 @@
+{
+  "name": "@support/tooling",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./eslint-rules/architecture-boundaries": "./src/eslint-rules/architecture-boundaries.mjs",
+    "./eslint-rules/typescript-clarity": "./src/eslint-rules/typescript-clarity.mjs"
+  },
+  "scripts": {
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest run --config vitest.config.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "eslint": "catalog:",
+    "typescript-eslint": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "eslint": "^9.39.5"
+  }
+}

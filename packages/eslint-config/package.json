@@ -5,19 +5,17 @@
   "type": "module",
   "exports": {
     "./next": "./next.mjs",
-    "./react-library": "./react-library.mjs"
-  },
-  "scripts": {
-    "test": "vitest run --config vitest.config.ts"
+    "./react-library": "./react-library.mjs",
+    "./typescript-library": "./typescript-library.mjs"
   },
   "dependencies": {
+    "@eslint/js": "catalog:",
+    "@support/tooling": "workspace:*",
     "eslint-config-next": "catalog:",
     "typescript-eslint": "catalog:"
   },
   "devDependencies": {
-    "@support/test-config": "workspace:*",
-    "eslint": "catalog:",
-    "vitest": "catalog:"
+    "eslint": "catalog:"
   },
   "peerDependencies": {
     "eslint": "^9.39.5"

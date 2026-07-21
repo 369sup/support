@@ -8,11 +8,18 @@
     "lint": "eslint . --max-warnings=0",
     "start": "next start",
     "start:e2e": "next start --port 3100",
+    "test": "vitest run --config vitest.config.ts",
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@opentelemetry/api": "catalog:",
+    "@opentelemetry/api-logs": "catalog:",
+    "@opentelemetry/exporter-metrics-otlp-http": "catalog:",
+    "@opentelemetry/sdk-metrics": "catalog:",
+    "@support/observability": "workspace:*",
     "@support/shadcn": "workspace:*",
+    "@vercel/otel": "catalog:",
     "lucide-react": "^1.25.0",
     "next": "16.2.10",
     "react": "19.2.4",
@@ -23,16 +30,15 @@
   "devDependencies": {
     "@playwright/test": "catalog:",
     "@support/eslint-config": "workspace:*",
-    "@support/test-config": "workspace:*",
+    "@support/testing-config": "workspace:*",
     "@support/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "catalog:",
-    "eslint-config-next": "catalog:",
     "tailwindcss": "^4",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "vitest": "catalog:"
   }
 }

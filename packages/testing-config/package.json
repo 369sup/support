@@ -1,5 +1,5 @@
 {
-  "name": "@support/test-config",
+  "name": "@support/testing-config",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -8,12 +8,16 @@
     "./vitest-node": "./src/vitest-node.ts"
   },
   "scripts": {
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@playwright/test": "catalog:",
+    "@support/eslint-config": "workspace:*",
     "@support/typescript-config": "workspace:*",
     "@types/node": "^20",
+    "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

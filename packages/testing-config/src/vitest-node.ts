@@ -1,8 +1,8 @@
 import { configDefaults, defineConfig } from "vitest/config";
 
-type NodeTestConfigOptions = {
+interface NodeTestConfigOptions {
   include: string[];
-};
+}
 
 export function createNodeTestConfig({ include }: NodeTestConfigOptions) {
   return defineConfig({

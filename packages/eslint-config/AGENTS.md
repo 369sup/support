@@ -6,7 +6,8 @@ mechanical lint policy.
 ## Ownership
 
 - Export reusable flat-config presets from the package root.
-- Keep custom rules under `rules/`; policy explanations remain in
+- Compose custom rules from `@support/tooling`; rule implementation and
+  RuleTester ownership live in that package. Policy explanations remain in
   `docs/architecture`, not rule source or consumer configs.
 - Consumer ESLint files select a preset and supply only a narrow,
   package-specific exception. They must not copy or silently weaken the shared
@@ -31,7 +32,7 @@ mechanical lint policy.
 Run:
 
 ```text
-pnpm --filter @support/eslint-config test
+pnpm --filter @support/tooling test
 pnpm lint
 pnpm architecture
 ```

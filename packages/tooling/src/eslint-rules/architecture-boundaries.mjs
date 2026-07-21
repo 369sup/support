@@ -370,12 +370,10 @@ const publicEntrypointContract = {
   },
 };
 
-const architectureBoundariesPlugin = {
+export const architectureBoundariesPlugin = {
   rules: {
     "enforce-import-boundaries": enforceImportBoundaries,
     "no-domain-ambient-infrastructure": noDomainAmbientInfrastructure,
     "public-entrypoint-contract": publicEntrypointContract,
   },
 };
-
-export default architectureBoundariesPlugin;

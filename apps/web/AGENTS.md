@@ -13,7 +13,11 @@ remain authoritative in
 - `tests/e2e/` owns cross-route browser behavior. Other tests remain with their
   owning module or package.
 - Keep `next.config.ts`, `postcss.config.mjs`, `playwright.config.ts`,
-  `eslint.config.mjs`, and `tsconfig.json` thin consumers of shared contracts.
+  `eslint.config.mjs`, `tsconfig.json`, and `vitest.config.ts` thin consumers of
+  shared contracts.
+- Root `instrumentation.ts` owns Next.js runtime dispatch. Node-only logging,
+  tracing, metrics, and exporter initialization stay in the root Node adapter
+  and must remain lazy and build-safe.
 - Validate environment variables at a server-only boundary. Never expose an
   unprefixed secret through client-reachable code.
 

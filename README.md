@@ -8,10 +8,13 @@ The product application lives in `apps/web`. Its source has two roots only:
 - `apps/web/src/modules/<subdomain>/<bounded-context>` for product and platform capabilities.
 
 Reusable repository configuration is owned by `packages/eslint-config`,
-`packages/typescript-config`, and `packages/test-config`; business-free UI is
-owned by `packages/shadcn`, with official primitives under `src/ui` and custom
-product-agnostic compositions under `src/custom`. Product contexts stay
-inside the application and are not workspace packages.
+`packages/typescript-config`, `packages/testing-config`, and
+`packages/tooling`. Framework-neutral wire schemas live in
+`packages/contracts`, server logging and OpenTelemetry APIs live in
+`packages/observability`, and business-free UI is owned by `packages/shadcn`.
+Official UI primitives remain under `src/ui`; custom product-agnostic
+compositions remain under `src/custom`. Product contexts stay inside the
+application and are not workspace packages.
 
 Architecture, naming, module-map, and exception rules are documented under
 `docs/architecture` and enforced by `pnpm architecture`.
@@ -41,3 +44,18 @@ Open <http://localhost:3000>.
 
 Set `NEXT_PUBLIC_SITE_URL` in deployed environments so metadata routes emit the
 canonical production URL.
+
+## Observability
+
+Server logs are newline-delimited JSON and default to the `info` level. Set
+`LOG_LEVEL` to `debug`, `info`, `warn`, `error`, or `silent` to override it.
+Request error logging records only reviewed route metadata and excludes raw
+headers, request bodies, and query strings.
+
+Trace and metric export is opt-in. Set `OTEL_EXPORTER_OTLP_ENDPOINT` to the
+base HTTP endpoint of an OTLP collector to enable both signals. Standard
+`OTEL_SERVICE_NAME`, `OTEL_RESOURCE_ATTRIBUTES`, and
+`OTEL_EXPORTER_OTLP_HEADERS` variables are passed through to OpenTelemetry.
+With no endpoint, exporters are not loaded and structured logging remains
+active. Copy `apps/web/.env.example` for the supported variables; never commit
+real collector credentials.

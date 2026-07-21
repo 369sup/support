@@ -2,7 +2,7 @@ import { RuleTester } from "eslint";
 import tseslint from "typescript-eslint";
 import { afterAll, describe, it } from "vitest";
 
-import clarity from "./typescript-clarity.mjs";
+import { typescriptClarityPlugin } from "../src/eslint-rules/typescript-clarity.mjs";
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;
@@ -19,7 +19,7 @@ const ruleTester = new RuleTester({
 
 ruleTester.run(
   "no-renamed-import-export",
-  clarity.rules["no-renamed-import-export"],
+  typescriptClarityPlugin.rules["no-renamed-import-export"],
   {
     valid: [
       'import { createUser } from "./users";',
@@ -51,7 +51,10 @@ ruleTester.run(
   }
 );
 
-ruleTester.run("no-default-export", clarity.rules["no-default-export"], {
+ruleTester.run(
+  "no-default-export",
+  typescriptClarityPlugin.rules["no-default-export"],
+  {
   valid: ["export function createUser() {}"],
   invalid: [
     {
@@ -59,9 +62,10 @@ ruleTester.run("no-default-export", clarity.rules["no-default-export"], {
       errors: [{ messageId: "defaultExport" }],
     },
   ],
-});
+  },
+);
 
-ruleTester.run("no-export-all", clarity.rules["no-export-all"], {
+ruleTester.run("no-export-all", typescriptClarityPlugin.rules["no-export-all"], {
   valid: ['export { createUser } from "./users";'],
   invalid: [
     {
@@ -71,7 +75,10 @@ ruleTester.run("no-export-all", clarity.rules["no-export-all"], {
   ],
 });
 
-ruleTester.run("no-namespace-import", clarity.rules["no-namespace-import"], {
+ruleTester.run(
+  "no-namespace-import",
+  typescriptClarityPlugin.rules["no-namespace-import"],
+  {
   valid: ['import { formatDate } from "./dates";'],
   invalid: [
     {
@@ -79,11 +86,12 @@ ruleTester.run("no-namespace-import", clarity.rules["no-namespace-import"], {
       errors: [{ messageId: "namespaceImport" }],
     },
   ],
-});
+  },
+);
 
 ruleTester.run(
   "no-variable-dynamic-import",
-  clarity.rules["no-variable-dynamic-import"],
+  typescriptClarityPlugin.rules["no-variable-dynamic-import"],
   {
     valid: ['import("./report")', "import(`./report`)"],
     invalid: [
@@ -99,7 +107,10 @@ ruleTester.run(
   }
 );
 
-ruleTester.run("no-side-effect-import", clarity.rules["no-side-effect-import"], {
+ruleTester.run(
+  "no-side-effect-import",
+  typescriptClarityPlugin.rules["no-side-effect-import"],
+  {
   valid: ['import { registerMonitoring } from "./monitoring";'],
   invalid: [
     {
@@ -107,4 +118,5 @@ ruleTester.run("no-side-effect-import", clarity.rules["no-side-effect-import"], 
       errors: [{ messageId: "sideEffectImport" }],
     },
   ],
-});
+  },
+);
