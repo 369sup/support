@@ -2,24 +2,10 @@
 
 This file governs `.github/` and everything below it.
 
-`.github` owns repository-hosting concerns: GitHub Actions, issue and pull
-request templates, dependency automation, CODEOWNERS, and prompts used by the
-Codex GitHub Action. It does not own application code, Codex project settings,
-skills, or plugins.
-
-## Boundary map
-
-```text
-.github/   = GitHub events, permissions, CI, templates, Codex Action prompts
-.codex/    = local/trusted-project Codex settings, agents, hooks, rules
-.agents/   = repository skills and plugin marketplace
-plugins/   = installable plugin packages
-apps/web/src/ = product code
-```
-
-The `AGENTS.md` here applies to `.github` files only. Repository-wide Codex
-review guidance belongs in a repository-root `AGENTS.md`; deeper source rules
-belong beside the source they govern.
+Artifact placement is defined once in the repository-root
+[`AGENTS.md`](../AGENTS.md). This file owns GitHub events, permissions,
+workflows, templates, dependency automation, CODEOWNERS, and Codex Action
+prompts after `.github` has been selected.
 
 ## Canonical structure
 

@@ -2,22 +2,9 @@
 
 This file governs `.agents/` and everything below it.
 
-`.agents` is the repository discovery surface for reusable Codex skills and
-the repository plugin marketplace. It is not the project configuration folder,
-not a plugin package, and not the repository-wide instruction root.
-
-## Boundary map
-
-```text
-.agents/   = discover repo skills and the repo plugin marketplace
-.codex/    = configure Codex for this trusted repository
-.github/   = configure GitHub collaboration and CI automation
-plugins/   = author installable plugin packages
-AGENTS.md  = durable instructions for the directory subtree containing it
-```
-
-The `AGENTS.md` in this directory guides changes under `.agents/` only. It does
-not replace a repository-root `AGENTS.md`.
+Artifact placement is defined once in the repository-root
+[`AGENTS.md`](../AGENTS.md). This file applies after `.agents` has been selected
+for a repository skill or plugin marketplace entry.
 
 ## Canonical structure
 
@@ -41,19 +28,9 @@ not replace a repository-root `AGENTS.md`.
 Do not create placeholder folders literally named `<skill-name>`. Create a real
 lowercase kebab-case skill directory only when its workflow is known.
 
-## Choose skills or plugins deliberately
-
-| Need | Correct location |
-| --- | --- |
-| Workflow used only in this repository | `.agents/skills/<skill-name>/` |
-| Reusable/installable workflow bundle | `plugins/<plugin-name>/skills/` |
-| Plugin catalog for this repository | `.agents/plugins/marketplace.json` |
-| Codex model, sandbox, MCP, hook, rule, or custom-agent settings | `.codex/` |
-| CI workflow or Codex GitHub Action prompt | `.github/` |
-
-Do not duplicate one skill under both `.agents/skills` and `plugins/.../skills`.
-Author it locally in `.agents/skills`, or package it in a plugin when it becomes
-a distribution unit. Move it deliberately rather than maintaining two copies.
+Do not duplicate one skill under both `.agents/skills` and a plugin. Follow the
+root placement map and move a workflow deliberately when it becomes an
+installable distribution unit.
 
 ## Skill contract
 
@@ -90,8 +67,8 @@ Rules:
 
 ## Marketplace contract
 
-`.agents/plugins/marketplace.json` is a catalog, not plugin source code. Plugin
-source lives under repository-root `plugins/`.
+`.agents/plugins/marketplace.json` is a catalog, not plugin source. Plugin
+implementation follows [`plugins/AGENTS.md`](../plugins/AGENTS.md).
 
 The scaffold intentionally contains an empty `plugins` array. Adding an entry
 is an installation/distribution decision and requires a complete plugin plus

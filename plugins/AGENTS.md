@@ -2,26 +2,13 @@
 
 This file governs `plugins/` and every plugin package below it.
 
-`plugins` contains installable Codex/ChatGPT plugin source packages. A plugin
-is a distribution unit that can bundle skills and optionally hooks, MCP server
-configuration, app connector mappings, and presentation assets.
+Artifact placement is defined once in the repository-root
+[`AGENTS.md`](../AGENTS.md). This file applies after `plugins` has been selected
+for an installable Codex/ChatGPT distribution unit that can bundle skills and
+optional hooks, MCP configuration, app mappings, and assets.
 
-If a workflow is used only inside this repository and does not need packaging,
-start with `.agents/skills/<skill-name>` instead.
-
-## Boundary map
-
-```text
-plugins/                         = plugin package source
-.agents/plugins/marketplace.json = catalog that exposes plugin packages
-.agents/skills/                  = directly discovered repo-only skills
-.codex/                          = trusted-project Codex configuration
-.github/                         = GitHub automation
-```
-
-A plugin directory is not installed merely because it exists under `plugins/`.
-It becomes cataloged only after a reviewed marketplace entry points to it, and
-installation/enabling remains a separate product action.
+A plugin directory is not installed merely because it exists here. Cataloging
+and installation remain separate reviewed actions.
 
 ## Canonical plugin structure
 

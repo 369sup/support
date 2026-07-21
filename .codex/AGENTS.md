@@ -2,21 +2,10 @@
 
 This file governs `.codex/` and everything below it.
 
-`.codex` contains project-scoped Codex configuration for this repository. It is
-loaded only when Codex trusts the project. Keep it minimal, reviewable, and safe
-for every contributor who opens the repository.
-
-## Boundary map
-
-```text
-.codex/    = trusted-project configuration, custom agents, hooks, rules
-.agents/   = repository skills and plugin marketplace discovery
-.github/   = GitHub automation and review assets
-plugins/   = installable plugin packages
-```
-
-Do not put repository skills in `.codex`; repo skills belong in
-`.agents/skills`.
+Artifact placement is defined once in the repository-root
+[`AGENTS.md`](../AGENTS.md). Project configuration loads only when Codex trusts
+the repository, so every active change here is behavioral and
+security-sensitive.
 
 ## Canonical structure
 
@@ -28,9 +17,10 @@ Do not put repository skills in `.codex`; repo skills belong in
 │   ├── README.md
 │   └── <agent-name>.toml       # optional project custom agent
 ├── hooks/
+│   ├── AGENTS.md
 │   ├── README.md
-│   └── <hook-script>           # optional scripts referenced by hooks.json/config
-├── hooks.json                  # optional; do not add until a hook is required
+│   └── repository-guard.mjs    # active reviewed hook implementation
+├── hooks.json                  # active repository-guard registration
 └── rules/
     ├── README.md
     └── <rule-name>.rules       # optional; experimental command policy
@@ -86,6 +76,10 @@ Matching the filename to `name` is the repository convention.
 Hooks are lifecycle enforcement and can execute commands. They are not a place
 for advisory prose—that belongs in `AGENTS.md`.
 
+The active hook's local workflow and validation live in
+[`hooks/AGENTS.md`](hooks/AGENTS.md). This section remains authoritative for
+general hook safety.
+
 Before adding a hook:
 
 - Identify the exact lifecycle event and matcher.
@@ -114,18 +108,6 @@ are experimental and require conservative review.
 - Keep rules project-specific. Personal convenience rules belong in the user
   layer.
 - Test rule behavior before relying on it.
-
-## What belongs elsewhere
-
-| Artifact | Location |
-| --- | --- |
-| Durable code conventions | Repository or nested `AGENTS.md` |
-| Repo workflow skill | `.agents/skills/<skill-name>/` |
-| Plugin source | `plugins/<plugin-name>/` |
-| Plugin catalog | `.agents/plugins/marketplace.json` |
-| GitHub workflow | `.github/workflows/*.yml` |
-| Codex Action prompt file | `.github/codex/prompts/*.md` |
-| Personal model/theme/profile/auth setting | `~/.codex/config.toml` |
 
 ## Change workflow
 
