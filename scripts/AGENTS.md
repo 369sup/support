@@ -21,6 +21,8 @@ the root `AGENTS.md`.
 - `check-architecture.mjs` is the repository CLI wrapper.
 - `generate-module-map.mjs` writes only
   `docs/architecture/module-map.md` from the JSON catalog.
+- `generate-serena-memories.mjs` writes only the reviewed shared-memory files
+  under `.serena/memories` from its explicit authority allowlist.
 - Architecture behavior retains stable `ARCH-*` identifiers and focused
   positive and negative fixtures.
 
@@ -30,6 +32,7 @@ the root `AGENTS.md`.
 pnpm test:architecture
 pnpm architecture
 pnpm architecture:docs
+pnpm serena:memories
 ```
 
 Inspect generated diffs and run `pnpm check` when practical. Mutation tests use

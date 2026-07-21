@@ -12,6 +12,7 @@
     "typecheck": "turbo run typecheck",
     "architecture": "node scripts/check-architecture.mjs",
     "architecture:docs": "node scripts/generate-module-map.mjs",
+    "serena:memories": "node scripts/generate-serena-memories.mjs",
     "test": "pnpm run test:architecture && turbo run test",
     "test:architecture": "vitest run --config vitest.config.ts",
     "test:e2e": "turbo run test:e2e --filter=@support/web",

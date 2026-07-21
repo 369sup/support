@@ -28,7 +28,9 @@ function resolveProjectImport(currentPath, source) {
   }
 
   if (source.startsWith(".")) {
-    return path.normalize(path.join(path.dirname(currentPath), source));
+    return normalizeFilename(
+      path.normalize(path.join(path.dirname(currentPath), source)),
+    );
   }
 
   return undefined;
@@ -124,6 +126,10 @@ const enforceImportBoundaries = {
         "[ARCH-DEP-008] integration-contracts.ts and the contracts layer may import only the same context's contracts layer.",
       sameContextAlias:
         "[ARCH-DEP-009] Use a relative import inside one bounded context so its private ownership remains visible.",
+      adapterDirection:
+        "[ARCH-DEP-011] Keep inbound and outbound adapters separate and depend only on the permitted inner layers.",
+      compositionDirection:
+        "[ARCH-DEP-011] Composition may wire only the same context's application, adapters, and contracts.",
     },
   },
   create(context) {
@@ -207,6 +213,14 @@ const enforceImportBoundaries = {
 
       const currentLayer = layer(currentModule.internalPath);
       const importedLayer = layer(importedModule.internalPath);
+      const isInboundAdapter =
+        currentModule.internalPath.startsWith("adapters/inbound/");
+      const isOutboundAdapter =
+        currentModule.internalPath.startsWith("adapters/outbound/");
+      const importsInboundAdapter =
+        importedModule.internalPath.startsWith("adapters/inbound/");
+      const importsOutboundAdapter =
+        importedModule.internalPath.startsWith("adapters/outbound/");
 
       if (currentLayer === "domain" && importedLayer !== "domain") {
         context.report({ node, messageId: "domainDirection" });
@@ -227,10 +241,40 @@ const enforceImportBoundaries = {
       ) {
         context.report({ node, messageId: "contractsDirection" });
       }
+
+      if (
+        isInboundAdapter &&
+        importedLayer !== "application" &&
+        importedLayer !== "contracts" &&
+        !importsInboundAdapter
+      ) {
+        context.report({ node, messageId: "adapterDirection" });
+      }
+
+      if (
+        isOutboundAdapter &&
+        importedLayer !== "application" &&
+        importedLayer !== "domain" &&
+        importedLayer !== "contracts" &&
+        !importsOutboundAdapter
+      ) {
+        context.report({ node, messageId: "adapterDirection" });
+      }
+
+      if (
+        currentLayer === "composition" &&
+        importedLayer !== "application" &&
+        importedLayer !== "adapters" &&
+        importedLayer !== "contracts"
+      ) {
+        context.report({ node, messageId: "compositionDirection" });
+      }
+
     }
 
     return {
       ImportDeclaration: checkImport,
+      ImportExpression: checkImport,
       ExportNamedDeclaration(node) {
         if (node.source !== null) {
           checkImport(node);
@@ -303,7 +347,7 @@ const publicEntrypointContract = {
   meta: {
     type: "problem",
     docs: {
-      description: "Make browser and Server Action entrypoint boundaries explicit.",
+      description: "Make public entrypoint boundaries explicit.",
     },
     schema: [],
     messages: {
@@ -315,6 +359,8 @@ const publicEntrypointContract = {
         "[ARCH-API-003] server-actions.ts may directly export only async functions.",
       invalidActionReexport:
         "[ARCH-API-004] server-actions.ts may re-export only explicit .server-action modules or files under server-actions.",
+      invalidPublicExport:
+        "[ARCH-API-005] Export this capability through the entrypoint's permitted inbound adapter or contracts path.",
     },
   },
   create(context) {
@@ -331,6 +377,7 @@ const publicEntrypointContract = {
     }
 
     const basename = currentModule.internalPath.replace(/\.(?:[cm]?ts|tsx)$/, "");
+    const isPublicEntrypoint = publicEntrypoints.has(basename);
 
     return {
       Program(node) {
@@ -343,27 +390,51 @@ const publicEntrypointContract = {
         }
       },
       ExportNamedDeclaration(node) {
-        if (basename !== "server-actions") {
+        if (!isPublicEntrypoint) {
           return;
         }
 
-        if (
-          node.declaration !== null &&
-          !isAsyncExportDeclaration(node.declaration)
-        ) {
-          context.report({ node, messageId: "nonAsyncAction" });
+        if (basename === "server-actions") {
+          if (
+            node.declaration !== null &&
+            !isAsyncExportDeclaration(node.declaration)
+          ) {
+            context.report({ node, messageId: "nonAsyncAction" });
+          }
+
+          if (node.source !== null) {
+            const source = String(node.source.value);
+            const isActionModule =
+              source.includes("/server-actions/") ||
+              /(?:^|\/)server-actions\//.test(source) ||
+              source.endsWith(".server-action");
+
+            if (!isActionModule) {
+              context.report({ node, messageId: "invalidActionReexport" });
+            }
+          }
+
+          return;
         }
 
-        if (node.source !== null) {
-          const source = String(node.source.value);
-          const isActionModule =
-            source.includes("/server-actions/") ||
-            /(?:^|\/)server-actions\//.test(source) ||
-            source.endsWith(".server-action");
+        if (node.source === null) {
+          context.report({ node, messageId: "invalidPublicExport" });
+          return;
+        }
 
-          if (!isActionModule) {
-            context.report({ node, messageId: "invalidActionReexport" });
-          }
+        const source = String(node.source.value);
+        const isAllowedSource =
+          (basename === "server-api" &&
+            (source.startsWith("./adapters/inbound/server/") ||
+              source.startsWith("./contracts/"))) ||
+          (basename === "browser-ui" &&
+            (source.startsWith("./adapters/inbound/react/") ||
+              source.startsWith("./contracts/"))) ||
+          (basename === "integration-contracts" &&
+            source.startsWith("./contracts/"));
+
+        if (!isAllowedSource) {
+          context.report({ node, messageId: "invalidPublicExport" });
         }
       },
     };

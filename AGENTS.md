@@ -1,8 +1,11 @@
 # Support Repository Guidance
 
-This repository is a Next.js support-platform application. Keep changes easy to
-trace and safe around authentication, authorization, repository access,
-invitations, notifications, and personal data.
+This repository is a Next.js implementation of a GitHub-like non-code product
+platform. It models users, enterprises, organizations, teams, repositories,
+collaboration, notifications, governance, commerce, and integrations while
+excluding Git, repository content, pull requests, code review, and Actions.
+Keep changes easy to trace and safe around authentication, authorization,
+tenant isolation, invitations, notifications, billing, and personal data.
 
 ## Instruction resolution
 
@@ -60,6 +63,9 @@ requested and document their scope.
   authorities it names.
 - Prefer exact symbol and reference lookup through Serena when available. Use
   `rg` or `rg --files` for direct text and path discovery.
+- Use Repomix only for repository-wide snapshots, architecture mapping, and
+  cross-file pattern discovery. Do not use it instead of Serena for a known
+  symbol or instead of direct tools for a known file.
 - Read focused symbols or sections before whole large files. Ignore generated
   output, dependencies, and unrelated modules.
 - Make the smallest in-scope change and inspect the actual diff.
@@ -84,7 +90,7 @@ that did not run instead of implying full validation.
 ## Review guidelines
 
 Prioritize correctness, authentication and authorization, tenant isolation,
-PII and secret exposure, repository connector permissions, input validation,
+PII and secret exposure, repository access and role semantics, input validation,
 Server/Client boundaries, destructive data changes, and missing verification.
 Report actionable findings with priority, file and line, failure scenario,
 impact, and the smallest safe correction. Avoid style-only findings already

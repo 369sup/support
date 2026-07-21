@@ -1,5 +1,5 @@
 import { RoutePlaceholder } from "@/app/_components/route-placeholder";
 
 export default function DashboardPage() {
-  return <RoutePlaceholder title="Dashboard" description="Review workspace activity, priorities, and recent work." />;
+  return <RoutePlaceholder title="Dashboard" description="Review activity across your repositories, organizations, teams, and projects." />;
 }

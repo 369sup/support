@@ -8,6 +8,13 @@ import { dirname, join, relative, resolve, sep } from "node:path";
 
 import ts from "typescript";
 
+import {
+  agentGuidanceSourcePaths,
+  generatedMemoryPaths,
+  loadSerenaMemorySources,
+  renderSerenaMemories,
+} from "./serena-memory-generator.mjs";
+
 const sourceExtensions = [".ts", ".tsx", ".mts", ".cts"];
 const publicEntrypoints = new Set([
   "server-api.ts",
@@ -184,10 +191,60 @@ function validateToolAliases(repositoryRoot, applicationRoot, errors) {
   }
 }
 
-function validateCatalog(rootDir, catalog, errors) {
+function validateCatalog(rootDir, catalog, now, errors) {
   if (!Array.isArray(catalog?.contexts)) {
     errors.push("[ARCH-MAP-001] module-map.json must contain a contexts array.");
     return new Map();
+  }
+
+  if (
+    catalog.version !== 2 ||
+    typeof catalog.product?.name !== "string" ||
+    typeof catalog.product?.goal !== "string" ||
+    catalog.product?.sourcePolicy?.protocol !== "https:" ||
+    catalog.product?.sourcePolicy?.hostname !== "docs.github.com" ||
+    catalog.product?.sourcePolicy?.pathPrefix !== "/en/"
+  ) {
+    errors.push(
+      "[ARCH-MAP-013] module-map.json must use version 2 and declare the canonical product and source policy.",
+    );
+  }
+
+  const excludedCapabilities = Array.isArray(catalog.excludedCapabilities)
+    ? catalog.excludedCapabilities
+    : [];
+  const deferredCapabilities = Array.isArray(catalog.deferredCapabilities)
+    ? catalog.deferredCapabilities
+    : [];
+  const capabilityNames = new Set();
+  let hasInvalidCapability = false;
+
+  for (const capability of [...excludedCapabilities, ...deferredCapabilities]) {
+    if (
+      !isKebabCase(capability?.name) ||
+      capabilityNames.has(capability.name)
+    ) {
+      hasInvalidCapability = true;
+      continue;
+    }
+
+    capabilityNames.add(capability.name);
+  }
+
+  if (
+    excludedCapabilities.length === 0 ||
+    deferredCapabilities.length === 0 ||
+    excludedCapabilities.some((capability) => {
+      return typeof capability?.reason !== "string" || capability.reason === "";
+    }) ||
+    deferredCapabilities.some((capability) => {
+      return typeof capability?.requires !== "string" || capability.requires === "";
+    }) ||
+    hasInvalidCapability
+  ) {
+    errors.push(
+      "[ARCH-MAP-016] Excluded and deferred capabilities must be unique, named, and explain their reason or prerequisite.",
+    );
   }
 
   const contextsByPath = new Map();
@@ -209,22 +266,152 @@ function validateCatalog(rootDir, catalog, errors) {
       errors.push(`[ARCH-MAP-004] ${contextPath} has invalid status ${context.status}.`);
     }
 
-    if (context.kind === "product") {
+    const hasValidKind =
+      context.kind === "domain" ||
+      context.kind === "projection" ||
+      context.kind === "technical";
+    const hasValidClassification =
+      context.kind !== "domain" ||
+      context.classification === "core" ||
+      context.classification === "supporting";
+    const hasValidShape =
+      hasValidKind &&
+      hasValidClassification &&
+      (context.maturity === "stable" || context.maturity === "preview") &&
+      typeof context.responsibility === "string" &&
+      context.responsibility !== "" &&
+      Array.isArray(context.owns) &&
+      context.owns.length > 0 &&
+      context.owns.every((item) => typeof item === "string" && item !== "") &&
+      Array.isArray(context.excludes) &&
+      context.excludes.length > 0 &&
+      context.excludes.every((item) => typeof item === "string" && item !== "") &&
+      Array.isArray(context.dependencies) &&
+      Array.isArray(context.officialSources);
+
+    if (!hasValidShape) {
+      errors.push(
+        `[ARCH-MAP-013] ${contextPath} has an invalid v2 catalog shape.`,
+      );
+    }
+
+    const officialSources = Array.isArray(context.officialSources)
+      ? context.officialSources
+      : [];
+    const sourceIds = new Set();
+    const hasInvalidSource =
+      !Array.isArray(context.officialSources) ||
+      officialSources.some((source) => {
+        if (
+          !isKebabCase(source?.id) ||
+          sourceIds.has(source.id) ||
+          typeof source?.url !== "string" ||
+          !Array.isArray(source.supports) ||
+          source.supports.length === 0 ||
+          source.supports.some((item) => typeof item !== "string" || item === "") ||
+          (source.verifiedOn !== null &&
+            (typeof source.verifiedOn !== "string" ||
+              !/^\d{4}-\d{2}-\d{2}$/.test(source.verifiedOn)))
+        ) {
+          return true;
+        }
+
+        sourceIds.add(source.id);
+
+        try {
+          const url = new URL(source.url);
+          return (
+            url.protocol !== "https:" ||
+            url.hostname !== "docs.github.com" ||
+            !url.pathname.startsWith("/en/")
+          );
+        } catch {
+          return true;
+        }
+      });
+
+    if (
+      ((context.kind === "domain" || context.kind === "projection") &&
+        (officialSources.length === 0 || hasInvalidSource)) ||
+      (context.kind === "technical" && officialSources.length !== 0)
+    ) {
+      errors.push(
+        `[ARCH-MAP-014] ${contextPath} must follow the official GitHub source policy for its context kind.`,
+      );
+    }
+
+    const today = now.toISOString().slice(0, 10);
+
+    for (const source of officialSources) {
+      if (source.verifiedOn === null) {
+        if (context.status === "active") {
+          errors.push(
+            `[ARCH-MAP-017] Active context ${contextPath} requires verifiedOn for source ${source.id}.`,
+          );
+        }
+
+        continue;
+      }
+
       if (
-        !Array.isArray(context.officialSources) ||
-        context.officialSources.length === 0 ||
-        context.officialSources.some((source) => {
-          try {
-            return new URL(source).hostname !== "docs.github.com";
-          } catch {
-            return true;
-          }
-        })
+        typeof source.verifiedOn !== "string" ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(source.verifiedOn)
       ) {
+        continue;
+      }
+
+      const verifiedTime = Date.parse(`${source.verifiedOn}T00:00:00.000Z`);
+      const nowTime = Date.parse(`${today}T00:00:00.000Z`);
+      const maximumAgeDays = (source.maturity ?? context.maturity) === "preview" ? 90 : 365;
+      const ageDays = (nowTime - verifiedTime) / 86_400_000;
+
+      if (!Number.isFinite(verifiedTime) || source.verifiedOn > today || ageDays > maximumAgeDays) {
         errors.push(
-          `[ARCH-MAP-005] Product context ${contextPath} requires at least one docs.github.com source and no third-party sources.`,
+          `[ARCH-MAP-017] Source ${source.id} for ${contextPath} has an invalid, future, or stale verifiedOn date.`,
         );
       }
+    }
+
+    const publishedEvents = Array.isArray(context.publishedEvents)
+      ? context.publishedEvents
+      : [];
+    const publishedEventKeys = new Set();
+    const hasInvalidPublishedEvent =
+      !Array.isArray(context.publishedEvents) ||
+      publishedEvents.some((event) => {
+        const eventKey = `${event?.name}@${event?.version}`;
+        const validSourceIds = Array.isArray(event?.sourceIds) &&
+          event.sourceIds.every((sourceId) => sourceIds.has(sourceId));
+        const validTechnicalSources = context.kind !== "technical" ||
+          (Array.isArray(event?.sourceIds) && event.sourceIds.length === 0);
+        const validProductSources = context.kind === "technical" ||
+          (Array.isArray(event?.sourceIds) && event.sourceIds.length > 0);
+        const invalid =
+          typeof event?.name !== "string" ||
+          !/^[A-Z][A-Za-z0-9]+$/.test(event.name) ||
+          !Number.isInteger(event.version) ||
+          event.version < 1 ||
+          (event.kind !== "domain" &&
+            event.kind !== "integration" &&
+            event.kind !== "technical") ||
+          typeof event.meaning !== "string" ||
+          event.meaning.trim() === "" ||
+          !validSourceIds ||
+          !validTechnicalSources ||
+          !validProductSources ||
+          publishedEventKeys.has(eventKey);
+
+        publishedEventKeys.add(eventKey);
+        return invalid;
+      });
+    const hasValidNoEventRationale =
+      publishedEvents.length > 0 ||
+      (typeof context.eventRationale === "string" && context.eventRationale.trim() !== "");
+
+    if (hasInvalidPublishedEvent || !hasValidNoEventRationale) {
+      errors.push(
+        `[ARCH-MAP-018] ${contextPath} must declare unique versioned events with valid source traceability, or explain why it publishes none.`,
+      );
     }
 
     const contextRoot = contextRootFor(rootDir, context);
@@ -254,6 +441,60 @@ function validateCatalog(rootDir, catalog, errors) {
           `[ARCH-MAP-009] Active context ${contextPath} requires at least one public root entrypoint.`,
         );
       }
+    }
+  }
+
+  for (const [contextPath, context] of contextsByPath) {
+    const dependencyKeys = new Set();
+
+    for (const dependency of context.dependencies ?? []) {
+      const dependencyKey = `${dependency.context}:${dependency.mode}`;
+      const target = contextsByPath.get(dependency.context);
+      const targetEventKeys = new Set(
+        (target?.publishedEvents ?? []).map((event) => `${event.name}@${event.version}`),
+      );
+      const hasValidEventSelection =
+        dependency.mode !== "event" ||
+        (Array.isArray(dependency.events) &&
+          dependency.events.length > 0 &&
+          dependency.events.every((event) => {
+            return (
+              typeof event?.name === "string" &&
+              Number.isInteger(event.version) &&
+              targetEventKeys.has(`${event.name}@${event.version}`)
+            );
+          }));
+      const synchronousHasNoEventSelection =
+        dependency.mode !== "synchronous" || dependency.events === undefined;
+      const isInvalid =
+        target === undefined ||
+        dependency.context === contextPath ||
+        dependencyKeys.has(dependencyKey) ||
+        typeof dependency.contract !== "string" ||
+        dependency.contract === "" ||
+        (dependency.mode !== "synchronous" && dependency.mode !== "event") ||
+        !hasValidEventSelection ||
+        !synchronousHasNoEventSelection ||
+        (context.kind === "domain" &&
+          target?.kind === "projection");
+
+      if (isInvalid) {
+        errors.push(
+          `[ARCH-MAP-015] ${contextPath} has an invalid dependency on ${dependency.context ?? "unknown"}.`,
+        );
+      }
+
+      dependencyKeys.add(dependencyKey);
+    }
+  }
+
+  const contextNames = new Set(contextsByPath.keys());
+
+  for (const capabilityName of capabilityNames) {
+    if (contextNames.has(capabilityName)) {
+      errors.push(
+        `[ARCH-MAP-016] Capability ${capabilityName} cannot be both excluded or deferred and a bounded context.`,
+      );
     }
   }
 
@@ -584,6 +825,69 @@ function buildGraph(rootDir, sourceFiles) {
   return { graph, metadata };
 }
 
+
+function moduleContextForFile(rootDir, filePath) {
+  const relativePath = projectRelative(rootDir, filePath);
+  const segments = relativePath.split("/");
+
+  if (
+    segments[0] !== "src" ||
+    segments[1] !== "modules" ||
+    segments[2] === undefined ||
+    segments[3] === undefined
+  ) {
+    return undefined;
+  }
+
+  return `${segments[2]}/${segments[3]}`;
+}
+
+function validateDeclaredContextDependencies(
+  rootDir,
+  graph,
+  contextsByPath,
+  errors,
+) {
+  const reported = new Set();
+
+  for (const [importer, dependencies] of graph) {
+    const importerContext = moduleContextForFile(rootDir, importer);
+
+    if (importerContext === undefined) {
+      continue;
+    }
+
+    const declaredDependencies =
+      contextsByPath.get(importerContext)?.dependencies ?? [];
+
+    for (const dependency of dependencies) {
+      const importedContext = moduleContextForFile(rootDir, dependency);
+
+      if (
+        importedContext === undefined ||
+        importedContext === importerContext
+      ) {
+        continue;
+      }
+
+      const isDeclared = declaredDependencies.some((entry) => {
+        return (
+          entry.context === importedContext &&
+          entry.mode === "synchronous"
+        );
+      });
+      const reportKey = `${importerContext}->${importedContext}`;
+
+      if (!isDeclared && !reported.has(reportKey)) {
+        errors.push(
+          `[ARCH-DEP-010] ${importerContext} imports ${importedContext} without a synchronous module-map dependency.`,
+        );
+        reported.add(reportKey);
+      }
+    }
+  }
+}
+
 function validateCycles(rootDir, graph, errors) {
   const states = new Map();
   const stack = [];
@@ -756,19 +1060,90 @@ export function renderModuleMap(catalog) {
     "<!-- Generated from module-map.json. Do not edit directly. -->",
     "# Module Map",
     "",
-    "| Subdomain | Bounded context | Kind | Status | Responsibility |",
-    "| --- | --- | --- | --- | --- |",
+    catalog.product.goal,
+    "",
+    "## Product boundary",
+    "",
+    "### Excluded capabilities",
+    "",
+    "| Capability | Reason |",
+    "| --- | --- |",
   ];
 
-  for (const context of catalog.contexts) {
-    lines.push(
-      `| ${context.subdomain} | ${context.name} | ${context.kind} | ${context.status} | ${context.responsibility} |`,
-    );
+  for (const capability of catalog.excludedCapabilities) {
+    lines.push(`| ${capability.name} | ${capability.reason} |`);
   }
 
   lines.push(
     "",
-    "Product semantics must be justified by the official GitHub documentation URLs recorded in `module-map.json`.",
+    "### Deferred capabilities",
+    "",
+    "| Capability | Activation prerequisite |",
+    "| --- | --- |",
+  );
+
+  for (const capability of catalog.deferredCapabilities) {
+    lines.push(`| ${capability.name} | ${capability.requires} |`);
+  }
+
+  lines.push(
+    "",
+    "## Bounded contexts",
+    "",
+    "| Subdomain | Bounded context | Kind | Classification | Maturity | Status | Responsibility |",
+    "| --- | --- | --- | --- | --- | --- | --- |",
+  );
+
+  for (const context of catalog.contexts) {
+    lines.push(
+      `| ${context.subdomain} | ${context.name} | ${context.kind} | ${context.classification ?? "—"} | ${context.maturity} | ${context.status} | ${context.responsibility} |`,
+    );
+  }
+
+  lines.push("", "## Ownership and relationships", "");
+
+  for (const context of catalog.contexts) {
+    const contextPath = `${context.subdomain}/${context.name}`;
+    const dependencies =
+      context.dependencies.length === 0
+        ? "None."
+        : context.dependencies
+            .map((dependency) => {
+              const events = dependency.events?.length > 0
+                ? ` [${dependency.events.map((event) => `${event.name}@${event.version}`).join(", ")}]`
+                : "";
+              return `${dependency.context} via ${dependency.contract} (${dependency.mode})${events}`;
+            })
+            .join("; ");
+    const sources =
+      context.officialSources.length === 0
+        ? "Not applicable; technical capability."
+        : context.officialSources
+            .map((source) => {
+              const verifiedOn = source.verifiedOn ?? "unverified";
+              return `${source.id} ([${source.supports.join(", ")}](${source.url}), verified ${verifiedOn})`;
+            })
+            .join("; ");
+    const events = context.publishedEvents.length === 0
+      ? `None. ${context.eventRationale}`
+      : context.publishedEvents
+          .map((event) => `${event.name}@${event.version} (${event.kind})`)
+          .join(", ");
+
+    lines.push(
+      `### ${contextPath}`,
+      "",
+      `- **Owns:** ${context.owns.join(", ")}.`,
+      `- **Excludes:** ${context.excludes.join(", ")}.`,
+      `- **Dependencies:** ${dependencies}`,
+      `- **Published events:** ${events}`,
+      `- **Official sources:** ${sources}`,
+      "",
+    );
+  }
+
+  lines.push(
+    "All product semantics are justified by HTTPS sources under docs.github.com/en/.",
     "Planned contexts do not receive source directories until implementation begins.",
     "",
   );
@@ -794,6 +1169,185 @@ function validateGeneratedModuleMap(rootDir, catalog, errors) {
   }
 }
 
+const guidanceTraversalExclusions = new Set([
+  ".git",
+  ".next",
+  ".pnpm-store",
+  "coverage",
+  "dist",
+  "node_modules",
+]);
+
+function listGuidanceFiles(directory) {
+  const files = [];
+
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (entry.isDirectory() && guidanceTraversalExclusions.has(entry.name)) {
+      continue;
+    }
+
+    const entryPath = join(directory, entry.name);
+
+    if (entry.isDirectory()) {
+      files.push(...listGuidanceFiles(entryPath));
+    } else if (entry.isFile() &&
+      (entry.name === "AGENTS.md" || entry.name === "AGENTS.override.md")) {
+      files.push(entryPath);
+    }
+  }
+
+  return files;
+}
+
+function validateAgentGuidance(repositoryRoot, errors) {
+  const guidanceFiles = listGuidanceFiles(repositoryRoot);
+  const actualAgentPaths = guidanceFiles
+    .filter((filePath) => filePath.endsWith(`${sep}AGENTS.md`) || filePath === join(repositoryRoot, "AGENTS.md"))
+    .map((filePath) => projectRelative(repositoryRoot, filePath))
+    .sort();
+  const expectedAgentPaths = [...agentGuidanceSourcePaths].sort();
+
+  for (const filePath of guidanceFiles) {
+    const relativePath = projectRelative(repositoryRoot, filePath);
+
+    if (filePath.endsWith(`${sep}AGENTS.override.md`)) {
+      errors.push(
+        `[ARCH-GUIDE-001] Permanent AGENTS.override.md is prohibited: ${relativePath}.`,
+      );
+      continue;
+    }
+
+    const contents = readFileSync(filePath, "utf8");
+
+    for (const match of contents.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)) {
+      let target = match[1].trim();
+
+      if (
+        target.startsWith("https://") ||
+        target.startsWith("http://") ||
+        target.startsWith("mailto:") ||
+        target.startsWith("#")
+      ) {
+        continue;
+      }
+
+      if (target.startsWith("<") && target.endsWith(">")) {
+        target = target.slice(1, -1);
+      }
+
+      target = target.split("#", 1)[0];
+
+      if (target === "") {
+        continue;
+      }
+
+      const resolvedTarget = resolve(dirname(filePath), target);
+      const repositoryPrefix = `${resolve(repositoryRoot)}${sep}`;
+
+      if (
+        resolvedTarget !== resolve(repositoryRoot) &&
+        (!resolvedTarget.startsWith(repositoryPrefix) || !existsSync(resolvedTarget))
+      ) {
+        errors.push(
+          `[ARCH-GUIDE-001] ${relativePath} contains an invalid local link: ${target}.`,
+        );
+      } else if (!existsSync(resolvedTarget)) {
+        errors.push(
+          `[ARCH-GUIDE-001] ${relativePath} contains a missing local link: ${target}.`,
+        );
+      }
+    }
+  }
+
+  if (JSON.stringify(actualAgentPaths) !== JSON.stringify(expectedAgentPaths)) {
+    errors.push(
+      "[ARCH-MEM-001] Serena memory source allowlist must exactly match repository AGENTS.md files.",
+    );
+  }
+}
+
+function validateSerenaMemories(repositoryRoot, errors) {
+  const memoryRoot = join(repositoryRoot, ".serena", "memories");
+  const projectConfigurationPath = join(repositoryRoot, ".serena", "project.yml");
+  const gitignorePath = join(repositoryRoot, ".gitignore");
+
+  if (!existsSync(memoryRoot)) {
+    errors.push("[ARCH-MEM-001] Missing generated .serena/memories directory.");
+    return;
+  }
+
+  let expected;
+
+  try {
+    expected = renderSerenaMemories(loadSerenaMemorySources(repositoryRoot));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    errors.push(`[ARCH-MEM-001] Cannot render Serena memories: ${message}`);
+    return;
+  }
+
+  const expectedPaths = new Set(generatedMemoryPaths);
+  const actualFiles = listFiles(memoryRoot);
+
+  for (const filePath of actualFiles) {
+    const relativePath = projectRelative(memoryRoot, filePath);
+
+    if (relativePath.startsWith("local/")) {
+      continue;
+    }
+
+    if (!expectedPaths.has(relativePath)) {
+      errors.push(
+        `[ARCH-MEM-001] Unexpected shared Serena memory: ${relativePath}.`,
+      );
+    }
+  }
+
+  for (const [relativePath, expectedContents] of expected) {
+    const filePath = join(memoryRoot, ...relativePath.split("/"));
+
+    if (!existsSync(filePath)) {
+      errors.push(`[ARCH-MEM-001] Missing generated Serena memory: ${relativePath}.`);
+      continue;
+    }
+
+    const actualContents = readFileSync(filePath, "utf8").replaceAll("\r\n", "\n");
+
+    if (actualContents !== expectedContents) {
+      errors.push(
+        `[ARCH-MEM-001] Generated Serena memory is stale: ${relativePath}.`,
+      );
+    }
+
+    for (const match of actualContents.matchAll(/mem:([a-z0-9][a-z0-9/-]*)/g)) {
+      const referencedPath = `${match[1]}.md`;
+
+      if (!expectedPaths.has(referencedPath)) {
+        errors.push(
+          `[ARCH-MEM-001] ${relativePath} references missing memory mem:${match[1]}.`,
+        );
+      }
+    }
+  }
+
+  const gitignore = existsSync(gitignorePath) ? readFileSync(gitignorePath, "utf8") : "";
+  const projectConfiguration = existsSync(projectConfigurationPath)
+    ? readFileSync(projectConfigurationPath, "utf8")
+    : "";
+
+  if (!gitignore.split(/\r?\n/).includes(".serena/memories/local/")) {
+    errors.push(
+      "[ARCH-MEM-001] .serena/memories/local/ must be ignored for machine-local memories.",
+    );
+  }
+
+  if (!projectConfiguration.includes('"^(memory_maintenance|core|shared/.*)$"')) {
+    errors.push(
+      "[ARCH-MEM-001] Generated shared Serena memories must be configured read-only.",
+    );
+  }
+}
+
 export function runArchitectureChecks({
   repositoryRoot,
   applicationRoot,
@@ -815,17 +1369,27 @@ export function runArchitectureChecks({
   validateToolAliases(repositoryRoot, applicationRoot, errors);
 
   const catalog = readJson(catalogPath, errors, "[ARCH-MAP-001]");
+  let contextsByPath = new Map();
 
   if (catalog !== undefined) {
-    validateCatalog(applicationRoot, catalog, errors);
+    contextsByPath = validateCatalog(applicationRoot, catalog, now, errors);
     validateGeneratedModuleMap(repositoryRoot, catalog, errors);
   }
+
+  validateAgentGuidance(repositoryRoot, errors);
+  validateSerenaMemories(repositoryRoot, errors);
 
   validateModuleNamesAndRoles(applicationRoot, sourceFiles, errors);
 
   const { graph, metadata } = buildGraph(applicationRoot, sourceFiles);
   validateCycles(applicationRoot, graph, errors);
   validateClientGraphs(applicationRoot, graph, metadata, errors);
+  validateDeclaredContextDependencies(
+    applicationRoot,
+    graph,
+    contextsByPath,
+    errors,
+  );
 
   const registry = readJson(
     registryPath,

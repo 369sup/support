@@ -35,15 +35,29 @@ that have a real consumer. Public entrypoints explicitly name every export.
 - Public commands, queries, results, and integration events.
 - Upstream/downstream context relationships and consistency expectations.
 - Persistence and transaction ownership.
+- Tenant or resource scope, authorization owner, and permission-query ports.
+- Sensitive-data classification, retention, erasure, redaction, and auditable
+  operations.
+- Event versions, delivery guarantees, idempotency, ordering, retry, and
+  failure behavior.
 - Official `docs.github.com` sources for GitHub product semantics.
 - Any active `ARCH-EX-###` references. Exceptions are never examples.
 
 ## Public entrypoints
 
-- `server-api.ts`: server-side facade and composition only.
-- `browser-ui.ts`: begins with `"use client"` and exposes browser-safe UI or types.
-- `server-actions.ts`: begins with `"use server"` and exports async actions only.
-- `integration-contracts.ts`: exposes dependency-free cross-context contracts.
+- `server-api.ts`: exposes explicit server-side inbound facades from
+  `adapters/inbound/server`; composition remains private.
+- `browser-ui.ts`: begins with `"use client"` and exposes browser-safe UI from
+  `adapters/inbound/react` plus browser-safe contracts.
+- `server-actions.ts`: begins with `"use server"` and exports async actions from
+  `adapters/inbound/next/server-actions` only.
+- `integration-contracts.ts`: exposes dependency-free types and events from
+  `contracts` only.
+
+No public entrypoint exports aggregates, entities, handlers, ports, outbound
+adapters, persistence or provider records, or a composition root. A context
+importing another context must declare the synchronous dependency in
+`module-map.json`; an event dependency alone never permits a source import.
 
 Business-free UI primitives are not a technical bounded context. They live in
 `packages/shadcn/src/ui`, while product-agnostic compositions live in

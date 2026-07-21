@@ -14,27 +14,42 @@ Use these canonical sources before adding or moving module code:
 - [`docs/architecture/module-template.md`](../../../../docs/architecture/module-template.md)
   for bounded-context shape;
 - [`docs/architecture/module-map.json`](../../../../docs/architecture/module-map.json)
-  for context identity, status, responsibility, and official sources; and
+  for product scope, context identity, kind, ownership, dependencies, status,
+  and official sources; and
 - [`docs/architecture/exceptions/registry.json`](../../../../docs/architecture/exceptions/registry.json)
   for approved exceptions.
 
-Mechanical architecture checks are authoritative when prose and code drift.
+Treat drift between canonical architecture documents, mechanical checks, and
+tests as a failure. Do not silently choose one representation as authoritative;
+update the canonical contract, enforcement, and fixtures together.
 
 ## Context activation workflow
 
 Do not create a source directory for a planned context. To activate one:
 
-1. Define its responsibility, owner, ubiquitous language, upstream and
-   downstream relationships, data ownership, and transaction boundary.
-2. Record the required official `docs.github.com` product sources in
-   `module-map.json` and change the status to `active`.
-3. Generate the module map and review the catalog diff.
-4. Create only the layers and public entrypoints required by the first real
+1. Confirm the capability is not excluded or deferred in `module-map.json`.
+2. Define its responsibility, owner, ubiquitous language, upstream and
+   downstream relationships, data ownership, exclusions, and transaction
+   boundary.
+3. Record its tenant or resource scope, authorization-policy owner, permission
+   ports, sensitive-data classification, retention and erasure behavior,
+   redaction requirements, and auditable operations.
+4. Define its published events, consumed event versions, consistency model,
+   idempotency boundary, and failure behavior. Empty event catalogs require an
+   explicit rationale.
+5. Re-open every referenced official product source, update `verifiedOn`, and
+   confirm the recorded semantics and preview maturity still match current
+   HTTPS documentation under `docs.github.com/en/`.
+6. Record every permitted cross-context dependency and required official
+   source in `module-map.json`, then change the status to `active`.
+7. Generate the module map and Serena shared memories, then review both diffs.
+8. Create only the layers and public entrypoints required by the first real
    use case.
-5. Add the context README decisions required by `module-template.md`.
+9. Add the context README decisions required by `module-template.md`.
 
 Do not derive GitHub product behavior from model memory, third-party tutorials,
-or similarly named source code.
+or similarly named source code. Do not create placeholder contexts for
+excluded or deferred code-adjacent capabilities.
 
 ## Implementation workflow
 

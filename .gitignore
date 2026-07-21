@@ -45,3 +45,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local Serena working memory; reviewed shared memories remain tracked
+.serena/memories/local/
+
+# package-manager cache created by sandboxed validation
+.pnpm-store/
+
+.vercel
+.env*

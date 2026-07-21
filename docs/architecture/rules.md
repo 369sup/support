@@ -36,12 +36,54 @@ and ownership but must not redefine these rules.
 - **ARCH-DEP-008:** Contracts remain framework-free and do not expose domain
   objects, handlers, adapters, ORM records, or provider types.
 - **ARCH-DEP-009:** Imports inside one bounded context use relative paths.
+- **ARCH-DEP-010:** A cross-context import must target a public entrypoint and
+  the importing context must declare a synchronous dependency on the target in
+  `module-map.json`. Event dependencies do not authorize source imports.
+- **ARCH-DEP-011:** Adapters and composition follow the complete local layer
+  matrix: inbound adapters may depend on application and contracts; outbound
+  adapters may depend on outbound ports, domain, and contracts; composition may
+  wire application, adapters, and contracts. Inbound and outbound adapters do
+  not depend on each other directly.
+- **ARCH-DEP-012:** Static imports, re-exports, and string-literal dynamic
+  imports receive the same boundary checks. Variable dynamic imports,
+  `export *`, and CommonJS `require()` remain prohibited.
 - Workspace packages are imported only through declared package subpath
   exports; consumers never import `packages/*/src`.
 - **ARCH-GRAPH-001:** Source dependencies must be acyclic.
 - **ARCH-CLIENT-001:** A client entrypoint must not transitively reach
   application, composition, outbound adapters, Node APIs, secrets, or
   `process.env`.
+- **ARCH-API-005:** Public entrypoints expose only boundary-specific facades,
+  UI, actions, or integration contracts. They never expose aggregates,
+  entities, handlers, ports, outbound adapters, ORM records, provider types,
+  or composition roots.
+
+## Product catalog
+
+- **ARCH-MAP-013:** `module-map.json` uses catalog version 2 and every context
+  declares a valid kind, maturity, status, responsibility, ownership,
+  exclusions, dependencies, and source list. Domain contexts also declare a
+  core or supporting classification.
+- **ARCH-MAP-014:** Domain and projection sources use HTTPS under
+  `docs.github.com/en/` and state the product semantics they support. Technical
+  contexts have no GitHub product sources.
+- **ARCH-MAP-015:** Every declared dependency targets an existing context, is
+  unique and non-self-referential, uses a named contract, and declares either
+  synchronous or event mode. Domain contexts never depend on projections.
+- **ARCH-MAP-016:** Excluded and deferred capabilities have unique names and do
+  not appear as bounded contexts. Deferred capabilities identify the missing
+  prerequisite that prevents activation.
+- **ARCH-MAP-017:** Every official product source has a stable ID and a truthful
+  ISO verification date or `null`. Active stable contexts reject sources older
+  than 365 days; active preview contexts reject sources older than 90 days.
+- **ARCH-MAP-018:** Every context declares versioned published events or an
+  empty-catalog rationale. Event dependencies name events and versions owned by
+  their target context.
+- **ARCH-GUIDE-001:** Repository `AGENTS.md` files have resolvable local links;
+  permanent `AGENTS.override.md` files are prohibited.
+- **ARCH-MEM-001:** Committed Serena shared memories are deterministic,
+  read-only generated projections of an explicit authority allowlist. Local
+  writable memories are ignored by Git.
 
 ## Responsibilities and boundaries
 

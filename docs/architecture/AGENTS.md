@@ -20,8 +20,19 @@ changes.
 
 ## Catalog and exception changes
 
-- Do not activate a bounded context without a defined responsibility and the
-  required official GitHub documentation sources.
+- Keep the product scope, excluded capabilities, deferred capabilities,
+  context ownership, and permitted context dependencies in `module-map.json`.
+- Do not activate a bounded context without defined ownership, exclusions,
+  dependencies, and the required official GitHub documentation sources.
+- Product sources must be HTTPS URLs under `docs.github.com/en/` and must state
+  which product semantics they support. Give every source a stable ID and a
+  truthful `verifiedOn` value; `null` means it has not yet been re-verified.
+  Technical capabilities do not receive product sources merely to satisfy
+  validation.
+- Every context declares a complete published-event catalog or an explicit
+  empty-catalog rationale. Event dependencies name exact event versions owned
+  by the target context; a transport capability never becomes the semantic
+  owner of a product event.
 - Do not create source directories for a `planned` context.
 - Give each exception one stable ID, the narrowest scope, a concrete reason,
   an owner, and a removal condition. An exception is not a reusable example.
@@ -34,6 +45,7 @@ Run:
 
 ```text
 pnpm architecture:docs
+pnpm serena:memories
 pnpm architecture
 pnpm test:architecture
 ```

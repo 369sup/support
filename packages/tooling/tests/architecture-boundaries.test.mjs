@@ -40,6 +40,21 @@ ruleTester.run(
         filename: "D:/project/src/app/global-error.tsx",
         code: '"use client"; import { RepositoryCard } from "@/modules/core-domain/repositories/browser-ui";',
       },
+      {
+        filename:
+          "D:/project/src/modules/core-domain/repositories/adapters/inbound/server/repository-facade.ts",
+        code: 'import { createRepository } from "../../../application/commands/create-repository/create-repository.handler";',
+      },
+      {
+        filename:
+          "D:/project/src/modules/core-domain/repositories/adapters/outbound/persistence/repository.adapter.ts",
+        code: 'import type { Repository } from "../../../domain/entities/repository.entity";',
+      },
+      {
+        filename:
+          "D:/project/src/modules/core-domain/repositories/composition/repository-composition.ts",
+        code: 'import { RepositoryAdapter } from "../adapters/outbound/persistence/repository.adapter";',
+      },
     ],
     invalid: [
       {
@@ -88,6 +103,29 @@ ruleTester.run(
         code: '"use client"; import { api } from "@/modules/core-domain/repositories/server-api";',
         errors: [{ messageId: "clientEntrypoint" }],
       },
+      {
+        filename: "D:/project/src/app/page.tsx",
+        code: 'const module = import("@/modules/core-domain/repositories/domain/entities/repository.entity");',
+        errors: [{ messageId: "appPrivateModule" }],
+      },
+      {
+        filename:
+          "D:/project/src/modules/core-domain/repositories/adapters/inbound/server/repository-facade.ts",
+        code: 'import { save } from "../../outbound/persistence/save";',
+        errors: [{ messageId: "adapterDirection" }],
+      },
+      {
+        filename:
+          "D:/project/src/modules/core-domain/repositories/adapters/outbound/persistence/repository.adapter.ts",
+        code: 'import { view } from "../../inbound/react/repository-card";',
+        errors: [{ messageId: "adapterDirection" }],
+      },
+      {
+        filename:
+          "D:/project/src/modules/core-domain/repositories/composition/repository-composition.ts",
+        code: 'import { Repository } from "../domain/entities/repository.entity";',
+        errors: [{ messageId: "compositionDirection" }],
+      },
     ],
   },
 );
@@ -135,13 +173,26 @@ ruleTester.run(
           "D:/project/src/modules/core-domain/repositories/server-actions.ts",
         code: '"use server"; export { createRepository } from "./adapters/inbound/next/server-actions/create-repository.server-action";',
       },
+      {
+        filename:
+          "D:/project/src/modules/core-domain/repositories/server-api.ts",
+        code: 'export { RepositoryFacade } from "./adapters/inbound/server/repository-facade";',
+      },
+      {
+        filename:
+          "D:/project/src/modules/core-domain/repositories/integration-contracts.ts",
+        code: 'export type { RepositoryRef } from "./contracts/repository-ref";',
+      },
     ],
     invalid: [
       {
         filename:
           "D:/project/src/modules/core-domain/repositories/browser-ui.ts",
         code: 'export { Button } from "./button";',
-        errors: [{ messageId: "missingClientDirective" }],
+        errors: [
+          { messageId: "missingClientDirective" },
+          { messageId: "invalidPublicExport" },
+        ],
       },
       {
         filename:
@@ -151,6 +202,18 @@ ruleTester.run(
           { messageId: "missingServerDirective" },
           { messageId: "nonAsyncAction" },
         ],
+      },
+      {
+        filename:
+          "D:/project/src/modules/core-domain/repositories/server-api.ts",
+        code: 'export { Repository } from "./domain/entities/repository.entity";',
+        errors: [{ messageId: "invalidPublicExport" }],
+      },
+      {
+        filename:
+          "D:/project/src/modules/core-domain/repositories/browser-ui.ts",
+        code: '"use client"; export { adapter } from "./adapters/outbound/persistence/repository.adapter";',
+        errors: [{ messageId: "invalidPublicExport" }],
       },
     ],
   },
