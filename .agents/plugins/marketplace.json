@@ -3,5 +3,18 @@
   "interface": {
     "displayName": "Support Repository"
   },
-  "plugins": []
+  "plugins": [
+    {
+      "name": "serena-jetbrains",
+      "source": {
+        "source": "local",
+        "path": "./plugins/serena-jetbrains"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
 }
