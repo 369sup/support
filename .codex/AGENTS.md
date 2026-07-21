@@ -27,7 +27,8 @@ security-sensitive.
 ```
 
 The repository currently enables the reviewed `repository-guard` through
-`.codex/hooks.json`. No project custom agent or command rule is active.
+`.codex/hooks.json` and the narrow validation-command allowlist through
+`.codex/rules/workspace-validation.rules`. No project custom agent is active.
 
 ## `config.toml` rules
 

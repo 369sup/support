@@ -1,0 +1,54 @@
+# Allow only the repository's canonical validation scripts to run outside the
+# sandbox without repeated approval. Package installation, arbitrary execution,
+# development servers, deployment, and source-control mutations stay excluded.
+prefix_rule(
+    pattern = [
+        ["pnpm", "pnpm.cmd"],
+        ["architecture", "build", "check", "lint", "test", "typecheck"],
+    ],
+    decision = "allow",
+    justification = "Run canonical Support workspace validation scripts without repeated approval.",
+    match = [
+        "pnpm architecture",
+        "pnpm check",
+        "pnpm test",
+        "pnpm.cmd build",
+        "pnpm.cmd lint",
+        "pnpm.cmd typecheck",
+    ],
+    not_match = [
+        "pnpm architecture:docs",
+        "pnpm dev",
+        "pnpm exec vitest",
+        "pnpm install",
+        "pnpm start",
+        "pnpm --filter @support/web test",
+        "npm run check",
+    ],
+)
+
+# Support the explicit `pnpm run <script>` spelling for the same six scripts.
+prefix_rule(
+    pattern = [
+        ["pnpm", "pnpm.cmd"],
+        "run",
+        ["architecture", "build", "check", "lint", "test", "typecheck"],
+    ],
+    decision = "allow",
+    justification = "Run canonical Support workspace validation scripts via pnpm run without repeated approval.",
+    match = [
+        "pnpm run architecture",
+        "pnpm run check",
+        "pnpm run test",
+        "pnpm.cmd run build",
+        "pnpm.cmd run lint",
+        "pnpm.cmd run typecheck",
+    ],
+    not_match = [
+        "pnpm run architecture:docs",
+        "pnpm run dev",
+        "pnpm run start",
+        "pnpm exec vitest",
+        "npm run check",
+    ],
+)
