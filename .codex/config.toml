@@ -1,5 +1,15 @@
 # Project-scoped Codex configuration.
 #
-# Intentionally contains no active settings. Codex loads this layer only when
-# the repository is trusted. Add the smallest reviewed setting required by the
-# whole project; keep personal preferences and credentials in ~/.codex.
+# Codex loads this layer only when the repository is trusted. Keep personal
+# preferences and credentials in ~/.codex.
+
+[features]
+hooks = true
+
+[agents]
+max_threads = 6
+max_depth = 1
+
+# Public Context7 endpoint for basic use without OAuth or an API key.
+[mcp_servers.context7]
+url = "https://mcp.context7.com/mcp"

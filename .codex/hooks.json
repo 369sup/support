@@ -1,0 +1,31 @@
+{
+  "description": "Repository guards for generated architecture docs and module boundaries.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const{execFileSync}=require('node:child_process');const{pathToFileURL}=require('node:url');const{join}=require('node:path');const root=execFileSync('git',['rev-parse','--show-toplevel'],{encoding:'utf8'}).trim();import(pathToFileURL(join(root,'.codex','hooks','repository-guard.mjs')).href).then(module=>module.run())\"",
+            "timeout": 30,
+            "statusMessage": "Checking generated-file policy"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const{execFileSync}=require('node:child_process');const{pathToFileURL}=require('node:url');const{join}=require('node:path');const root=execFileSync('git',['rev-parse','--show-toplevel'],{encoding:'utf8'}).trim();import(pathToFileURL(join(root,'.codex','hooks','repository-guard.mjs')).href).then(module=>module.run())\"",
+            "timeout": 30,
+            "statusMessage": "Checking architecture after edits"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,8 +1,24 @@
 # Project hook scripts
 
-Store reviewed hook scripts here only after a hook is configured in sibling
-`.codex/hooks.json` or inline in `.codex/config.toml`.
+The sibling `.codex/hooks.json` runs `repository-guard.mjs` before and after
+Codex file edits.
 
-No hook is active in the scaffold. Hook scripts must be deterministic, bounded,
-portable where required, and safe for untrusted event payloads. Follow
-[../AGENTS.md](../AGENTS.md).
+The guard:
+
+- blocks direct edits to the generated `docs/architecture/module-map.md`;
+- runs the existing architecture checker after relevant TypeScript, module-map,
+  exception-registry, or architecture-checker edits;
+- reports actionable feedback without rewriting repository files; and
+- bounds and validates the JSON event received on standard input.
+
+The command launcher resolves the repository root with `git`, then starts the
+hook with Node.js. It does not interpolate event data into a shell command.
+
+Run the focused tests with:
+
+```text
+node --test .codex/hooks/repository-guard.test.mjs
+```
+
+After changing a hook definition or script, restart Codex and review its new
+hash with `/hooks` before trusting it. Follow [../AGENTS.md](../AGENTS.md).
