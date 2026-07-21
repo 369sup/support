@@ -36,8 +36,8 @@ Do not put repository skills in `.codex`; repo skills belong in
     └── <rule-name>.rules       # optional; experimental command policy
 ```
 
-The scaffold does not create active custom agents, hooks, or rules. Placeholder
-documentation preserves the directories without changing Codex behavior.
+The repository currently enables the reviewed `repository-guard` through
+`.codex/hooks.json`. No project custom agent or command rule is active.
 
 ## `config.toml` rules
 
