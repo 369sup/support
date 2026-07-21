@@ -34,6 +34,10 @@ installable distribution unit.
 
 ## Skill contract
 
+This section is the repository authority for both directly discovered skills
+and the baseline behavior of plugin-bundled skills. A plugin adds only its
+distribution-specific differences in `plugins/AGENTS.md`.
+
 Every skill directory requires `SKILL.md` with frontmatter:
 
 ```md

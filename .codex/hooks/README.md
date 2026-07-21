@@ -21,4 +21,5 @@ node --test .codex/hooks/repository-guard.test.mjs
 ```
 
 After changing a hook definition or script, restart Codex and review its new
-hash with `/hooks` before trusting it. Follow [../AGENTS.md](../AGENTS.md).
+hash with `/hooks` before trusting it. Follow [AGENTS.md](AGENTS.md), which
+inherits the parent project-configuration contract.

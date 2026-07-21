@@ -69,18 +69,15 @@ Rules:
 
 ## Bundled skill contract
 
-Each `skills/<skill-name>/SKILL.md` requires YAML `name` and `description`.
+The generic skill contract is defined once in
+[`.agents/AGENTS.md`](../.agents/AGENTS.md). Plugin-bundled skills add only
+these distribution-specific requirements:
 
 - A plugin skill is namespaced by the plugin at distribution time; still choose
   a clear stable skill name.
-- Describe exact trigger conditions and exclusions.
-- Keep the workflow bounded and independently verifiable.
-- Use `references/` for detailed material, `scripts/` for deterministic helpers,
-  and `assets/` for reusable static inputs.
 - Declare optional UI metadata and tool dependencies in
   `agents/openai.yaml` only when needed.
 - Never depend on files outside the installed plugin package.
-- Never bundle secrets, local caches, generated tokens, or customer data.
 
 ## Optional capability boundaries
 
@@ -121,8 +118,8 @@ Publication sequence:
 5. Run bundled scripts and exercise each skill with matching and non-matching
    prompts.
 6. Review permissions, authentication, privacy, terms, and user-facing metadata.
-7. Add one marketplace entry pointing to `./plugins/<plugin-name>` with an
-   explicit installation/authentication policy.
+7. Hand off cataloging to the authoritative marketplace workflow in
+   [`.agents/AGENTS.md`](../.agents/AGENTS.md).
 8. Restart/refresh the relevant surface and install from the local marketplace.
 9. Test the installed cached copy, not only the source directory.
 
