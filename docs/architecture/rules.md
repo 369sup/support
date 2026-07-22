@@ -60,10 +60,11 @@ and ownership but must not redefine these rules.
 
 ## Product catalog
 
-- **ARCH-MAP-013:** `module-map.json` uses catalog version 2 and every context
-  declares a valid kind, maturity, status, responsibility, ownership,
+- **ARCH-MAP-013:** `module-map.json` uses catalog version 3 and every context
+  declares a valid kind, maturity, implementation status, responsibility, ownership,
   exclusions, dependencies, and source list. Domain contexts also declare a
-  core or supporting classification.
+  core or supporting classification. Research status is derived from source
+  verification dates as candidate, verified, stale, or not applicable.
 - **ARCH-MAP-014:** Domain and projection sources use HTTPS under
   `docs.github.com/en/` and state the product semantics they support. Technical
   contexts have no GitHub product sources.
@@ -79,6 +80,12 @@ and ownership but must not redefine these rules.
 - **ARCH-MAP-018:** Every context declares versioned published events or an
   empty-catalog rationale. Event dependencies name events and versions owned by
   their target context.
+- **ARCH-MAP-019:** Every active context README contains the canonical decision
+  headings from `module-template.md`; planned contexts do not receive source
+  directories or placeholder READMEs.
+- **ARCH-MAP-020:** Every event published by an active context names an exported
+  `integration-contracts.ts` schema and a non-empty ordering key. Planned event
+  catalogs may leave contract metadata pending until activation.
 - **ARCH-GUIDE-001:** Repository `AGENTS.md` files have resolvable local links;
   permanent `AGENTS.override.md` files are prohibited.
 - **ARCH-MEM-001:** Committed Serena shared memories are deterministic,

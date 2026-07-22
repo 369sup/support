@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "product": {
     "name": "GitHub non-code product platform",
     "goal": "Reproduce GitHub product semantics for people, enterprises, organizations, teams, repositories, collaboration, engagement, governance, commerce, and integrations without implementing source-code or Git capabilities.",
@@ -39,6 +39,10 @@
     {
       "name": "code-rulesets",
       "requires": "Branch, tag, push, and code-governance resources."
+    },
+    {
+      "name": "repository-traffic-metrics",
+      "requires": "A trustworthy product-telemetry ingestion, retention, and aggregation capability."
     }
   ],
   "contexts": [
@@ -48,7 +52,7 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Personal, managed, setup, and bot account identity and lifecycle.",
       "owns": [
         "Account",
@@ -129,7 +133,7 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Credentials, sessions, two-factor authentication, recovery, and external login binding.",
       "owns": [
         "Credential",
@@ -224,7 +228,7 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Public and private personal profiles, profile status, and pinned-item presentation.",
       "owns": [
         "UserProfile",
@@ -301,7 +305,7 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Following relationships between users and organizations.",
       "owns": [
         "UserFollow",
@@ -380,7 +384,7 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Enterprise identity, profile, account mode, lifecycle, and organization ownership.",
       "owns": [
         "Enterprise",
@@ -466,7 +470,7 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Enterprise membership, invitations, affiliation, guest collaborators, and unaffiliated users.",
       "owns": [
         "EnterpriseMembership",
@@ -575,7 +579,7 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "preview",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Enterprise-wide teams used for centralized role, organization, and license assignment.",
       "owns": [
         "EnterpriseTeam",
@@ -683,7 +687,7 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Predefined and custom enterprise roles, permissions, and assignments.",
       "owns": [
         "EnterpriseRoleDefinition",
@@ -778,7 +782,7 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Enterprise identity-provider configuration, SAML or OIDC authentication, SCIM provisioning, and group synchronization.",
       "owns": [
         "IdentityProviderConfiguration",
@@ -898,7 +902,7 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Enterprise policy constraints applied across owned organizations and repositories.",
       "owns": [
         "EnterprisePolicy",
@@ -965,7 +969,7 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Organization identity, profile, lifecycle, verified domains, and enterprise ownership.",
       "owns": [
         "Organization",
@@ -1069,7 +1073,7 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Organization membership, invitations, member roles, and membership lifecycle.",
       "owns": [
         "OrganizationMembership",
@@ -1174,7 +1178,7 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Organization teams, nested hierarchy, visibility, membership, maintainers, and mentions.",
       "owns": [
         "OrganizationTeam",
@@ -1294,7 +1298,7 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Predefined and custom organization roles and custom repository-role definitions.",
       "owns": [
         "OrganizationRoleDefinition",
@@ -1417,7 +1421,7 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Organization policies for repositories, collaborators, projects, discussions, and member privileges.",
       "owns": [
         "RepositoryCreationPolicy",
@@ -1483,7 +1487,7 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Organization-defined custom-property schemas and organization or repository property values.",
       "owns": [
         "CustomPropertyDefinition",
@@ -1506,6 +1510,17 @@
           "context": "enterprises/enterprises",
           "contract": "EnterpriseReference",
           "mode": "synchronous"
+        },
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryTransferEvents",
+          "mode": "event",
+          "events": [
+            {
+              "name": "RepositoryTransferred",
+              "version": 1
+            }
+          ]
         }
       ],
       "officialSources": [
@@ -1517,7 +1532,7 @@
             "repository property values",
             "organization property values"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
@@ -1592,10 +1607,12 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "status": "planned",
-      "responsibility": "Repository identity, personal or organization ownership, profile, visibility, lifecycle, redirects, and transfer.",
+      "implementationStatus": "planned",
+      "responsibility": "Repository identity, personal or organization ownership, name, description, homepage, visibility, lifecycle, redirects, and transfer.",
       "owns": [
         "Repository",
+        "RepositoryDescription",
+        "RepositoryHomepage",
         "RepositoryRedirect",
         "RepositoryTransfer"
       ],
@@ -1634,11 +1651,73 @@
           "url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/about-repositories",
           "supports": [
             "repository identity",
-            "ownership",
-            "visibility",
-            "lifecycle"
+            "ownership"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "repositories-repositories-source-02",
+          "url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository",
+          "supports": [
+            "repository creation",
+            "name",
+            "description",
+            "visibility"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "repositories-repositories-source-03",
+          "url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/transferring-a-repository",
+          "supports": [
+            "repository transfer",
+            "transfer expiry",
+            "transfer effects"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "repositories-repositories-source-04",
+          "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility",
+          "supports": [
+            "visibility changes",
+            "visibility-change effects"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "repositories-repositories-source-05",
+          "url": "https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories",
+          "supports": [
+            "archive",
+            "unarchive"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "repositories-repositories-source-06",
+          "url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/deleting-a-repository",
+          "supports": [
+            "repository deletion"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "repositories-repositories-source-07",
+          "url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/restoring-a-deleted-repository",
+          "supports": [
+            "repository restoration"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "repositories-repositories-source-08",
+          "url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/renaming-a-repository",
+          "supports": [
+            "repository rename",
+            "redirects"
+          ],
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
@@ -1648,7 +1727,7 @@
           "kind": "domain",
           "meaning": "repository created.",
           "sourceIds": [
-            "repositories-repositories-source-01"
+            "repositories-repositories-source-02"
           ]
         },
         {
@@ -1657,7 +1736,7 @@
           "kind": "domain",
           "meaning": "repository profile updated.",
           "sourceIds": [
-            "repositories-repositories-source-01"
+            "repositories-repositories-source-02"
           ]
         },
         {
@@ -1666,7 +1745,7 @@
           "kind": "domain",
           "meaning": "repository renamed.",
           "sourceIds": [
-            "repositories-repositories-source-01"
+            "repositories-repositories-source-08"
           ]
         },
         {
@@ -1675,7 +1754,7 @@
           "kind": "domain",
           "meaning": "repository visibility changed.",
           "sourceIds": [
-            "repositories-repositories-source-01"
+            "repositories-repositories-source-04"
           ]
         },
         {
@@ -1684,7 +1763,7 @@
           "kind": "domain",
           "meaning": "repository transfer requested.",
           "sourceIds": [
-            "repositories-repositories-source-01"
+            "repositories-repositories-source-03"
           ]
         },
         {
@@ -1693,7 +1772,7 @@
           "kind": "domain",
           "meaning": "repository transferred.",
           "sourceIds": [
-            "repositories-repositories-source-01"
+            "repositories-repositories-source-03"
           ]
         },
         {
@@ -1702,7 +1781,7 @@
           "kind": "domain",
           "meaning": "repository transfer rejected.",
           "sourceIds": [
-            "repositories-repositories-source-01"
+            "repositories-repositories-source-03"
           ]
         },
         {
@@ -1711,7 +1790,7 @@
           "kind": "domain",
           "meaning": "repository transfer expired.",
           "sourceIds": [
-            "repositories-repositories-source-01"
+            "repositories-repositories-source-03"
           ]
         },
         {
@@ -1720,7 +1799,7 @@
           "kind": "domain",
           "meaning": "repository archived.",
           "sourceIds": [
-            "repositories-repositories-source-01"
+            "repositories-repositories-source-05"
           ]
         },
         {
@@ -1729,7 +1808,7 @@
           "kind": "domain",
           "meaning": "repository unarchived.",
           "sourceIds": [
-            "repositories-repositories-source-01"
+            "repositories-repositories-source-05"
           ]
         },
         {
@@ -1738,7 +1817,7 @@
           "kind": "domain",
           "meaning": "repository deleted.",
           "sourceIds": [
-            "repositories-repositories-source-01"
+            "repositories-repositories-source-06"
           ]
         },
         {
@@ -1747,7 +1826,7 @@
           "kind": "domain",
           "meaning": "repository restored.",
           "sourceIds": [
-            "repositories-repositories-source-01"
+            "repositories-repositories-source-07"
           ]
         }
       ]
@@ -1758,14 +1837,15 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "status": "planned",
-      "responsibility": "Repository invitations, direct and team grants, outside collaborators, repository roles, and effective permission resolution.",
+      "implementationStatus": "planned",
+      "responsibility": "Repository invitations, direct and inherited grants, outside collaborators, role assignments, and source-attributed effective permission resolution.",
       "owns": [
         "RepositoryGrant",
         "RepositoryInvitation",
         "OutsideCollaboratorGrant",
         "TeamRepositoryGrant",
-        "RepositoryRoleAssignment"
+        "RepositoryRoleAssignment",
+        "EffectiveRepositoryPermissionDecision"
       ],
       "excludes": [
         "OrganizationMembership",
@@ -1775,7 +1855,7 @@
       "dependencies": [
         {
           "context": "repositories/repositories",
-          "contract": "RepositoryReference",
+          "contract": "RepositoryPermissionContext",
           "mode": "synchronous"
         },
         {
@@ -1785,33 +1865,44 @@
         },
         {
           "context": "organizations/organization-memberships",
-          "contract": "OrganizationMembershipStatus",
+          "contract": "OrganizationMembershipPermissionContribution",
           "mode": "synchronous"
         },
         {
           "context": "organizations/organization-teams",
-          "contract": "OrganizationTeamMembership",
+          "contract": "TeamRepositoryPermissionContribution",
           "mode": "synchronous"
         },
         {
           "context": "organizations/organization-roles",
-          "contract": "RepositoryRoleDefinition",
+          "contract": "OrganizationRepositoryRoleContribution",
           "mode": "synchronous"
         },
         {
           "context": "organizations/organization-policies",
-          "contract": "AccessPolicyConstraints",
+          "contract": "OrganizationRepositoryPolicyContribution",
           "mode": "synchronous"
         },
         {
           "context": "enterprises/enterprise-teams",
-          "contract": "EnterpriseTeamGrant",
+          "contract": "EnterpriseTeamPermissionContribution",
           "mode": "synchronous"
         },
         {
           "context": "enterprises/enterprise-roles",
-          "contract": "EnterpriseRoleConstraints",
+          "contract": "EnterpriseRepositoryPermissionContribution",
           "mode": "synchronous"
+        },
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryTransferEvents",
+          "mode": "event",
+          "events": [
+            {
+              "name": "RepositoryTransferred",
+              "version": 1
+            }
+          ]
         }
       ],
       "officialSources": [
@@ -1819,12 +1910,29 @@
           "id": "repositories-repository-access-source-01",
           "url": "https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/repository-roles-for-an-organization",
           "supports": [
-            "repository roles",
-            "team access",
-            "outside collaborators",
-            "effective access"
+            "organization repository roles",
+            "base permissions",
+            "organization owner privilege"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "repositories-repository-access-source-02",
+          "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/repository-access-and-collaboration/permission-levels-for-a-personal-account-repository",
+          "supports": [
+            "personal repository owner",
+            "personal repository collaborators"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "repositories-repository-access-source-03",
+          "url": "https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/managing-team-access-to-an-organization-repository",
+          "supports": [
+            "direct team access",
+            "inherited team access"
+          ],
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
@@ -1926,7 +2034,7 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Enablement and configuration of non-code repository product features.",
       "owns": [
         "RepositoryFeatureConfiguration"
@@ -1953,6 +2061,17 @@
           "context": "commerce/entitlements",
           "contract": "FeatureEntitlement",
           "mode": "synchronous"
+        },
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryTransferEvents",
+          "mode": "event",
+          "events": [
+            {
+              "name": "RepositoryTransferred",
+              "version": 1
+            }
+          ]
         }
       ],
       "officialSources": [
@@ -1964,7 +2083,16 @@
             "discussions enablement",
             "projects linking"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "repositories-repository-features-source-02",
+          "url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/transferring-a-repository",
+          "supports": [
+            "feature loss after transfer",
+            "plan-dependent transfer effects"
+          ],
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
@@ -2003,14 +2131,15 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
-      "responsibility": "Repository topics, social preview, and display metadata.",
+      "implementationStatus": "planned",
+      "responsibility": "Repository topics and social-media preview configuration.",
       "owns": [
         "RepositoryTopicSet",
-        "RepositorySocialPreview",
-        "RepositoryDisplayMetadata"
+        "RepositorySocialPreview"
       ],
       "excludes": [
+        "RepositoryDescription",
+        "RepositoryHomepage",
         "CustomPropertyDefinition",
         "RepositoryPropertyValue",
         "RepositoryContent"
@@ -2035,13 +2164,22 @@
       "officialSources": [
         {
           "id": "repositories-repository-metadata-source-01",
-          "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository",
+          "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/classifying-your-repository-with-topics",
           "supports": [
             "topics",
-            "social preview",
-            "repository display metadata"
+            "topic limits",
+            "public topic names"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "repositories-repository-metadata-source-02",
+          "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/customizing-your-repositorys-social-media-preview",
+          "supports": [
+            "social-media preview",
+            "preview image restrictions"
+          ],
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
@@ -2060,7 +2198,7 @@
           "kind": "domain",
           "meaning": "repository social preview changed.",
           "sourceIds": [
-            "repositories-repository-metadata-source-01"
+            "repositories-repository-metadata-source-02"
           ]
         },
         {
@@ -2069,16 +2207,7 @@
           "kind": "domain",
           "meaning": "repository social preview removed.",
           "sourceIds": [
-            "repositories-repository-metadata-source-01"
-          ]
-        },
-        {
-          "name": "RepositoryDisplayMetadataChanged",
-          "version": 1,
-          "kind": "domain",
-          "meaning": "repository display metadata changed.",
-          "sourceIds": [
-            "repositories-repository-metadata-source-01"
+            "repositories-repository-metadata-source-02"
           ]
         }
       ]
@@ -2089,13 +2218,15 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Issue lifecycle, assignment, hierarchy, dependency, transfer, and work tracking.",
       "owns": [
         "Issue",
         "SubIssueRelation",
         "IssueDependency",
-        "IssueTransfer"
+        "IssueTransfer",
+        "IssueTypeSelection",
+        "IssueFieldValueSet"
       ],
       "excludes": [
         "Comment",
@@ -2128,6 +2259,22 @@
           "context": "collaboration/labels-and-milestones",
           "contract": "TaxonomyReference",
           "mode": "synchronous"
+        },
+        {
+          "context": "collaboration/conversations",
+          "contract": "IssueConversation",
+          "mode": "synchronous"
+        },
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryTransferEvents",
+          "mode": "event",
+          "events": [
+            {
+              "name": "RepositoryTransferred",
+              "version": 1
+            }
+          ]
         }
       ],
       "officialSources": [
@@ -2140,7 +2287,25 @@
             "issue dependencies",
             "issue metadata"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "collaboration-issues-source-02",
+          "url": "https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/adding-and-managing-issue-fields",
+          "supports": [
+            "issue field values",
+            "issue field value permissions"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "collaboration-issues-source-03",
+          "url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/transferring-a-repository",
+          "supports": [
+            "assignee reconciliation",
+            "issue type reconciliation"
+          ],
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
@@ -2242,6 +2407,24 @@
           "sourceIds": [
             "collaboration-issues-source-01"
           ]
+        },
+        {
+          "name": "IssueFieldValueSet",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "issue field value set.",
+          "sourceIds": [
+            "collaboration-issues-source-02"
+          ]
+        },
+        {
+          "name": "IssueFieldValueCleared",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "issue field value cleared.",
+          "sourceIds": [
+            "collaboration-issues-source-02"
+          ]
         }
       ]
     },
@@ -2251,18 +2434,20 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
-      "responsibility": "Organization-level issue types, fields, visibility, and values shared across repositories and projects.",
+      "implementationStatus": "planned",
+      "responsibility": "Organization-level issue type and field definitions, visibility, pinning, and type-field associations.",
       "owns": [
         "IssueTypeDefinition",
         "IssueFieldDefinition",
         "IssueFieldVisibility",
-        "IssueFieldValue"
+        "IssueFieldPinning",
+        "IssueTypeFieldAssociation"
       ],
       "excludes": [
         "ProjectField",
         "CustomPropertyDefinition",
-        "Label"
+        "Label",
+        "IssueFieldValue"
       ],
       "dependencies": [
         {
@@ -2284,13 +2469,23 @@
       "officialSources": [
         {
           "id": "collaboration-issue-schema-source-01",
-          "url": "https://docs.github.com/en/issues/planning-and-tracking-with-projects/understanding-fields/about-issue-fields",
+          "url": "https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/managing-issue-fields-in-your-organization",
           "supports": [
-            "issue fields",
+            "organization issue fields",
             "field visibility",
-            "organization-level issue metadata"
+            "field pinning",
+            "type-field associations"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "collaboration-issue-schema-source-02",
+          "url": "https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/managing-issue-types-in-an-organization",
+          "supports": [
+            "organization issue types",
+            "issue type lifecycle"
+          ],
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
@@ -2347,24 +2542,6 @@
           "sourceIds": [
             "collaboration-issue-schema-source-01"
           ]
-        },
-        {
-          "name": "IssueFieldValueSet",
-          "version": 1,
-          "kind": "domain",
-          "meaning": "issue field value set.",
-          "sourceIds": [
-            "collaboration-issue-schema-source-01"
-          ]
-        },
-        {
-          "name": "IssueFieldValueCleared",
-          "version": 1,
-          "kind": "domain",
-          "meaning": "issue field value cleared.",
-          "sourceIds": [
-            "collaboration-issue-schema-source-01"
-          ]
         }
       ]
     },
@@ -2374,7 +2551,7 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Repository-scoped labels, milestones, and work classification.",
       "owns": [
         "LabelCatalog",
@@ -2486,15 +2663,17 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
-      "responsibility": "Comments, replies, reactions, mentions, revisions, and conversation locks for a closed set of subjects.",
+      "implementationStatus": "planned",
+      "responsibility": "Capability-constrained comments, discussion replies, reactions, mentions, revisions, and locks for a closed set of subjects.",
       "owns": [
         "Conversation",
         "Comment",
         "Reply",
         "Reaction",
         "Mention",
-        "CommentRevision"
+        "CommentRevision",
+        "ConversationSubjectKind",
+        "ConversationCapabilities"
       ],
       "excludes": [
         "IssueState",
@@ -2516,10 +2695,27 @@
           "supports": [
             "comments",
             "mentions",
-            "reactions",
-            "conversation"
+            "reactions"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "collaboration-conversations-source-02",
+          "url": "https://docs.github.com/en/discussions/collaborating-with-your-community-using-discussions/participating-in-a-discussion",
+          "supports": [
+            "discussion comment threads",
+            "threaded replies"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "collaboration-conversations-source-03",
+          "url": "https://docs.github.com/en/communities/moderating-comments-and-conversations/locking-conversations",
+          "supports": [
+            "issue conversation locks",
+            "locked-conversation behavior"
+          ],
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
@@ -2621,10 +2817,11 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "status": "planned",
-      "responsibility": "Repository and organization discussion spaces, categories, sections, polls, answers, pins, and lifecycle.",
+      "implementationStatus": "planned",
+      "responsibility": "Distinct repository and organization discussion spaces, source-repository binding, categories, sections, polls, answers, pins, and lifecycle.",
       "owns": [
-        "DiscussionSpace",
+        "RepositoryDiscussionSpace",
+        "OrganizationDiscussionSpace",
         "Discussion",
         "DiscussionCategory",
         "DiscussionSection",
@@ -2656,7 +2853,7 @@
         },
         {
           "context": "repositories/repository-features",
-          "contract": "DiscussionFeatureState",
+          "contract": "RepositoryDiscussionFeatureState",
           "mode": "synchronous"
         },
         {
@@ -2668,19 +2865,28 @@
           "context": "collaboration/conversations",
           "contract": "DiscussionConversation",
           "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-memberships",
+          "contract": "OrganizationDiscussionAdministration",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-policies",
+          "contract": "DiscussionCreationPolicy",
+          "mode": "synchronous"
         }
       ],
       "officialSources": [
         {
           "id": "collaboration-discussions-source-01",
-          "url": "https://docs.github.com/en/discussions/managing-discussions-for-your-community/managing-categories-for-discussions",
+          "url": "https://docs.github.com/en/discussions/collaborating-with-your-community-using-discussions/about-discussions",
           "supports": [
-            "discussion spaces",
-            "categories",
-            "sections",
-            "polls"
+            "repository discussions",
+            "organization discussions",
+            "discussion categories"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
         },
         {
           "id": "collaboration-discussions-source-02",
@@ -2691,7 +2897,25 @@
             "transfer",
             "discussion lifecycle"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "collaboration-discussions-source-03",
+          "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/enabling-or-disabling-github-discussions-for-a-repository",
+          "supports": [
+            "repository discussion enablement"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "collaboration-discussions-source-04",
+          "url": "https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/enabling-or-disabling-github-discussions-for-an-organization",
+          "supports": [
+            "organization discussion enablement",
+            "source repository",
+            "source-repository permissions"
+          ],
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
@@ -2824,6 +3048,51 @@
             "collaboration-discussions-source-01",
             "collaboration-discussions-source-02"
           ]
+        },
+        {
+          "name": "RepositoryDiscussionSpaceEnabled",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "repository discussion space enabled.",
+          "sourceIds": [
+            "collaboration-discussions-source-03"
+          ]
+        },
+        {
+          "name": "RepositoryDiscussionSpaceDisabled",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "repository discussion space disabled.",
+          "sourceIds": [
+            "collaboration-discussions-source-03"
+          ]
+        },
+        {
+          "name": "OrganizationDiscussionSpaceEnabled",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "organization discussion space enabled with a source repository.",
+          "sourceIds": [
+            "collaboration-discussions-source-04"
+          ]
+        },
+        {
+          "name": "OrganizationDiscussionSpaceDisabled",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "organization discussion space disabled.",
+          "sourceIds": [
+            "collaboration-discussions-source-04"
+          ]
+        },
+        {
+          "name": "OrganizationDiscussionSourceChanged",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "organization discussion source repository changed without transferring existing discussions.",
+          "sourceIds": [
+            "collaboration-discussions-source-04"
+          ]
         }
       ]
     },
@@ -2833,7 +3102,7 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Content reports, moderation cases, blocks, interaction limits, and visibility decisions.",
       "owns": [
         "ContentReport",
@@ -2977,7 +3246,7 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "User- or organization-owned projects, items, draft issues, views, fields, workflows, charts, templates, and status updates.",
       "owns": [
         "Project",
@@ -3154,7 +3423,7 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Repository starring and user-defined star lists for discovery and collection.",
       "owns": [
         "RepositoryStar",
@@ -3181,6 +3450,17 @@
           "context": "repositories/repository-access",
           "contract": "RepositoryReadPermission",
           "mode": "synchronous"
+        },
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryVisibilityEvents",
+          "mode": "event",
+          "events": [
+            {
+              "name": "RepositoryVisibilityChanged",
+              "version": 1
+            }
+          ]
         }
       ],
       "officialSources": [
@@ -3192,7 +3472,15 @@
             "star lists",
             "discovery"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "engagement-stars-source-02",
+          "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility",
+          "supports": [
+            "stars removed by visibility changes"
+          ],
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
@@ -3267,15 +3555,18 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
-      "responsibility": "Repository and conversation subscription preferences and notification-interest decisions.",
+      "implementationStatus": "planned",
+      "responsibility": "Repository watch preferences, conversation participation and manual subscriptions, ignore preferences, and notification-interest decisions.",
       "owns": [
-        "RepositorySubscription",
-        "ConversationSubscription",
-        "SubscriptionReason"
+        "RepositoryWatchPreference",
+        "RepositoryEventPreference",
+        "ConversationParticipation",
+        "ManualConversationSubscription",
+        "IgnorePreference"
       ],
       "excludes": [
         "Notification",
+        "NotificationReason",
         "EmailDelivery",
         "RepositoryStar"
       ],
@@ -3299,18 +3590,46 @@
           "context": "collaboration/conversations",
           "contract": "ConversationReference",
           "mode": "synchronous"
+        },
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryVisibilityEvents",
+          "mode": "event",
+          "events": [
+            {
+              "name": "RepositoryVisibilityChanged",
+              "version": 1
+            }
+          ]
         }
       ],
       "officialSources": [
         {
           "id": "engagement-subscriptions-source-01",
-          "url": "https://docs.github.com/en/subscriptions-and-notifications",
+          "url": "https://docs.github.com/en/subscriptions-and-notifications/concepts/about-notifications",
           "supports": [
-            "repository subscriptions",
+            "repository watches",
             "conversation subscriptions",
-            "watch preferences"
+            "automatic participation"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "engagement-subscriptions-source-02",
+          "url": "https://docs.github.com/en/subscriptions-and-notifications/get-started/configuring-notifications",
+          "supports": [
+            "custom watch preferences",
+            "ignore preference"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "engagement-subscriptions-source-03",
+          "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility",
+          "supports": [
+            "watchers removed by visibility changes"
+          ],
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
@@ -3340,7 +3659,7 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "User notification records, inboxes, reasons, filters, and read, saved, or done state.",
       "owns": [
         "Notification",
@@ -3366,23 +3685,111 @@
           "mode": "synchronous"
         },
         {
-          "context": "platform/notification-channels",
-          "contract": "NotificationChannel",
+          "context": "repositories/repository-access",
+          "contract": "EffectiveReadPermission",
           "mode": "synchronous"
+        },
+        {
+          "context": "collaboration/issues",
+          "contract": "IssueNotificationEvents",
+          "mode": "event",
+          "events": [
+            {
+              "name": "IssueCreated",
+              "version": 1
+            },
+            {
+              "name": "IssueUpdated",
+              "version": 1
+            },
+            {
+              "name": "IssueAssigned",
+              "version": 1
+            },
+            {
+              "name": "IssueUnassigned",
+              "version": 1
+            },
+            {
+              "name": "IssueClosed",
+              "version": 1
+            },
+            {
+              "name": "IssueReopened",
+              "version": 1
+            }
+          ]
+        },
+        {
+          "context": "collaboration/conversations",
+          "contract": "ConversationNotificationEvents",
+          "mode": "event",
+          "events": [
+            {
+              "name": "CommentAdded",
+              "version": 1
+            },
+            {
+              "name": "ReplyAdded",
+              "version": 1
+            },
+            {
+              "name": "MentionDetected",
+              "version": 1
+            }
+          ]
+        },
+        {
+          "context": "collaboration/discussions",
+          "contract": "DiscussionNotificationEvents",
+          "mode": "event",
+          "events": [
+            {
+              "name": "DiscussionCreated",
+              "version": 1
+            },
+            {
+              "name": "DiscussionUpdated",
+              "version": 1
+            },
+            {
+              "name": "DiscussionAnswerMarked",
+              "version": 1
+            }
+          ]
+        },
+        {
+          "context": "repositories/repository-access",
+          "contract": "RepositoryInvitationEvents",
+          "mode": "event",
+          "events": [
+            {
+              "name": "RepositoryInvitationCreated",
+              "version": 1
+            }
+          ]
         }
       ],
       "officialSources": [
         {
           "id": "engagement-notifications-source-01",
-          "url": "https://docs.github.com/en/subscriptions-and-notifications",
+          "url": "https://docs.github.com/en/subscriptions-and-notifications/concepts/about-notifications",
           "supports": [
-            "notification inbox",
-            "notification reasons",
-            "read state",
-            "saved state",
-            "done state"
+            "notifications",
+            "recipient interest",
+            "notification retention"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "engagement-notifications-source-02",
+          "url": "https://docs.github.com/en/subscriptions-and-notifications/reference/inbox-filters",
+          "supports": [
+            "notification reasons",
+            "inbox filters",
+            "notification state"
+          ],
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
@@ -3457,22 +3864,33 @@
           "sourceIds": [
             "engagement-notifications-source-01"
           ]
+        },
+        {
+          "name": "NotificationDeliveryRequested",
+          "version": 1,
+          "kind": "integration",
+          "meaning": "notification delivery requested after recipient and read-access resolution.",
+          "sourceIds": [
+            "engagement-notifications-source-01"
+          ]
         }
       ]
     },
     {
       "subdomain": "integrations",
-      "name": "app-registrations",
+      "name": "github-app-registrations",
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
-      "responsibility": "GitHub App registration, ownership, requested permissions, webhook configuration, and public or private availability.",
+      "implementationStatus": "planned",
+      "responsibility": "GitHub App registration, ownership, requested permissions, webhook preference, requested webhook events, and availability.",
       "owns": [
-        "AppRegistration",
-        "AppOwnerReference",
-        "AppPermissionRequest",
-        "AppWebhookConfiguration"
+        "GitHubAppRegistration",
+        "GitHubAppOwnerReference",
+        "GitHubAppPermissionRequest",
+        "GitHubAppWebhookPreference",
+        "RequestedWebhookEvents",
+        "WebhookActivationState"
       ],
       "excludes": [
         "AppInstallation",
@@ -3503,7 +3921,7 @@
       ],
       "officialSources": [
         {
-          "id": "integrations-app-registrations-source-01",
+          "id": "integrations-github-app-registrations-source-01",
           "url": "https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app",
           "supports": [
             "app registration",
@@ -3511,7 +3929,7 @@
             "app permissions",
             "app visibility"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
@@ -3521,7 +3939,7 @@
           "kind": "domain",
           "meaning": "app registered.",
           "sourceIds": [
-            "integrations-app-registrations-source-01"
+            "integrations-github-app-registrations-source-01"
           ]
         },
         {
@@ -3530,7 +3948,7 @@
           "kind": "domain",
           "meaning": "app updated.",
           "sourceIds": [
-            "integrations-app-registrations-source-01"
+            "integrations-github-app-registrations-source-01"
           ]
         },
         {
@@ -3539,7 +3957,7 @@
           "kind": "domain",
           "meaning": "app suspended.",
           "sourceIds": [
-            "integrations-app-registrations-source-01"
+            "integrations-github-app-registrations-source-01"
           ]
         },
         {
@@ -3548,7 +3966,7 @@
           "kind": "domain",
           "meaning": "app deleted.",
           "sourceIds": [
-            "integrations-app-registrations-source-01"
+            "integrations-github-app-registrations-source-01"
           ]
         },
         {
@@ -3557,7 +3975,7 @@
           "kind": "domain",
           "meaning": "app permissions changed.",
           "sourceIds": [
-            "integrations-app-registrations-source-01"
+            "integrations-github-app-registrations-source-01"
           ]
         },
         {
@@ -3566,18 +3984,18 @@
           "kind": "domain",
           "meaning": "app webhook configuration changed.",
           "sourceIds": [
-            "integrations-app-registrations-source-01"
+            "integrations-github-app-registrations-source-01"
           ]
         }
       ]
     },
     {
       "subdomain": "integrations",
-      "name": "app-installations",
+      "name": "github-app-installations",
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "GitHub App installation targets, selected repositories, granted permissions, suspension, and uninstall lifecycle.",
       "owns": [
         "AppInstallation",
@@ -3592,7 +4010,7 @@
       ],
       "dependencies": [
         {
-          "context": "integrations/app-registrations",
+          "context": "integrations/github-app-registrations",
           "contract": "AppRegistrationReference",
           "mode": "synchronous"
         },
@@ -3619,7 +4037,7 @@
       ],
       "officialSources": [
         {
-          "id": "integrations-app-installations-source-01",
+          "id": "integrations-github-app-installations-source-01",
           "url": "https://docs.github.com/en/apps/using-github-apps/installing-your-own-github-app",
           "supports": [
             "app installation",
@@ -3627,7 +4045,7 @@
             "repository selection",
             "installation lifecycle"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
@@ -3637,7 +4055,7 @@
           "kind": "domain",
           "meaning": "app installed.",
           "sourceIds": [
-            "integrations-app-installations-source-01"
+            "integrations-github-app-installations-source-01"
           ]
         },
         {
@@ -3646,7 +4064,7 @@
           "kind": "domain",
           "meaning": "app suspended.",
           "sourceIds": [
-            "integrations-app-installations-source-01"
+            "integrations-github-app-installations-source-01"
           ]
         },
         {
@@ -3655,7 +4073,7 @@
           "kind": "domain",
           "meaning": "app unsuspended.",
           "sourceIds": [
-            "integrations-app-installations-source-01"
+            "integrations-github-app-installations-source-01"
           ]
         },
         {
@@ -3664,7 +4082,7 @@
           "kind": "domain",
           "meaning": "app uninstalled.",
           "sourceIds": [
-            "integrations-app-installations-source-01"
+            "integrations-github-app-installations-source-01"
           ]
         },
         {
@@ -3673,7 +4091,7 @@
           "kind": "domain",
           "meaning": "installation repository selection changed.",
           "sourceIds": [
-            "integrations-app-installations-source-01"
+            "integrations-github-app-installations-source-01"
           ]
         },
         {
@@ -3682,7 +4100,79 @@
           "kind": "domain",
           "meaning": "installation permissions changed.",
           "sourceIds": [
-            "integrations-app-installations-source-01"
+            "integrations-github-app-installations-source-01"
+          ]
+        }
+      ]
+    },
+    {
+      "subdomain": "integrations",
+      "name": "oauth-app-registrations",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "OAuth App registration, ownership, callback configuration, and client lifecycle.",
+      "owns": [
+        "OAuthClient",
+        "OAuthAppOwnerReference",
+        "OAuthCallbackConfiguration"
+      ],
+      "excludes": [
+        "OAuthAuthorization",
+        "GitHubAppRegistration",
+        "TokenStorageAdapter"
+      ],
+      "dependencies": [
+        {
+          "context": "identity/accounts",
+          "contract": "UserOAuthAppOwner",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organizations",
+          "contract": "OrganizationOAuthAppOwner",
+          "mode": "synchronous"
+        }
+      ],
+      "officialSources": [
+        {
+          "id": "integrations-oauth-app-registrations-source-01",
+          "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+          "supports": [
+            "OAuth App registration",
+            "OAuth client ownership",
+            "callback configuration"
+          ],
+          "verifiedOn": "2026-07-22"
+        }
+      ],
+      "publishedEvents": [
+        {
+          "name": "OAuthClientRegistered",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "oauth client registered.",
+          "sourceIds": [
+            "integrations-oauth-app-registrations-source-01"
+          ]
+        },
+        {
+          "name": "OAuthClientUpdated",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "oauth client updated.",
+          "sourceIds": [
+            "integrations-oauth-app-registrations-source-01"
+          ]
+        },
+        {
+          "name": "OAuthClientDeleted",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "oauth client deleted.",
+          "sourceIds": [
+            "integrations-oauth-app-registrations-source-01"
           ]
         }
       ]
@@ -3693,10 +4183,9 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
-      "responsibility": "OAuth client registration, user authorization, scopes, approval, and revocation.",
+      "implementationStatus": "planned",
+      "responsibility": "User authorization of registered OAuth Apps, scopes, approval, and revocation.",
       "owns": [
-        "OAuthClient",
         "OAuthAuthorization",
         "AuthorizationScope",
         "AuthorizationRevocation"
@@ -3708,8 +4197,8 @@
       ],
       "dependencies": [
         {
-          "context": "integrations/app-registrations",
-          "contract": "ApplicationReference",
+          "context": "integrations/oauth-app-registrations",
+          "contract": "OAuthClientReference",
           "mode": "synchronous"
         },
         {
@@ -3726,44 +4215,16 @@
       "officialSources": [
         {
           "id": "integrations-oauth-authorizations-source-01",
-          "url": "https://docs.github.com/en/apps/oauth-apps",
+          "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps",
           "supports": [
-            "OAuth apps",
-            "user authorization",
-            "scopes",
-            "revocation"
+            "OAuth App user authorization",
+            "OAuth scopes",
+            "authorization revocation"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
-        {
-          "name": "OAuthClientRegistered",
-          "version": 1,
-          "kind": "domain",
-          "meaning": "oauth client registered.",
-          "sourceIds": [
-            "integrations-oauth-authorizations-source-01"
-          ]
-        },
-        {
-          "name": "OAuthClientUpdated",
-          "version": 1,
-          "kind": "domain",
-          "meaning": "oauth client updated.",
-          "sourceIds": [
-            "integrations-oauth-authorizations-source-01"
-          ]
-        },
-        {
-          "name": "OAuthClientDeleted",
-          "version": 1,
-          "kind": "domain",
-          "meaning": "oauth client deleted.",
-          "sourceIds": [
-            "integrations-oauth-authorizations-source-01"
-          ]
-        },
         {
           "name": "OAuthAuthorizationGranted",
           "version": 1,
@@ -3795,16 +4256,96 @@
     },
     {
       "subdomain": "integrations",
+      "name": "repository-autolinks",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Repository-scoped autolink definitions for external resource references.",
+      "owns": [
+        "RepositoryAutolink",
+        "AutolinkPrefix",
+        "AutolinkIdentifierFormat",
+        "AutolinkTargetTemplate"
+      ],
+      "excludes": [
+        "ExternalResource",
+        "RepositoryContent",
+        "ContentRendering"
+      ],
+      "dependencies": [
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "repositories/repository-access",
+          "contract": "RepositoryAdministrationPermission",
+          "mode": "synchronous"
+        },
+        {
+          "context": "commerce/entitlements",
+          "contract": "RepositoryAutolinkEntitlement",
+          "mode": "synchronous"
+        }
+      ],
+      "officialSources": [
+        {
+          "id": "integrations-repository-autolinks-source-01",
+          "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/configuring-autolinks-to-reference-external-resources",
+          "supports": [
+            "repository autolinks",
+            "non-overlapping prefixes",
+            "identifier formats",
+            "target template"
+          ],
+          "verifiedOn": "2026-07-22"
+        }
+      ],
+      "publishedEvents": [
+        {
+          "name": "RepositoryAutolinkCreated",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "repository autolink created.",
+          "sourceIds": [
+            "integrations-repository-autolinks-source-01"
+          ]
+        },
+        {
+          "name": "RepositoryAutolinkUpdated",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "repository autolink updated.",
+          "sourceIds": [
+            "integrations-repository-autolinks-source-01"
+          ]
+        },
+        {
+          "name": "RepositoryAutolinkDeleted",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "repository autolink deleted.",
+          "sourceIds": [
+            "integrations-repository-autolinks-source-01"
+          ]
+        }
+      ]
+    },
+    {
+      "subdomain": "integrations",
       "name": "webhooks",
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
-      "responsibility": "Repository, organization, enterprise, and app webhook configuration, deliveries, attempts, and redelivery.",
+      "implementationStatus": "planned",
+      "responsibility": "Repository, organization, and enterprise webhook configuration plus GitHub App webhook projections, deliveries, attempts, and redelivery.",
       "owns": [
         "Webhook",
         "WebhookEventSelection",
         "WebhookSecretReference",
+        "GitHubAppWebhookEndpointProjection",
         "WebhookDelivery",
         "WebhookDeliveryAttempt"
       ],
@@ -3815,12 +4356,18 @@
       ],
       "dependencies": [
         {
-          "context": "integrations/app-registrations",
-          "contract": "AppWebhookReference",
-          "mode": "synchronous"
+          "context": "integrations/github-app-registrations",
+          "contract": "GitHubAppWebhookConfigurationEvents",
+          "mode": "event",
+          "events": [
+            {
+              "name": "AppWebhookConfigurationChanged",
+              "version": 1
+            }
+          ]
         },
         {
-          "context": "integrations/app-installations",
+          "context": "integrations/github-app-installations",
           "contract": "InstallationWebhookScope",
           "mode": "synchronous"
         },
@@ -3890,6 +4437,10 @@
             },
             {
               "name": "RepositoryRestored",
+              "version": 1
+            },
+            {
+              "name": "RepositoryTransferred",
               "version": 1
             }
           ]
@@ -3998,7 +4549,7 @@
           ]
         },
         {
-          "context": "integrations/app-installations",
+          "context": "integrations/github-app-installations",
           "contract": "PublishedEventContract",
           "mode": "event",
           "events": [
@@ -4030,7 +4581,7 @@
             "payloads",
             "webhook types"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
         },
         {
           "id": "integrations-webhooks-source-02",
@@ -4040,7 +4591,16 @@
             "attempts",
             "redelivery"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "integrations-webhooks-source-03",
+          "url": "https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/using-webhooks-with-github-apps",
+          "supports": [
+            "GitHub App webhook projection",
+            "GitHub App webhook delivery configuration"
+          ],
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
@@ -4122,7 +4682,7 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Billing accounts, payment profiles, usage, budgets, cost centers, invoices, and spending allocation.",
       "owns": [
         "BillingAccount",
@@ -4284,7 +4844,7 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Plans, feature entitlements, licenses, assignments, and usage limits.",
       "owns": [
         "Plan",
@@ -4396,7 +4956,7 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Organization and enterprise audit events, scopes, actors, targets, search, export, streaming, and retention policy.",
       "owns": [
         "AuditEvent",
@@ -4729,7 +5289,7 @@
           ]
         },
         {
-          "context": "integrations/app-registrations",
+          "context": "integrations/github-app-registrations",
           "contract": "PublishedEventContract",
           "mode": "event",
           "events": [
@@ -4756,7 +5316,7 @@
           ]
         },
         {
-          "context": "integrations/app-installations",
+          "context": "integrations/github-app-installations",
           "contract": "PublishedEventContract",
           "mode": "event",
           "events": [
@@ -4783,8 +5343,8 @@
           ]
         },
         {
-          "context": "integrations/oauth-authorizations",
-          "contract": "PublishedEventContract",
+          "context": "integrations/oauth-app-registrations",
+          "contract": "OAuthClientAuditEvents",
           "mode": "event",
           "events": [
             {
@@ -4798,7 +5358,14 @@
             {
               "name": "OAuthClientDeleted",
               "version": 1
-            },
+            }
+          ]
+        },
+        {
+          "context": "integrations/oauth-authorizations",
+          "contract": "PublishedEventContract",
+          "mode": "event",
+          "events": [
             {
               "name": "OAuthAuthorizationGranted",
               "version": 1
@@ -4977,7 +5544,7 @@
       "name": "search",
       "kind": "projection",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Permission-filtered search projections across users, organizations, repositories, issues, discussions, and projects.",
       "owns": [
         "SearchDocument",
@@ -5175,7 +5742,7 @@
       "name": "activity-feed",
       "kind": "projection",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "User-visible dashboard and resource activity projections.",
       "owns": [
         "ActivityItem",
@@ -5342,18 +5909,18 @@
       "name": "repository-insights",
       "kind": "projection",
       "maturity": "stable",
-      "status": "planned",
-      "responsibility": "Non-code repository statistics, traffic, engagement trends, and integration health projections.",
+      "implementationStatus": "planned",
+      "responsibility": "Non-code repository engagement trends and integration-health projections.",
       "owns": [
         "RepositoryInsight",
         "EngagementMetric",
-        "TrafficMetric",
         "IntegrationHealthMetric"
       ],
       "excludes": [
         "GitActivityMetric",
         "ContributorCodeMetric",
-        "SourceAggregate"
+        "SourceAggregate",
+        "RepositoryTrafficMetric"
       ],
       "dependencies": [
         {
@@ -5475,13 +6042,12 @@
       "officialSources": [
         {
           "id": "projections-repository-insights-source-01",
-          "url": "https://docs.github.com/en/repositories/viewing-activity-and-data-for-your-repository",
+          "url": "https://docs.github.com/en/repositories/viewing-activity-and-data-for-your-repository/about-repository-graphs",
           "supports": [
-            "repository traffic",
-            "engagement statistics",
-            "repository activity data"
+            "repository engagement insights",
+            "repository graph availability"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [],
@@ -5492,7 +6058,7 @@
       "name": "event-publication",
       "kind": "technical",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Reliable domain and integration event publication, idempotency, retry, ordering, and dead-letter handling.",
       "owns": [
         "OutboxRecord",
@@ -5543,7 +6109,7 @@
       "name": "search-index",
       "kind": "technical",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Search document indexing, querying, and index lifecycle adapters.",
       "owns": [
         "IndexDocument",
@@ -5586,7 +6152,7 @@
       "name": "media-storage",
       "kind": "technical",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Storage and retrieval of media referenced by product domains.",
       "owns": [
         "MediaReference",
@@ -5629,8 +6195,8 @@
       "name": "notification-channels",
       "kind": "technical",
       "maturity": "stable",
-      "status": "planned",
-      "responsibility": "Inbox channel dispatch and external email or push delivery adapters.",
+      "implementationStatus": "planned",
+      "responsibility": "External email or push delivery adapters for accepted notification delivery requests.",
       "owns": [
         "ChannelDelivery",
         "DeliveryAttempt",
@@ -5641,16 +6207,21 @@
         "SubscriptionPreference",
         "RecipientSelection"
       ],
-      "dependencies": [],
+      "dependencies": [
+        {
+          "context": "engagement/notifications",
+          "contract": "NotificationDeliveryRequests",
+          "mode": "event",
+          "events": [
+            {
+              "name": "NotificationDeliveryRequested",
+              "version": 1
+            }
+          ]
+        }
+      ],
       "officialSources": [],
       "publishedEvents": [
-        {
-          "name": "ChannelDeliveryRequested",
-          "version": 1,
-          "kind": "technical",
-          "meaning": "channel delivery requested.",
-          "sourceIds": []
-        },
         {
           "name": "ChannelDeliverySucceeded",
           "version": 1,
@@ -5672,7 +6243,7 @@
       "name": "audit-storage",
       "kind": "technical",
       "maturity": "stable",
-      "status": "planned",
+      "implementationStatus": "planned",
       "responsibility": "Durable storage, export, and retention enforcement for audit records.",
       "owns": [
         "AuditStorageRecord",

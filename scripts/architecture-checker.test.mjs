@@ -2,6 +2,7 @@ import { strict as assert } from "node:assert";
 import {
   mkdtempSync,
   mkdirSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -27,7 +28,7 @@ function writeFixture(rootDir, relativePath, contents) {
 
 function validCatalog() {
   return {
-    version: 2,
+    version: 3,
     product: {
       name: "GitHub non-code product platform",
       goal: "Model GitHub product semantics without code capabilities.",
@@ -50,7 +51,7 @@ function validCatalog() {
         kind: "domain",
         classification: "core",
         maturity: "stable",
-        status: "active",
+        implementationStatus: "active",
         responsibility: "Browser-safe primitives.",
         owns: ["Repository"],
         excludes: ["GitObject"],
@@ -70,6 +71,8 @@ function validCatalog() {
             kind: "domain",
             meaning: "repository created.",
             sourceIds: ["core-domain-repositories-source-01"],
+            schema: "integration-contracts.ts#RepositoryCreatedV1",
+            orderingKey: "repositoryId",
           },
         ],
       },
@@ -98,7 +101,21 @@ function createValidFixture() {
   writeFixture(
     rootDir,
     "src/modules/core-domain/repositories/README.md",
-    "# Repositories\n",
+    `# Repositories
+
+## Purpose
+## Ubiquitous language
+## Ownership and invariants
+## Public capabilities
+## Dependencies and consistency
+## Authorization
+## Persistence and transactions
+## Data classification
+## Retention and erasure
+## Events and failure behavior
+## Official sources
+## Exceptions
+`,
   );
   writeFixture(
     rootDir,
@@ -109,6 +126,11 @@ function createValidFixture() {
     rootDir,
     "src/modules/core-domain/repositories/adapters/inbound/react/button.ts",
     "export function Button(): string { return \"button\"; }\n",
+  );
+  writeFixture(
+    rootDir,
+    "src/modules/core-domain/repositories/integration-contracts.ts",
+    "export type RepositoryCreatedV1 = { repositoryId: string };\n",
   );
   writeCatalog(rootDir, catalog);
   writeFixture(rootDir, "package.json", `${JSON.stringify({ scripts: { architecture: "node scripts/check-architecture.mjs" } }, null, 2)}\n`);
@@ -174,7 +196,7 @@ test("accepts the canonical bounded-context fixture", () => {
   }
 });
 
-test("rejects an invalid v2 catalog shape and source policy", () => {
+test("rejects an invalid v3 catalog shape and source policy", () => {
   const rootDir = createValidFixture();
 
   try {
@@ -231,6 +253,102 @@ test("rejects missing, future, and stale source verification for active contexts
   }
 });
 
+test("renders implementation and derived research status without ambiguous verification text", () => {
+  const catalog = validCatalog();
+  let markdown = renderModuleMap(catalog);
+
+  assert.match(markdown, /\| active \| verified \|/);
+  assert.doesNotMatch(markdown, /verified unverified/);
+
+  catalog.contexts[0].officialSources[0].verifiedOn = null;
+  markdown = renderModuleMap(catalog);
+  assert.match(markdown, /\| active \| candidate \|/);
+  assert.match(markdown, /, unverified\)/);
+
+  catalog.contexts[0].officialSources[0].verifiedOn = "2024-01-01";
+  markdown = renderModuleMap(catalog);
+  assert.match(markdown, /\| active \| stale \|/);
+
+  catalog.contexts.push({
+    subdomain: "platform",
+    name: "event-publication",
+    kind: "technical",
+    classification: "generic",
+    maturity: "stable",
+    implementationStatus: "planned",
+    responsibility: "Publish integration events.",
+    owns: ["EventPublication"],
+    excludes: ["ProductPolicy"],
+    dependencies: [],
+    officialSources: [],
+    publishedEvents: [],
+    eventRationale: "Technical infrastructure does not publish product events.",
+  });
+  markdown = renderModuleMap(catalog);
+  assert.match(markdown, /\| planned \| not-applicable \|/);
+});
+
+test("requires canonical decision headings in active context READMEs", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    writeFixture(rootDir, "src/modules/core-domain/repositories/README.md", "# Repositories\n");
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("requires active published events to expose schemas and ordering keys", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    const catalog = validCatalog();
+    delete catalog.contexts[0].publishedEvents[0].schema;
+    delete catalog.contexts[0].publishedEvents[0].orderingKey;
+    writeCatalog(rootDir, catalog);
+
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-020"), true);
+
+    catalog.contexts[0].publishedEvents[0].schema = "integration-contracts.ts#MissingEventV1";
+    catalog.contexts[0].publishedEvents[0].orderingKey = "repositoryId";
+    writeCatalog(rootDir, catalog);
+
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-020"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("keeps the repository semantic catalog boundaries regression-safe", () => {
+  const catalog = JSON.parse(
+    readFileSync(join(import.meta.dirname, "..", "docs", "architecture", "module-map.json"), "utf8"),
+  );
+  const byPath = new Map(
+    catalog.contexts.map((item) => [`${item.subdomain}/${item.name}`, item]),
+  );
+  const hasEventDependency = (owner, target, event) => byPath
+    .get(owner)
+    .dependencies
+    .some((dependency) => dependency.context === target &&
+      dependency.mode === "event" &&
+      dependency.events.some((selected) => selected.name === event && selected.version === 1));
+
+  assert.equal(catalog.version, 3);
+  assert.equal(catalog.contexts.length, 47);
+  assert.equal(catalog.contexts.every((item) => item.status === undefined), true);
+  assert.equal(catalog.contexts.every((item) => item.implementationStatus === "planned"), true);
+  assert.equal(byPath.get("collaboration/issue-schema").owns.includes("IssueFieldValue"), false);
+  assert.equal(byPath.get("collaboration/issues").owns.includes("IssueFieldValueSet"), true);
+  assert.equal(byPath.has("integrations/github-app-registrations"), true);
+  assert.equal(byPath.has("integrations/oauth-app-registrations"), true);
+  assert.equal(byPath.has("integrations/repository-autolinks"), true);
+  assert.equal(byPath.get("projections/repository-insights").owns.includes("TrafficMetric"), false);
+  assert.equal(hasEventDependency("engagement/stars", "repositories/repositories", "RepositoryVisibilityChanged"), true);
+  assert.equal(hasEventDependency("engagement/subscriptions", "repositories/repositories", "RepositoryVisibilityChanged"), true);
+  assert.equal(hasEventDependency("platform/notification-channels", "engagement/notifications", "NotificationDeliveryRequested"), true);
+});
+
 test("rejects unversioned, duplicate, or untraceable published events", () => {
   const rootDir = createValidFixture();
 
@@ -259,7 +377,7 @@ test("rejects event dependencies that select undeclared event versions", () => {
       name: "search",
       kind: "projection",
       maturity: "stable",
-      status: "planned",
+      implementationStatus: "planned",
       responsibility: "Search projection.",
       owns: ["SearchDocument"],
       excludes: ["Repository"],
@@ -301,7 +419,7 @@ test("requires a declared synchronous dependency for cross-context imports", () 
       kind: "domain",
       classification: "core",
       maturity: "stable",
-      status: "active",
+      implementationStatus: "active",
       responsibility: "Issue tracking.",
       owns: ["Issue"],
       excludes: ["Repository"],

@@ -1,7 +1,7 @@
 # Bounded Context Template
 
-Create a context only after its `module-map.json` status changes from `planned`
-to `active`. Do not create empty optional directories.
+Create a context only after its `module-map.json` `implementationStatus`
+changes from `planned` to `active`. Do not create empty optional directories.
 
 ```text
 apps/web/src/modules/<subdomain>/<bounded-context>/
@@ -30,18 +30,33 @@ that have a real consumer. Public entrypoints explicitly name every export.
 
 ## Required README decisions
 
-- Purpose, owner, ubiquitous language, and out-of-scope concerns.
-- Aggregate and invariant ownership where domain behavior exists.
-- Public commands, queries, results, and integration events.
-- Upstream/downstream context relationships and consistency expectations.
-- Persistence and transaction ownership.
-- Tenant or resource scope, authorization owner, and permission-query ports.
-- Sensitive-data classification, retention, erasure, redaction, and auditable
-  operations.
-- Event versions, delivery guarantees, idempotency, ordering, retry, and
-  failure behavior.
-- Official `docs.github.com` sources for GitHub product semantics.
-- Any active `ARCH-EX-###` references. Exceptions are never examples.
+Every active context README uses these exact second-level headings so the
+decisions remain discoverable and mechanically verifiable:
+
+```markdown
+## Purpose
+## Ubiquitous language
+## Ownership and invariants
+## Public capabilities
+## Dependencies and consistency
+## Authorization
+## Persistence and transactions
+## Data classification
+## Retention and erasure
+## Events and failure behavior
+## Official sources
+## Exceptions
+```
+
+The sections record owner and out-of-scope concerns, public commands and
+queries, transaction ownership, resource scope, permission ports, sensitive
+data handling, retention and redaction, delivery guarantees, idempotency,
+ordering, retry, official `docs.github.com` evidence, and any active
+`ARCH-EX-###` references.
+
+An active context that publishes events must expose each event type explicitly
+from `integration-contracts.ts`. Its catalog entry uses
+`integration-contracts.ts#ExportedType` and declares the event ordering key.
 
 ## Public entrypoints
 

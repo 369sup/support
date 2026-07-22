@@ -108,7 +108,7 @@ export function renderSerenaMemories(sources) {
   generated.set(
     "shared/module-catalog.md",
     `${prefix}# Planned Module Catalog\n\n${[...contextsBySubdomain].map(([subdomain, contexts]) => {
-      return `## ${subdomain}\n\n${contexts.map((context) => `- ${context.name}: ${context.kind}, ${context.status}`).join("\n")}`;
+      return `## ${subdomain}\n\n${contexts.map((context) => `- ${context.name}: ${context.kind}, ${context.implementationStatus}`).join("\n")}`;
     }).join("\n\n")}\n`,
   );
   generated.set(

@@ -64,6 +64,20 @@ const contextLayers = new Set([
   "composition",
   "tests",
 ]);
+const requiredContextReadmeHeadings = [
+  "Purpose",
+  "Ubiquitous language",
+  "Ownership and invariants",
+  "Public capabilities",
+  "Dependencies and consistency",
+  "Authorization",
+  "Persistence and transactions",
+  "Data classification",
+  "Retention and erasure",
+  "Events and failure behavior",
+  "Official sources",
+  "Exceptions",
+];
 
 function normalizePath(value) {
   return value.split(sep).join("/");
@@ -121,6 +135,38 @@ function isKebabCase(value) {
 
 function contextRootFor(rootDir, context) {
   return join(rootDir, "src", "modules", context.subdomain, context.name);
+}
+
+function researchStatusFor(context, now = new Date()) {
+  if (context.kind === "technical") {
+    return "not-applicable";
+  }
+
+  const sources = context.officialSources ?? [];
+
+  if (sources.some((source) => source.verifiedOn === null)) {
+    return "candidate";
+  }
+
+  const today = now.toISOString().slice(0, 10);
+  const nowTime = Date.parse(`${today}T00:00:00.000Z`);
+  const hasStaleSource = sources.some((source) => {
+    const verifiedTime = Date.parse(`${source.verifiedOn}T00:00:00.000Z`);
+    const maximumAgeDays = (source.maturity ?? context.maturity) === "preview" ? 90 : 365;
+    const ageDays = (nowTime - verifiedTime) / 86_400_000;
+    return !Number.isFinite(verifiedTime) || source.verifiedOn > today || ageDays > maximumAgeDays;
+  });
+
+  return hasStaleSource ? "stale" : "verified";
+}
+
+function hasExportedContract(contents, symbol) {
+  const escapedSymbol = symbol.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const declaration = new RegExp(
+    `\\bexport\\s+(?:declare\\s+)?(?:type|interface|class|const|enum)\\s+${escapedSymbol}\\b`,
+  );
+  const exportList = new RegExp(`\\bexport\\s*\\{[^}]*\\b${escapedSymbol}\\b[^}]*\\}`);
+  return declaration.test(contents) || exportList.test(contents);
 }
 
 function validateSourceRoot(rootDir, errors) {
@@ -198,7 +244,7 @@ function validateCatalog(rootDir, catalog, now, errors) {
   }
 
   if (
-    catalog.version !== 2 ||
+    catalog.version !== 3 ||
     typeof catalog.product?.name !== "string" ||
     typeof catalog.product?.goal !== "string" ||
     catalog.product?.sourcePolicy?.protocol !== "https:" ||
@@ -206,7 +252,7 @@ function validateCatalog(rootDir, catalog, now, errors) {
     catalog.product?.sourcePolicy?.pathPrefix !== "/en/"
   ) {
     errors.push(
-      "[ARCH-MAP-013] module-map.json must use version 2 and declare the canonical product and source policy.",
+      "[ARCH-MAP-013] module-map.json must use version 3 and declare the canonical product and source policy.",
     );
   }
 
@@ -262,8 +308,13 @@ function validateCatalog(rootDir, catalog, now, errors) {
 
     contextsByPath.set(contextPath, context);
 
-    if (context.status !== "planned" && context.status !== "active") {
-      errors.push(`[ARCH-MAP-004] ${contextPath} has invalid status ${context.status}.`);
+    if (
+      context.implementationStatus !== "planned" &&
+      context.implementationStatus !== "active"
+    ) {
+      errors.push(
+        `[ARCH-MAP-004] ${contextPath} has invalid implementationStatus ${context.implementationStatus}.`,
+      );
     }
 
     const hasValidKind =
@@ -291,7 +342,7 @@ function validateCatalog(rootDir, catalog, now, errors) {
 
     if (!hasValidShape) {
       errors.push(
-        `[ARCH-MAP-013] ${contextPath} has an invalid v2 catalog shape.`,
+        `[ARCH-MAP-013] ${contextPath} has an invalid v3 catalog shape.`,
       );
     }
 
@@ -344,7 +395,7 @@ function validateCatalog(rootDir, catalog, now, errors) {
 
     for (const source of officialSources) {
       if (source.verifiedOn === null) {
-        if (context.status === "active") {
+        if (context.implementationStatus === "active") {
           errors.push(
             `[ARCH-MAP-017] Active context ${contextPath} requires verifiedOn for source ${source.id}.`,
           );
@@ -416,20 +467,39 @@ function validateCatalog(rootDir, catalog, now, errors) {
 
     const contextRoot = contextRootFor(rootDir, context);
 
-    if (context.status === "planned" && existsSync(contextRoot)) {
+    if (context.implementationStatus === "planned" && existsSync(contextRoot)) {
       errors.push(
         `[ARCH-MAP-006] Planned context ${contextPath} must not have a source directory. Mark it active when implementation begins.`,
       );
     }
 
-    if (context.status === "active") {
+    if (context.implementationStatus === "active") {
       if (!existsSync(contextRoot)) {
         errors.push(`[ARCH-MAP-007] Active context ${contextPath} is missing.`);
         continue;
       }
 
-      if (!existsSync(join(contextRoot, "README.md"))) {
+      const readmePath = join(contextRoot, "README.md");
+
+      if (!existsSync(readmePath)) {
         errors.push(`[ARCH-MAP-008] Active context ${contextPath} requires README.md.`);
+      } else {
+        const readme = readFileSync(readmePath, "utf8").replaceAll("\r\n", "\n");
+        const headings = new Set(
+          readme
+            .split("\n")
+            .filter((line) => line.startsWith("## "))
+            .map((line) => line.slice(3).trim()),
+        );
+        const missingHeadings = requiredContextReadmeHeadings.filter(
+          (heading) => !headings.has(heading),
+        );
+
+        if (missingHeadings.length > 0) {
+          errors.push(
+            `[ARCH-MAP-019] Active context ${contextPath} README.md is missing required headings: ${missingHeadings.join(", ")}.`,
+          );
+        }
       }
 
       const hasEntrypoint = [...publicEntrypoints].some((entrypoint) => {
@@ -440,6 +510,30 @@ function validateCatalog(rootDir, catalog, now, errors) {
         errors.push(
           `[ARCH-MAP-009] Active context ${contextPath} requires at least one public root entrypoint.`,
         );
+      }
+
+      if (publishedEvents.length > 0) {
+        const contractsPath = join(contextRoot, "integration-contracts.ts");
+        const contracts = existsSync(contractsPath)
+          ? readFileSync(contractsPath, "utf8")
+          : "";
+        const hasInvalidContractMetadata = publishedEvents.some((event) => {
+          const match = typeof event.schema === "string"
+            ? /^integration-contracts\.ts#([A-Z][A-Za-z0-9]+)$/.exec(event.schema)
+            : null;
+          return (
+            match === null ||
+            typeof event.orderingKey !== "string" ||
+            event.orderingKey.trim() === "" ||
+            !hasExportedContract(contracts, match[1])
+          );
+        });
+
+        if (hasInvalidContractMetadata) {
+          errors.push(
+            `[ARCH-MAP-020] Active context ${contextPath} events require exported integration-contracts.ts schemas and non-empty ordering keys.`,
+          );
+        }
       }
     }
   }
@@ -531,7 +625,7 @@ function validateCatalog(rootDir, catalog, now, errors) {
       const contextPath = `${subdomainEntry.name}/${contextEntry.name}`;
       const catalogContext = contextsByPath.get(contextPath);
 
-      if (catalogContext?.status !== "active") {
+      if (catalogContext?.implementationStatus !== "active") {
         errors.push(
           `[ARCH-MAP-010] Source context ${contextPath} must be declared active in module-map.json.`,
         );
@@ -1090,13 +1184,13 @@ export function renderModuleMap(catalog) {
     "",
     "## Bounded contexts",
     "",
-    "| Subdomain | Bounded context | Kind | Classification | Maturity | Status | Responsibility |",
-    "| --- | --- | --- | --- | --- | --- | --- |",
+    "| Subdomain | Bounded context | Kind | Classification | Maturity | Implementation | Research | Responsibility |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- |",
   );
 
   for (const context of catalog.contexts) {
     lines.push(
-      `| ${context.subdomain} | ${context.name} | ${context.kind} | ${context.classification ?? "—"} | ${context.maturity} | ${context.status} | ${context.responsibility} |`,
+      `| ${context.subdomain} | ${context.name} | ${context.kind} | ${context.classification ?? "—"} | ${context.maturity} | ${context.implementationStatus} | ${researchStatusFor(context)} | ${context.responsibility} |`,
     );
   }
 
@@ -1120,14 +1214,21 @@ export function renderModuleMap(catalog) {
         ? "Not applicable; technical capability."
         : context.officialSources
             .map((source) => {
-              const verifiedOn = source.verifiedOn ?? "unverified";
-              return `${source.id} ([${source.supports.join(", ")}](${source.url}), verified ${verifiedOn})`;
+              const verification = source.verifiedOn === null
+                ? "unverified"
+                : `verified ${source.verifiedOn}`;
+              return `${source.id} ([${source.supports.join(", ")}](${source.url}), ${verification})`;
             })
             .join("; ");
     const events = context.publishedEvents.length === 0
       ? `None. ${context.eventRationale}`
       : context.publishedEvents
-          .map((event) => `${event.name}@${event.version} (${event.kind})`)
+          .map((event) => {
+            const contract = event.schema === undefined
+              ? "contract pending"
+              : `${event.schema}, ordered by ${event.orderingKey}`;
+            return `${event.name}@${event.version} (${event.kind}; ${contract})`;
+          })
           .join(", ");
 
     lines.push(

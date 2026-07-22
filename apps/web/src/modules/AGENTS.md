@@ -14,7 +14,8 @@ Use these canonical sources before adding or moving module code:
 - [`docs/architecture/module-template.md`](../../../../docs/architecture/module-template.md)
   for bounded-context shape;
 - [`docs/architecture/module-map.json`](../../../../docs/architecture/module-map.json)
-  for product scope, context identity, kind, ownership, dependencies, status,
+  for product scope, context identity, kind, ownership, dependencies,
+  implementation status,
   and official sources; and
 - [`docs/architecture/exceptions/registry.json`](../../../../docs/architecture/exceptions/registry.json)
   for approved exceptions.
@@ -41,7 +42,7 @@ Do not create a source directory for a planned context. To activate one:
    confirm the recorded semantics and preview maturity still match current
    HTTPS documentation under `docs.github.com/en/`.
 6. Record every permitted cross-context dependency and required official
-   source in `module-map.json`, then change the status to `active`.
+   source in `module-map.json`, then change `implementationStatus` to `active`.
 7. Generate the module map and Serena shared memories, then review both diffs.
 8. Create only the layers and public entrypoints required by the first real
    use case.

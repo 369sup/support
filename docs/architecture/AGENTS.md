@@ -33,7 +33,8 @@ changes.
   empty-catalog rationale. Event dependencies name exact event versions owned
   by the target context; a transport capability never becomes the semantic
   owner of a product event.
-- Do not create source directories for a `planned` context.
+- Do not create source directories for a context whose `implementationStatus`
+  is `planned`.
 - Give each exception one stable ID, the narrowest scope, a concrete reason,
   an owner, and a removal condition. An exception is not a reusable example.
 - Regenerate the Markdown catalog with `pnpm architecture:docs` after changing
