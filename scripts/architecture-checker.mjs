@@ -137,7 +137,7 @@ function contextRootFor(rootDir, context) {
   return join(rootDir, "src", "modules", context.subdomain, context.name);
 }
 
-function researchStatusFor(context, now = new Date()) {
+function sourceFreshnessFor(context, now = new Date()) {
   if (context.kind === "technical") {
     return "not-applicable";
   }
@@ -145,7 +145,7 @@ function researchStatusFor(context, now = new Date()) {
   const sources = context.officialSources ?? [];
 
   if (sources.some((source) => source.verifiedOn === null)) {
-    return "candidate";
+    return "unverified";
   }
 
   const today = now.toISOString().slice(0, 10);
@@ -157,7 +157,7 @@ function researchStatusFor(context, now = new Date()) {
     return !Number.isFinite(verifiedTime) || source.verifiedOn > today || ageDays > maximumAgeDays;
   });
 
-  return hasStaleSource ? "stale" : "verified";
+  return hasStaleSource ? "stale" : "fresh";
 }
 
 function hasExportedContract(contents, symbol) {
@@ -244,7 +244,7 @@ function validateCatalog(rootDir, catalog, now, errors) {
   }
 
   if (
-    catalog.version !== 3 ||
+    catalog.version !== 4 ||
     typeof catalog.product?.name !== "string" ||
     typeof catalog.product?.goal !== "string" ||
     catalog.product?.sourcePolicy?.protocol !== "https:" ||
@@ -252,7 +252,7 @@ function validateCatalog(rootDir, catalog, now, errors) {
     catalog.product?.sourcePolicy?.pathPrefix !== "/en/"
   ) {
     errors.push(
-      "[ARCH-MAP-013] module-map.json must use version 3 and declare the canonical product and source policy.",
+      "[ARCH-MAP-013] module-map.json must use version 4 and declare the canonical product and source policy.",
     );
   }
 
@@ -325,9 +325,13 @@ function validateCatalog(rootDir, catalog, now, errors) {
       context.kind !== "domain" ||
       context.classification === "core" ||
       context.classification === "supporting";
+    const hasValidSemanticStatus = context.kind === "technical"
+      ? context.semanticStatus === "not-applicable"
+      : context.semanticStatus === "candidate" || context.semanticStatus === "validated";
     const hasValidShape =
       hasValidKind &&
       hasValidClassification &&
+      hasValidSemanticStatus &&
       (context.maturity === "stable" || context.maturity === "preview") &&
       typeof context.responsibility === "string" &&
       context.responsibility !== "" &&
@@ -342,7 +346,17 @@ function validateCatalog(rootDir, catalog, now, errors) {
 
     if (!hasValidShape) {
       errors.push(
-        `[ARCH-MAP-013] ${contextPath} has an invalid v3 catalog shape.`,
+        `[ARCH-MAP-013] ${contextPath} has an invalid v4 catalog shape.`,
+      );
+    }
+
+    if (
+      context.implementationStatus === "active" &&
+      context.kind !== "technical" &&
+      context.semanticStatus !== "validated"
+    ) {
+      errors.push(
+        `[ARCH-MAP-021] Active context ${contextPath} requires semanticStatus validated.`,
       );
     }
 
@@ -1184,13 +1198,13 @@ export function renderModuleMap(catalog) {
     "",
     "## Bounded contexts",
     "",
-    "| Subdomain | Bounded context | Kind | Classification | Maturity | Implementation | Research | Responsibility |",
-    "| --- | --- | --- | --- | --- | --- | --- | --- |",
+    "| Subdomain | Bounded context | Kind | Classification | Maturity | Implementation | Source freshness | Semantic status | Responsibility |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
   );
 
   for (const context of catalog.contexts) {
     lines.push(
-      `| ${context.subdomain} | ${context.name} | ${context.kind} | ${context.classification ?? "—"} | ${context.maturity} | ${context.implementationStatus} | ${researchStatusFor(context)} | ${context.responsibility} |`,
+      `| ${context.subdomain} | ${context.name} | ${context.kind} | ${context.classification ?? "—"} | ${context.maturity} | ${context.implementationStatus} | ${sourceFreshnessFor(context)} | ${context.semanticStatus} | ${context.responsibility} |`,
     );
   }
 
@@ -1216,7 +1230,7 @@ export function renderModuleMap(catalog) {
             .map((source) => {
               const verification = source.verifiedOn === null
                 ? "unverified"
-                : `verified ${source.verifiedOn}`;
+                : `checked ${source.verifiedOn}`;
               return `${source.id} ([${source.supports.join(", ")}](${source.url}), ${verification})`;
             })
             .join("; ");

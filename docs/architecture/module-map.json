@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "product": {
     "name": "GitHub non-code product platform",
     "goal": "Reproduce GitHub product semantics for people, enterprises, organizations, teams, repositories, collaboration, engagement, governance, commerce, and integrations without implementing source-code or Git capabilities.",
@@ -54,6 +54,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Personal, managed, setup, and bot account identity and lifecycle.",
+      "semanticStatus": "candidate",
       "owns": [
         "Account",
         "Username",
@@ -135,6 +136,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Credentials, sessions, two-factor authentication, recovery, and external login binding.",
+      "semanticStatus": "candidate",
       "owns": [
         "Credential",
         "Session",
@@ -230,6 +232,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Public and private personal profiles, profile status, and pinned-item presentation.",
+      "semanticStatus": "candidate",
       "owns": [
         "UserProfile",
         "ProfileVisibility",
@@ -307,6 +310,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Following relationships between users and organizations.",
+      "semanticStatus": "candidate",
       "owns": [
         "UserFollow",
         "OrganizationFollow"
@@ -386,6 +390,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Enterprise identity, profile, account mode, lifecycle, and organization ownership.",
+      "semanticStatus": "candidate",
       "owns": [
         "Enterprise",
         "EnterpriseType",
@@ -472,6 +477,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Enterprise membership, invitations, affiliation, guest collaborators, and unaffiliated users.",
+      "semanticStatus": "candidate",
       "owns": [
         "EnterpriseMembership",
         "EnterpriseInvitation",
@@ -581,6 +587,7 @@
       "maturity": "preview",
       "implementationStatus": "planned",
       "responsibility": "Enterprise-wide teams used for centralized role, organization, and license assignment.",
+      "semanticStatus": "candidate",
       "owns": [
         "EnterpriseTeam",
         "EnterpriseTeamMembership",
@@ -689,6 +696,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Predefined and custom enterprise roles, permissions, and assignments.",
+      "semanticStatus": "candidate",
       "owns": [
         "EnterpriseRoleDefinition",
         "EnterpriseRoleAssignment",
@@ -784,6 +792,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Enterprise identity-provider configuration, SAML or OIDC authentication, SCIM provisioning, and group synchronization.",
+      "semanticStatus": "candidate",
       "owns": [
         "IdentityProviderConfiguration",
         "ProvisionedIdentity",
@@ -904,6 +913,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Enterprise policy constraints applied across owned organizations and repositories.",
+      "semanticStatus": "candidate",
       "owns": [
         "EnterprisePolicy",
         "EnterprisePolicyEnforcement",
@@ -964,6 +974,158 @@
       ]
     },
     {
+      "subdomain": "enterprises",
+      "name": "custom-properties",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Enterprise-defined repository and organization custom-property schemas, organization values, and promotion of organization repository properties.",
+      "semanticStatus": "validated",
+      "owns": [
+        "EnterpriseRepositoryPropertyDefinition",
+        "EnterpriseOrganizationPropertyDefinition",
+        "EnterprisePropertyDefault",
+        "EnterprisePropertyEditPolicy",
+        "OrganizationPropertyValue",
+        "EnterpriseRepositoryPropertyPromotion"
+      ],
+      "excludes": [
+        "OrganizationRepositoryPropertyDefinition",
+        "RepositoryPropertyValue",
+        "RepositoryTopic",
+        "IssueField"
+      ],
+      "dependencies": [
+        {
+          "context": "enterprises/enterprises",
+          "contract": "EnterpriseReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organizations",
+          "contract": "OrganizationReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/custom-properties",
+          "contract": "OrganizationPropertyPromotionRequests",
+          "mode": "event",
+          "events": [
+            {
+              "name": "OrganizationRepositoryPropertyPromotionRequested",
+              "version": 1
+            }
+          ]
+        }
+      ],
+      "officialSources": [
+        {
+          "id": "enterprises-custom-properties-source-01",
+          "url": "https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories/managing-repositories-in-your-enterprise/managing-custom-properties-for-repositories-in-your-enterprise",
+          "supports": [
+            "enterprise-defined repository properties",
+            "enterprise defaults and edit policy",
+            "organization property promotion"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "enterprises-custom-properties-source-02",
+          "url": "https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories/managing-organizations-in-your-enterprise/managing-custom-properties-for-organizations",
+          "supports": [
+            "enterprise-defined organization properties",
+            "organization property values",
+            "organization property defaults"
+          ],
+          "verifiedOn": "2026-07-22"
+        }
+      ],
+      "publishedEvents": [
+        {
+          "name": "EnterpriseRepositoryPropertyDefined",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "enterprise repository property defined.",
+          "sourceIds": [
+            "enterprises-custom-properties-source-01"
+          ]
+        },
+        {
+          "name": "EnterpriseRepositoryPropertyUpdated",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "enterprise repository property updated.",
+          "sourceIds": [
+            "enterprises-custom-properties-source-01"
+          ]
+        },
+        {
+          "name": "EnterpriseRepositoryPropertyDeleted",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "enterprise repository property deleted.",
+          "sourceIds": [
+            "enterprises-custom-properties-source-01"
+          ]
+        },
+        {
+          "name": "EnterpriseRepositoryPropertyPromoted",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "organization repository property promoted to enterprise authority.",
+          "sourceIds": [
+            "enterprises-custom-properties-source-01"
+          ]
+        },
+        {
+          "name": "EnterpriseOrganizationPropertyDefined",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "enterprise organization property defined.",
+          "sourceIds": [
+            "enterprises-custom-properties-source-02"
+          ]
+        },
+        {
+          "name": "EnterpriseOrganizationPropertyUpdated",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "enterprise organization property updated.",
+          "sourceIds": [
+            "enterprises-custom-properties-source-02"
+          ]
+        },
+        {
+          "name": "EnterpriseOrganizationPropertyDeleted",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "enterprise organization property deleted.",
+          "sourceIds": [
+            "enterprises-custom-properties-source-02"
+          ]
+        },
+        {
+          "name": "OrganizationPropertyValueSet",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "organization property value set.",
+          "sourceIds": [
+            "enterprises-custom-properties-source-02"
+          ]
+        },
+        {
+          "name": "OrganizationPropertyValueCleared",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "organization property value cleared.",
+          "sourceIds": [
+            "enterprises-custom-properties-source-02"
+          ]
+        }
+      ]
+    },
+    {
       "subdomain": "organizations",
       "name": "organizations",
       "kind": "domain",
@@ -971,6 +1133,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Organization identity, profile, lifecycle, verified domains, and enterprise ownership.",
+      "semanticStatus": "candidate",
       "owns": [
         "Organization",
         "OrganizationProfile",
@@ -1075,6 +1238,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Organization membership, invitations, member roles, and membership lifecycle.",
+      "semanticStatus": "candidate",
       "owns": [
         "OrganizationMembership",
         "OrganizationInvitation",
@@ -1180,6 +1344,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Organization teams, nested hierarchy, visibility, membership, maintainers, and mentions.",
+      "semanticStatus": "candidate",
       "owns": [
         "OrganizationTeam",
         "TeamMembership",
@@ -1300,6 +1465,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Predefined and custom organization roles and custom repository-role definitions.",
+      "semanticStatus": "candidate",
       "owns": [
         "OrganizationRoleDefinition",
         "OrganizationRoleAssignment",
@@ -1423,6 +1589,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Organization policies for repositories, collaborators, projects, discussions, and member privileges.",
+      "semanticStatus": "candidate",
       "owns": [
         "RepositoryCreationPolicy",
         "RepositoryVisibilityPolicy",
@@ -1488,14 +1655,20 @@
       "classification": "supporting",
       "maturity": "stable",
       "implementationStatus": "planned",
-      "responsibility": "Organization-defined custom-property schemas and organization or repository property values.",
+      "responsibility": "Organization-defined repository custom-property schemas and repository property values from organization or enterprise definitions.",
+      "semanticStatus": "validated",
       "owns": [
-        "CustomPropertyDefinition",
-        "CustomPropertyAllowedValue",
-        "OrganizationPropertyValue",
-        "RepositoryPropertyValue"
+        "OrganizationRepositoryPropertyDefinition",
+        "OrganizationRepositoryPropertyAllowedValue",
+        "RepositoryPropertyValue",
+        "RepositoryPropertyValueSource",
+        "RequiredRepositoryPropertyPolicy",
+        "ExplicitRepositoryPropertyRequirement",
+        "OrganizationRepositoryPropertyPromotionRequest"
       ],
       "excludes": [
+        "EnterprisePropertyDefinition",
+        "OrganizationPropertyValue",
         "RepositoryTopic",
         "ProjectField",
         "IssueField"
@@ -1507,8 +1680,13 @@
           "mode": "synchronous"
         },
         {
-          "context": "enterprises/enterprises",
-          "contract": "EnterpriseReference",
+          "context": "enterprises/custom-properties",
+          "contract": "EnterpriseRepositoryPropertyDefinition",
+          "mode": "synchronous"
+        },
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryOperationalState",
           "mode": "synchronous"
         },
         {
@@ -1521,6 +1699,17 @@
               "version": 1
             }
           ]
+        },
+        {
+          "context": "enterprises/custom-properties",
+          "contract": "EnterprisePropertyPromotionEvents",
+          "mode": "event",
+          "events": [
+            {
+              "name": "EnterpriseRepositoryPropertyPromoted",
+              "version": 1
+            }
+          ]
         }
       ],
       "officialSources": [
@@ -1528,55 +1717,46 @@
           "id": "organizations-custom-properties-source-01",
           "url": "https://docs.github.com/en/organizations/managing-organization-settings/managing-custom-properties-for-repositories-in-your-organization",
           "supports": [
-            "custom property definitions",
+            "organization-defined repository property definitions",
             "repository property values",
-            "organization property values"
+            "required defaults and explicit values"
           ],
           "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
         {
-          "name": "CustomPropertyDefined",
+          "name": "OrganizationRepositoryPropertyDefined",
           "version": 1,
           "kind": "domain",
-          "meaning": "custom property defined.",
+          "meaning": "organization-defined repository property created.",
           "sourceIds": [
             "organizations-custom-properties-source-01"
           ]
         },
         {
-          "name": "CustomPropertyUpdated",
+          "name": "OrganizationRepositoryPropertyUpdated",
           "version": 1,
           "kind": "domain",
-          "meaning": "custom property updated.",
+          "meaning": "organization-defined repository property updated.",
           "sourceIds": [
             "organizations-custom-properties-source-01"
           ]
         },
         {
-          "name": "CustomPropertyDeleted",
+          "name": "OrganizationRepositoryPropertyDeleted",
           "version": 1,
           "kind": "domain",
-          "meaning": "custom property deleted.",
+          "meaning": "organization-defined repository property deleted.",
           "sourceIds": [
             "organizations-custom-properties-source-01"
           ]
         },
         {
-          "name": "OrganizationPropertyValueSet",
+          "name": "OrganizationRepositoryPropertyPromotionRequested",
           "version": 1,
           "kind": "domain",
-          "meaning": "organization property value set.",
-          "sourceIds": [
-            "organizations-custom-properties-source-01"
-          ]
-        },
-        {
-          "name": "OrganizationPropertyValueCleared",
-          "version": 1,
-          "kind": "domain",
-          "meaning": "organization property value cleared.",
+          "meaning": "organization repository property submitted for enterprise promotion.",
           "sourceIds": [
             "organizations-custom-properties-source-01"
           ]
@@ -1609,12 +1789,16 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Repository identity, personal or organization ownership, name, description, homepage, visibility, lifecycle, redirects, and transfer.",
+      "semanticStatus": "validated",
       "owns": [
         "Repository",
         "RepositoryDescription",
         "RepositoryHomepage",
         "RepositoryRedirect",
-        "RepositoryTransfer"
+        "RepositoryTransfer",
+        "RepositoryOperationalState",
+        "RepositoryTombstone",
+        "RepositoryRestoreWindow"
       ],
       "excludes": [
         "GitObject",
@@ -1690,7 +1874,9 @@
           "url": "https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories",
           "supports": [
             "archive",
-            "unarchive"
+            "unarchive",
+            "archived repository read-only behavior",
+            "archived repository starring"
           ],
           "verifiedOn": "2026-07-22"
         },
@@ -1698,7 +1884,8 @@
           "id": "repositories-repositories-source-06",
           "url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/deleting-a-repository",
           "supports": [
-            "repository deletion"
+            "repository deletion",
+            "permanent team permission removal"
           ],
           "verifiedOn": "2026-07-22"
         },
@@ -1706,7 +1893,9 @@
           "id": "repositories-repositories-source-07",
           "url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/restoring-a-deleted-repository",
           "supports": [
-            "repository restoration"
+            "repository restoration",
+            "restore window",
+            "team permissions excluded from restoration"
           ],
           "verifiedOn": "2026-07-22"
         },
@@ -1839,6 +2028,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Repository invitations, direct and inherited grants, outside collaborators, role assignments, and source-attributed effective permission resolution.",
+      "semanticStatus": "validated",
       "owns": [
         "RepositoryGrant",
         "RepositoryInvitation",
@@ -1855,7 +2045,7 @@
       "dependencies": [
         {
           "context": "repositories/repositories",
-          "contract": "RepositoryPermissionContext",
+          "contract": "RepositoryPermissionContextAndOperationalState",
           "mode": "synchronous"
         },
         {
@@ -1895,11 +2085,15 @@
         },
         {
           "context": "repositories/repositories",
-          "contract": "RepositoryTransferEvents",
+          "contract": "RepositoryLifecycleEvents",
           "mode": "event",
           "events": [
             {
               "name": "RepositoryTransferred",
+              "version": 1
+            },
+            {
+              "name": "RepositoryDeleted",
               "version": 1
             }
           ]
@@ -1931,6 +2125,22 @@
           "supports": [
             "direct team access",
             "inherited team access"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "repositories-repository-access-source-04",
+          "url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/deleting-a-repository",
+          "supports": [
+            "permanent team permission deletion"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "repositories-repository-access-source-05",
+          "url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/restoring-a-deleted-repository",
+          "supports": [
+            "team permissions excluded from restoration"
           ],
           "verifiedOn": "2026-07-22"
         }
@@ -2035,9 +2245,13 @@
       "classification": "supporting",
       "maturity": "stable",
       "implementationStatus": "planned",
-      "responsibility": "Enablement and configuration of non-code repository product features.",
+      "responsibility": "Repository Issues, Discussions, and Projects enablement with feature-specific configuration.",
+      "semanticStatus": "validated",
       "owns": [
-        "RepositoryFeatureConfiguration"
+        "IssuesFeatureConfiguration",
+        "IssueCreationPolicy",
+        "RepositoryDiscussionsFeatureState",
+        "ProjectsFeatureConfiguration"
       ],
       "excludes": [
         "Actions",
@@ -2049,7 +2263,7 @@
       "dependencies": [
         {
           "context": "repositories/repositories",
-          "contract": "RepositoryReference",
+          "contract": "RepositoryOperationalState",
           "mode": "synchronous"
         },
         {
@@ -2077,11 +2291,29 @@
       "officialSources": [
         {
           "id": "repositories-repository-features-source-01",
-          "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository",
+          "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/disabling-issues",
           "supports": [
             "issues enablement",
-            "discussions enablement",
-            "projects linking"
+            "collaborators-only issue creation",
+            "issue preservation while disabled"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "repositories-repository-features-source-03",
+          "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/enabling-or-disabling-github-discussions-for-a-repository",
+          "supports": [
+            "repository discussions enablement",
+            "repository admin enablement permission"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "repositories-repository-features-source-04",
+          "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/disabling-projects-in-a-repository",
+          "supports": [
+            "repository Projects tab enablement",
+            "linked project preservation"
           ],
           "verifiedOn": "2026-07-22"
         },
@@ -2097,30 +2329,39 @@
       ],
       "publishedEvents": [
         {
-          "name": "RepositoryFeatureEnabled",
+          "name": "RepositoryIssuesFeatureChanged",
           "version": 1,
           "kind": "domain",
-          "meaning": "repository feature enabled.",
+          "meaning": "repository Issues enablement or creation policy changed.",
           "sourceIds": [
             "repositories-repository-features-source-01"
           ]
         },
         {
-          "name": "RepositoryFeatureDisabled",
+          "name": "RepositoryDiscussionsEnabled",
           "version": 1,
           "kind": "domain",
-          "meaning": "repository feature disabled.",
+          "meaning": "repository Discussions enabled.",
           "sourceIds": [
-            "repositories-repository-features-source-01"
+            "repositories-repository-features-source-03"
           ]
         },
         {
-          "name": "RepositoryFeatureConfigured",
+          "name": "RepositoryDiscussionsDisabled",
           "version": 1,
           "kind": "domain",
-          "meaning": "repository feature configured.",
+          "meaning": "repository Discussions disabled.",
           "sourceIds": [
-            "repositories-repository-features-source-01"
+            "repositories-repository-features-source-03"
+          ]
+        },
+        {
+          "name": "RepositoryProjectsFeatureChanged",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "repository Projects feature configuration changed.",
+          "sourceIds": [
+            "repositories-repository-features-source-04"
           ]
         }
       ]
@@ -2133,6 +2374,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Repository topics and social-media preview configuration.",
+      "semanticStatus": "candidate",
       "owns": [
         "RepositoryTopicSet",
         "RepositorySocialPreview"
@@ -2147,12 +2389,7 @@
       "dependencies": [
         {
           "context": "repositories/repositories",
-          "contract": "RepositoryReference",
-          "mode": "synchronous"
-        },
-        {
-          "context": "organizations/custom-properties",
-          "contract": "RepositoryPropertyProjection",
+          "contract": "RepositoryOperationalState",
           "mode": "synchronous"
         },
         {
@@ -2220,6 +2457,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Issue lifecycle, assignment, hierarchy, dependency, transfer, and work tracking.",
+      "semanticStatus": "candidate",
       "owns": [
         "Issue",
         "SubIssueRelation",
@@ -2237,7 +2475,7 @@
       "dependencies": [
         {
           "context": "repositories/repositories",
-          "contract": "RepositoryReference",
+          "contract": "RepositoryOperationalState",
           "mode": "synchronous"
         },
         {
@@ -2436,6 +2674,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Organization-level issue type and field definitions, visibility, pinning, and type-field associations.",
+      "semanticStatus": "candidate",
       "owns": [
         "IssueTypeDefinition",
         "IssueFieldDefinition",
@@ -2553,6 +2792,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Repository-scoped labels, milestones, and work classification.",
+      "semanticStatus": "candidate",
       "owns": [
         "LabelCatalog",
         "Label",
@@ -2566,7 +2806,7 @@
       "dependencies": [
         {
           "context": "repositories/repositories",
-          "contract": "RepositoryReference",
+          "contract": "RepositoryOperationalState",
           "mode": "synchronous"
         }
       ],
@@ -2665,6 +2905,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Capability-constrained comments, discussion replies, reactions, mentions, revisions, and locks for a closed set of subjects.",
+      "semanticStatus": "candidate",
       "owns": [
         "Conversation",
         "Comment",
@@ -2685,6 +2926,11 @@
         {
           "context": "identity/accounts",
           "contract": "ActorReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryOperationalState",
           "mode": "synchronous"
         }
       ],
@@ -2818,9 +3064,10 @@
       "classification": "core",
       "maturity": "stable",
       "implementationStatus": "planned",
-      "responsibility": "Distinct repository and organization discussion spaces, source-repository binding, categories, sections, polls, answers, pins, and lifecycle.",
+      "responsibility": "Repository discussion forums and organization discussion spaces, source-repository binding, categories, sections, polls, answers, pins, and lifecycle.",
+      "semanticStatus": "validated",
       "owns": [
-        "RepositoryDiscussionSpace",
+        "RepositoryDiscussionForum",
         "OrganizationDiscussionSpace",
         "Discussion",
         "DiscussionCategory",
@@ -2838,7 +3085,7 @@
       "dependencies": [
         {
           "context": "repositories/repositories",
-          "contract": "RepositoryReference",
+          "contract": "RepositoryOperationalState",
           "mode": "synchronous"
         },
         {
@@ -2855,6 +3102,21 @@
           "context": "repositories/repository-features",
           "contract": "RepositoryDiscussionFeatureState",
           "mode": "synchronous"
+        },
+        {
+          "context": "repositories/repository-features",
+          "contract": "RepositoryDiscussionFeatureEvents",
+          "mode": "event",
+          "events": [
+            {
+              "name": "RepositoryDiscussionsEnabled",
+              "version": 1
+            },
+            {
+              "name": "RepositoryDiscussionsDisabled",
+              "version": 1
+            }
+          ]
         },
         {
           "context": "collaboration/labels-and-milestones",
@@ -2903,7 +3165,7 @@
           "id": "collaboration-discussions-source-03",
           "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/enabling-or-disabling-github-discussions-for-a-repository",
           "supports": [
-            "repository discussion enablement"
+            "repository discussion availability prerequisite"
           ],
           "verifiedOn": "2026-07-22"
         },
@@ -3050,24 +3312,6 @@
           ]
         },
         {
-          "name": "RepositoryDiscussionSpaceEnabled",
-          "version": 1,
-          "kind": "domain",
-          "meaning": "repository discussion space enabled.",
-          "sourceIds": [
-            "collaboration-discussions-source-03"
-          ]
-        },
-        {
-          "name": "RepositoryDiscussionSpaceDisabled",
-          "version": 1,
-          "kind": "domain",
-          "meaning": "repository discussion space disabled.",
-          "sourceIds": [
-            "collaboration-discussions-source-03"
-          ]
-        },
-        {
           "name": "OrganizationDiscussionSpaceEnabled",
           "version": 1,
           "kind": "domain",
@@ -3104,6 +3348,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Content reports, moderation cases, blocks, interaction limits, and visibility decisions.",
+      "semanticStatus": "candidate",
       "owns": [
         "ContentReport",
         "ModerationCase",
@@ -3248,6 +3493,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "User- or organization-owned projects, items, draft issues, views, fields, workflows, charts, templates, and status updates.",
+      "semanticStatus": "candidate",
       "owns": [
         "Project",
         "ProjectItem",
@@ -3425,6 +3671,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Repository starring and user-defined star lists for discovery and collection.",
+      "semanticStatus": "candidate",
       "owns": [
         "RepositoryStar",
         "StarList",
@@ -3443,7 +3690,7 @@
         },
         {
           "context": "repositories/repositories",
-          "contract": "RepositoryReference",
+          "contract": "RepositoryStarrableOperationalState",
           "mode": "synchronous"
         },
         {
@@ -3479,6 +3726,14 @@
           "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility",
           "supports": [
             "stars removed by visibility changes"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "engagement-stars-source-03",
+          "url": "https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories",
+          "supports": [
+            "starring archived repositories"
           ],
           "verifiedOn": "2026-07-22"
         }
@@ -3557,6 +3812,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Repository watch preferences, conversation participation and manual subscriptions, ignore preferences, and notification-interest decisions.",
+      "semanticStatus": "candidate",
       "owns": [
         "RepositoryWatchPreference",
         "RepositoryEventPreference",
@@ -3661,6 +3917,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "User notification records, inboxes, reasons, filters, and read, saved, or done state.",
+      "semanticStatus": "candidate",
       "owns": [
         "Notification",
         "NotificationInbox",
@@ -3883,7 +4140,8 @@
       "classification": "supporting",
       "maturity": "stable",
       "implementationStatus": "planned",
-      "responsibility": "GitHub App registration, ownership, requested permissions, webhook preference, requested webhook events, and availability.",
+      "responsibility": "GitHub App registration, ownership and ownership transfer, requested permissions, webhook preference, requested webhook events, and visibility.",
+      "semanticStatus": "validated",
       "owns": [
         "GitHubAppRegistration",
         "GitHubAppOwnerReference",
@@ -3930,11 +4188,40 @@
             "app visibility"
           ],
           "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "integrations-github-app-registrations-source-02",
+          "url": "https://docs.github.com/en/apps/maintaining-github-apps/transferring-ownership-of-a-github-app",
+          "supports": [
+            "GitHub App registration ownership transfer",
+            "eligible destination account types",
+            "transfer effects"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "integrations-github-app-registrations-source-03",
+          "url": "https://docs.github.com/en/apps/maintaining-github-apps/modifying-a-github-app-registration",
+          "supports": [
+            "GitHub App registration updates",
+            "permission changes",
+            "webhook configuration changes"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "integrations-github-app-registrations-source-04",
+          "url": "https://docs.github.com/en/apps/maintaining-github-apps/deleting-a-github-app",
+          "supports": [
+            "GitHub App registration deletion",
+            "installation removal after registration deletion"
+          ],
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
         {
-          "name": "AppRegistered",
+          "name": "GitHubAppRegistered",
           "version": 1,
           "kind": "domain",
           "meaning": "app registered.",
@@ -3943,48 +4230,48 @@
           ]
         },
         {
-          "name": "AppUpdated",
+          "name": "GitHubAppUpdated",
           "version": 1,
           "kind": "domain",
           "meaning": "app updated.",
           "sourceIds": [
-            "integrations-github-app-registrations-source-01"
+            "integrations-github-app-registrations-source-03"
           ]
         },
         {
-          "name": "AppSuspended",
+          "name": "GitHubAppDeleted",
           "version": 1,
           "kind": "domain",
-          "meaning": "app suspended.",
+          "meaning": "GitHub App registration deleted and its installations invalidated.",
           "sourceIds": [
-            "integrations-github-app-registrations-source-01"
+            "integrations-github-app-registrations-source-04"
           ]
         },
         {
-          "name": "AppDeleted",
-          "version": 1,
-          "kind": "domain",
-          "meaning": "app deleted.",
-          "sourceIds": [
-            "integrations-github-app-registrations-source-01"
-          ]
-        },
-        {
-          "name": "AppPermissionsChanged",
+          "name": "GitHubAppPermissionsChanged",
           "version": 1,
           "kind": "domain",
           "meaning": "app permissions changed.",
           "sourceIds": [
-            "integrations-github-app-registrations-source-01"
+            "integrations-github-app-registrations-source-03"
           ]
         },
         {
-          "name": "AppWebhookConfigurationChanged",
+          "name": "GitHubAppWebhookConfigurationChanged",
           "version": 1,
           "kind": "domain",
           "meaning": "app webhook configuration changed.",
           "sourceIds": [
-            "integrations-github-app-registrations-source-01"
+            "integrations-github-app-registrations-source-03"
+          ]
+        },
+        {
+          "name": "GitHubAppOwnershipTransferred",
+          "version": 1,
+          "kind": "domain",
+          "meaning": "GitHub App registration ownership transferred.",
+          "sourceIds": [
+            "integrations-github-app-registrations-source-02"
           ]
         }
       ]
@@ -3997,6 +4284,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "GitHub App installation targets, selected repositories, granted permissions, suspension, and uninstall lifecycle.",
+      "semanticStatus": "validated",
       "owns": [
         "AppInstallation",
         "InstallationTargetReference",
@@ -4011,8 +4299,19 @@
       "dependencies": [
         {
           "context": "integrations/github-app-registrations",
-          "contract": "AppRegistrationReference",
+          "contract": "GitHubAppRegistrationReference",
           "mode": "synchronous"
+        },
+        {
+          "context": "integrations/github-app-registrations",
+          "contract": "GitHubAppRegistrationLifecycleEvents",
+          "mode": "event",
+          "events": [
+            {
+              "name": "GitHubAppDeleted",
+              "version": 1
+            }
+          ]
         },
         {
           "context": "identity/accounts",
@@ -4046,11 +4345,31 @@
             "installation lifecycle"
           ],
           "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "integrations-github-app-installations-source-02",
+          "url": "https://docs.github.com/en/apps/maintaining-github-apps/suspending-a-github-app-installation",
+          "supports": [
+            "installation suspension",
+            "installation unsuspension",
+            "suspending actor authority"
+          ],
+          "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "integrations-github-app-installations-source-03",
+          "url": "https://docs.github.com/en/apps/using-github-apps/reviewing-and-modifying-installed-github-apps",
+          "supports": [
+            "installation repository selection",
+            "installation suspension by target owner",
+            "installation uninstall"
+          ],
+          "verifiedOn": "2026-07-22"
         }
       ],
       "publishedEvents": [
         {
-          "name": "AppInstalled",
+          "name": "GitHubAppInstalled",
           "version": 1,
           "kind": "domain",
           "meaning": "app installed.",
@@ -4059,43 +4378,43 @@
           ]
         },
         {
-          "name": "AppSuspended",
+          "name": "GitHubAppInstallationSuspended",
           "version": 1,
           "kind": "domain",
           "meaning": "app suspended.",
           "sourceIds": [
-            "integrations-github-app-installations-source-01"
+            "integrations-github-app-installations-source-02"
           ]
         },
         {
-          "name": "AppUnsuspended",
+          "name": "GitHubAppInstallationUnsuspended",
           "version": 1,
           "kind": "domain",
           "meaning": "app unsuspended.",
           "sourceIds": [
-            "integrations-github-app-installations-source-01"
+            "integrations-github-app-installations-source-02"
           ]
         },
         {
-          "name": "AppUninstalled",
+          "name": "GitHubAppUninstalled",
           "version": 1,
           "kind": "domain",
           "meaning": "app uninstalled.",
           "sourceIds": [
-            "integrations-github-app-installations-source-01"
+            "integrations-github-app-installations-source-03"
           ]
         },
         {
-          "name": "InstallationRepositorySelectionChanged",
+          "name": "GitHubAppInstallationRepositorySelectionChanged",
           "version": 1,
           "kind": "domain",
           "meaning": "installation repository selection changed.",
           "sourceIds": [
-            "integrations-github-app-installations-source-01"
+            "integrations-github-app-installations-source-03"
           ]
         },
         {
-          "name": "InstallationPermissionsChanged",
+          "name": "GitHubAppInstallationPermissionsChanged",
           "version": 1,
           "kind": "domain",
           "meaning": "installation permissions changed.",
@@ -4113,6 +4432,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "OAuth App registration, ownership, callback configuration, and client lifecycle.",
+      "semanticStatus": "candidate",
       "owns": [
         "OAuthClient",
         "OAuthAppOwnerReference",
@@ -4185,6 +4505,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "User authorization of registered OAuth Apps, scopes, approval, and revocation.",
+      "semanticStatus": "candidate",
       "owns": [
         "OAuthAuthorization",
         "AuthorizationScope",
@@ -4262,6 +4583,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Repository-scoped autolink definitions for external resource references.",
+      "semanticStatus": "candidate",
       "owns": [
         "RepositoryAutolink",
         "AutolinkPrefix",
@@ -4276,7 +4598,7 @@
       "dependencies": [
         {
           "context": "repositories/repositories",
-          "contract": "RepositoryReference",
+          "contract": "RepositoryOperationalState",
           "mode": "synchronous"
         },
         {
@@ -4341,6 +4663,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Repository, organization, and enterprise webhook configuration plus GitHub App webhook projections, deliveries, attempts, and redelivery.",
+      "semanticStatus": "candidate",
       "owns": [
         "Webhook",
         "WebhookEventSelection",
@@ -4361,7 +4684,7 @@
           "mode": "event",
           "events": [
             {
-              "name": "AppWebhookConfigurationChanged",
+              "name": "GitHubAppWebhookConfigurationChanged",
               "version": 1
             }
           ]
@@ -4373,7 +4696,7 @@
         },
         {
           "context": "repositories/repositories",
-          "contract": "RepositoryWebhookTarget",
+          "contract": "RepositoryWebhookTargetAndOperationalState",
           "mode": "synchronous"
         },
         {
@@ -4384,11 +4707,6 @@
         {
           "context": "enterprises/enterprises",
           "contract": "EnterpriseWebhookTarget",
-          "mode": "synchronous"
-        },
-        {
-          "context": "platform/event-publication",
-          "contract": "IntegrationEventTransport",
           "mode": "synchronous"
         },
         {
@@ -4554,19 +4872,19 @@
           "mode": "event",
           "events": [
             {
-              "name": "AppInstalled",
+              "name": "GitHubAppInstalled",
               "version": 1
             },
             {
-              "name": "AppSuspended",
+              "name": "GitHubAppInstallationSuspended",
               "version": 1
             },
             {
-              "name": "AppUnsuspended",
+              "name": "GitHubAppInstallationUnsuspended",
               "version": 1
             },
             {
-              "name": "AppUninstalled",
+              "name": "GitHubAppUninstalled",
               "version": 1
             }
           ]
@@ -4684,6 +5002,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Billing accounts, payment profiles, usage, budgets, cost centers, invoices, and spending allocation.",
+      "semanticStatus": "candidate",
       "owns": [
         "BillingAccount",
         "PaymentProfile",
@@ -4846,6 +5165,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Plans, feature entitlements, licenses, assignments, and usage limits.",
+      "semanticStatus": "candidate",
       "owns": [
         "Plan",
         "FeatureEntitlement",
@@ -4958,6 +5278,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Organization and enterprise audit events, scopes, actors, targets, search, export, streaming, and retention policy.",
+      "semanticStatus": "candidate",
       "owns": [
         "AuditEvent",
         "AuditScope",
@@ -4980,11 +5301,6 @@
         {
           "context": "enterprises/enterprises",
           "contract": "EnterpriseAuditScope",
-          "mode": "synchronous"
-        },
-        {
-          "context": "platform/event-publication",
-          "contract": "AuditEventTransport",
           "mode": "synchronous"
         },
         {
@@ -5208,20 +5524,67 @@
           ]
         },
         {
+          "context": "enterprises/custom-properties",
+          "contract": "PublishedEventContract",
+          "mode": "event",
+          "events": [
+            {
+              "name": "EnterpriseRepositoryPropertyDefined",
+              "version": 1
+            },
+            {
+              "name": "EnterpriseRepositoryPropertyUpdated",
+              "version": 1
+            },
+            {
+              "name": "EnterpriseRepositoryPropertyDeleted",
+              "version": 1
+            },
+            {
+              "name": "EnterpriseRepositoryPropertyPromoted",
+              "version": 1
+            },
+            {
+              "name": "EnterpriseOrganizationPropertyDefined",
+              "version": 1
+            },
+            {
+              "name": "EnterpriseOrganizationPropertyUpdated",
+              "version": 1
+            },
+            {
+              "name": "EnterpriseOrganizationPropertyDeleted",
+              "version": 1
+            },
+            {
+              "name": "OrganizationPropertyValueSet",
+              "version": 1
+            },
+            {
+              "name": "OrganizationPropertyValueCleared",
+              "version": 1
+            }
+          ]
+        },
+        {
           "context": "organizations/custom-properties",
           "contract": "PublishedEventContract",
           "mode": "event",
           "events": [
             {
-              "name": "CustomPropertyDefined",
+              "name": "OrganizationRepositoryPropertyDefined",
               "version": 1
             },
             {
-              "name": "CustomPropertyUpdated",
+              "name": "OrganizationRepositoryPropertyUpdated",
               "version": 1
             },
             {
-              "name": "CustomPropertyDeleted",
+              "name": "OrganizationRepositoryPropertyDeleted",
+              "version": 1
+            },
+            {
+              "name": "OrganizationRepositoryPropertyPromotionRequested",
               "version": 1
             },
             {
@@ -5294,23 +5657,23 @@
           "mode": "event",
           "events": [
             {
-              "name": "AppRegistered",
+              "name": "GitHubAppRegistered",
               "version": 1
             },
             {
-              "name": "AppUpdated",
+              "name": "GitHubAppUpdated",
               "version": 1
             },
             {
-              "name": "AppSuspended",
+              "name": "GitHubAppDeleted",
               "version": 1
             },
             {
-              "name": "AppDeleted",
+              "name": "GitHubAppPermissionsChanged",
               "version": 1
             },
             {
-              "name": "AppPermissionsChanged",
+              "name": "GitHubAppOwnershipTransferred",
               "version": 1
             }
           ]
@@ -5321,23 +5684,23 @@
           "mode": "event",
           "events": [
             {
-              "name": "AppInstalled",
+              "name": "GitHubAppInstalled",
               "version": 1
             },
             {
-              "name": "AppSuspended",
+              "name": "GitHubAppInstallationSuspended",
               "version": 1
             },
             {
-              "name": "AppUnsuspended",
+              "name": "GitHubAppInstallationUnsuspended",
               "version": 1
             },
             {
-              "name": "AppUninstalled",
+              "name": "GitHubAppUninstalled",
               "version": 1
             },
             {
-              "name": "InstallationPermissionsChanged",
+              "name": "GitHubAppInstallationPermissionsChanged",
               "version": 1
             }
           ]
@@ -5546,6 +5909,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Permission-filtered search projections across users, organizations, repositories, issues, discussions, and projects.",
+      "semanticStatus": "candidate",
       "owns": [
         "SearchDocument",
         "SearchResultProjection"
@@ -5590,6 +5954,76 @@
             },
             {
               "name": "OrganizationLifecycleChanged",
+              "version": 1
+            }
+          ]
+        },
+        {
+          "context": "enterprises/custom-properties",
+          "contract": "EnterpriseCustomPropertySearchEvents",
+          "mode": "event",
+          "events": [
+            {
+              "name": "EnterpriseRepositoryPropertyDefined",
+              "version": 1
+            },
+            {
+              "name": "EnterpriseRepositoryPropertyUpdated",
+              "version": 1
+            },
+            {
+              "name": "EnterpriseRepositoryPropertyDeleted",
+              "version": 1
+            },
+            {
+              "name": "EnterpriseRepositoryPropertyPromoted",
+              "version": 1
+            },
+            {
+              "name": "EnterpriseOrganizationPropertyDefined",
+              "version": 1
+            },
+            {
+              "name": "EnterpriseOrganizationPropertyUpdated",
+              "version": 1
+            },
+            {
+              "name": "EnterpriseOrganizationPropertyDeleted",
+              "version": 1
+            },
+            {
+              "name": "OrganizationPropertyValueSet",
+              "version": 1
+            },
+            {
+              "name": "OrganizationPropertyValueCleared",
+              "version": 1
+            }
+          ]
+        },
+        {
+          "context": "organizations/custom-properties",
+          "contract": "RepositoryCustomPropertySearchEvents",
+          "mode": "event",
+          "events": [
+            {
+              "name": "OrganizationRepositoryPropertyDefined",
+              "version": 1
+            },
+            {
+              "name": "OrganizationRepositoryPropertyUpdated",
+              "version": 1
+            },
+            {
+              "name": "OrganizationRepositoryPropertyDeleted",
+              "version": 1
+            },
+            {
+              "name": "RepositoryPropertyValueSet",
+              "version": 1
+            },
+            {
+              "name": "RepositoryPropertyValueCleared",
               "version": 1
             }
           ]
@@ -5744,6 +6178,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "User-visible dashboard and resource activity projections.",
+      "semanticStatus": "candidate",
       "owns": [
         "ActivityItem",
         "PersonalActivityFeed",
@@ -5806,6 +6241,14 @@
             },
             {
               "name": "RepositoryUnarchived",
+              "version": 1
+            },
+            {
+              "name": "RepositoryDeleted",
+              "version": 1
+            },
+            {
+              "name": "RepositoryRestored",
               "version": 1
             }
           ]
@@ -5911,6 +6354,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Non-code repository engagement trends and integration-health projections.",
+      "semanticStatus": "candidate",
       "owns": [
         "RepositoryInsight",
         "EngagementMetric",
@@ -6059,15 +6503,19 @@
       "kind": "technical",
       "maturity": "stable",
       "implementationStatus": "planned",
-      "responsibility": "Reliable domain and integration event publication, idempotency, retry, ordering, and dead-letter handling.",
+      "responsibility": "Dispatch, leasing, retry, operational idempotency, redelivery, and dead-letter handling for context-owned event envelopes.",
+      "semanticStatus": "not-applicable",
       "owns": [
-        "OutboxRecord",
+        "PublicationLease",
+        "PublicationCursor",
         "PublicationAttempt",
-        "IdempotencyKey",
-        "DeadLetterRecord"
+        "DeadLetterRecord",
+        "RedeliveryRequest"
       ],
       "excludes": [
         "ProductEventMeaning",
+        "ContextOutboxRecord",
+        "SourceContextTransaction",
         "WebhookSubscription",
         "NotificationInterest"
       ],
@@ -6111,6 +6559,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Search document indexing, querying, and index lifecycle adapters.",
+      "semanticStatus": "not-applicable",
       "owns": [
         "IndexDocument",
         "IndexCursor",
@@ -6154,6 +6603,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Storage and retrieval of media referenced by product domains.",
+      "semanticStatus": "not-applicable",
       "owns": [
         "MediaReference",
         "MediaObject",
@@ -6197,6 +6647,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "External email or push delivery adapters for accepted notification delivery requests.",
+      "semanticStatus": "not-applicable",
       "owns": [
         "ChannelDelivery",
         "DeliveryAttempt",
@@ -6245,6 +6696,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Durable storage, export, and retention enforcement for audit records.",
+      "semanticStatus": "not-applicable",
       "owns": [
         "AuditStorageRecord",
         "AuditExportJob",

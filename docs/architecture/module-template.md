@@ -54,6 +54,13 @@ data handling, retention and redaction, delivery guarantees, idempotency,
 ordering, retry, official `docs.github.com` evidence, and any active
 `ARCH-EX-###` references.
 
+When a command publishes events, its persistence adapter writes the aggregate
+changes and a context-local outbox envelope in the same transaction. The
+platform publication capability may lease and dispatch committed envelopes,
+but it does not own or write the source context's outbox row. Transport,
+database, and framework wiring remain adapter concerns and are not catalog
+dependencies unless they carry bounded-context semantics.
+
 An active context that publishes events must expose each event type explicitly
 from `integration-contracts.ts`. Its catalog entry uses
 `integration-contracts.ts#ExportedType` and declares the event ordering key.

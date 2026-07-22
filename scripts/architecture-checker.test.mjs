@@ -28,7 +28,7 @@ function writeFixture(rootDir, relativePath, contents) {
 
 function validCatalog() {
   return {
-    version: 3,
+    version: 4,
     product: {
       name: "GitHub non-code product platform",
       goal: "Model GitHub product semantics without code capabilities.",
@@ -52,6 +52,7 @@ function validCatalog() {
         classification: "core",
         maturity: "stable",
         implementationStatus: "active",
+        semanticStatus: "validated",
         responsibility: "Browser-safe primitives.",
         owns: ["Repository"],
         excludes: ["GitObject"],
@@ -196,7 +197,7 @@ test("accepts the canonical bounded-context fixture", () => {
   }
 });
 
-test("rejects an invalid v3 catalog shape and source policy", () => {
+test("rejects an invalid v4 catalog shape and source policy", () => {
   const rootDir = createValidFixture();
 
   try {
@@ -253,21 +254,22 @@ test("rejects missing, future, and stale source verification for active contexts
   }
 });
 
-test("renders implementation and derived research status without ambiguous verification text", () => {
+test("renders independent source freshness and semantic status", () => {
   const catalog = validCatalog();
   let markdown = renderModuleMap(catalog);
 
-  assert.match(markdown, /\| active \| verified \|/);
-  assert.doesNotMatch(markdown, /verified unverified/);
+  assert.match(markdown, /\| active \| fresh \| validated \|/);
+  assert.doesNotMatch(markdown, /verified 2026/);
+  assert.match(markdown, /checked 2026-07-20/);
 
   catalog.contexts[0].officialSources[0].verifiedOn = null;
   markdown = renderModuleMap(catalog);
-  assert.match(markdown, /\| active \| candidate \|/);
+  assert.match(markdown, /\| active \| unverified \| validated \|/);
   assert.match(markdown, /, unverified\)/);
 
   catalog.contexts[0].officialSources[0].verifiedOn = "2024-01-01";
   markdown = renderModuleMap(catalog);
-  assert.match(markdown, /\| active \| stale \|/);
+  assert.match(markdown, /\| active \| stale \| validated \|/);
 
   catalog.contexts.push({
     subdomain: "platform",
@@ -276,6 +278,7 @@ test("renders implementation and derived research status without ambiguous verif
     classification: "generic",
     maturity: "stable",
     implementationStatus: "planned",
+    semanticStatus: "not-applicable",
     responsibility: "Publish integration events.",
     owns: ["EventPublication"],
     excludes: ["ProductPolicy"],
@@ -285,7 +288,21 @@ test("renders implementation and derived research status without ambiguous verif
     eventRationale: "Technical infrastructure does not publish product events.",
   });
   markdown = renderModuleMap(catalog);
-  assert.match(markdown, /\| planned \| not-applicable \|/);
+  assert.match(markdown, /\| planned \| not-applicable \| not-applicable \|/);
+});
+
+test("requires validated semantics before activating a product context", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    const catalog = validCatalog();
+    catalog.contexts[0].semanticStatus = "candidate";
+    writeCatalog(rootDir, catalog);
+
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-021"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
 });
 
 test("requires canonical decision headings in active context READMEs", () => {
@@ -334,10 +351,11 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       dependency.mode === "event" &&
       dependency.events.some((selected) => selected.name === event && selected.version === 1));
 
-  assert.equal(catalog.version, 3);
-  assert.equal(catalog.contexts.length, 47);
+  assert.equal(catalog.version, 4);
+  assert.equal(catalog.contexts.length, 48);
   assert.equal(catalog.contexts.every((item) => item.status === undefined), true);
   assert.equal(catalog.contexts.every((item) => item.implementationStatus === "planned"), true);
+  assert.equal(catalog.contexts.every((item) => item.semanticStatus !== undefined), true);
   assert.equal(byPath.get("collaboration/issue-schema").owns.includes("IssueFieldValue"), false);
   assert.equal(byPath.get("collaboration/issues").owns.includes("IssueFieldValueSet"), true);
   assert.equal(byPath.has("integrations/github-app-registrations"), true);
@@ -347,6 +365,84 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
   assert.equal(hasEventDependency("engagement/stars", "repositories/repositories", "RepositoryVisibilityChanged"), true);
   assert.equal(hasEventDependency("engagement/subscriptions", "repositories/repositories", "RepositoryVisibilityChanged"), true);
   assert.equal(hasEventDependency("platform/notification-channels", "engagement/notifications", "NotificationDeliveryRequested"), true);
+  assert.equal(byPath.has("enterprises/custom-properties"), true);
+  assert.equal(
+    byPath.get("enterprises/custom-properties").owns.includes("EnterpriseOrganizationPropertyDefinition"),
+    true,
+  );
+  assert.equal(
+    byPath.get("organizations/custom-properties").owns.includes("OrganizationPropertyValue"),
+    false,
+  );
+  assert.equal(
+    byPath.get("repositories/repository-metadata").dependencies.some(
+      (dependency) => dependency.context === "organizations/custom-properties",
+    ),
+    false,
+  );
+  assert.equal(
+    byPath.get("repositories/repositories").owns.includes("RepositoryOperationalState"),
+    true,
+  );
+  assert.equal(
+    byPath.get("collaboration/conversations").dependencies.some(
+      (dependency) => dependency.contract === "RepositoryOperationalState",
+    ),
+    true,
+  );
+  assert.equal(
+    byPath.get("enterprises/enterprises").dependencies.some(
+      (dependency) => dependency.context === "repositories/repositories",
+    ),
+    false,
+  );
+  assert.equal(
+    hasEventDependency("repositories/repository-access", "repositories/repositories", "RepositoryDeleted"),
+    true,
+  );
+  assert.equal(
+    byPath.get("repositories/repository-features").owns.includes("RepositoryDiscussionsFeatureState"),
+    true,
+  );
+  assert.equal(
+    byPath.get("collaboration/discussions").publishedEvents.some(
+      (event) => event.name === "RepositoryDiscussionSpaceEnabled",
+    ),
+    false,
+  );
+  assert.equal(
+    hasEventDependency(
+      "collaboration/discussions",
+      "repositories/repository-features",
+      "RepositoryDiscussionsEnabled",
+    ),
+    true,
+  );
+  assert.equal(
+    byPath.get("integrations/github-app-registrations").publishedEvents.some(
+      (event) => event.name === "AppSuspended",
+    ),
+    false,
+  );
+  assert.equal(
+    byPath.get("integrations/github-app-registrations").publishedEvents.some(
+      (event) => event.name === "GitHubAppOwnershipTransferred",
+    ),
+    true,
+  );
+  assert.equal(
+    byPath.get("integrations/github-app-installations").publishedEvents.some(
+      (event) => event.name === "GitHubAppInstallationSuspended",
+    ),
+    true,
+  );
+  assert.equal(byPath.get("platform/event-publication").owns.includes("OutboxRecord"), false);
+  assert.equal(
+    catalog.contexts.some((context) => context.dependencies.some(
+      (dependency) => dependency.context === "platform/event-publication",
+    )),
+    false,
+  );
 });
 
 test("rejects unversioned, duplicate, or untraceable published events", () => {
@@ -378,6 +474,7 @@ test("rejects event dependencies that select undeclared event versions", () => {
       kind: "projection",
       maturity: "stable",
       implementationStatus: "planned",
+      semanticStatus: "candidate",
       responsibility: "Search projection.",
       owns: ["SearchDocument"],
       excludes: ["Repository"],
@@ -420,6 +517,7 @@ test("requires a declared synchronous dependency for cross-context imports", () 
       classification: "core",
       maturity: "stable",
       implementationStatus: "active",
+      semanticStatus: "validated",
       responsibility: "Issue tracking.",
       owns: ["Issue"],
       excludes: ["Repository"],

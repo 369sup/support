@@ -60,11 +60,12 @@ and ownership but must not redefine these rules.
 
 ## Product catalog
 
-- **ARCH-MAP-013:** `module-map.json` uses catalog version 3 and every context
+- **ARCH-MAP-013:** `module-map.json` uses catalog version 4 and every context
   declares a valid kind, maturity, implementation status, responsibility, ownership,
   exclusions, dependencies, and source list. Domain contexts also declare a
-  core or supporting classification. Research status is derived from source
-  verification dates as candidate, verified, stale, or not applicable.
+  core or supporting classification. Source freshness is derived from source
+  check dates; semantic status is declared independently as candidate,
+  validated, or not applicable.
 - **ARCH-MAP-014:** Domain and projection sources use HTTPS under
   `docs.github.com/en/` and state the product semantics they support. Technical
   contexts have no GitHub product sources.
@@ -86,6 +87,9 @@ and ownership but must not redefine these rules.
 - **ARCH-MAP-020:** Every event published by an active context names an exported
   `integration-contracts.ts` schema and a non-empty ordering key. Planned event
   catalogs may leave contract metadata pending until activation.
+- **ARCH-MAP-021:** Every active domain or projection context has validated
+  product semantics in addition to fresh official sources. A fresh source date
+  does not by itself validate ownership, dependencies, or behavior.
 - **ARCH-GUIDE-001:** Repository `AGENTS.md` files have resolvable local links;
   permanent `AGENTS.override.md` files are prohibited.
 - **ARCH-MEM-001:** Committed Serena shared memories are deterministic,
@@ -116,6 +120,12 @@ and ownership but must not redefine these rules.
   exceptions for the same operation.
 - Keep one transaction inside one bounded context and one command by default.
   Cross-context consistency is explicit and normally event-driven.
+- A source context writes its persistence changes and local outbox envelope in
+  the same transaction. Event dispatch, leasing, retry, redelivery, and
+  dead-letter handling occur after commit and do not own the source outbox row.
+- Catalog dependencies describe product or bounded-context semantics. Database,
+  message transport, framework wiring, and other adapter-only relationships do
+  not become synchronous catalog dependencies.
 - Each boundary owns its mapping. Domain objects, ORM records, transport DTOs,
   and provider responses are distinct types.
 - A new pattern must first be added to the canonical template and mechanical
