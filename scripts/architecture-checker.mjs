@@ -244,7 +244,7 @@ function validateCatalog(rootDir, catalog, now, errors) {
   }
 
   if (
-    catalog.version !== 4 ||
+    catalog.version !== 6 ||
     typeof catalog.product?.name !== "string" ||
     typeof catalog.product?.goal !== "string" ||
     catalog.product?.sourcePolicy?.protocol !== "https:" ||
@@ -252,7 +252,7 @@ function validateCatalog(rootDir, catalog, now, errors) {
     catalog.product?.sourcePolicy?.pathPrefix !== "/en/"
   ) {
     errors.push(
-      "[ARCH-MAP-013] module-map.json must use version 4 and declare the canonical product and source policy.",
+      "[ARCH-MAP-013] module-map.json must use version 6 and declare the canonical product and source policy.",
     );
   }
 
@@ -342,11 +342,27 @@ function validateCatalog(rootDir, catalog, now, errors) {
       context.excludes.length > 0 &&
       context.excludes.every((item) => typeof item === "string" && item !== "") &&
       Array.isArray(context.dependencies) &&
+      Array.isArray(context.plannedRelationships) &&
+      Array.isArray(context.activationScope) &&
+      Array.isArray(context.semanticClaims) &&
       Array.isArray(context.officialSources);
 
     if (!hasValidShape) {
       errors.push(
-        `[ARCH-MAP-013] ${contextPath} has an invalid v4 catalog shape.`,
+        `[ARCH-MAP-013] ${contextPath} has an invalid v6 catalog shape.`,
+      );
+    }
+
+    const hasValidActivationScope =
+      Array.isArray(context.activationScope) &&
+      context.activationScope.every((item) => isKebabCase(item)) &&
+      new Set(context.activationScope).size === context.activationScope.length &&
+      (context.implementationStatus !== "active" || context.activationScope.length > 0) &&
+      (context.implementationStatus !== "planned" || context.activationScope.length === 0);
+
+    if (!hasValidActivationScope) {
+      errors.push(
+        `[ARCH-MAP-023] ${contextPath} must declare a unique non-empty activationScope only when active.`,
       );
     }
 
@@ -479,6 +495,90 @@ function validateCatalog(rootDir, catalog, now, errors) {
       );
     }
 
+    const hasInvalidEventImplementationStatus = publishedEvents.some((event) => {
+      const isPlanned = event?.implementationStatus === "planned";
+      const isActive = event?.implementationStatus === "active";
+      const plannedEventHasContractMetadata =
+        isPlanned && (event.schema !== undefined || event.orderingKey !== undefined);
+
+      return (
+        (!isPlanned && !isActive) ||
+        (context.implementationStatus === "planned" && isActive) ||
+        plannedEventHasContractMetadata
+      );
+    });
+
+    if (hasInvalidEventImplementationStatus) {
+      errors.push(
+        `[ARCH-MAP-026] ${contextPath} events must declare a valid implementationStatus; planned contexts cannot publish active events, and planned events cannot declare contract metadata.`,
+      );
+    }
+
+    const semanticClaims = Array.isArray(context.semanticClaims)
+      ? context.semanticClaims
+      : [];
+    const semanticClaimIds = new Set();
+    const claimedOwnership = new Set();
+    const claimedEvents = new Set();
+    let hasInvalidSemanticClaim = false;
+
+    for (const semanticClaim of semanticClaims) {
+      const ownership = Array.isArray(semanticClaim?.ownership) ? semanticClaim.ownership : [];
+      const events = Array.isArray(semanticClaim?.events) ? semanticClaim.events : [];
+      const claimSourceIds = Array.isArray(semanticClaim?.sourceIds) ? semanticClaim.sourceIds : [];
+      const invalidClaim =
+        !isKebabCase(semanticClaim?.id) ||
+        semanticClaimIds.has(semanticClaim.id) ||
+        typeof semanticClaim?.statement !== "string" ||
+        semanticClaim.statement.trim() === "" ||
+        !Array.isArray(semanticClaim?.ownership) ||
+        !Array.isArray(semanticClaim?.events) ||
+        !Array.isArray(semanticClaim?.sourceIds) ||
+        ownership.length + events.length === 0 ||
+        new Set(ownership).size !== ownership.length ||
+        new Set(events).size !== events.length ||
+        new Set(claimSourceIds).size !== claimSourceIds.length ||
+        ownership.some((item) => !context.owns.includes(item)) ||
+        events.some((item) => !publishedEventKeys.has(item)) ||
+        claimSourceIds.length === 0 ||
+        claimSourceIds.some((item) => !sourceIds.has(item)) ||
+        context.kind === "technical";
+
+      if (invalidClaim) {
+        hasInvalidSemanticClaim = true;
+      }
+
+      semanticClaimIds.add(semanticClaim?.id);
+      for (const item of ownership) {
+        claimedOwnership.add(item);
+      }
+      for (const item of events) {
+        claimedEvents.add(item);
+      }
+    }
+
+    const missingOwnershipClaims = context.owns.filter((item) => !claimedOwnership.has(item));
+    if (hasInvalidSemanticClaim) {
+      errors.push(
+        `[ARCH-MAP-024] ${contextPath} has an invalid semantic claim or official-source reference.`,
+      );
+    }
+    if (
+      context.semanticStatus === "validated" &&
+      (semanticClaims.length === 0 || missingOwnershipClaims.length > 0)
+    ) {
+      errors.push(
+        `[ARCH-MAP-024] Validated context ${contextPath} requires valid official-source claims for every owned semantic.`,
+      );
+    }
+
+    const missingEventClaims = [...publishedEventKeys].filter((item) => !claimedEvents.has(item));
+    if (context.semanticStatus === "validated" && missingEventClaims.length > 0) {
+      errors.push(
+        `[ARCH-MAP-025] Validated context ${contextPath} requires an official-source claim for every published event.`,
+      );
+    }
+
     const contextRoot = contextRootFor(rootDir, context);
 
     if (context.implementationStatus === "planned" && existsSync(contextRoot)) {
@@ -526,12 +626,16 @@ function validateCatalog(rootDir, catalog, now, errors) {
         );
       }
 
-      if (publishedEvents.length > 0) {
+      const activeEvents = publishedEvents.filter((event) => {
+        return event.implementationStatus === "active";
+      });
+
+      if (activeEvents.length > 0) {
         const contractsPath = join(contextRoot, "integration-contracts.ts");
         const contracts = existsSync(contractsPath)
           ? readFileSync(contractsPath, "utf8")
           : "";
-        const hasInvalidContractMetadata = publishedEvents.some((event) => {
+        const hasInvalidContractMetadata = activeEvents.some((event) => {
           const match = typeof event.schema === "string"
             ? /^integration-contracts\.ts#([A-Z][A-Za-z0-9]+)$/.exec(event.schema)
             : null;
@@ -545,7 +649,7 @@ function validateCatalog(rootDir, catalog, now, errors) {
 
         if (hasInvalidContractMetadata) {
           errors.push(
-            `[ARCH-MAP-020] Active context ${contextPath} events require exported integration-contracts.ts schemas and non-empty ordering keys.`,
+            `[ARCH-MAP-020] Active events in ${contextPath} require exported integration-contracts.ts schemas and non-empty ordering keys.`,
           );
         }
       }
@@ -553,46 +657,79 @@ function validateCatalog(rootDir, catalog, now, errors) {
   }
 
   for (const [contextPath, context] of contextsByPath) {
-    const dependencyKeys = new Set();
+    const relationshipKeys = new Set();
 
-    for (const dependency of context.dependencies ?? []) {
-      const dependencyKey = `${dependency.context}:${dependency.mode}`;
-      const target = contextsByPath.get(dependency.context);
-      const targetEventKeys = new Set(
-        (target?.publishedEvents ?? []).map((event) => `${event.name}@${event.version}`),
-      );
-      const hasValidEventSelection =
-        dependency.mode !== "event" ||
-        (Array.isArray(dependency.events) &&
-          dependency.events.length > 0 &&
-          dependency.events.every((event) => {
-            return (
-              typeof event?.name === "string" &&
-              Number.isInteger(event.version) &&
-              targetEventKeys.has(`${event.name}@${event.version}`)
-            );
-          }));
-      const synchronousHasNoEventSelection =
-        dependency.mode !== "synchronous" || dependency.events === undefined;
-      const isInvalid =
-        target === undefined ||
-        dependency.context === contextPath ||
-        dependencyKeys.has(dependencyKey) ||
-        typeof dependency.contract !== "string" ||
-        dependency.contract === "" ||
-        (dependency.mode !== "synchronous" && dependency.mode !== "event") ||
-        !hasValidEventSelection ||
-        !synchronousHasNoEventSelection ||
-        (context.kind === "domain" &&
-          target?.kind === "projection");
+    for (const relationshipKind of ["dependencies", "plannedRelationships"]) {
+      const relationships = context[relationshipKind] ?? [];
 
-      if (isInvalid) {
-        errors.push(
-          `[ARCH-MAP-015] ${contextPath} has an invalid dependency on ${dependency.context ?? "unknown"}.`,
+      for (const dependency of relationships) {
+        const dependencyKey = `${dependency.context}:${dependency.mode}`;
+        const target = contextsByPath.get(dependency.context);
+        const targetEventsByKey = new Map(
+          (target?.publishedEvents ?? []).map((event) => [
+            `${event.name}@${event.version}`,
+            event,
+          ]),
         );
-      }
+        const hasValidEventSelection =
+          dependency.mode !== "event" ||
+          (Array.isArray(dependency.events) &&
+            dependency.events.length > 0 &&
+            dependency.events.every((event) => {
+              return (
+                typeof event?.name === "string" &&
+                Number.isInteger(event.version) &&
+                targetEventsByKey.has(`${event.name}@${event.version}`)
+              );
+            }));
+        const synchronousHasNoEventSelection =
+          dependency.mode !== "synchronous" || dependency.events === undefined;
+        const isInvalid =
+          target === undefined ||
+          dependency.context === contextPath ||
+          relationshipKeys.has(dependencyKey) ||
+          typeof dependency.contract !== "string" ||
+          dependency.contract === "" ||
+          (dependency.mode !== "synchronous" && dependency.mode !== "event") ||
+          !hasValidEventSelection ||
+          !synchronousHasNoEventSelection ||
+          (context.kind === "domain" && target?.kind === "projection");
 
-      dependencyKeys.add(dependencyKey);
+        if (isInvalid) {
+          errors.push(
+            `[ARCH-MAP-015] ${contextPath} has an invalid ${relationshipKind === "dependencies" ? "dependency" : "planned relationship"} on ${dependency.context ?? "unknown"}.`,
+          );
+        }
+
+        const selectsPlannedRuntimeEvent =
+          relationshipKind === "dependencies" &&
+          dependency.mode === "event" &&
+          Array.isArray(dependency.events) &&
+          dependency.events.some((event) => {
+            return targetEventsByKey.get(
+              `${event?.name}@${event?.version}`,
+            )?.implementationStatus !== "active";
+          });
+
+        if (selectsPlannedRuntimeEvent) {
+          errors.push(
+            `[ARCH-DEP-014] ${contextPath} runtime event dependency on ${dependency.context ?? "unknown"} may select only active events.`,
+          );
+        }
+
+        relationshipKeys.add(dependencyKey);
+      }
+    }
+
+    if (
+      context.implementationStatus === "active" &&
+      (context.dependencies ?? []).some((dependency) => {
+        return contextsByPath.get(dependency.context)?.implementationStatus !== "active";
+      })
+    ) {
+      errors.push(
+        `[ARCH-MAP-022] Active context ${contextPath} may depend only on active contexts at runtime.`,
+      );
     }
   }
 
@@ -967,6 +1104,8 @@ function validateDeclaredContextDependencies(
 
     const declaredDependencies =
       contextsByPath.get(importerContext)?.dependencies ?? [];
+    const plannedRelationships =
+      contextsByPath.get(importerContext)?.plannedRelationships ?? [];
 
     for (const dependency of dependencies) {
       const importedContext = moduleContextForFile(rootDir, dependency);
@@ -987,9 +1126,12 @@ function validateDeclaredContextDependencies(
       const reportKey = `${importerContext}->${importedContext}`;
 
       if (!isDeclared && !reported.has(reportKey)) {
-        errors.push(
-          `[ARCH-DEP-010] ${importerContext} imports ${importedContext} without a synchronous module-map dependency.`,
-        );
+        const isOnlyPlanned = plannedRelationships.some((entry) => {
+          return entry.context === importedContext && entry.mode === "synchronous";
+        });
+        errors.push(isOnlyPlanned
+          ? `[ARCH-DEP-013] ${importerContext} imports ${importedContext} through a planned relationship that does not authorize source imports.`
+          : `[ARCH-DEP-010] ${importerContext} imports ${importedContext} without a synchronous module-map dependency.`);
         reported.add(reportKey);
       }
     }
@@ -1210,19 +1352,26 @@ export function renderModuleMap(catalog) {
 
   lines.push("", "## Ownership and relationships", "");
 
+  const renderRelationships = (relationships) => {
+    return relationships.length === 0
+      ? "None."
+      : relationships
+          .map((relationship) => {
+            const events = relationship.events?.length > 0
+              ? ` [${relationship.events.map((event) => `${event.name}@${event.version}`).join(", ")}]`
+              : "";
+            return `${relationship.context} via ${relationship.contract} (${relationship.mode})${events}`;
+          })
+          .join("; ");
+  };
+
   for (const context of catalog.contexts) {
     const contextPath = `${context.subdomain}/${context.name}`;
-    const dependencies =
-      context.dependencies.length === 0
-        ? "None."
-        : context.dependencies
-            .map((dependency) => {
-              const events = dependency.events?.length > 0
-                ? ` [${dependency.events.map((event) => `${event.name}@${event.version}`).join(", ")}]`
-                : "";
-              return `${dependency.context} via ${dependency.contract} (${dependency.mode})${events}`;
-            })
-            .join("; ");
+    const dependencies = renderRelationships(context.dependencies);
+    const plannedRelationships = renderRelationships(context.plannedRelationships);
+    const activationScope = context.activationScope.length === 0
+      ? "None while planned."
+      : context.activationScope.join(", ");
     const sources =
       context.officialSources.length === 0
         ? "Not applicable; technical capability."
@@ -1241,17 +1390,35 @@ export function renderModuleMap(catalog) {
             const contract = event.schema === undefined
               ? "contract pending"
               : `${event.schema}, ordered by ${event.orderingKey}`;
-            return `${event.name}@${event.version} (${event.kind}; ${contract})`;
+            return `${event.name}@${event.version} (${event.kind}; ${event.implementationStatus}; ${contract})`;
           })
           .join(", ");
+    const semanticClaims = context.semanticClaims.length === 0
+      ? context.semanticStatus === "not-applicable"
+        ? "Not applicable to technical capabilities."
+        : "None while product semantics remain candidate."
+      : context.semanticClaims
+          .map((semanticClaim) => {
+            const ownership = semanticClaim.ownership.length === 0
+              ? "no ownership entries"
+              : `owns ${semanticClaim.ownership.join(", ")}`;
+            const claimedEvents = semanticClaim.events.length === 0
+              ? "no events"
+              : `events ${semanticClaim.events.join(", ")}`;
+            return `${semanticClaim.id} (${ownership}; ${claimedEvents}; sources ${semanticClaim.sourceIds.join(", ")})`;
+          })
+          .join("; ");
 
     lines.push(
       `### ${contextPath}`,
       "",
       `- **Owns:** ${context.owns.join(", ")}.`,
       `- **Excludes:** ${context.excludes.join(", ")}.`,
-      `- **Dependencies:** ${dependencies}`,
+      `- **Activation scope:** ${activationScope}`,
+      `- **Runtime dependencies:** ${dependencies}`,
+      `- **Planned relationships:** ${plannedRelationships}`,
       `- **Published events:** ${events}`,
+      `- **Semantic claims:** ${semanticClaims}`,
       `- **Official sources:** ${sources}`,
       "",
     );
@@ -1259,7 +1426,7 @@ export function renderModuleMap(catalog) {
 
   lines.push(
     "All product semantics are justified by HTTPS sources under docs.github.com/en/.",
-    "Planned contexts do not receive source directories until implementation begins.",
+    "Planned contexts do not receive source directories, activation scope, or runtime dependencies until implementation begins.",
     "",
   );
 

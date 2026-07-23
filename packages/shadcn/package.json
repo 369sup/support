@@ -5,6 +5,9 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
+    "./custom/development-api-gate": "./src/custom/development-api-gate.tsx",
+    "./custom/route-placeholder": "./src/custom/route-placeholder.tsx",
+    "./hooks/use-development-api-state": "./src/hooks/use-development-api-state.ts",
     "./lib/class-names": "./src/lib/class-names.ts",
     "./ui/button": "./src/ui/button.tsx",
     "./ui/button-variants": "./src/ui/button-variants.ts",

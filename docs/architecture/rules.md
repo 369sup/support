@@ -47,6 +47,10 @@ and ownership but must not redefine these rules.
 - **ARCH-DEP-012:** Static imports, re-exports, and string-literal dynamic
   imports receive the same boundary checks. Variable dynamic imports,
   `export *`, and CommonJS `require()` remain prohibited.
+- **ARCH-DEP-013:** A `plannedRelationships` entry documents a future product
+  relationship only. It does not authorize imports or runtime event handling;
+  move the relationship to `dependencies` when its activation scope is
+  implemented and both contexts are active.
 - Workspace packages are imported only through declared package subpath
   exports; consumers never import `packages/*/src`.
 - **ARCH-GRAPH-001:** Source dependencies must be acyclic.
@@ -60,9 +64,10 @@ and ownership but must not redefine these rules.
 
 ## Product catalog
 
-- **ARCH-MAP-013:** `module-map.json` uses catalog version 4 and every context
+- **ARCH-MAP-013:** `module-map.json` uses catalog version 6 and every context
   declares a valid kind, maturity, implementation status, responsibility, ownership,
-  exclusions, dependencies, and source list. Domain contexts also declare a
+  exclusions, activation scope, runtime dependencies, planned relationships,
+  semantic claims, and source list. Domain contexts also declare a
   core or supporting classification. Source freshness is derived from source
   check dates; semantic status is declared independently as candidate,
   validated, or not applicable.
@@ -84,12 +89,29 @@ and ownership but must not redefine these rules.
 - **ARCH-MAP-019:** Every active context README contains the canonical decision
   headings from `module-template.md`; planned contexts do not receive source
   directories or placeholder READMEs.
-- **ARCH-MAP-020:** Every event published by an active context names an exported
-  `integration-contracts.ts` schema and a non-empty ordering key. Planned event
-  catalogs may leave contract metadata pending until activation.
+- **ARCH-MAP-020:** Every active event names an exported
+  `integration-contracts.ts` schema and a non-empty ordering key. Planned events
+  omit contract metadata until activation.
 - **ARCH-MAP-021:** Every active domain or projection context has validated
   product semantics in addition to fresh official sources. A fresh source date
   does not by itself validate ownership, dependencies, or behavior.
+- **ARCH-MAP-022:** Every runtime dependency of an active context targets an
+  active context. Relationships that are not implemented remain in
+  `plannedRelationships`.
+- **ARCH-MAP-023:** Every active context declares at least one unique kebab-case
+  activation scope. Planned contexts have an empty activation scope.
+- **ARCH-MAP-024:** Every owned semantic in a validated context is covered by a
+  stable semantic claim that names exact official source IDs.
+- **ARCH-MAP-025:** Every published event in a validated context is covered by
+  a semantic claim using its exact event name and version.
+- **ARCH-MAP-026:** Every catalog event declares `implementationStatus` as
+  `planned` or `active`. Planned contexts cannot publish active events, while
+  active contexts may mix planned and active events or publish none for a
+  query-only activation scope. Planned events never declare schema or ordering
+  metadata.
+- **ARCH-DEP-014:** Runtime event dependencies consume only active events from
+  active contexts. Planned relationships may reference planned or active events
+  without authorizing runtime handling.
 - **ARCH-GUIDE-001:** Repository `AGENTS.md` files have resolvable local links;
   permanent `AGENTS.override.md` files are prohibited.
 - **ARCH-MEM-001:** Committed Serena shared memories are deterministic,

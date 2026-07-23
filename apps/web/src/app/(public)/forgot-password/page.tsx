@@ -1,4 +1,4 @@
-import { RoutePlaceholder } from "@/app/_components/route-placeholder";
+import { RoutePlaceholder } from "@support/shadcn/custom/route-placeholder";
 
 export default function ForgotPasswordPage() {
   return <RoutePlaceholder title="Forgot password" description="Request secure instructions for resetting your password." />;

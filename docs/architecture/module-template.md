@@ -2,6 +2,10 @@
 
 Create a context only after its `module-map.json` `implementationStatus`
 changes from `planned` to `active`. Do not create empty optional directories.
+At activation, declare the implemented use cases in `activationScope` and move
+only their implemented relationships from `plannedRelationships` to
+`dependencies`. Runtime dependencies require active target contexts; planned
+relationships do not authorize imports or event handlers.
 
 ```text
 apps/web/src/modules/<subdomain>/<bounded-context>/
@@ -54,6 +58,11 @@ data handling, retention and redaction, delivery guarantees, idempotency,
 ordering, retry, official `docs.github.com` evidence, and any active
 `ARCH-EX-###` references.
 
+Every catalog event declares `implementationStatus` as `planned` or `active`.
+Activate only the events emitted by the implemented `activationScope`; leave
+future events planned without schema or ordering metadata. Query-only scopes may
+have no active events.
+
 When a command publishes events, its persistence adapter writes the aggregate
 changes and a context-local outbox envelope in the same transaction. The
 platform publication capability may lease and dispatch committed envelopes,
@@ -61,9 +70,11 @@ but it does not own or write the source context's outbox row. Transport,
 database, and framework wiring remain adapter concerns and are not catalog
 dependencies unless they carry bounded-context semantics.
 
-An active context that publishes events must expose each event type explicitly
-from `integration-contracts.ts`. Its catalog entry uses
+An active context must expose each active event type explicitly from
+`integration-contracts.ts`. Its catalog entry uses
 `integration-contracts.ts#ExportedType` and declares the event ordering key.
+Runtime event dependencies may select only active events; planned relationships
+may document future event selections without authorizing handlers.
 
 ## Public entrypoints
 
@@ -80,6 +91,8 @@ No public entrypoint exports aggregates, entities, handlers, ports, outbound
 adapters, persistence or provider records, or a composition root. A context
 importing another context must declare the synchronous dependency in
 `module-map.json`; an event dependency alone never permits a source import.
+Each active product context also keeps its `semanticClaims` aligned with the
+exact owned semantics and versioned events supported by official source IDs.
 
 Business-free UI primitives are not a technical bounded context. They live in
 `packages/shadcn/src/ui`, while product-agnostic compositions live in

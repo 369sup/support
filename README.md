@@ -1,6 +1,6 @@
 # Support
 
-A GitHub-like non-code product platform built with Next.js App Router and
+A non-code product platform built with Next.js App Router and
 organized as a Turborepo workspace. The product models users, enterprises,
 organizations, teams, repositories, issues, discussions, projects,
 notifications, permissions, governance, commerce, and integrations.

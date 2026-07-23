@@ -1,4 +1,4 @@
-import { Separator } from "@support/shadcn/ui/separator";
+import { Separator } from "../ui/separator";
 
 type RoutePlaceholderProps = {
   title: string;

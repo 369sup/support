@@ -1,5 +1,11 @@
-import { RoutePlaceholder } from "@/app/_components/route-placeholder";
+import type { Metadata } from "next";
+
+import { MockSignInForm } from "@/app/mock-sign-in-form";
+
+export const metadata: Metadata = {
+  title: "Sign in",
+};
 
 export default function SignInPage() {
-  return <RoutePlaceholder title="Sign in" description="Access your account and continue to the console." />;
+  return <MockSignInForm />;
 }

@@ -28,7 +28,7 @@ function writeFixture(rootDir, relativePath, contents) {
 
 function validCatalog() {
   return {
-    version: 4,
+    version: 6,
     product: {
       name: "GitHub non-code product platform",
       goal: "Model GitHub product semantics without code capabilities.",
@@ -56,7 +56,9 @@ function validCatalog() {
         responsibility: "Browser-safe primitives.",
         owns: ["Repository"],
         excludes: ["GitObject"],
+        activationScope: ["create-repository"],
         dependencies: [],
+        plannedRelationships: [],
         officialSources: [
           {
             id: "core-domain-repositories-source-01",
@@ -70,10 +72,20 @@ function validCatalog() {
             name: "RepositoryCreated",
             version: 1,
             kind: "domain",
+            implementationStatus: "active",
             meaning: "repository created.",
             sourceIds: ["core-domain-repositories-source-01"],
             schema: "integration-contracts.ts#RepositoryCreatedV1",
             orderingKey: "repositoryId",
+          },
+        ],
+        semanticClaims: [
+          {
+            id: "repository-identity",
+            statement: "Repositories have an identity and creation lifecycle.",
+            ownership: ["Repository"],
+            events: ["RepositoryCreated@1"],
+            sourceIds: ["core-domain-repositories-source-01"],
           },
         ],
       },
@@ -197,7 +209,7 @@ test("accepts the canonical bounded-context fixture", () => {
   }
 });
 
-test("rejects an invalid v4 catalog shape and source policy", () => {
+test("rejects an invalid v6 catalog shape and source policy", () => {
   const rootDir = createValidFixture();
 
   try {
@@ -282,7 +294,10 @@ test("renders independent source freshness and semantic status", () => {
     responsibility: "Publish integration events.",
     owns: ["EventPublication"],
     excludes: ["ProductPolicy"],
+    activationScope: [],
     dependencies: [],
+    plannedRelationships: [],
+    semanticClaims: [],
     officialSources: [],
     publishedEvents: [],
     eventRationale: "Technical infrastructure does not publish product events.",
@@ -300,6 +315,84 @@ test("requires validated semantics before activating a product context", () => {
     writeCatalog(rootDir, catalog);
 
     assert.equal(includesRule(check(rootDir), "ARCH-MAP-021"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("requires activation scope only for active contexts", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    const catalog = validCatalog();
+    catalog.contexts[0].activationScope = [];
+    writeCatalog(rootDir, catalog);
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-023"), true);
+
+    catalog.contexts[0].implementationStatus = "planned";
+    catalog.contexts[0].activationScope = ["create-repository"];
+    writeCatalog(rootDir, catalog);
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-023"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("requires runtime dependency targets to be active", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    const catalog = validCatalog();
+    catalog.contexts.push({
+      subdomain: "platform",
+      name: "event-publication",
+      kind: "technical",
+      classification: "generic",
+      maturity: "stable",
+      implementationStatus: "planned",
+      semanticStatus: "not-applicable",
+      responsibility: "Publish integration events.",
+      owns: ["EventPublication"],
+      excludes: ["ProductPolicy"],
+      activationScope: [],
+      dependencies: [],
+      plannedRelationships: [],
+      semanticClaims: [],
+      officialSources: [],
+      publishedEvents: [],
+      eventRationale: "Technical infrastructure does not publish product events.",
+    });
+    catalog.contexts[0].dependencies.push({
+      context: "platform/event-publication",
+      contract: "EventPublisher",
+      mode: "synchronous",
+    });
+    writeCatalog(rootDir, catalog);
+
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-022"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("requires validated ownership and events to have semantic claims", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    const catalog = validCatalog();
+    catalog.contexts[0].semanticClaims[0].ownership = [];
+    writeCatalog(rootDir, catalog);
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-024"), true);
+
+    catalog.contexts[0].semanticClaims[0].ownership = ["Repository"];
+    catalog.contexts[0].semanticClaims[0].events = [];
+    writeCatalog(rootDir, catalog);
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-025"), true);
+
+    catalog.contexts[0].semanticClaims[0].events = ["RepositoryCreated@1"];
+    catalog.contexts[0].semanticClaims[0].sourceIds = ["missing-source"];
+    writeCatalog(rootDir, catalog);
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-024"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -337,6 +430,90 @@ test("requires active published events to expose schemas and ordering keys", () 
   }
 });
 
+test("supports incremental planned and active event delivery", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    const catalog = validCatalog();
+    catalog.contexts[0].publishedEvents.push({
+      name: "RepositoryRenamed",
+      version: 1,
+      kind: "domain",
+      implementationStatus: "planned",
+      meaning: "repository renamed.",
+      sourceIds: ["core-domain-repositories-source-01"],
+    });
+    catalog.contexts[0].semanticClaims[0].events.push("RepositoryRenamed@1");
+    writeCatalog(rootDir, catalog);
+
+    let errors = check(rootDir);
+    assert.equal(includesRule(errors, "ARCH-MAP-020"), false);
+    assert.equal(includesRule(errors, "ARCH-MAP-026"), false);
+
+    catalog.contexts[0].publishedEvents[1].schema =
+      "integration-contracts.ts#RepositoryRenamedV1";
+    catalog.contexts[0].publishedEvents[1].orderingKey = "repositoryId";
+    writeCatalog(rootDir, catalog);
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-026"), true);
+
+    delete catalog.contexts[0].publishedEvents[1].schema;
+    delete catalog.contexts[0].publishedEvents[1].orderingKey;
+    catalog.contexts[0].implementationStatus = "planned";
+    catalog.contexts[0].activationScope = [];
+    writeCatalog(rootDir, catalog);
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-026"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("runtime event dependencies consume only active events", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    const catalog = validCatalog();
+    catalog.contexts[0].publishedEvents[0].implementationStatus = "planned";
+    delete catalog.contexts[0].publishedEvents[0].schema;
+    delete catalog.contexts[0].publishedEvents[0].orderingKey;
+    catalog.contexts.push({
+      subdomain: "platform",
+      name: "event-consumer",
+      kind: "technical",
+      classification: "generic",
+      maturity: "stable",
+      implementationStatus: "planned",
+      semanticStatus: "not-applicable",
+      responsibility: "Consume repository events.",
+      owns: ["EventCheckpoint"],
+      excludes: ["Repository"],
+      activationScope: [],
+      dependencies: [
+        {
+          context: "core-domain/repositories",
+          contract: "RepositoryEvents",
+          mode: "event",
+          events: [{ name: "RepositoryCreated", version: 1 }],
+        },
+      ],
+      plannedRelationships: [],
+      officialSources: [],
+      publishedEvents: [],
+      eventRationale: "The consumer does not publish events.",
+      semanticClaims: [],
+    });
+    writeCatalog(rootDir, catalog);
+    assert.equal(includesRule(check(rootDir), "ARCH-DEP-014"), true);
+
+    const consumer = catalog.contexts[1];
+    consumer.plannedRelationships = consumer.dependencies;
+    consumer.dependencies = [];
+    writeCatalog(rootDir, catalog);
+    assert.equal(includesRule(check(rootDir), "ARCH-DEP-014"), false);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
 test("keeps the repository semantic catalog boundaries regression-safe", () => {
   const catalog = JSON.parse(
     readFileSync(join(import.meta.dirname, "..", "docs", "architecture", "module-map.json"), "utf8"),
@@ -344,27 +521,42 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
   const byPath = new Map(
     catalog.contexts.map((item) => [`${item.subdomain}/${item.name}`, item]),
   );
-  const hasEventDependency = (owner, target, event) => byPath
-    .get(owner)
-    .dependencies
+  const hasEventRelationship = (owner, target, event) => [
+    ...byPath.get(owner).dependencies,
+    ...byPath.get(owner).plannedRelationships,
+  ]
     .some((dependency) => dependency.context === target &&
       dependency.mode === "event" &&
       dependency.events.some((selected) => selected.name === event && selected.version === 1));
 
-  assert.equal(catalog.version, 4);
+  assert.equal(catalog.version, 6);
   assert.equal(catalog.contexts.length, 48);
   assert.equal(catalog.contexts.every((item) => item.status === undefined), true);
   assert.equal(catalog.contexts.every((item) => item.implementationStatus === "planned"), true);
+  assert.equal(catalog.contexts.every((item) => item.activationScope.length === 0), true);
+  assert.equal(catalog.contexts.every((item) => item.dependencies.length === 0), true);
+  assert.equal(
+    catalog.contexts.every((item) => item.publishedEvents.every(
+      (event) => event.implementationStatus === "planned",
+    )),
+    true,
+  );
   assert.equal(catalog.contexts.every((item) => item.semanticStatus !== undefined), true);
+  assert.equal(
+    catalog.contexts
+      .filter((item) => item.semanticStatus === "validated")
+      .every((item) => item.semanticClaims.length > 0),
+    true,
+  );
   assert.equal(byPath.get("collaboration/issue-schema").owns.includes("IssueFieldValue"), false);
   assert.equal(byPath.get("collaboration/issues").owns.includes("IssueFieldValueSet"), true);
   assert.equal(byPath.has("integrations/github-app-registrations"), true);
   assert.equal(byPath.has("integrations/oauth-app-registrations"), true);
   assert.equal(byPath.has("integrations/repository-autolinks"), true);
   assert.equal(byPath.get("projections/repository-insights").owns.includes("TrafficMetric"), false);
-  assert.equal(hasEventDependency("engagement/stars", "repositories/repositories", "RepositoryVisibilityChanged"), true);
-  assert.equal(hasEventDependency("engagement/subscriptions", "repositories/repositories", "RepositoryVisibilityChanged"), true);
-  assert.equal(hasEventDependency("platform/notification-channels", "engagement/notifications", "NotificationDeliveryRequested"), true);
+  assert.equal(hasEventRelationship("engagement/stars", "repositories/repositories", "RepositoryVisibilityChanged"), true);
+  assert.equal(hasEventRelationship("engagement/subscriptions", "repositories/repositories", "RepositoryVisibilityChanged"), true);
+  assert.equal(hasEventRelationship("platform/notification-channels", "engagement/notifications", "NotificationDeliveryRequested"), true);
   assert.equal(byPath.has("enterprises/custom-properties"), true);
   assert.equal(
     byPath.get("enterprises/custom-properties").owns.includes("EnterpriseOrganizationPropertyDefinition"),
@@ -375,29 +567,29 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
     false,
   );
   assert.equal(
-    byPath.get("repositories/repository-metadata").dependencies.some(
+    byPath.get("repositories/repository-metadata").plannedRelationships.some(
       (dependency) => dependency.context === "organizations/custom-properties",
     ),
     false,
   );
   assert.equal(
-    byPath.get("repositories/repositories").owns.includes("RepositoryOperationalState"),
+    byPath.get("repositories/repositories").owns.includes("RepositoryLifecycleState"),
     true,
   );
   assert.equal(
-    byPath.get("collaboration/conversations").dependencies.some(
-      (dependency) => dependency.contract === "RepositoryOperationalState",
+    byPath.get("collaboration/conversations").plannedRelationships.some(
+      (dependency) => dependency.contract === "RepositoryLifecycleState",
     ),
     true,
   );
   assert.equal(
-    byPath.get("enterprises/enterprises").dependencies.some(
+    byPath.get("enterprises/enterprises").plannedRelationships.some(
       (dependency) => dependency.context === "repositories/repositories",
     ),
     false,
   );
   assert.equal(
-    hasEventDependency("repositories/repository-access", "repositories/repositories", "RepositoryDeleted"),
+    hasEventRelationship("repositories/repository-access", "repositories/repositories", "RepositoryDeleted"),
     true,
   );
   assert.equal(
@@ -411,7 +603,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
     false,
   );
   assert.equal(
-    hasEventDependency(
+    hasEventRelationship(
       "collaboration/discussions",
       "repositories/repository-features",
       "RepositoryDiscussionsEnabled",
@@ -438,11 +630,104 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
   );
   assert.equal(byPath.get("platform/event-publication").owns.includes("OutboxRecord"), false);
   assert.equal(
-    catalog.contexts.some((context) => context.dependencies.some(
+    catalog.contexts.some((context) => context.plannedRelationships.some(
       (dependency) => dependency.context === "platform/event-publication",
     )),
     false,
   );
+  assert.equal(
+    byPath.get("repositories/repository-features").owns.includes("RepositoryWikiFeatureState"),
+    true,
+  );
+  assert.equal(
+    byPath.get("repositories/repository-access").publishedEvents.some(
+      (event) => event.name === "RepositoryInvitationDeclined",
+    ),
+    true,
+  );
+  assert.equal(
+    byPath.get("repositories/repository-access").publishedEvents.some(
+      (event) => event.name === "RepositoryInvitationPermissionChanged",
+    ),
+    true,
+  );
+  assert.match(
+    byPath.get("repositories/repositories").semanticClaims.find(
+      (claim) => claim.id === "repository-transfer",
+    ).statement,
+    /personal account/,
+  );
+  assert.equal(
+    byPath.get("repositories/repository-metadata").semanticStatus,
+    "validated",
+  );
+  assert.deepEqual(
+    byPath.get("repositories/repository-metadata").semanticClaims.map((claim) => claim.id),
+    ["repository-topic-set", "repository-social-preview"],
+  );
+  assert.equal(
+    byPath.get("integrations/repository-autolinks").publishedEvents.some(
+      (event) => event.name === "RepositoryAutolinkUpdated",
+    ),
+    false,
+  );
+  assert.equal(
+    byPath.get("collaboration/discussions").publishedEvents.some(
+      (event) => event.name === "OrganizationDiscussionSourceUnavailable",
+    ),
+    false,
+  );
+  assert.match(
+    byPath.get("integrations/repository-autolinks").semanticClaims.find(
+      (claim) => claim.id === "repository-autolink-definition",
+    ).statement,
+    /non-overlapping prefix/,
+  );
+  const discussionEvents = new Set(
+    byPath.get("collaboration/discussions").publishedEvents.map((event) => event.name),
+  );
+  for (const event of [
+    "DiscussionDeleted",
+    "DiscussionSectionCreated",
+    "DiscussionSectionUpdated",
+    "DiscussionSectionDeleted",
+  ]) {
+    assert.equal(discussionEvents.has(event), true);
+  }
+  assert.equal(discussionEvents.has("DiscussionPollClosed"), false);
+  const discussionSourceUrls = new Set(
+    byPath.get("collaboration/discussions").officialSources.map((source) => source.url),
+  );
+  for (const sourceUrl of [
+    "https://docs.github.com/en/discussions/managing-discussions-for-your-community/managing-categories-for-discussions",
+    "https://docs.github.com/en/discussions/managing-discussions-for-your-community/moderating-discussions",
+    "https://docs.github.com/en/discussions/collaborating-with-your-community-using-discussions/participating-in-a-discussion",
+    "https://docs.github.com/en/graphql/reference/discussions",
+  ]) {
+    assert.equal(discussionSourceUrls.has(sourceUrl), true);
+  }
+  assert.equal(
+    byPath.get("integrations/github-app-installations").officialSources.some(
+      (source) => source.url.endsWith("/approving-updated-permissions-for-a-github-app"),
+    ),
+    true,
+  );
+  assert.match(
+    byPath.get("integrations/github-app-installations").semanticClaims.find(
+      (claim) => claim.id === "github-app-installation-permission-approval",
+    ).statement,
+    /retains its current permissions/,
+  );
+  for (const capability of [
+    "repository-wiki-content",
+    "repository-migration-locks",
+    "organization-discussion-source-repository-disruption",
+  ]) {
+    assert.equal(
+      catalog.deferredCapabilities.some((item) => item.name === capability),
+      true,
+    );
+  }
 });
 
 test("rejects unversioned, duplicate, or untraceable published events", () => {
@@ -478,7 +763,9 @@ test("rejects event dependencies that select undeclared event versions", () => {
       responsibility: "Search projection.",
       owns: ["SearchDocument"],
       excludes: ["Repository"],
-      dependencies: [
+      activationScope: [],
+      dependencies: [],
+      plannedRelationships: [
         {
           context: "core-domain/repositories",
           contract: "RepositorySearchEvents",
@@ -496,6 +783,7 @@ test("rejects event dependencies that select undeclared event versions", () => {
       ],
       publishedEvents: [],
       eventRationale: "Read model only.",
+      semanticClaims: [],
     });
     writeCatalog(rootDir, catalog);
 
@@ -521,7 +809,9 @@ test("requires a declared synchronous dependency for cross-context imports", () 
       responsibility: "Issue tracking.",
       owns: ["Issue"],
       excludes: ["Repository"],
+      activationScope: ["create-issue"],
       dependencies: [],
+      plannedRelationships: [],
       officialSources: [
         {
           id: "collaboration-issues-source-01",
@@ -535,7 +825,17 @@ test("requires a declared synchronous dependency for cross-context imports", () 
           name: "IssueCreated",
           version: 1,
           kind: "domain",
+          implementationStatus: "planned",
           meaning: "issue created.",
+          sourceIds: ["collaboration-issues-source-01"],
+        },
+      ],
+      semanticClaims: [
+        {
+          id: "issue-lifecycle",
+          statement: "Issues have identity and creation semantics.",
+          ownership: ["Issue"],
+          events: ["IssueCreated@1"],
           sourceIds: ["collaboration-issues-source-01"],
         },
       ],
@@ -559,7 +859,7 @@ test("requires a declared synchronous dependency for cross-context imports", () 
 
     assert.equal(includesRule(check(rootDir), "ARCH-DEP-010"), true);
 
-    catalog.contexts[1].dependencies.push({
+    catalog.contexts[1].plannedRelationships.push({
       context: "core-domain/repositories",
       contract: "RepositoryBrowserUi",
       mode: "synchronous",
@@ -567,6 +867,13 @@ test("requires a declared synchronous dependency for cross-context imports", () 
     writeCatalog(rootDir, catalog);
 
     assert.equal(includesRule(check(rootDir), "ARCH-DEP-010"), false);
+    assert.equal(includesRule(check(rootDir), "ARCH-DEP-013"), true);
+
+    catalog.contexts[1].dependencies.push(catalog.contexts[1].plannedRelationships.pop());
+    writeCatalog(rootDir, catalog);
+
+    assert.equal(includesRule(check(rootDir), "ARCH-DEP-010"), false);
+    assert.equal(includesRule(check(rootDir), "ARCH-DEP-013"), false);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }

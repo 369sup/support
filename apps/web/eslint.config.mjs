@@ -1,5 +1,12 @@
+import { globalIgnores } from "eslint/config";
+
 import { createNextConfig } from "@support/eslint-config/next";
 
-export default createNextConfig({
-  tsconfigRootDir: import.meta.dirname,
-});
+const config = [
+  ...createNextConfig({
+    tsconfigRootDir: import.meta.dirname,
+  }),
+  globalIgnores(["public/mockServiceWorker.js"]),
+];
+
+export default config;

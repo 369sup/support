@@ -25,6 +25,6 @@ export function resolveSiteUrl(
 
 export const siteConfig = {
   name: "Support",
-  description: "A GitHub-like platform for non-code collaboration and governance.",
+  description: "A platform for non-code collaboration and governance.",
   url: resolveSiteUrl(),
 };
