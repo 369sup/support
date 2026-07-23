@@ -125,7 +125,9 @@ module shape, context catalog, and exceptions are authoritative under
 11. Include observed command results without claiming that unexecuted checks passed.
 12. Replace obsolete task state instead of continually appending duplicated history.
 13. Keep `local/current-task` concise enough to read at the start of the next session.
-14. Preserve unrelated local memories.
+14. Do not create or preserve unmanaged visible local memories. The model owns
+    only `local/current-task`; the deterministic engine purges reviewed retired
+    legacy inputs or quarantines unknown future local-memory paths.
 15. Before context compaction, update `local/current-task` before performing additional non-essential exploration.
 16. Before ending an incomplete task, update `local/current-task` with the next concrete action.
 17. When the task is fully complete and no follow-up state remains, delete `local/current-task` or replace it with a concise completed-state record according to the applicable memory-maintenance policy.
@@ -135,6 +137,12 @@ module shape, context catalog, and exceptions are authoritative under
 21. After generating shared memories, inspect the actual diff and run the configured memory-reference integrity check.
 22. Shared memories must contain only reviewed repository knowledge from the generator allowlist.
 23. Local memories must remain excluded from Git and must not be required for CI or ordinary repository operation.
+24. Before exclusive ownership is enabled, use `pnpm memory:migrate` to obtain
+    the legacy inventory token, author the reviewed candidate bundle in
+    `local/current-task`, then apply the validated purge with
+    `pnpm memory:migrate -- --apply`.
+25. Never bypass migration or quarantine by directly moving, deleting, or
+    rewriting unmanaged local memory files.
 
 ## Task checkpoint format
 

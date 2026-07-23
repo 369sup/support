@@ -1,5 +1,11 @@
-import { RoutePlaceholder } from "@support/shadcn/custom/route-placeholder";
+import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
 
-export default function VerifyEmailPage() {
-  return <RoutePlaceholder title="Verify email" description="Complete email verification to activate your account." />;
+export default function VerifyEmailPage(): never {
+  return unavailableRoute({
+    urlPattern: "/verify-email",
+    title: "Verify email",
+    summary: "Verify an account email as part of the authentication lifecycle.",
+    contexts: ["identity/authentication"],
+    catalogStatus: "active",
+  });
 }

@@ -33,6 +33,15 @@ a warning without blocking normal repository work.
 checkpoint. A second failure is reported and allowed to stop so the hook cannot
 loop indefinitely.
 
+Legacy migration permanently removes reviewed retired Markdown only after
+distillation and hash-tombstone validation. It does not use the quarantine
+archive as permanent legacy storage.
+
+After `memory:migrate -- --apply` enables exclusive ownership, activation also
+quarantines any unknown visible local memory. The original content and SHA-256
+remain in the hidden archive; `local/unresolved` receives only the memory name,
+hash, archive reference, and reason.
+
 Run all focused tests with:
 
 ```text

@@ -52,6 +52,13 @@ the root `AGENTS.md`.
 - Machine state and raw episodes remain ignored local data. Shared committed
   memories continue to be owned exclusively by
   `generate-serena-memories.mjs`.
+- `memory:migrate` is the only supported transition from unmanaged visible
+  local memories to exclusive engine ownership. Preview must be read-only;
+  apply must validate and distill before purging retired source files, writing
+  content-free tombstones, and enabling the ownership marker.
+- In exclusive mode, activation quarantines unknown visible local memories
+  without interpreting their contents and records only bounded metadata in
+  `local/unresolved`.
 - Keep the engine dependency-free so Serena activation works before workspace
   package installation.
 

@@ -135,21 +135,25 @@ export function renderIndex(entries, options = {}) {
   return rendered;
 }
 
-export function renderUnresolved(conflicts) {
+export function renderUnresolved(conflicts, quarantines = []) {
   const lines = [
     managedHeader,
-    "# Unresolved Memory Conflicts",
+    "# Unresolved Memory Items",
     "",
   ];
-
-  if (conflicts.length === 0) {
-    lines.push("No unresolved managed-memory conflicts.", "");
-    return lines.join("\n");
-  }
 
   const activeConflicts = [...conflicts]
     .filter((conflict) => conflict.status === "unresolved")
     .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt));
+  const activeQuarantines = [...quarantines]
+    .filter((quarantine) => quarantine.status === "unresolved")
+    .sort((left, right) => right.archivedAt.localeCompare(left.archivedAt));
+
+  if (activeConflicts.length === 0 && activeQuarantines.length === 0) {
+    lines.push("No unresolved managed-memory items.", "");
+    return lines.join("\n");
+  }
+
   let renderedCount = 0;
 
   for (const conflict of activeConflicts) {
@@ -176,6 +180,39 @@ export function renderUnresolved(conflicts) {
   if (renderedCount < activeConflicts.length) {
     lines.push(
       `${activeConflicts.length - renderedCount} additional conflicts remain in the managed manifest.`,
+      "",
+    );
+  }
+
+  if (activeQuarantines.length > 0) {
+    lines.push("## Quarantined unmanaged memories", "");
+  }
+
+  let renderedQuarantines = 0;
+
+  for (const quarantine of activeQuarantines) {
+    const section = [
+      `### ${quarantine.memoryName}`,
+      "",
+      formatMetadata("Archived", quarantine.archivedAt),
+      formatMetadata("Reason", quarantine.reason),
+      formatMetadata("SHA-256", quarantine.contentHash),
+      formatMetadata("Archive", quarantine.archiveRelativePath),
+      "",
+    ];
+    const candidate = `${lines.concat(section).join("\n")}\n`;
+
+    if (estimateTokens(candidate) > memoryLimits.durableMemoryTokens) {
+      break;
+    }
+
+    lines.push(...section);
+    renderedQuarantines += 1;
+  }
+
+  if (renderedQuarantines < activeQuarantines.length) {
+    lines.push(
+      `${activeQuarantines.length - renderedQuarantines} additional quarantines remain in ownership state.`,
       "",
     );
   }

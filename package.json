@@ -24,6 +24,7 @@
     "memory:distill": "node scripts/memory/cli.mjs distill",
     "memory:validate": "node scripts/memory/cli.mjs validate",
     "memory:maintain": "node scripts/memory/cli.mjs maintain",
+    "memory:migrate": "node scripts/memory/cli.mjs migrate",
     "memory:status": "node scripts/memory/cli.mjs status",
     "test": "pnpm run test:architecture && turbo run test",
     "test:architecture": "vitest run --config vitest.config.ts",

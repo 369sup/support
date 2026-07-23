@@ -7,6 +7,7 @@ import {
   readdir,
   rename,
   rm,
+  rmdir,
   stat,
   writeFile,
 } from "node:fs/promises";
@@ -35,10 +36,15 @@ export function memoryPaths(repositoryRoot) {
     durableRoot: join(localRoot, "durable"),
     episodesRoot: join(localRoot, "episodes"),
     indexPath: join(localRoot, "index.md"),
+    legacyArchiveRoot: join(localRoot, "archive", "legacy-migration"),
     localRoot,
     lockPath: join(stateRoot, "memory.lock"),
     manifestPath: join(stateRoot, "manifest.json"),
     memoryRoot,
+    migrationPath: join(stateRoot, "migration.json"),
+    migrationRecordsRoot: join(stateRoot, "migrations"),
+    ownershipPath: join(stateRoot, "ownership.json"),
+    quarantineArchiveRoot: join(localRoot, "archive", "quarantine"),
     repositoryRoot: root,
     sessionsRoot: join(stateRoot, "sessions"),
     stateRoot,
@@ -245,6 +251,35 @@ export async function removeManagedFile(repositoryRoot, filePath) {
   await rm(filePath, { force: true });
 }
 
+export async function removeEmptyManagedDirectory(
+  repositoryRoot,
+  directoryPath,
+) {
+  assertPathInside(repositoryRoot, directoryPath, "Directory");
+  const info = await pathType(directoryPath);
+
+  if (info === null) {
+    return false;
+  }
+
+  if (info.isSymbolicLink() || !info.isDirectory()) {
+    throw new Error(
+      `Managed cleanup path is not a regular directory: ${directoryPath}`,
+    );
+  }
+
+  try {
+    await rmdir(directoryPath);
+    return true;
+  } catch (error) {
+    if (error?.code === "ENOTEMPTY") {
+      return false;
+    }
+
+    throw error;
+  }
+}
+
 export async function moveManagedFile(repositoryRoot, sourcePath, targetPath) {
   await assertRegularOrMissing(repositoryRoot, sourcePath);
   assertPathInside(repositoryRoot, targetPath, "Archive target");
@@ -285,6 +320,14 @@ export async function listRegularFiles(repositoryRoot, directoryPath, options = 
     }
 
     if (entry.isDirectory()) {
+      if (
+        (options.excludedDirectories ?? []).some((excludedDirectory) => {
+          return resolve(excludedDirectory) === resolve(entryPath);
+        })
+      ) {
+        continue;
+      }
+
       if (options.recursive !== false) {
         results.push(
           ...(await listRegularFiles(repositoryRoot, entryPath, options)),

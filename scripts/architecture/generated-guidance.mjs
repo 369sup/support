@@ -262,6 +262,7 @@ export function validateSerenaMemories(repositoryRoot, errors) {
   const automationPaths = [
     ".codex/hooks/memory-orchestrator.mjs",
     ".codex/hooks/memory-orchestrator.test.mjs",
+    ".serena/README.md",
     "scripts/memory/AGENTS.md",
     "scripts/memory/candidate-bundle.schema.json",
     "scripts/memory/cli.mjs",
@@ -282,6 +283,40 @@ export function validateSerenaMemories(repositoryRoot, errors) {
         `[ARCH-MEM-002] Missing automatic Serena memory asset: ${relativePath}.`,
       );
     }
+  }
+
+  const serenaGuidancePath = join(repositoryRoot, ".serena", "AGENTS.md");
+  const operatorGuidePath = join(repositoryRoot, ".serena", "README.md");
+  const modelInstructionsPath = join(
+    repositoryRoot,
+    ".codex",
+    "instructions",
+    "model-instructions.md",
+  );
+  const serenaGuidance = existsSync(serenaGuidancePath)
+    ? readFileSync(serenaGuidancePath, "utf8")
+    : "";
+  const operatorGuide = existsSync(operatorGuidePath)
+    ? readFileSync(operatorGuidePath, "utf8")
+    : "";
+  const modelInstructions = existsSync(modelInstructionsPath)
+    ? readFileSync(modelInstructionsPath, "utf8")
+    : "";
+
+  if (
+    !serenaGuidance.includes("## Exclusive local memory ownership") ||
+    !serenaGuidance.includes("pnpm memory:migrate -- --apply") ||
+    !operatorGuide.includes("## Exclusive ownership and quarantine") ||
+    !operatorGuide.includes("pnpm memory:migrate -- --apply") ||
+    !operatorGuide.includes("permanently remove the retired legacy Markdown") ||
+    !modelInstructions.includes(
+      "Do not create or preserve unmanaged visible local memories.",
+    ) ||
+    !modelInstructions.includes("only `local/current-task`")
+  ) {
+    errors.push(
+      "[ARCH-MEM-002] Serena policy, operator guidance, and model instructions must enforce exclusive local-memory ownership and the reviewed migration path.",
+    );
   }
 
   if (
@@ -314,6 +349,7 @@ export function validateSerenaMemories(repositoryRoot, errors) {
     "memory:checkpoint": "node scripts/memory/cli.mjs checkpoint",
     "memory:distill": "node scripts/memory/cli.mjs distill",
     "memory:maintain": "node scripts/memory/cli.mjs maintain",
+    "memory:migrate": "node scripts/memory/cli.mjs migrate",
     "memory:status": "node scripts/memory/cli.mjs status",
     "memory:validate": "node scripts/memory/cli.mjs validate",
     "test:memory": "node --test scripts/memory/schema.test.mjs scripts/memory/render.test.mjs scripts/memory/storage.test.mjs scripts/memory/engine.test.mjs .codex/hooks/repository-guard.test.mjs .codex/hooks/memory-orchestrator.test.mjs",

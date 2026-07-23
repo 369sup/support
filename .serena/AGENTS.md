@@ -18,9 +18,9 @@ root and source-tree `AGENTS.md` files.
 - Prefer the existing ignore model and narrow additions over manually listing
   generated directories already covered by `.gitignore`.
 - Automatic onboarding is disabled for this repository. Shared Serena memories
-  are generated from reviewed repository authorities. Maintain local memories
-  automatically when verified, durable project knowledge changes; memory is
-  never a prerequisite for an ordinary coding task.
+  are generated from reviewed repository authorities. The deterministic local
+  engine has exclusive ownership of project-local memory outside
+  `local/current-task`; memory is never a prerequisite for ordinary coding.
 
 ## Memory boundary
 
@@ -42,33 +42,31 @@ root and source-tree `AGENTS.md` files.
 - Keep `mem:` references valid and run the architecture checks after changing
   memory inputs or layout.
 
-## Automatic local memory maintenance
+## Exclusive local memory ownership
 
-- At the start of a non-trivial task, read only the local and shared memories
-  whose names indicate relevance. Verify drift-prone facts against the current
-  worktree before relying on them.
-- Create or update `memories/local/**` without waiting for an explicit user
-  request when a task establishes durable project knowledge that is likely to
-  improve future work. Suitable content includes accepted decisions, stable
-  invariants, verified workflows, ownership boundaries, recurring failure
-  recovery, and clearly identified unfinished work.
-- Update memory after the underlying change and its relevant verification, not
-  while a conclusion is still an assumption. Record the verification boundary
-  and mark incomplete or unverified work explicitly.
-- Prefer editing an existing focused memory over creating overlapping notes.
-  Keep each memory scoped by topic, link related memories with `mem:`, and
-  replace stale statements when the source of truth changes.
-- Do not update memory for trivial actions, routine command output, temporary
-  debugging state, speculative plans, or facts already represented accurately
-  by a generated shared memory.
-- Never store credentials, tokens, personal data, customer data, provider
+- The model may create or update only `memories/local/current-task.md`. Do not
+  create arbitrary local topic files or directly edit rendered or hidden state.
+- The engine owns every other project-local memory. The only visible layout is
+  `local/current-task`, `local/index`, `local/unresolved`, and
+  `local/durable/**`.
+- Before exclusive ownership is enabled, `pnpm memory:migrate` previews every
+  unmanaged local memory and returns the checkpoint token required to distill
+  verified knowledge through `local/current-task`.
+- `pnpm memory:migrate -- --apply` permanently removes the unchanged retired
+  legacy inventory only after its candidate bundle validates and distills
+  successfully. It writes bounded hash tombstones under
+  `local/_state/migrations/**`, then writes `local/_state/ownership.json` as the
+  final activation step.
+- In exclusive mode, activation quarantines future unmanaged local memories.
+  It preserves their complete contents and hashes under hidden archive state,
+  removes them from Serena's visible memory list, and renders a bounded notice
+  in `local/unresolved`.
+- Never store new credentials, tokens, personal/customer data, provider
   payloads, raw logs, source-file copies, or embargoed security findings.
-  Summarize only the minimum durable fact needed for future work.
-- Do not silently delete local memories during automatic maintenance. Mark
-  superseded knowledge or request confirmation when deletion is necessary.
-- Before the final response, perform a bounded memory-maintenance check. Write
-  only when the task produced durable new knowledge, then read back the changed
-  memory when practical to confirm its scope and references.
+  Migration tombstones and quarantine metadata must never reproduce source
+  contents.
+- Read only memories relevant by name and verify drift-prone facts against the
+  current worktree. Repository authorities always override local state.
 
 ## Deterministic local memory engine
 
@@ -81,10 +79,13 @@ root and source-tree `AGENTS.md` files.
   machine-managed and hidden from Serena memory tools through
   `ignored_memory_patterns`.
 - The engine may archive managed expired or superseded records but never
-  deletes their only retained representation. Existing unrelated local
-  memories remain outside its manifest and ownership.
+  deletes their only retained representation. Retired legacy migration inputs
+  are permanently purged after distillation and retain only bounded hash
+  tombstones. Unexpected future local memories are quarantined with their
+  original content because the engine cannot infer that they are obsolete.
 - Run `pnpm memory:validate` for local managed-state integrity and
-  `pnpm test:memory` after engine, schema, hook, or lifecycle changes.
+  `pnpm test:memory` after engine, schema, migration, hook, or lifecycle
+  changes. Use `pnpm memory:status` to inspect ownership and quarantine counts.
 - Context7 and external model APIs are not runtime dependencies. Activation
   must remain deterministic, offline, dependency-free, and bounded to 15
   seconds.

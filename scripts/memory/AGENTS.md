@@ -20,7 +20,12 @@ This file governs `scripts/memory/**`. The parent
 - The model owns only `local/current-task`.
 - The engine owns `local/index`, `local/unresolved`, `local/durable/**`,
   `local/episodes/**`, `local/archive/**`, and `local/_state/**`.
-- Do not read or modify unrelated local memories.
+- Exclusive ownership permits no unrelated visible local memories. Before the
+  ownership marker exists, preview and apply the legacy migration explicitly.
+  Purge retired legacy source files only after distillation, source-hash
+  validation, and durable tombstone creation. Afterwards, quarantine unknown
+  files without deleting their only retained copy or exposing their contents
+  in rendered notices.
 - Do not import the shared-memory generator into the local engine or treat a
   local observation as canonical repository authority.
 
@@ -30,6 +35,7 @@ Run:
 
 ```text
 pnpm test:memory
+pnpm memory:migrate
 pnpm memory:validate
 pnpm governance:generated
 ```

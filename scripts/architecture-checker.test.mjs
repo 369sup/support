@@ -207,6 +207,7 @@ function createValidFixture() {
           "memory:checkpoint": "node scripts/memory/cli.mjs checkpoint",
           "memory:distill": "node scripts/memory/cli.mjs distill",
           "memory:maintain": "node scripts/memory/cli.mjs maintain",
+          "memory:migrate": "node scripts/memory/cli.mjs migrate",
           "memory:status": "node scripts/memory/cli.mjs status",
           "memory:validate": "node scripts/memory/cli.mjs validate",
           "test:memory": "node --test scripts/memory/schema.test.mjs scripts/memory/render.test.mjs scripts/memory/storage.test.mjs scripts/memory/engine.test.mjs .codex/hooks/repository-guard.test.mjs .codex/hooks/memory-orchestrator.test.mjs",
@@ -265,6 +266,7 @@ function createValidFixture() {
   for (const path of [
     ".codex/hooks/memory-orchestrator.mjs",
     ".codex/hooks/memory-orchestrator.test.mjs",
+    ".serena/README.md",
     "scripts/memory/candidate-bundle.schema.json",
     "scripts/memory/cli.mjs",
     "scripts/memory/engine.mjs",
@@ -283,6 +285,45 @@ function createValidFixture() {
   for (const path of agentGuidanceSourcePaths) {
     writeFixture(rootDir, path, `# ${path} guidance\n`);
   }
+
+  writeFixture(
+    rootDir,
+    ".serena/AGENTS.md",
+    [
+      "# Serena guidance",
+      "",
+      "## Exclusive local memory ownership",
+      "",
+      "The model owns only `local/current-task`.",
+      "Apply the reviewed inventory with `pnpm memory:migrate -- --apply`.",
+      "",
+    ].join("\n"),
+  );
+  writeFixture(
+    rootDir,
+    ".serena/README.md",
+    [
+      "# Serena Memory Operator Guide",
+      "",
+      "## Exclusive ownership and quarantine",
+      "",
+      "Preview with `pnpm memory:migrate` and apply with",
+      "`pnpm memory:migrate -- --apply`.",
+      "Apply must permanently remove the retired legacy Markdown.",
+      "",
+    ].join("\n"),
+  );
+  writeFixture(
+    rootDir,
+    ".codex/instructions/model-instructions.md",
+    [
+      "# Model instructions",
+      "",
+      "Do not create or preserve unmanaged visible local memories.",
+      "The model owns only `local/current-task`.",
+      "",
+    ].join("\n"),
+  );
 
   const generatedMemories = renderSerenaMemories(loadSerenaMemorySources(rootDir));
 

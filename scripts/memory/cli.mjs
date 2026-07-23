@@ -2,10 +2,12 @@ import { resolve } from "node:path";
 
 import {
   activateMemory,
+  applyMemoryMigration,
   checkpointMemory,
   distillMemory,
   maintainMemory,
   memoryStatus,
+  prepareMemoryMigration,
   validateMemory,
 } from "./engine.mjs";
 
@@ -20,6 +22,11 @@ function parseArguments(argv) {
 
     if (argument === "--json") {
       options.json = true;
+      continue;
+    }
+
+    if (argument === "--apply") {
+      options.apply = true;
       continue;
     }
 
@@ -65,6 +72,10 @@ async function runCommand(command, options) {
       return distillMemory(repositoryRoot);
     case "maintain":
       return maintainMemory(repositoryRoot);
+    case "migrate":
+      return options.apply
+        ? applyMemoryMigration(repositoryRoot)
+        : prepareMemoryMigration(repositoryRoot);
     case "status":
       return memoryStatus(repositoryRoot);
     case "validate": {
@@ -78,7 +89,7 @@ async function runCommand(command, options) {
     }
     default:
       throw new Error(
-        "Usage: node scripts/memory/cli.mjs <activate|checkpoint|distill|maintain|status|validate> [--session <id>] [--json]",
+        "Usage: node scripts/memory/cli.mjs <activate|checkpoint|distill|maintain|migrate|status|validate> [--apply] [--session <id>] [--json]",
       );
   }
 }
@@ -91,4 +102,3 @@ try {
   process.stderr.write(`[serena-memory] ${message}\n`);
   process.exitCode = 1;
 }
-

@@ -3,26 +3,16 @@ import { expect, test, type Page } from "@playwright/test";
 const publicRoutes = [
   { path: "/", heading: "Your workspace is ready." },
   { path: "/accessibility", heading: "Accessibility" },
-  { path: "/accept-invitation", heading: "Accept invitation" },
   { path: "/docs", heading: "Documentation" },
-  { path: "/forgot-password", heading: "Forgot password" },
-  { path: "/logout", heading: "Log out" },
   { path: "/privacy", heading: "Privacy" },
-  { path: "/reset-password", heading: "Reset password" },
-  { path: "/search", heading: "Search" },
   { path: "/sign-in", heading: "Sign in" },
-  { path: "/sign-up", heading: "Create an account" },
   { path: "/terms", heading: "Terms" },
-  { path: "/verify-email", heading: "Verify email" },
 ];
 
 const consoleRoutes = [
   { path: "/account", heading: "Account" },
   { path: "/dashboard", heading: "Dashboard" },
-  { path: "/notifications", heading: "Notifications" },
-  { path: "/projects", heading: "Projects" },
   { path: "/repositories", heading: "Repositories" },
-  { path: "/settings", heading: "Settings" },
   {
     path: "/organizations/community-lab/settings/teams",
     heading: "Organization teams",
@@ -36,6 +26,73 @@ const consoleRoutes = [
     heading: "Repository team access",
   },
 ];
+
+const unavailableScaffoldRoutes = [
+  "/accept-invitation",
+  "/forgot-password",
+  "/login",
+  "/logout",
+  "/reset-password",
+  "/search",
+  "/sign-up",
+  "/signup",
+  "/verify-email",
+  "/new",
+  "/notifications",
+  "/projects",
+  "/settings",
+  "/settings/sessions",
+  "/settings/apps",
+  "/settings/installations",
+  "/settings/developers",
+  "/settings/applications",
+  "/settings/billing",
+  "/octocat",
+  "/orgs/community-lab/repositories",
+  "/orgs/community-lab/people",
+  "/orgs/community-lab/teams",
+  "/orgs/community-lab/teams/docs",
+  "/orgs/community-lab/projects",
+  "/orgs/community-lab/projects/1",
+  "/users/octocat/projects/1",
+  "/organizations/community-lab/settings/member_privileges",
+  "/organizations/community-lab/settings/custom_properties",
+  "/organizations/community-lab/settings/apps",
+  "/organizations/community-lab/settings/installations",
+  "/organizations/community-lab/settings/installations/1",
+  "/organizations/community-lab/settings/hooks",
+  "/organizations/community-lab/settings/billing",
+  "/organizations/community-lab/settings/audit-log",
+  "/enterprises/acme-enterprise/organizations",
+  "/enterprises/acme-enterprise/people",
+  "/enterprises/acme-enterprise/teams",
+  "/enterprises/acme-enterprise/enterprise_roles",
+  "/enterprises/acme-enterprise/settings",
+  "/enterprises/acme-enterprise/settings/apps",
+  "/enterprises/acme-enterprise/settings/billing",
+  "/enterprises/acme-enterprise/settings/audit-log",
+  "/community-lab/docs",
+  "/community-lab/docs/settings",
+  "/community-lab/docs/settings/access",
+  "/community-lab/docs/settings/hooks",
+  "/community-lab/docs/issues",
+  "/community-lab/docs/issues/views",
+  "/community-lab/docs/issues/new",
+  "/community-lab/docs/issues/1",
+  "/community-lab/docs/labels",
+  "/community-lab/docs/milestones",
+  "/community-lab/docs/milestone/1",
+  "/community-lab/docs/discussions",
+  "/community-lab/docs/discussions/new",
+  "/community-lab/docs/discussions/1",
+  "/community-lab/docs/discussions/categories/general",
+  "/community-lab/docs/projects",
+  "/community-lab/docs/stargazers",
+  "/community-lab/docs/watchers",
+  "/community-lab/docs/activity",
+  "/community-lab/docs/pulse",
+  "/community-lab/docs/custom-properties",
+] as const;
 
 async function signIn(page: Page) {
   await page.goto("/sign-in");
@@ -71,6 +128,18 @@ for (const route of consoleRoutes) {
     ).toBeVisible();
   });
 }
+
+test("unavailable route scaffolds consistently render not found", async ({
+  context,
+  page,
+}) => {
+  await signIn(page);
+
+  for (const route of unavailableScaffoldRoutes) {
+    const response = await context.request.get(route);
+    expect(response.status(), route).toBe(404);
+  }
+});
 
 test("unauthenticated console navigation redirects to sign-in", async ({ page }) => {
   await page.goto("/dashboard");

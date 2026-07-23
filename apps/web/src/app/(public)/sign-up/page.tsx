@@ -1,5 +1,11 @@
-import { RoutePlaceholder } from "@support/shadcn/custom/route-placeholder";
+import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
 
-export default function SignUpPage() {
-  return <RoutePlaceholder title="Create an account" description="Set up a new account and workspace identity." />;
+export default function SignUpPage(): never {
+  return unavailableRoute({
+    urlPattern: "/sign-up",
+    title: "Create an account",
+    summary: "Create a personal account and its authentication credentials.",
+    contexts: ["identity/accounts", "identity/authentication"],
+    catalogStatus: "active",
+  });
 }
