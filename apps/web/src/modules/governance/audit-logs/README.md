@@ -149,7 +149,7 @@ Retention, erasure, and tombstone rules are not defined while this context is pl
 
 ## Official sources
 
-- `governance-audit-logs-source-01`: [enterprise audit log, audit search, audit export, audit streaming](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise) (not yet verified)
+- `governance-audit-logs-source-01`: [enterprise audit log, audit search, audit export, audit streaming](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise) (verified 2026-07-23)
 
 ## Exceptions
 

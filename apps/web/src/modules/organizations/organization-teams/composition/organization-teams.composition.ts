@@ -1,6 +1,7 @@
 import { OrganizationMembershipAdapter } from "../adapters/outbound/integration/organization-membership.adapter";
 import { OrganizationReferenceAdapter } from "../adapters/outbound/integration/organization-reference.adapter";
 import { InMemoryOrganizationTeamAdapter } from "../adapters/outbound/persistence/in-memory-organization-team.adapter";
+import { InMemoryOrganizationTeamOutboxAdapter } from "../adapters/outbound/persistence/in-memory-organization-team-outbox.adapter";
 import { InMemoryTeamIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-team-id-generator.adapter";
 import { AddTeamMemberHandler } from "../application/commands/add-team-member.handler";
 import { AssignTeamMaintainerHandler } from "../application/commands/assign-team-maintainer.handler";
@@ -41,11 +42,14 @@ export interface OrganizationTeamsServerFacade {
 }
 
 function composeOrganizationTeamsServerFacade(): OrganizationTeamsServerFacade {
+  const eventRecorder = new InMemoryOrganizationTeamOutboxAdapter();
+  registerEventSource(eventRecorder);
   const service = new OrganizationTeamService(
     new InMemoryOrganizationTeamAdapter(),
     new OrganizationMembershipAdapter(),
     new OrganizationReferenceAdapter(),
     new InMemoryTeamIdGeneratorAdapter(),
+    eventRecorder,
   );
   const create = new CreateOrganizationTeamHandler(service);
   const get = new GetOrganizationTeamHandler(service);
@@ -84,3 +88,4 @@ function composeOrganizationTeamsServerFacade(): OrganizationTeamsServerFacade {
 
 export const organizationTeamsServerFacade =
   composeOrganizationTeamsServerFacade();
+import { registerEventSource } from "@/modules/platform/event-publication/server-api";

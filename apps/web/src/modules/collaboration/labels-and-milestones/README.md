@@ -105,7 +105,7 @@ Retention, erasure, and tombstone rules are not defined while this context is pl
 
 ## Official sources
 
-- `collaboration-labels-and-milestones-source-01`: [labels, milestones, work classification](https://docs.github.com/en/issues/using-labels-and-milestones-to-track-work) (not yet verified)
+- `collaboration-labels-and-milestones-source-01`: [labels, milestones, work classification](https://docs.github.com/en/issues/using-labels-and-milestones-to-track-work) (verified 2026-07-23)
 
 ## Exceptions
 

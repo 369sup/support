@@ -119,7 +119,7 @@ Retention, erasure, and tombstone rules are not defined while this context is pl
 
 ## Official sources
 
-- `collaboration-moderation-source-01`: [content moderation, interaction limits, blocking, conversation locking](https://docs.github.com/en/communities/moderating-comments-and-conversations) (not yet verified)
+- `collaboration-moderation-source-01`: [content moderation, interaction limits, blocking, conversation locking](https://docs.github.com/en/communities/moderating-comments-and-conversations) (verified 2026-07-23)
 
 ## Exceptions
 

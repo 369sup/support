@@ -105,7 +105,7 @@ Retention, erasure, and tombstone rules are not defined while this context is pl
 
 ## Official sources
 
-- `enterprises-enterprise-teams-source-01`: [enterprise teams, enterprise team membership](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories/managing-users-in-your-enterprise) (not yet verified)
+- `enterprises-enterprise-teams-source-01`: [enterprise teams, enterprise team membership](https://docs.github.com/en/enterprise-cloud@latest/admin/concepts/enterprise-fundamentals/teams-in-an-enterprise) (verified 2026-07-23; preview)
 
 ## Exceptions
 

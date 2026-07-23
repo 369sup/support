@@ -39,8 +39,8 @@ repository permission contributions.
   - `OrganizationRoleDefined@1` [planned]
   - `OrganizationRoleUpdated@1` [planned]
   - `OrganizationRoleDeleted@1` [planned]
-  - `OrganizationRoleAssigned@1` [planned]
-  - `OrganizationRoleRevoked@1` [planned]
+  - `OrganizationRoleAssigned@1` [active]
+  - `OrganizationRoleRevoked@1` [active]
   - `CustomRepositoryRoleDefined@1` [planned]
   - `CustomRepositoryRoleUpdated@1` [planned]
   - `CustomRepositoryRoleDeleted@1` [planned]
@@ -90,8 +90,8 @@ repository permission contributions.
 - **Authorization:** Active organization owner.
 - **Transaction:** One organization-role assignment transaction.
 - **Idempotency:** Duplicate `(organization, subject, role)` is rejected.
-- **Dependencies:** `organizations/organization-memberships::OrganizationMembershipReference`, `organizations/organization-teams::OrganizationTeamReference`
-- **Published events:** `none`
+- **Dependencies:** `organizations/organization-memberships::OrganizationMembershipReference`, `organizations/organization-teams::OrganizationTeamReference`, `platform/event-publication::EventRecorderPort`
+- **Published events:** `OrganizationRoleAssigned@1`
 - **Official evidence:** `organizations-organization-roles-source-02`
 - **Local policy:** Team assignments apply only to direct active team members.
 
@@ -106,8 +106,8 @@ repository permission contributions.
 - **Authorization:** Active organization owner.
 - **Transaction:** One organization-role assignment transaction.
 - **Idempotency:** Missing active assignment is rejected.
-- **Dependencies:** `organizations/organization-memberships::OrganizationMembershipReference`
-- **Published events:** `none`
+- **Dependencies:** `organizations/organization-memberships::OrganizationMembershipReference`, `platform/event-publication::EventRecorderPort`
+- **Published events:** `OrganizationRoleRevoked@1`
 - **Official evidence:** `organizations-organization-roles-source-02`
 - **Local policy:** Revocation takes effect on the next permission resolution.
 
@@ -155,9 +155,10 @@ contributions without exposing assignment persistence.
 
 ## Dependencies and consistency
 
-Active synchronous dependencies are organization memberships and organization
-teams. Organization references remain a planned relationship. Assignment
-resolution never reads another context's persistence.
+Active synchronous dependencies are organization memberships, organization
+teams, and `platform/event-publication::EventRecorderPort`. Organization
+references remain a planned relationship. Assignment resolution never reads
+another context's persistence.
 
 ## Authorization
 
@@ -183,9 +184,10 @@ Assignments whose subject becomes ineligible also stop contributing.
 
 ## Events and failure behavior
 
-Catalog role events remain planned. Commands initially return explicit results
-and do not publish events. Dependency failures propagate without partial
-cross-context writes.
+Successful assignment commands record `OrganizationRoleAssigned@1` or
+`OrganizationRoleRevoked@1` in this context's outbox. Publication is eventual
+and cannot roll back the committed assignment. The definition and custom-role
+events remain planned.
 
 ## Official sources
 

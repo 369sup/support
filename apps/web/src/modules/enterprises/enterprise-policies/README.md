@@ -95,7 +95,7 @@ Retention, erasure, and tombstone rules are not defined while this context is pl
 
 ## Official sources
 
-- `enterprises-enterprise-policies-source-01`: [enterprise policies, organization constraints, repository management policies](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies) (not yet verified)
+- `enterprises-enterprise-policies-source-01`: [enterprise policies, organization constraints, repository management policies](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies) (verified 2026-07-23)
 
 ## Exceptions
 

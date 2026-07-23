@@ -133,7 +133,7 @@ Retention, erasure, and tombstone rules are not defined while this context is pl
 
 ## Official sources
 
-- `collaboration-projects-source-01`: [projects, views, fields, workflows, charts, templates](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects) (not yet verified)
+- `collaboration-projects-source-01`: [projects, views, fields, workflows, charts, templates](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects) (verified 2026-07-23)
 
 ## Exceptions
 

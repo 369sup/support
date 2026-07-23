@@ -4,19 +4,24 @@
 - **Kind:** `technical`
 - **Classification:** `not-applicable`
 - **Maturity:** `stable`
-- **Implementation:** `planned`
+- **Implementation:** `active`
 - **Semantic status:** `not-applicable`
 
 ## Purpose
 
-Dispatch, leasing, retry, operational idempotency, redelivery, and dead-letter handling for context-owned event envelopes.
+Dispatch committed, context-owned event envelopes with leasing, retry,
+operational idempotency, redelivery, and dead-letter handling.
 
 ## Context content tree
 
-- `platform/event-publication` [planned]
-  - Purpose: Dispatch, leasing, retry, operational idempotency, redelivery, and dead-letter handling for context-owned event envelopes.
+- `platform/event-publication` [active]
+  - Purpose: Dispatch committed, context-owned event envelopes.
   - Capabilities
-    - No active use cases; activation scope remains empty.
+    - `publish-pending-events` [active]
+    - `list-dead-letters` [active]
+    - `redeliver-dead-letter` [active]
+    - `get-publication-metrics` [active]
+    - `register-event-source` [active]
   - Owned domain concepts
     - `PublicationLease`
     - `PublicationCursor`
@@ -24,7 +29,11 @@ Dispatch, leasing, retry, operational idempotency, redelivery, and dead-letter h
     - `DeadLetterRecord`
     - `RedeliveryRequest`
   - Business rules and invariants
-    - Product-semantic claims are not applicable to this technical context.
+    - Source contexts own and commit their outbox records.
+    - Delivery receipts make successful publication idempotent.
+    - Three consecutive delivery failures move an envelope to dead letter.
+    - Publication failure never rolls back the source command.
+    - Operational views never expose event payloads.
   - Published events
     - `IntegrationEventPublished@1` [planned]: integration event published.
     - `EventPublicationFailed@1` [planned]: event publication failed.
@@ -42,63 +51,154 @@ Dispatch, leasing, retry, operational idempotency, redelivery, and dead-letter h
 
 ## Designed use cases
 
-No approved use cases. Implementation remains blocked.
+### `publish-pending-events` [active]
+
+- **Type:** `command`
+- **Application boundary:** `PublishPendingEventsUseCase.publishPendingEvents()`
+- **Public entrypoint:** `server-api.ts#publishPendingEvents`
+- **Input:** Optional registered source ID and a bounded batch size.
+- **Success result:** Counts for delivered, retried, dead-lettered, and duplicate envelopes.
+- **Expected rejections:** `source-not-found`
+- **Authorization:** Internal runtime orchestration only.
+- **Transaction:** Publication state changes independently after the source transaction.
+- **Idempotency:** A recorded event receipt suppresses duplicate delivery.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `not-applicable`
+- **Local policy:** Delivery is simulated in the current runtime and payloads are not logged.
+
+### `list-dead-letters` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ListDeadLettersUseCase.listDeadLetters()`
+- **Public entrypoint:** `server-api.ts#listDeadLetters`
+- **Input:** Optional source context filter.
+- **Success result:** Payload-free dead-letter metadata.
+- **Expected rejections:** `none`
+- **Authorization:** Internal administration only.
+- **Transaction:** Read-only.
+- **Idempotency:** Query.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `not-applicable`
+- **Local policy:** Payloads are deliberately excluded from the inspector.
+
+### `redeliver-dead-letter` [active]
+
+- **Type:** `command`
+- **Application boundary:** `RedeliverDeadLetterUseCase.redeliverDeadLetter()`
+- **Public entrypoint:** `server-api.ts#redeliverDeadLetter`
+- **Input:** Dead-letter ID.
+- **Success result:** Delivered or failed redelivery outcome.
+- **Expected rejections:** `dead-letter-not-found`
+- **Authorization:** Internal administration only.
+- **Transaction:** One publication-state transaction.
+- **Idempotency:** Successful redelivery records a receipt before removing the dead letter.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `not-applicable`
+- **Local policy:** Failed redelivery retains the dead letter with an incremented version.
+
+### `get-publication-metrics` [active]
+
+- **Type:** `query`
+- **Application boundary:** `GetPublicationMetricsUseCase.getPublicationMetrics()`
+- **Public entrypoint:** `server-api.ts#getPublicationMetrics`
+- **Input:** None.
+- **Success result:** Aggregate attempt, retry, dead-letter, receipt, and oldest-pending-lag metrics.
+- **Expected rejections:** `none`
+- **Authorization:** Internal observability only.
+- **Transaction:** Read-only aggregation.
+- **Idempotency:** Query.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `not-applicable`
+- **Local policy:** Metrics contain counts and timestamps only, never payload or personal data.
+
+### `register-event-source` [active]
+
+- **Type:** `command`
+- **Application boundary:** `RegisterEventSourceUseCase.registerEventSource()`
+- **Public entrypoint:** `server-api.ts#registerEventSource`
+- **Input:** A source-owned `CommittedEventSourcePort`.
+- **Success result:** The source is registered by its stable source ID.
+- **Expected rejections:** `none`
+- **Authorization:** Internal composition only; no browser transport is active.
+- **Transaction:** Replaces the registry reference atomically in process memory.
+- **Idempotency:** Re-registering the same source ID replaces the prior reference.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `not-applicable`
+- **Local policy:** Registration never transfers ownership of the source outbox.
 
 ## Ubiquitous language
 
-The catalog reserves these terms for this context:
-
-- `PublicationLease`
-- `PublicationCursor`
-- `PublicationAttempt`
-- `DeadLetterRecord`
-- `RedeliveryRequest`
-
-Precise definitions must be refined against technical contracts before activation.
+- **Committed event source:** Public source-context boundary that leases
+  envelopes after the source transaction commits.
+- **Receipt:** Idempotency record proving successful delivery for one event ID.
+- **Dead letter:** Payload-retaining internal record for an envelope that
+  exhausted automatic retries.
+- **Operational view:** Payload-free metadata safe for administration and
+  observability.
 
 ## Ownership and invariants
 
-This context owns `PublicationLease`, `PublicationCursor`, `PublicationAttempt`, `DeadLetterRecord`, `RedeliveryRequest`.
-It excludes `ProductEventMeaning`, `ContextOutboxRecord`, `SourceContextTransaction`, `WebhookSubscription`, `NotificationInterest`.
-
-Product-semantic claims are not applicable to this technical context.
+This context owns publication leases, attempts, receipts, dead letters, and
+redelivery state. Source contexts retain ownership of outbox records and
+product-event meaning. Delivery is at-least-once until a receipt exists.
 
 ## Public capabilities
 
-None while planned. Activation requires at least one real use case and public consumer.
+- `publish-pending-events`
+- `list-dead-letters`
+- `redeliver-dead-letter`
+- `get-publication-metrics`
+- `register-event-source`
+- `DomainEventEnvelope`
+- `EventRecorderPort`
+- `CommittedEventSourcePort`
 
 ## Dependencies and consistency
 
-No runtime dependency or planned relationship is cataloged.
+The context has no product-context dependency. Sources register a public
+`CommittedEventSourcePort`; source storage remains private. Delivery and source
+acknowledgement are eventually consistent and idempotent by event ID.
 
 ## Authorization
 
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Publication operations are internal runtime and administration capabilities.
+No browser route is active in this slice.
 
 ## Persistence and transactions
 
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
+Publication attempts, receipts, and dead letters use a versioned process-local
+store. Source outboxes are separate stores committed with their source
+commands. Publication is never part of the source transaction.
 
 ## Data classification
 
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Event payloads can contain product data and remain internal. The dead-letter
+list and metrics expose metadata only.
 
 ## Retention and erasure
 
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Successful receipts are retained for the process lifetime to suppress
+duplicates. Dead-letter payloads are retained until successful redelivery or
+scenario reset. Durable retention and erasure schedules remain deferred.
 
 ## Events and failure behavior
 
-- `IntegrationEventPublished@1` (technical, planned): integration event published. contract and ordering pending activation.
-- `EventPublicationFailed@1` (technical, planned): event publication failed. contract and ordering pending activation.
-- `EventDeadLettered@1` (technical, planned): event dead lettered. contract and ordering pending activation.
-- `EventRedelivered@1` (technical, planned): event redelivered. contract and ordering pending activation.
-
-## Official sources
-
-Not applicable to this technical context.
+The active slice transports source events but does not yet publish its own
+operational events. The cataloged publication events remain planned. Delivery
+failure is retried up to three attempts and then retained as a dead letter.
 
 ## Exceptions
 
-No context-specific exception is declared by the catalog. The central
-[exception registry](../../../../../../docs/architecture/exceptions/registry.json) remains authoritative.
+The in-memory adapter is process-local, restart-invalidated, non-durable, and
+not horizontally consistent. The simulated delivery adapter performs no
+external I/O.
+
+## Official sources
+
+Not applicable; this is a technical capability governed by
+[ADR-0003](../../../../../../docs/architecture/decisions/ADR-0003-in-memory-event-and-policy-runtime.md).

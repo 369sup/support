@@ -40,14 +40,14 @@ an acyclic same-organization parent hierarchy.
   - `OutsideCollaborator`
   - `RepositoryRole`
 - Published events
-  - `OrganizationTeamCreated@1` [planned]
-  - `OrganizationTeamUpdated@1` [planned]
-  - `OrganizationTeamDeleted@1` [planned]
-  - `TeamMemberAdded@1` [planned]
-  - `TeamMemberRemoved@1` [planned]
-  - `TeamMaintainerChanged@1` [planned]
-  - `ParentTeamChanged@1` [planned]
-  - `TeamVisibilityChanged@1` [planned]
+  - `OrganizationTeamCreated@1` [active]
+  - `OrganizationTeamUpdated@1` [active]
+  - `OrganizationTeamDeleted@1` [active]
+  - `TeamMemberAdded@1` [active]
+  - `TeamMemberRemoved@1` [active]
+  - `TeamMaintainerChanged@1` [active]
+  - `ParentTeamChanged@1` [active]
+  - `TeamVisibilityChanged@1` [active]
 
 ## Designed use cases
 
@@ -62,8 +62,8 @@ an acyclic same-organization parent hierarchy.
 - **Authorization:** Active organization owner for the target organization.
 - **Transaction:** One organization-team store transaction.
 - **Idempotency:** Duplicate organization slug is rejected.
-- **Dependencies:** `organizations/organizations::OrganizationReference`, `organizations/organization-memberships::OrganizationMembershipReference`
-- **Published events:** `none`
+- **Dependencies:** `organizations/organizations::OrganizationReference`, `organizations/organization-memberships::OrganizationMembershipReference`, `platform/event-publication::EventRecorderPort`
+- **Published events:** `OrganizationTeamCreated@1`
 - **Official evidence:** `organizations-organization-teams-source-01`
 - **Local policy:** Team creation is owner-only until organization team-creation policy is active.
 
@@ -110,8 +110,8 @@ an acyclic same-organization parent hierarchy.
 - **Authorization:** Organization owner for hierarchy changes; organization owner or target-team maintainer for profile and visibility changes.
 - **Transaction:** One organization-team store transaction.
 - **Idempotency:** Reapplying the same values is a no-op.
-- **Dependencies:** `organizations/organization-memberships::OrganizationMembershipReference`
-- **Published events:** `none`
+- **Dependencies:** `organizations/organization-memberships::OrganizationMembershipReference`, `platform/event-publication::EventRecorderPort`
+- **Published events:** `OrganizationTeamUpdated@1`, `ParentTeamChanged@1`, `TeamVisibilityChanged@1`
 - **Official evidence:** `organizations-organization-teams-source-01`
 - **Local policy:** Secret teams cannot have a parent or children.
 
@@ -126,8 +126,8 @@ an acyclic same-organization parent hierarchy.
 - **Authorization:** Active organization owner.
 - **Transaction:** Soft delete in one organization-team store transaction.
 - **Idempotency:** Already deleted teams are returned as not found.
-- **Dependencies:** `organizations/organization-memberships::OrganizationMembershipReference`
-- **Published events:** `none`
+- **Dependencies:** `organizations/organization-memberships::OrganizationMembershipReference`, `platform/event-publication::EventRecorderPort`
+- **Published events:** `OrganizationTeamDeleted@1`
 - **Official evidence:** `organizations-organization-teams-source-01`
 - **Local policy:** Cross-context grants and assignments remain stored but stop contributing.
 
@@ -142,8 +142,8 @@ an acyclic same-organization parent hierarchy.
 - **Authorization:** Organization owner or target-team maintainer.
 - **Transaction:** One team-membership transaction.
 - **Idempotency:** Duplicate active membership is rejected.
-- **Dependencies:** `organizations/organization-memberships::OrganizationMembershipReference`
-- **Published events:** `none`
+- **Dependencies:** `organizations/organization-memberships::OrganizationMembershipReference`, `platform/event-publication::EventRecorderPort`
+- **Published events:** `TeamMemberAdded@1`
 - **Official evidence:** `organizations-organization-teams-source-01`
 - **Local policy:** Invitations and outside collaborators are not created by this command.
 
@@ -158,8 +158,8 @@ an acyclic same-organization parent hierarchy.
 - **Authorization:** Organization owner or target-team maintainer.
 - **Transaction:** Membership removal and maintainer removal are atomic in the team store.
 - **Idempotency:** Missing active membership is rejected.
-- **Dependencies:** `organizations/organization-memberships::OrganizationMembershipReference`
-- **Published events:** `none`
+- **Dependencies:** `organizations/organization-memberships::OrganizationMembershipReference`, `platform/event-publication::EventRecorderPort`
+- **Published events:** `TeamMemberRemoved@1`
 - **Official evidence:** `organizations-organization-teams-source-01`
 - **Local policy:** Removing a member also removes its maintainer designation.
 
@@ -174,8 +174,8 @@ an acyclic same-organization parent hierarchy.
 - **Authorization:** Active organization owner.
 - **Transaction:** One team-maintainer transaction.
 - **Idempotency:** Duplicate designation is rejected.
-- **Dependencies:** `organizations/organization-memberships::OrganizationMembershipReference`
-- **Published events:** `none`
+- **Dependencies:** `organizations/organization-memberships::OrganizationMembershipReference`, `platform/event-publication::EventRecorderPort`
+- **Published events:** `TeamMaintainerChanged@1`
 - **Official evidence:** `organizations-organization-teams-source-01`
 - **Local policy:** The target must already be a direct active team member.
 
@@ -190,8 +190,8 @@ an acyclic same-organization parent hierarchy.
 - **Authorization:** Active organization owner.
 - **Transaction:** One team-maintainer transaction.
 - **Idempotency:** Missing active designation is rejected.
-- **Dependencies:** `organizations/organization-memberships::OrganizationMembershipReference`
-- **Published events:** `none`
+- **Dependencies:** `organizations/organization-memberships::OrganizationMembershipReference`, `platform/event-publication::EventRecorderPort`
+- **Published events:** `TeamMaintainerChanged@1`
 - **Official evidence:** `organizations-organization-teams-source-01`
 - **Local policy:** Revocation does not remove team membership.
 
@@ -254,7 +254,8 @@ exposing persistence.
 
 Active synchronous dependencies are
 `organizations/organizations::OrganizationReference` and
-`organizations/organization-memberships::OrganizationMembershipReference`.
+`organizations/organization-memberships::OrganizationMembershipReference`,
+and `platform/event-publication::EventRecorderPort`.
 No other context may read the team store.
 
 ## Authorization
@@ -281,9 +282,9 @@ memberships, and revoked maintainers do not contribute authorization.
 
 ## Events and failure behavior
 
-Catalog events remain planned. Active commands initially return explicit
-results and do not publish events until the event-publication capability is
-active. Dependency failures propagate without partial cross-context writes.
+Successful commands record the active events in this context's outbox. Event
+dispatch is eventual; publication failure does not roll back a committed team
+change. Dependency failures propagate without partial cross-context writes.
 
 ## Official sources
 

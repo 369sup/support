@@ -123,7 +123,7 @@ Retention, erasure, and tombstone rules are not defined while this context is pl
 
 ## Official sources
 
-- `commerce-billing-source-01`: [billing accounts, usage, budgets, cost centers](https://docs.github.com/en/billing/get-started/introduction-to-billing) (not yet verified)
+- `commerce-billing-source-01`: [billing accounts, usage, budgets, cost centers](https://docs.github.com/en/billing/get-started/introduction-to-billing) (verified 2026-07-23)
 
 ## Exceptions
 

@@ -53,23 +53,27 @@ import type {
   OrganizationTeamReference,
   TeamVisibility,
 } from "../../domain/organization-team";
+import type { EventRecorderPort } from "@/modules/platform/event-publication/integration-contracts";
 
 export class OrganizationTeamService {
   private readonly repository: OrganizationTeamRepositoryPort;
   private readonly membershipGateway: OrganizationMembershipGatewayPort;
   private readonly organizationGateway: OrganizationReferenceGatewayPort;
   private readonly idGenerator: TeamIdGeneratorPort;
+  private readonly eventRecorder: EventRecorderPort | undefined;
 
   constructor(
     repository: OrganizationTeamRepositoryPort,
     membershipGateway: OrganizationMembershipGatewayPort,
     organizationGateway: OrganizationReferenceGatewayPort,
     idGenerator: TeamIdGeneratorPort,
+    eventRecorder?: EventRecorderPort,
   ) {
     this.repository = repository;
     this.membershipGateway = membershipGateway;
     this.organizationGateway = organizationGateway;
     this.idGenerator = idGenerator;
+    this.eventRecorder = eventRecorder;
   }
 
   async create(
@@ -120,6 +124,10 @@ export class OrganizationTeamService {
       lifecycleState: "active",
     };
     await this.repository.saveTeam(team);
+    await this.recordEvent("OrganizationTeamCreated", team.teamId, {
+      organizationId: team.organizationId,
+      teamId: team.teamId,
+    });
     return { status: "created", team };
   }
 
@@ -229,6 +237,22 @@ export class OrganizationTeamService {
       parentTeamId: nextParentTeamId,
     };
     await this.repository.saveTeam(updated);
+    await this.recordEvent("OrganizationTeamUpdated", updated.teamId, {
+      organizationId: updated.organizationId,
+      teamId: updated.teamId,
+    });
+    if (updated.parentTeamId !== team.parentTeamId) {
+      await this.recordEvent("ParentTeamChanged", updated.teamId, {
+        parentTeamId: updated.parentTeamId,
+        teamId: updated.teamId,
+      });
+    }
+    if (updated.visibility !== team.visibility) {
+      await this.recordEvent("TeamVisibilityChanged", updated.teamId, {
+        teamId: updated.teamId,
+        visibility: updated.visibility,
+      });
+    }
     return { status: "updated", team: updated };
   }
 
@@ -251,6 +275,10 @@ export class OrganizationTeamService {
       parentTeamId: null,
     };
     await this.repository.saveTeam(deleted);
+    await this.recordEvent("OrganizationTeamDeleted", deleted.teamId, {
+      organizationId: deleted.organizationId,
+      teamId: deleted.teamId,
+    });
     return { status: "deleted", team: deleted };
   }
 
@@ -288,6 +316,11 @@ export class OrganizationTeamService {
       state: "active" as const,
     };
     await this.repository.saveMembership(membership);
+    await this.recordEvent("TeamMemberAdded", membership.teamMembershipId, {
+      accountId: membership.accountId,
+      organizationId: membership.organizationId,
+      teamId: membership.teamId,
+    });
     return { status: "added", membership };
   }
 
@@ -320,6 +353,11 @@ export class OrganizationTeamService {
         state: "revoked",
       });
     }
+    await this.recordEvent("TeamMemberRemoved", removed.teamMembershipId, {
+      accountId: removed.accountId,
+      organizationId: removed.organizationId,
+      teamId: removed.teamId,
+    });
     return { status: "removed", membership: removed };
   }
 
@@ -357,6 +395,12 @@ export class OrganizationTeamService {
       state: "active" as const,
     };
     await this.repository.saveMaintainer(maintainer);
+    await this.recordEvent("TeamMaintainerChanged", maintainer.teamMaintainerId, {
+      accountId: maintainer.accountId,
+      action: "assigned",
+      organizationId: maintainer.organizationId,
+      teamId: maintainer.teamId,
+    });
     return { status: "assigned", maintainer };
   }
 
@@ -379,6 +423,12 @@ export class OrganizationTeamService {
     }
     const revoked = { ...maintainer, state: "revoked" as const };
     await this.repository.saveMaintainer(revoked);
+    await this.recordEvent("TeamMaintainerChanged", revoked.teamMaintainerId, {
+      accountId: revoked.accountId,
+      action: "revoked",
+      organizationId: revoked.organizationId,
+      teamId: revoked.teamId,
+    });
     return { status: "revoked", maintainer: revoked };
   }
 
@@ -446,6 +496,21 @@ export class OrganizationTeamService {
   private async findActiveTeam(teamId: string) {
     const team = await this.repository.findTeamById(teamId);
     return team?.lifecycleState === "active" ? team : null;
+  }
+
+  private async recordEvent(
+    eventName: string,
+    aggregateId: string,
+    payload: Readonly<Record<string, unknown>>,
+  ) {
+    await this.eventRecorder?.record({
+      aggregateId,
+      aggregateVersion: 1,
+      eventName,
+      eventVersion: 1,
+      orderingKey: aggregateId,
+      payload,
+    });
   }
 
   private async canViewTeam(

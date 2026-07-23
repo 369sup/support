@@ -97,7 +97,8 @@ Retention, erasure, and tombstone rules are not defined while this context is pl
 
 ## Official sources
 
-- `identity-social-graph-source-01`: [following people, following organizations](https://docs.github.com/en/account-and-profile) (not yet verified)
+- `identity-social-graph-source-01`: [following people](https://docs.github.com/en/get-started/exploring-projects-on-github/following-people) (verified 2026-07-23)
+- `identity-social-graph-source-02`: [following organizations](https://docs.github.com/en/enterprise-cloud@latest/get-started/exploring-projects-on-github/following-organizations) (verified 2026-07-23; preview)
 
 ## Exceptions
 

@@ -103,7 +103,7 @@ Retention, erasure, and tombstone rules are not defined while this context is pl
 
 ## Official sources
 
-- `projections-activity-feed-source-01`: [personal dashboard, activity feed, followed activity](https://docs.github.com/en/account-and-profile/concepts/personal-dashboard) (not yet verified)
+- `projections-activity-feed-source-01`: [personal dashboard, activity feed, followed activity](https://docs.github.com/en/account-and-profile/reference/personal-dashboard) (verified 2026-07-23)
 
 ## Exceptions
 

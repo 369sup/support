@@ -111,7 +111,7 @@ Retention, erasure, and tombstone rules are not defined while this context is pl
 
 ## Official sources
 
-- `enterprises-enterprise-iam-source-01`: [enterprise IAM, SAML, OIDC, SCIM](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-iam) (not yet verified)
+- `enterprises-enterprise-iam-source-01`: [enterprise IAM, SAML, OIDC, SCIM](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-iam) (verified 2026-07-23)
 
 ## Exceptions
 

@@ -1,15 +1,29 @@
 import { describe, expect, it } from "vitest";
 
+import type { EventRecorderPort } from "@/modules/platform/event-publication/integration-contracts";
+
+import { InMemoryOrganizationRoleOutboxAdapter } from "../adapters/outbound/persistence/in-memory-organization-role-outbox.adapter";
 import { InMemoryOrganizationRoleAssignmentAdapter } from "../adapters/outbound/persistence/in-memory-organization-role-assignment.adapter";
 import { InMemoryOrganizationRoleIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-organization-role-id-generator.adapter";
 import type { OrganizationMembershipGatewayPort } from "../application/ports/outbound/organization-membership.gateway.port";
 import type { OrganizationTeamGatewayPort } from "../application/ports/outbound/organization-team.gateway.port";
 import { OrganizationRoleService } from "../application/services/organization-role.service";
 
+function createTestOutbox() {
+  return new InMemoryOrganizationRoleOutboxAdapter(
+    InMemoryOrganizationRoleOutboxAdapter.createState(),
+    {
+      nextEventId: () => "event_test",
+      now: () => "2026-07-23T00:00:00.000Z",
+    },
+  );
+}
+
 function createHarness(
   assignments: ConstructorParameters<
     typeof InMemoryOrganizationRoleAssignmentAdapter
   >[0] = [],
+  eventRecorder?: EventRecorderPort,
 ) {
   const membershipGateway: OrganizationMembershipGatewayPort = {
     getActiveMembership: (accountId, organizationId) => {
@@ -41,6 +55,7 @@ function createHarness(
     membershipGateway,
     teamGateway,
     new InMemoryOrganizationRoleIdGeneratorAdapter(0),
+    eventRecorder,
   );
 }
 
@@ -160,5 +175,34 @@ describe("OrganizationRoleService", () => {
         organizationId: "organization_test",
       }),
     ).resolves.toEqual([]);
+  });
+
+  it("records assignment events after persistence succeeds", async () => {
+    const outbox = createTestOutbox();
+    const service = createHarness([], outbox);
+
+    await expect(
+      service.assign({
+        actorAccountId: "owner",
+        organizationId: "organization_test",
+        roleKey: "security-manager",
+        subject: { kind: "account", accountId: "member" },
+      }),
+    ).resolves.toMatchObject({ status: "assigned" });
+
+    const events = await outbox.claimPending({
+      claimedAt: "2026-07-23T00:00:01.000Z",
+      limit: 10,
+    });
+    expect(events).toHaveLength(1);
+    expect(events[0]).toMatchObject({
+      sourceContext: "organizations/organization-roles",
+      eventName: "OrganizationRoleAssigned",
+      payload: {
+        organizationId: "organization_test",
+        roleKey: "security-manager",
+        subject: { kind: "account", accountId: "member" },
+      },
+    });
   });
 });

@@ -401,7 +401,7 @@
             "profile visibility",
             "pinned items"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -478,12 +478,20 @@
       "officialSources": [
         {
           "id": "identity-social-graph-source-01",
-          "url": "https://docs.github.com/en/account-and-profile",
+          "url": "https://docs.github.com/en/get-started/exploring-projects-on-github/following-people",
           "supports": [
-            "following people",
+            "following people"
+          ],
+          "verifiedOn": "2026-07-23"
+        },
+        {
+          "id": "identity-social-graph-source-02",
+          "url": "https://docs.github.com/en/enterprise-cloud@latest/get-started/exploring-projects-on-github/following-organizations",
+          "supports": [
             "following organizations"
           ],
-          "verifiedOn": null
+          "maturity": "preview",
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -514,7 +522,7 @@
           "implementationStatus": "planned",
           "meaning": "organization followed.",
           "sourceIds": [
-            "identity-social-graph-source-01"
+            "identity-social-graph-source-02"
           ]
         },
         {
@@ -524,7 +532,7 @@
           "implementationStatus": "planned",
           "meaning": "organization unfollowed.",
           "sourceIds": [
-            "identity-social-graph-source-01"
+            "identity-social-graph-source-02"
           ]
         }
       ],
@@ -846,13 +854,13 @@
       "officialSources": [
         {
           "id": "enterprises-enterprise-teams-source-01",
-          "url": "https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories/managing-users-in-your-enterprise",
+          "url": "https://docs.github.com/en/enterprise-cloud@latest/admin/concepts/enterprise-fundamentals/teams-in-an-enterprise",
           "supports": [
             "enterprise teams",
             "enterprise team membership"
           ],
           "maturity": "preview",
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -1100,7 +1108,7 @@
             "OIDC",
             "SCIM"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -1229,7 +1237,7 @@
             "organization constraints",
             "repository management policies"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -1773,6 +1781,11 @@
           "context": "organizations/organization-memberships",
           "contract": "OrganizationMembershipReference",
           "mode": "synchronous"
+        },
+        {
+          "context": "platform/event-publication",
+          "contract": "EventRecorderPort",
+          "mode": "synchronous"
         }
       ],
       "officialSources": [
@@ -1793,81 +1806,97 @@
           "name": "OrganizationTeamCreated",
           "version": 1,
           "kind": "domain",
-          "implementationStatus": "planned",
+          "implementationStatus": "active",
           "meaning": "organization team created.",
           "sourceIds": [
             "organizations-organization-teams-source-01"
-          ]
+          ],
+          "schema": "integration-contracts.ts#OrganizationTeamCreatedV1",
+          "orderingKey": "teamId"
         },
         {
           "name": "OrganizationTeamUpdated",
           "version": 1,
           "kind": "domain",
-          "implementationStatus": "planned",
+          "implementationStatus": "active",
           "meaning": "organization team updated.",
           "sourceIds": [
             "organizations-organization-teams-source-01"
-          ]
+          ],
+          "schema": "integration-contracts.ts#OrganizationTeamUpdatedV1",
+          "orderingKey": "teamId"
         },
         {
           "name": "OrganizationTeamDeleted",
           "version": 1,
           "kind": "domain",
-          "implementationStatus": "planned",
+          "implementationStatus": "active",
           "meaning": "organization team deleted.",
           "sourceIds": [
             "organizations-organization-teams-source-01"
-          ]
+          ],
+          "schema": "integration-contracts.ts#OrganizationTeamDeletedV1",
+          "orderingKey": "teamId"
         },
         {
           "name": "TeamMemberAdded",
           "version": 1,
           "kind": "domain",
-          "implementationStatus": "planned",
+          "implementationStatus": "active",
           "meaning": "team member added.",
           "sourceIds": [
             "organizations-organization-teams-source-01"
-          ]
+          ],
+          "schema": "integration-contracts.ts#TeamMemberAddedV1",
+          "orderingKey": "teamId"
         },
         {
           "name": "TeamMemberRemoved",
           "version": 1,
           "kind": "domain",
-          "implementationStatus": "planned",
+          "implementationStatus": "active",
           "meaning": "team member removed.",
           "sourceIds": [
             "organizations-organization-teams-source-01"
-          ]
+          ],
+          "schema": "integration-contracts.ts#TeamMemberRemovedV1",
+          "orderingKey": "teamId"
         },
         {
           "name": "TeamMaintainerChanged",
           "version": 1,
           "kind": "domain",
-          "implementationStatus": "planned",
+          "implementationStatus": "active",
           "meaning": "team maintainer changed.",
           "sourceIds": [
             "organizations-organization-teams-source-01"
-          ]
+          ],
+          "schema": "integration-contracts.ts#TeamMaintainerChangedV1",
+          "orderingKey": "teamId"
         },
         {
           "name": "ParentTeamChanged",
           "version": 1,
           "kind": "domain",
-          "implementationStatus": "planned",
+          "implementationStatus": "active",
           "meaning": "parent team changed.",
           "sourceIds": [
             "organizations-organization-teams-source-01"
-          ]
+          ],
+          "schema": "integration-contracts.ts#ParentTeamChangedV1",
+          "orderingKey": "teamId"
         },
         {
           "name": "TeamVisibilityChanged",
           "version": 1,
           "kind": "domain",
-          "implementationStatus": "planned",
+          "implementationStatus": "active",
           "meaning": "team visibility changed.",
           "sourceIds": [
             "organizations-organization-teams-source-01"
-          ]
+          ],
+          "schema": "integration-contracts.ts#TeamVisibilityChangedV1",
+          "orderingKey": "teamId"
         }
       ],
       "activationScope": [
@@ -1954,6 +1983,11 @@
           "context": "organizations/organization-teams",
           "contract": "OrganizationTeamReference",
           "mode": "synchronous"
+        },
+        {
+          "context": "platform/event-publication",
+          "contract": "EventRecorderPort",
+          "mode": "synchronous"
         }
       ],
       "officialSources": [
@@ -2023,21 +2057,25 @@
           "name": "OrganizationRoleAssigned",
           "version": 1,
           "kind": "domain",
-          "implementationStatus": "planned",
+          "implementationStatus": "active",
           "meaning": "organization role assigned.",
           "sourceIds": [
             "organizations-organization-roles-source-01"
-          ]
+          ],
+          "schema": "integration-contracts.ts#OrganizationRoleAssignedV1",
+          "orderingKey": "assignmentId"
         },
         {
           "name": "OrganizationRoleRevoked",
           "version": 1,
           "kind": "domain",
-          "implementationStatus": "planned",
+          "implementationStatus": "active",
           "meaning": "organization role revoked.",
           "sourceIds": [
             "organizations-organization-roles-source-01"
-          ]
+          ],
+          "schema": "integration-contracts.ts#OrganizationRoleRevokedV1",
+          "orderingKey": "assignmentId"
         },
         {
           "name": "CustomRepositoryRoleDefined",
@@ -2155,7 +2193,7 @@
             "member privileges",
             "repository policies"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -2777,6 +2815,11 @@
           "context": "organizations/organization-roles",
           "contract": "OrganizationRepositoryRoleContribution",
           "mode": "synchronous"
+        },
+        {
+          "context": "platform/event-publication",
+          "contract": "EventRecorderPort",
+          "mode": "synchronous"
         }
       ],
       "officialSources": [
@@ -2930,21 +2973,25 @@
           "name": "TeamRepositoryAccessGranted",
           "version": 1,
           "kind": "domain",
-          "implementationStatus": "planned",
+          "implementationStatus": "active",
           "meaning": "team repository access granted.",
           "sourceIds": [
             "repositories-repository-access-source-01"
-          ]
+          ],
+          "schema": "integration-contracts.ts#TeamRepositoryAccessGrantedV1",
+          "orderingKey": "grantId"
         },
         {
           "name": "TeamRepositoryAccessRevoked",
           "version": 1,
           "kind": "domain",
-          "implementationStatus": "planned",
+          "implementationStatus": "active",
           "meaning": "team repository access revoked.",
           "sourceIds": [
             "repositories-repository-access-source-01"
-          ]
+          ],
+          "schema": "integration-contracts.ts#TeamRepositoryAccessRevokedV1",
+          "orderingKey": "grantId"
         },
         {
           "name": "OutsideCollaboratorAccessGranted",
@@ -3803,7 +3850,7 @@
             "milestones",
             "work classification"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -4559,7 +4606,7 @@
             "blocking",
             "conversation locking"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -4722,7 +4769,7 @@
             "charts",
             "templates"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -6462,7 +6509,7 @@
             "budgets",
             "cost centers"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -6639,7 +6686,7 @@
             "license assignment",
             "usage limits"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -6762,7 +6809,7 @@
             "audit export",
             "audit streaming"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -7389,7 +7436,7 @@
             "issue search",
             "permission-filtered results"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [],
@@ -7687,7 +7734,7 @@
       "officialSources": [
         {
           "id": "projections-dashboard-source-01",
-          "url": "https://docs.github.com/en/account-and-profile/concepts/personal-dashboard",
+          "url": "https://docs.github.com/en/account-and-profile/reference/personal-dashboard",
           "supports": [
             "personal dashboard",
             "personal repository view"
@@ -7765,13 +7812,13 @@
       "officialSources": [
         {
           "id": "projections-activity-feed-source-01",
-          "url": "https://docs.github.com/en/account-and-profile/concepts/personal-dashboard",
+          "url": "https://docs.github.com/en/account-and-profile/reference/personal-dashboard",
           "supports": [
             "personal dashboard",
             "activity feed",
             "followed activity"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [],
@@ -8079,7 +8126,7 @@
       "name": "event-publication",
       "kind": "technical",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Dispatch, leasing, retry, operational idempotency, redelivery, and dead-letter handling for context-owned event envelopes.",
       "semanticStatus": "not-applicable",
       "owns": [
@@ -8132,7 +8179,13 @@
           "sourceIds": []
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "get-publication-metrics",
+        "list-dead-letters",
+        "publish-pending-events",
+        "register-event-source",
+        "redeliver-dead-letter"
+      ],
       "plannedRelationships": [],
       "semanticClaims": []
     },
@@ -8141,7 +8194,7 @@
       "name": "search-index",
       "kind": "technical",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Search document indexing, querying, and index lifecycle adapters.",
       "semanticStatus": "not-applicable",
       "owns": [
@@ -8182,7 +8235,11 @@
           "sourceIds": []
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "query-search-index",
+        "remove-search-document",
+        "upsert-search-document"
+      ],
       "plannedRelationships": [],
       "semanticClaims": []
     },
@@ -8191,7 +8248,7 @@
       "name": "media-storage",
       "kind": "technical",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Storage and retrieval of media referenced by product domains.",
       "semanticStatus": "not-applicable",
       "owns": [
@@ -8232,7 +8289,12 @@
           "sourceIds": []
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "delete-media",
+        "get-media-reference",
+        "quarantine-media",
+        "store-media"
+      ],
       "plannedRelationships": [],
       "semanticClaims": []
     },
@@ -8295,8 +8357,8 @@
       "name": "audit-storage",
       "kind": "technical",
       "maturity": "stable",
-      "implementationStatus": "planned",
-      "responsibility": "Durable storage, export, and retention enforcement for audit records.",
+      "implementationStatus": "active",
+      "responsibility": "Storage, export, and retention enforcement for audit records.",
       "semanticStatus": "not-applicable",
       "owns": [
         "AuditStorageRecord",
@@ -8336,7 +8398,12 @@
           "sourceIds": []
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "append-audit-record",
+        "apply-audit-retention",
+        "create-audit-export",
+        "query-audit-records"
+      ],
       "plannedRelationships": [],
       "semanticClaims": []
     }

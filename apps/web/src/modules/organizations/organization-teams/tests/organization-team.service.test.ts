@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 
+import type { EventRecorderPort } from "@/modules/platform/event-publication/integration-contracts";
+
+import { InMemoryOrganizationTeamOutboxAdapter } from "../adapters/outbound/persistence/in-memory-organization-team-outbox.adapter";
 import {
   InMemoryOrganizationTeamAdapter,
   type OrganizationTeamSeed,
@@ -8,7 +11,20 @@ import { InMemoryTeamIdGeneratorAdapter } from "../adapters/outbound/persistence
 import type { OrganizationMembershipGatewayPort } from "../application/ports/outbound/organization-membership.gateway.port";
 import { OrganizationTeamService } from "../application/services/organization-team.service";
 
-function createHarness(seed?: OrganizationTeamSeed) {
+function createTestOutbox() {
+  return new InMemoryOrganizationTeamOutboxAdapter(
+    InMemoryOrganizationTeamOutboxAdapter.createState(),
+    {
+      nextEventId: () => "event_test",
+      now: () => "2026-07-23T00:00:00.000Z",
+    },
+  );
+}
+
+function createHarness(
+  seed?: OrganizationTeamSeed,
+  eventRecorder?: EventRecorderPort,
+) {
   const memberships = new Map([
     [
       "owner",
@@ -57,6 +73,7 @@ function createHarness(seed?: OrganizationTeamSeed) {
         Promise.resolve(organizationId === "organization_test"),
     },
     new InMemoryTeamIdGeneratorAdapter(0),
+    eventRecorder,
   );
 }
 
@@ -220,5 +237,37 @@ describe("OrganizationTeamService", () => {
     expect(result).toHaveLength(1);
     expect(result[0]?.membership.teamId).toBe("child");
     expect(result[0]?.ancestorTeamIds).toEqual(["parent"]);
+  });
+
+  it("records a created event after the team is committed", async () => {
+    const outbox = createTestOutbox();
+    const service = createHarness(undefined, outbox);
+
+    await expect(
+      service.create({
+        actorAccountId: "owner",
+        organizationId: "organization_test",
+        name: "Platform",
+        slug: "platform",
+        description: "Platform team",
+        visibility: "visible",
+        parentTeamId: null,
+      }),
+    ).resolves.toMatchObject({ status: "created" });
+
+    const events = await outbox.claimPending({
+      claimedAt: "2026-07-23T00:00:01.000Z",
+      limit: 10,
+    });
+    expect(events).toHaveLength(1);
+    expect(events[0]).toMatchObject({
+      sourceContext: "organizations/organization-teams",
+      eventName: "OrganizationTeamCreated",
+      aggregateVersion: 1,
+      payload: {
+        organizationId: "organization_test",
+        teamId: "team_1",
+      },
+    });
   });
 });

@@ -1,10 +1,12 @@
 import type { AccountReference } from "@/modules/identity/accounts/integration-contracts";
+import { registerEventSource } from "@/modules/platform/event-publication/server-api";
 import type { RepositoryCandidateReference } from "@/modules/repositories/repositories/integration-contracts";
 
 import { OrganizationMembershipAdapter } from "../adapters/outbound/integration/organization-membership.adapter";
 import { OrganizationRoleAdapter } from "../adapters/outbound/integration/organization-role.adapter";
 import { OrganizationTeamAdapter } from "../adapters/outbound/integration/organization-team.adapter";
 import { InMemoryRepositoryGrantAdapter } from "../adapters/outbound/persistence/in-memory-repository-grant.adapter";
+import { InMemoryRepositoryAccessOutboxAdapter } from "../adapters/outbound/persistence/in-memory-repository-access-outbox.adapter";
 import { InMemoryTeamRepositoryGrantIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-team-repository-grant-id-generator.adapter";
 import { ChangeTeamRepositoryAccessHandler } from "../application/commands/change-team-repository-access.handler";
 import { GrantTeamRepositoryAccessHandler } from "../application/commands/grant-team-repository-access.handler";
@@ -86,6 +88,8 @@ function mapRepository(repository: RepositoryCandidateReference) {
 
 function composeRepositoryAccessServerFacade(): RepositoryAccessServerFacade {
   const grantAdapter = new InMemoryRepositoryGrantAdapter();
+  const eventRecorder = new InMemoryRepositoryAccessOutboxAdapter();
+  registerEventSource(eventRecorder);
   const teamAdapter = new OrganizationTeamAdapter();
   const resolver = new ResolveEffectiveRepositoryPermissionHandler(
     grantAdapter,
@@ -99,6 +103,7 @@ function composeRepositoryAccessServerFacade(): RepositoryAccessServerFacade {
     teamAdapter,
     resolver,
     new InMemoryTeamRepositoryGrantIdGeneratorAdapter(),
+    eventRecorder,
   );
   const grant = new GrantTeamRepositoryAccessHandler(teamAccessService);
   const change = new ChangeTeamRepositoryAccessHandler(teamAccessService);

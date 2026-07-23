@@ -16,23 +16,27 @@ import type {
 import type { OrganizationTeamGatewayPort } from "../ports/outbound/organization-team.gateway.port";
 import type { TeamRepositoryGrantIdGeneratorPort } from "../ports/outbound/team-repository-grant-id-generator.port";
 import type { TeamRepositoryGrantRepositoryPort } from "../ports/outbound/team-repository-grant.repository.port";
+import type { EventRecorderPort } from "@/modules/platform/event-publication/integration-contracts";
 
 export class TeamRepositoryAccessService {
   private readonly grantRepository: TeamRepositoryGrantRepositoryPort;
   private readonly teamGateway: OrganizationTeamGatewayPort;
   private readonly permissionResolver: ResolveEffectiveRepositoryPermissionUseCase;
   private readonly idGenerator: TeamRepositoryGrantIdGeneratorPort;
+  private readonly eventRecorder: EventRecorderPort | undefined;
 
   constructor(
     grantRepository: TeamRepositoryGrantRepositoryPort,
     teamGateway: OrganizationTeamGatewayPort,
     permissionResolver: ResolveEffectiveRepositoryPermissionUseCase,
     idGenerator: TeamRepositoryGrantIdGeneratorPort,
+    eventRecorder?: EventRecorderPort,
   ) {
     this.grantRepository = grantRepository;
     this.teamGateway = teamGateway;
     this.permissionResolver = permissionResolver;
     this.idGenerator = idGenerator;
+    this.eventRecorder = eventRecorder;
   }
 
   async grant(
@@ -70,6 +74,7 @@ export class TeamRepositoryAccessService {
       state: "active" as const,
     };
     await this.grantRepository.saveTeamGrant(grant);
+    await this.recordGrantEvent("TeamRepositoryAccessGranted", grant);
     return { status: "granted", grant };
   }
 
@@ -100,6 +105,7 @@ export class TeamRepositoryAccessService {
     }
     const changed = { ...grant, permission: command.permission };
     await this.grantRepository.saveTeamGrant(changed);
+    await this.recordGrantEvent("TeamRepositoryAccessGranted", changed);
     return { status: "changed", grant: changed };
   }
 
@@ -128,6 +134,7 @@ export class TeamRepositoryAccessService {
     if (grant !== null) {
       const revoked = { ...grant, state: "revoked" as const };
       await this.grantRepository.saveTeamGrant(revoked);
+      await this.recordGrantEvent("TeamRepositoryAccessRevoked", revoked);
       return { status: "revoked", grant: revoked };
     }
     const ancestorTeamIds = await this.teamGateway.listAncestorTeamIds({
@@ -151,6 +158,27 @@ export class TeamRepositoryAccessService {
       | Readonly<{ kind: "organization"; organizationId: string }>,
   ) {
     return owner.kind === "organization" ? owner.organizationId : null;
+  }
+
+  private async recordGrantEvent(
+    eventName: "TeamRepositoryAccessGranted" | "TeamRepositoryAccessRevoked",
+    grant: Readonly<{
+      grantId: string;
+      organizationId: string;
+      permission: string;
+      repositoryId: string;
+      state: string;
+      teamId: string;
+    }>,
+  ) {
+    await this.eventRecorder?.record({
+      aggregateId: grant.grantId,
+      aggregateVersion: 1,
+      eventName,
+      eventVersion: 1,
+      orderingKey: grant.grantId,
+      payload: grant,
+    });
   }
 
   private async hasRepositoryAdmin(

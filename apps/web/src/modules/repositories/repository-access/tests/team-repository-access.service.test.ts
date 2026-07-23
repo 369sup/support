@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 
+import type { EventRecorderPort } from "@/modules/platform/event-publication/integration-contracts";
+
+import { InMemoryRepositoryAccessOutboxAdapter } from "../adapters/outbound/persistence/in-memory-repository-access-outbox.adapter";
 import { InMemoryRepositoryGrantAdapter } from "../adapters/outbound/persistence/in-memory-repository-grant.adapter";
 import { InMemoryTeamRepositoryGrantIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-team-repository-grant-id-generator.adapter";
 import type { ResolveEffectiveRepositoryPermissionUseCase } from "../application/ports/inbound/resolve-effective-repository-permission.use-case";
@@ -15,12 +18,25 @@ const repository = {
   visibility: "private" as const,
 };
 
-function createHarness(input?: {
-  admin?: boolean;
-  maintainer?: boolean;
-  parentGrant?: boolean;
-  directGrant?: boolean;
-}) {
+function createTestOutbox() {
+  return new InMemoryRepositoryAccessOutboxAdapter(
+    InMemoryRepositoryAccessOutboxAdapter.createState(),
+    {
+      nextEventId: () => "event_test",
+      now: () => "2026-07-23T00:00:00.000Z",
+    },
+  );
+}
+
+function createHarness(
+  input?: {
+    admin?: boolean;
+    maintainer?: boolean;
+    parentGrant?: boolean;
+    directGrant?: boolean;
+  },
+  eventRecorder?: EventRecorderPort,
+) {
   const grants = new InMemoryRepositoryGrantAdapter(
     [],
     [
@@ -80,6 +96,7 @@ function createHarness(input?: {
     teams,
     resolver,
     new InMemoryTeamRepositoryGrantIdGeneratorAdapter(0),
+    eventRecorder,
   );
 }
 
@@ -151,6 +168,36 @@ describe("TeamRepositoryAccessService", () => {
       }),
     ).resolves.toEqual({
       status: "inherited-access-cannot-be-removed",
+    });
+  });
+
+  it("records team grant events after persistence succeeds", async () => {
+    const outbox = createTestOutbox();
+    const service = createHarness({ admin: true }, outbox);
+
+    await expect(
+      service.grant({
+        actorAccountId: "owner",
+        repository,
+        teamId: "team",
+        permission: "write",
+      }),
+    ).resolves.toMatchObject({ status: "granted" });
+
+    const events = await outbox.claimPending({
+      claimedAt: "2026-07-23T00:00:01.000Z",
+      limit: 10,
+    });
+    expect(events).toHaveLength(1);
+    expect(events[0]).toMatchObject({
+      sourceContext: "repositories/repository-access",
+      eventName: "TeamRepositoryAccessGranted",
+      payload: {
+        repositoryId: "repository",
+        organizationId: "organization",
+        teamId: "team",
+        permission: "write",
+      },
     });
   });
 });

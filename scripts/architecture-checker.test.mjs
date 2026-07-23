@@ -670,11 +670,15 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "repositories/repositories",
       "repositories/repository-access",
       "projections/dashboard",
+      "platform/event-publication",
+      "platform/search-index",
+      "platform/media-storage",
+      "platform/audit-storage",
     ],
   );
   assert.equal(
     catalog.contexts.filter((item) => item.implementationStatus === "planned").length,
-    37,
+    33,
   );
   assert.deepEqual(
     byPath.get("identity/accounts").activationScope,
@@ -755,11 +759,17 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "select-dashboard-context",
     ],
   );
-  assert.equal(
-    catalog.contexts.every((item) => item.publishedEvents.every(
-      (event) => event.implementationStatus === "planned",
-    )),
-    true,
+  assert.deepEqual(
+    catalog.contexts
+      .filter((item) => item.publishedEvents.some(
+        (event) => event.implementationStatus === "active",
+      ))
+      .map((item) => `${item.subdomain}/${item.name}`),
+    [
+      "organizations/organization-teams",
+      "organizations/organization-roles",
+      "repositories/repository-access",
+    ],
   );
   assert.equal(catalog.contexts.every((item) => item.semanticStatus !== undefined), true);
   assert.equal(

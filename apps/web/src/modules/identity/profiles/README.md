@@ -99,7 +99,7 @@ Retention, erasure, and tombstone rules are not defined while this context is pl
 
 ## Official sources
 
-- `identity-profiles-source-01`: [profile, profile visibility, pinned items](https://docs.github.com/en/account-and-profile/concepts/personal-profile) (not yet verified)
+- `identity-profiles-source-01`: [profile, profile visibility, pinned items](https://docs.github.com/en/account-and-profile/concepts/personal-profile) (verified 2026-07-23)
 
 ## Exceptions
 

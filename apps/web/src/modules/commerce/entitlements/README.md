@@ -111,7 +111,7 @@ Retention, erasure, and tombstone rules are not defined while this context is pl
 
 ## Official sources
 
-- `commerce-entitlements-source-01`: [plans, licenses, license assignment, usage limits](https://docs.github.com/en/billing/how-tos/manage-plan-and-licenses) (not yet verified)
+- `commerce-entitlements-source-01`: [plans, licenses, license assignment, usage limits](https://docs.github.com/en/billing/how-tos/manage-plan-and-licenses) (verified 2026-07-23)
 
 ## Exceptions
 

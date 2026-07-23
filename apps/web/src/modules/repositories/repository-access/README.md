@@ -42,8 +42,8 @@ Repository invitations, direct and inherited grants, outside collaborators, role
     - `RepositoryAccessGranted@1` [planned]: repository access granted.
     - `RepositoryAccessChanged@1` [planned]: repository access changed.
     - `RepositoryAccessRevoked@1` [planned]: repository access revoked.
-    - `TeamRepositoryAccessGranted@1` [planned]: team repository access granted.
-    - `TeamRepositoryAccessRevoked@1` [planned]: team repository access revoked.
+    - `TeamRepositoryAccessGranted@1` [active]: team repository access granted or changed.
+    - `TeamRepositoryAccessRevoked@1` [active]: team repository access revoked.
     - `OutsideCollaboratorAccessGranted@1` [planned]: outside collaborator access granted.
     - `OutsideCollaboratorAccessRevoked@1` [planned]: outside collaborator access revoked.
 - External relationships
@@ -51,9 +51,10 @@ Repository invitations, direct and inherited grants, outside collaborators, role
     - `repositories/repositories::RepositoryCandidateReference`
     - `identity/accounts::AccountReference`
     - `organizations/organization-memberships::OrganizationMembershipReference`
+    - `organizations/organization-teams::EffectiveTeamMembershipReference`
+    - `organizations/organization-roles::OrganizationRepositoryRoleContribution`
+    - `platform/event-publication::EventRecorderPort`
   - Planned relationships
-    - `organizations/organization-teams::TeamRepositoryPermissionContribution` (synchronous)
-    - `organizations/organization-roles::OrganizationRepositoryRoleContribution` (synchronous)
     - `organizations/organization-policies::OrganizationRepositoryPolicyContribution` (synchronous)
     - `enterprises/enterprise-teams::EnterpriseTeamPermissionContribution` (synchronous)
     - `enterprises/enterprise-roles::EnterpriseRepositoryPermissionContribution` (synchronous)
@@ -92,8 +93,8 @@ Repository invitations, direct and inherited grants, outside collaborators, role
 - **Authorization:** Effective repository admin permission and visible active team in the repository organization.
 - **Transaction:** One repository-access team-grant transaction.
 - **Idempotency:** Duplicate active repository/team grant is rejected.
-- **Dependencies:** `repositories/repositories::RepositoryCandidateReference`, `identity/accounts::AccountReference`, `organizations/organization-teams::EffectiveTeamMembershipReference`, `organizations/organization-roles::OrganizationRepositoryRoleContribution`
-- **Published events:** `none`
+- **Dependencies:** `repositories/repositories::RepositoryCandidateReference`, `identity/accounts::AccountReference`, `organizations/organization-teams::EffectiveTeamMembershipReference`, `organizations/organization-roles::OrganizationRepositoryRoleContribution`, `platform/event-publication::EventRecorderPort`
+- **Published events:** `TeamRepositoryAccessGranted@1`
 - **Official evidence:** `repositories-repository-access-source-03`
 - **Local policy:** Context selection never grants access.
 
@@ -108,8 +109,8 @@ Repository invitations, direct and inherited grants, outside collaborators, role
 - **Authorization:** Effective repository admin permission.
 - **Transaction:** One repository-access team-grant transaction.
 - **Idempotency:** Reapplying the same permission is a no-op update.
-- **Dependencies:** `repositories/repositories::RepositoryCandidateReference`, `identity/accounts::AccountReference`, `organizations/organization-teams::EffectiveTeamMembershipReference`, `organizations/organization-roles::OrganizationRepositoryRoleContribution`
-- **Published events:** `none`
+- **Dependencies:** `repositories/repositories::RepositoryCandidateReference`, `identity/accounts::AccountReference`, `organizations/organization-teams::EffectiveTeamMembershipReference`, `organizations/organization-roles::OrganizationRepositoryRoleContribution`, `platform/event-publication::EventRecorderPort`
+- **Published events:** `TeamRepositoryAccessGranted@1`
 - **Official evidence:** `repositories-repository-access-source-03`
 - **Local policy:** Inherited grants can only be changed at the granting ancestor team.
 
@@ -124,8 +125,8 @@ Repository invitations, direct and inherited grants, outside collaborators, role
 - **Authorization:** Effective repository admin or maintainer of the directly granted target team.
 - **Transaction:** One repository-access team-grant transaction.
 - **Idempotency:** Missing or revoked direct grants are rejected.
-- **Dependencies:** `repositories/repositories::RepositoryCandidateReference`, `identity/accounts::AccountReference`, `organizations/organization-teams::EffectiveTeamMembershipReference`, `organizations/organization-roles::OrganizationRepositoryRoleContribution`
-- **Published events:** `none`
+- **Dependencies:** `repositories/repositories::RepositoryCandidateReference`, `identity/accounts::AccountReference`, `organizations/organization-teams::EffectiveTeamMembershipReference`, `organizations/organization-roles::OrganizationRepositoryRoleContribution`, `platform/event-publication::EventRecorderPort`
+- **Published events:** `TeamRepositoryAccessRevoked@1`
 - **Official evidence:** `repositories-repository-access-source-03`
 - **Local policy:** A child cannot revoke access inherited from an ancestor.
 
@@ -181,6 +182,7 @@ Team grant, change, and revoke commands are exposed through `server-api.ts`.
 - `organizations/organization-memberships::OrganizationMembershipReference`
 - `organizations/organization-teams::EffectiveTeamMembershipReference`
 - `organizations/organization-roles::OrganizationRepositoryRoleContribution`
+- `platform/event-publication::EventRecorderPort`
 
 ### Planned relationships
 
@@ -223,12 +225,14 @@ planned.
 - `RepositoryAccessGranted@1` (domain, planned): repository access granted. contract and ordering pending activation.
 - `RepositoryAccessChanged@1` (domain, planned): repository access changed. contract and ordering pending activation.
 - `RepositoryAccessRevoked@1` (domain, planned): repository access revoked. contract and ordering pending activation.
-- `TeamRepositoryAccessGranted@1` (domain, planned): team repository access granted. contract and ordering pending activation.
-- `TeamRepositoryAccessRevoked@1` (domain, planned): team repository access revoked. contract and ordering pending activation.
+- `TeamRepositoryAccessGranted@1` (domain, active): team repository access granted or changed; schema `integration-contracts.ts#TeamRepositoryAccessGrantedV1`, ordered by `grantId`.
+- `TeamRepositoryAccessRevoked@1` (domain, active): team repository access revoked; schema `integration-contracts.ts#TeamRepositoryAccessRevokedV1`, ordered by `grantId`.
 - `OutsideCollaboratorAccessGranted@1` (domain, planned): outside collaborator access granted. contract and ordering pending activation.
 - `OutsideCollaboratorAccessRevoked@1` (domain, planned): outside collaborator access revoked. contract and ordering pending activation.
 
-The active query emits no events. Expected denial is returned as
+The permission query emits no events. Successful team grant commands record
+their active events in the context-owned outbox; publication failure does not
+roll back the committed grant. Expected query denial is returned as
 `allowed: false`; unexpected dependency failures propagate.
 
 ## Official sources

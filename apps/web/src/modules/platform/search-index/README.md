@@ -4,93 +4,138 @@
 - **Kind:** `technical`
 - **Classification:** `not-applicable`
 - **Maturity:** `stable`
-- **Implementation:** `planned`
+- **Implementation:** `active`
 - **Semantic status:** `not-applicable`
 
 ## Purpose
 
-Search document indexing, querying, and index lifecycle adapters.
+Store versioned search documents and return authorization-keyed candidates.
+This context never makes the final product authorization decision.
 
 ## Context content tree
 
-- `platform/search-index` [planned]
-  - Purpose: Search document indexing, querying, and index lifecycle adapters.
-  - Capabilities
-    - No active use cases; activation scope remains empty.
-  - Owned domain concepts
-    - `IndexDocument`
-    - `IndexCursor`
-    - `IndexOperation`
-  - Business rules and invariants
-    - Product-semantic claims are not applicable to this technical context.
-  - Published events
-    - `SearchDocumentUpserted@1` [planned]: search document upserted.
-    - `SearchDocumentRemoved@1` [planned]: search document removed.
-    - `SearchIndexRebuilt@1` [planned]: search index rebuilt.
-- External relationships
-  - Runtime dependencies: none.
-  - Planned relationships: none.
+- Search index [active]
+  - `upsert-search-document`
+  - `remove-search-document`
+  - `query-search-index`
+- Owned concepts
+  - `IndexDocument`
+  - `IndexCursor`
+  - `IndexOperation`
+- Published events
+  - `SearchDocumentUpserted@1` [planned]
+  - `SearchDocumentRemoved@1` [planned]
+  - `SearchIndexRebuilt@1` [planned]
+- Runtime dependencies: none.
 - Explicit exclusions
   - `SearchSemantics`
   - `AuthorizationDecision`
   - `SourceAggregate`
+  - `SearchResultPresentation`
 
 ## Designed use cases
 
-No approved use cases. Implementation remains blocked.
+### `upsert-search-document` [active]
+
+- **Type:** `command`
+- **Application boundary:** `UpsertSearchDocumentUseCase.upsertSearchDocument()`
+- **Public entrypoint:** `server-api.ts#upsertSearchDocument`
+- **Input:** A stable document ID, source version, searchable text, authorization keys, and expected index version.
+- **Success result:** `upserted` with the new versioned document.
+- **Expected rejections:** `version-conflict`
+- **Authorization:** Internal projector only; the source context must supply coarse candidate keys.
+- **Transaction:** One search-index document replacement.
+- **Idempotency:** Retrying with a stale expected version is rejected.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `not-applicable`
+- **Local policy:** Authorization keys narrow candidates but never prove access.
+
+### `remove-search-document` [active]
+
+- **Type:** `command`
+- **Application boundary:** `RemoveSearchDocumentUseCase.removeSearchDocument()`
+- **Public entrypoint:** `server-api.ts#removeSearchDocument`
+- **Input:** Document ID and expected version.
+- **Success result:** `removed`.
+- **Expected rejections:** `document-not-found`, `version-conflict`
+- **Authorization:** Internal projector only.
+- **Transaction:** One search-index document deletion.
+- **Idempotency:** A repeated deletion returns `document-not-found`.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `not-applicable`
+- **Local policy:** Removal is immediate in the process-local index.
+
+### `query-search-index` [active]
+
+- **Type:** `query`
+- **Application boundary:** `QuerySearchIndexUseCase.querySearchIndex()`
+- **Public entrypoint:** `server-api.ts#querySearchIndex`
+- **Input:** Search text with optional kind, authorization-key, and bounded limit.
+- **Success result:** Ranked candidate references.
+- **Expected rejections:** `none`
+- **Authorization:** Callers must re-check each candidate with its authoritative context.
+- **Transaction:** Read-only.
+- **Idempotency:** Repeated queries over the same state are stable.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `not-applicable`
+- **Local policy:** Exact-title matches rank above title and body substring matches.
 
 ## Ubiquitous language
 
-The catalog reserves these terms for this context:
-
-- `IndexDocument`
-- `IndexCursor`
-- `IndexOperation`
-
-Precise definitions must be refined against technical contracts before activation.
+- **Search document:** Versioned, denormalized searchable data supplied by a
+  source context.
+- **Authorization key:** Coarse candidate filter, not an access decision.
+- **Candidate:** Search hit that still requires authoritative authorization.
 
 ## Ownership and invariants
 
-This context owns `IndexDocument`, `IndexCursor`, `IndexOperation`.
-It excludes `SearchSemantics`, `AuthorizationDecision`, `SourceAggregate`.
-
-Product-semantic claims are not applicable to this technical context.
+The index owns only denormalized documents and index versions. Source versions
+are retained so projectors can reject stale updates. Product meaning and
+authorization remain with their owning contexts.
 
 ## Public capabilities
 
-None while planned. Activation requires at least one real use case and public consumer.
+Server commands update or remove documents. The query returns
+`SearchCandidateReference` values through the public contract.
 
 ## Dependencies and consistency
 
-No runtime dependency or planned relationship is cataloged.
+There are no runtime context dependencies. Projectors call this context after
+their source transaction commits, so the index is eventually consistent.
 
 ## Authorization
 
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
+No browser route is active. Authorization keys are a pre-filter only; callers
+must resolve authoritative permission before presenting a result.
 
 ## Persistence and transactions
 
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
+The active adapter is a versioned, injectable, process-local Map. Every command
+changes at most one index record.
 
 ## Data classification
 
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Documents may contain public or access-controlled titles and excerpts. They
+must not contain secrets, credentials, or full private payloads.
 
 ## Retention and erasure
 
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Source deletion must remove the document. Process restart removes all index
+data. Durable retention and rebuild orchestration remain planned.
 
 ## Events and failure behavior
 
-- `SearchDocumentUpserted@1` (technical, planned): search document upserted. contract and ordering pending activation.
-- `SearchDocumentRemoved@1` (technical, planned): search document removed. contract and ordering pending activation.
-- `SearchIndexRebuilt@1` (technical, planned): search index rebuilt. contract and ordering pending activation.
+Technical index events remain planned. Version conflicts are explicit and
+dependency-free; no failed update partially mutates a document.
 
 ## Official sources
 
-Not applicable to this technical context.
+Not applicable; this is a technical capability governed by
+[ADR-0003](../../../../../../docs/architecture/decisions/ADR-0003-in-memory-event-and-policy-runtime.md).
 
 ## Exceptions
 
-No context-specific exception is declared by the catalog. The central
-[exception registry](../../../../../../docs/architecture/exceptions/registry.json) remains authoritative.
+The in-memory index is non-durable, single-process, and restart-invalidated.

@@ -107,7 +107,7 @@ Retention, erasure, and tombstone rules are not defined while this context is pl
 
 ## Official sources
 
-- `projections-search-source-01`: [global search, repository search, issue search, permission-filtered results](https://docs.github.com/en/search-github) (not yet verified)
+- `projections-search-source-01`: [global search, repository search, issue search, permission-filtered results](https://docs.github.com/en/search-github) (verified 2026-07-23)
 
 ## Exceptions
 

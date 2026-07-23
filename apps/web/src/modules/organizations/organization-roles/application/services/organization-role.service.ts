@@ -28,6 +28,7 @@ import type { OrganizationMembershipGatewayPort } from "../ports/outbound/organi
 import type { OrganizationRoleAssignmentRepositoryPort } from "../ports/outbound/organization-role-assignment.repository.port";
 import type { OrganizationRoleIdGeneratorPort } from "../ports/outbound/organization-role-id-generator.port";
 import type { OrganizationTeamGatewayPort } from "../ports/outbound/organization-team.gateway.port";
+import type { EventRecorderPort } from "@/modules/platform/event-publication/integration-contracts";
 
 function subjectKey(subject: OrganizationRoleAssignmentSubject) {
   return subject.kind === "account"
@@ -40,17 +41,20 @@ export class OrganizationRoleService {
   private readonly membershipGateway: OrganizationMembershipGatewayPort;
   private readonly teamGateway: OrganizationTeamGatewayPort;
   private readonly idGenerator: OrganizationRoleIdGeneratorPort;
+  private readonly eventRecorder: EventRecorderPort | undefined;
 
   constructor(
     assignmentRepository: OrganizationRoleAssignmentRepositoryPort,
     membershipGateway: OrganizationMembershipGatewayPort,
     teamGateway: OrganizationTeamGatewayPort,
     idGenerator: OrganizationRoleIdGeneratorPort,
+    eventRecorder?: EventRecorderPort,
   ) {
     this.assignmentRepository = assignmentRepository;
     this.membershipGateway = membershipGateway;
     this.teamGateway = teamGateway;
     this.idGenerator = idGenerator;
+    this.eventRecorder = eventRecorder;
   }
 
   async listDefinitions(
@@ -114,6 +118,19 @@ export class OrganizationRoleService {
       state: "active" as const,
     };
     await this.assignmentRepository.save(assignment);
+    await this.eventRecorder?.record({
+      aggregateId: assignment.assignmentId,
+      aggregateVersion: 1,
+      eventName: "OrganizationRoleAssigned",
+      eventVersion: 1,
+      orderingKey: assignment.assignmentId,
+      payload: {
+        assignmentId: assignment.assignmentId,
+        organizationId: assignment.organizationId,
+        roleKey: assignment.roleKey,
+        subject: assignment.subject,
+      },
+    });
     return { status: "assigned", assignment };
   }
 
@@ -137,6 +154,17 @@ export class OrganizationRoleService {
     }
     const revoked = { ...assignment, state: "revoked" as const };
     await this.assignmentRepository.save(revoked);
+    await this.eventRecorder?.record({
+      aggregateId: revoked.assignmentId,
+      aggregateVersion: 1,
+      eventName: "OrganizationRoleRevoked",
+      eventVersion: 1,
+      orderingKey: revoked.assignmentId,
+      payload: {
+        assignmentId: revoked.assignmentId,
+        organizationId: revoked.organizationId,
+      },
+    });
     return { status: "revoked", assignment: revoked };
   }
 
