@@ -29,7 +29,9 @@ describe("GetPersonalAccountByUsernameHandler", () => {
       }),
     );
 
-    await expect(handler.execute({ username: "octocat" })).resolves.toEqual({
+    await expect(
+      handler.getPersonalAccountByUsername({ username: "octocat" }),
+    ).resolves.toEqual({
       status: "found",
       account: {
         accountId: "account_octocat",
@@ -51,7 +53,7 @@ describe("GetPersonalAccountByUsernameHandler", () => {
     );
 
     await expect(
-      handler.execute({ username: "deleted-user" }),
+      handler.getPersonalAccountByUsername({ username: "deleted-user" }),
     ).resolves.toEqual({ status: "not-found" });
   });
 });

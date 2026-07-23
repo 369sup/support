@@ -26,6 +26,9 @@ Git objects, grants, issues, stars, and subscriptions remain excluded.
 
 - `listActivePublicRepositoriesForPersonalOwner(owner)` through
   `server-api.ts`.
+- `ListActivePublicRepositoriesForPersonalOwnerUseCase.listActivePublicRepositoriesForPersonalOwner()`
+  is the application boundary implemented by
+  `ListActivePublicRepositoriesForPersonalOwnerHandler`.
 
 The result contains public Repository summaries only.
 

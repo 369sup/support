@@ -63,7 +63,9 @@ describe("ListActivePublicRepositoriesForPersonalOwnerHandler", () => {
       );
 
     await expect(
-      handler.execute({ ownerAccountId: "account_octocat" }),
+      handler.listActivePublicRepositoriesForPersonalOwner({
+        ownerAccountId: "account_octocat",
+      }),
     ).resolves.toEqual([matchingRepository]);
   });
 });

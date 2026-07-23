@@ -11,8 +11,8 @@ export async function getPersonalAccountByUsername(
   }
 
   const result = await personalAccountQueryRuntime
-    .getHandler()
-    .execute({ username: normalizedUsername });
+    .getPersonalAccountByUsernameUseCase()
+    .getPersonalAccountByUsername({ username: normalizedUsername });
 
   if (result.status === "not-found") {
     return { ok: false, error: "account-not-found" };

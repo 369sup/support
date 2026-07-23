@@ -145,6 +145,16 @@ function createValidFixture() {
     "src/modules/core-domain/repositories/integration-contracts.ts",
     "export type RepositoryCreatedV1 = { repositoryId: string };\n",
   );
+  writeFixture(
+    rootDir,
+    "src/modules/core-domain/repositories/application/ports/inbound/create-repository.use-case.ts",
+    "export interface CreateRepositoryUseCase { createRepository(): Promise<void>; }\n",
+  );
+  writeFixture(
+    rootDir,
+    "src/modules/core-domain/repositories/application/commands/create-repository.handler.ts",
+    'import type { CreateRepositoryUseCase } from "../ports/inbound/create-repository.use-case";\nexport class CreateRepositoryHandler implements CreateRepositoryUseCase { async createRepository(): Promise<void> {} }\n',
+  );
   writeCatalog(rootDir, catalog);
   writeFixture(rootDir, "package.json", `${JSON.stringify({ scripts: { architecture: "node scripts/check-architecture.mjs" } }, null, 2)}\n`);
   writeFixture(rootDir, "docs/architecture/rules.md", "# Architecture Rules\n");
@@ -1016,6 +1026,28 @@ test("rejects nested barrels and misplaced role suffixes", () => {
     const errors = check(rootDir);
     assert.equal(includesRule(errors, "ARCH-NAME-003"), true);
     assert.equal(includesRule(errors, "ARCH-NAME-004"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("requires semantic context to use-case to function traceability", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    writeFixture(
+      rootDir,
+      "src/modules/core-domain/repositories/application/commands/create-repository.handler.ts",
+      'import type { CreateRepositoryUseCase } from "../ports/inbound/create-repository.use-case";\nexport class CreateRepositoryHandler implements CreateRepositoryUseCase { async execute(): Promise<void> {} }\n',
+    );
+    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-001"), true);
+
+    writeFixture(
+      rootDir,
+      "src/modules/core-domain/repositories/application/commands/create-repository.handler.ts",
+      'import type { CreateRepositoryUseCase } from "../ports/inbound/create-repository.use-case";\nexport class CreateRepositoryHandler implements CreateRepositoryUseCase { async createRepository(): Promise<void> {} }\n',
+    );
+    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-001"), false);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }

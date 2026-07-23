@@ -22,6 +22,8 @@ does not own credentials, sessions, profiles, or repository permissions.
 
 - `getPersonalAccountByUsername(username)` through `server-api.ts`.
 - `UserOwnerReference` through `integration-contracts.ts`.
+- `GetPersonalAccountByUsernameUseCase.getPersonalAccountByUsername()` is the
+  application boundary implemented by `GetPersonalAccountByUsernameHandler`.
 
 The query returns a discriminated `account-not-found` or `invalid-username`
 result instead of throwing for expected absence.

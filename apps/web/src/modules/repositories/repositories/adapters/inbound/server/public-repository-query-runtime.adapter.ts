@@ -1,18 +1,18 @@
-import type { ListActivePublicRepositoriesForPersonalOwnerHandler } from "../../../application/queries/list-active-public-repositories-for-personal-owner.handler";
+import type { ListActivePublicRepositoriesForPersonalOwnerUseCase } from "../../../application/ports/inbound/list-active-public-repositories-for-personal-owner.use-case";
 
-let handler:
-  | ListActivePublicRepositoriesForPersonalOwnerHandler
+let useCase:
+  | ListActivePublicRepositoriesForPersonalOwnerUseCase
   | undefined;
 
 export const publicRepositoryQueryRuntime = {
-  configure(nextHandler: ListActivePublicRepositoriesForPersonalOwnerHandler) {
-    handler = nextHandler;
+  configure(nextUseCase: ListActivePublicRepositoriesForPersonalOwnerUseCase) {
+    useCase = nextUseCase;
   },
-  getHandler() {
-    if (handler === undefined) {
+  getListActivePublicRepositoriesForPersonalOwnerUseCase() {
+    if (useCase === undefined) {
       throw new Error("Public repository query runtime is not configured.");
     }
 
-    return handler;
+    return useCase;
   },
 };

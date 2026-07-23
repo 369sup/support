@@ -30,6 +30,24 @@
 | Command/query handler | `.handler.ts` | `application/commands` or `application/queries` |
 | Next route handler | `.handler.ts` | `adapters/inbound/next/route-handlers` |
 
+## Semantic use-case traceability
+
+Every application capability follows one exact naming chain:
+
+```text
+<subdomain>/<bounded-context>
+  -> activationScope: <use-case-name>
+  -> <UseCaseName>UseCase
+  -> <useCaseName>()
+  -> <use-case-name>.handler.ts
+```
+
+The handler implements the inbound use-case port and uses the camelCase
+operation derived from the kebab-case activation scope. Do not expose generic
+application methods such as `execute()`, `handle()`, `process()`, or `run()`.
+Those names hide which business capability is being invoked when many handlers
+are composed or traced.
+
 Module API barrels named `index.ts`, `client.ts`, `actions.ts`, `public.ts`, or
 `action.ts` are prohibited. The only root entrypoints are `server-api.ts`,
 `browser-ui.ts`, `server-actions.ts`, and `integration-contracts.ts`. Create

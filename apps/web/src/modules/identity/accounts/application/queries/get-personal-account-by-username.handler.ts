@@ -1,29 +1,22 @@
 import type {
   AccountQueryRepositoryPort,
-  AccountQuerySnapshot,
 } from "../ports/outbound/account-query.repository.port";
+import type {
+  GetPersonalAccountByUsernameQuery,
+  GetPersonalAccountByUsernameResult,
+  GetPersonalAccountByUsernameUseCase,
+} from "../ports/inbound/get-personal-account-by-username.use-case";
 
-export type GetPersonalAccountByUsernameQuery = Readonly<{
-  username: string;
-}>;
-
-export type GetPersonalAccountByUsernameResult =
-  | Readonly<{
-      status: "found";
-      account: AccountQuerySnapshot;
-    }>
-  | Readonly<{
-      status: "not-found";
-    }>;
-
-export class GetPersonalAccountByUsernameHandler {
+export class GetPersonalAccountByUsernameHandler
+  implements GetPersonalAccountByUsernameUseCase
+{
   private readonly accountQueryRepository: AccountQueryRepositoryPort;
 
   constructor(accountQueryRepository: AccountQueryRepositoryPort) {
     this.accountQueryRepository = accountQueryRepository;
   }
 
-  async execute(
+  async getPersonalAccountByUsername(
     query: GetPersonalAccountByUsernameQuery,
   ): Promise<GetPersonalAccountByUsernameResult> {
     const account =

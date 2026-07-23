@@ -887,6 +887,156 @@ function runtimeExportCount(sourceFile) {
   return count;
 }
 
+function kebabToCamelCase(value) {
+  return value.replace(/-([a-z0-9])/g, (_match, character) => {
+    return character.toUpperCase();
+  });
+}
+
+function kebabToPascalCase(value) {
+  const camelCase = kebabToCamelCase(value);
+  return `${camelCase[0].toUpperCase()}${camelCase.slice(1)}`;
+}
+
+function methodName(node) {
+  if (
+    ts.isIdentifier(node.name) ||
+    ts.isStringLiteral(node.name) ||
+    ts.isNumericLiteral(node.name)
+  ) {
+    return node.name.text;
+  }
+
+  return undefined;
+}
+
+function hasUseCaseInterface(sourceFile, interfaceName, operationName) {
+  return sourceFile.statements.some((statement) => {
+    return (
+      ts.isInterfaceDeclaration(statement) &&
+      statement.name.text === interfaceName &&
+      statement.members.some((member) => {
+        return ts.isMethodSignature(member) && methodName(member) === operationName;
+      })
+    );
+  });
+}
+
+function hasUseCaseHandler(sourceFile, interfaceName, operationName) {
+  return sourceFile.statements.some((statement) => {
+    if (!ts.isClassDeclaration(statement)) {
+      return false;
+    }
+
+    const implementsUseCase = statement.heritageClauses?.some((clause) => {
+      return (
+        clause.token === ts.SyntaxKind.ImplementsKeyword &&
+        clause.types.some((type) => type.expression.getText(sourceFile) === interfaceName)
+      );
+    }) ?? false;
+    const operationNames = statement.members
+      .filter(ts.isMethodDeclaration)
+      .map(methodName);
+    const hasGenericOperation = operationNames.some((name) => {
+      return ["execute", "handle", "process", "run"].includes(name);
+    });
+
+    return (
+      implementsUseCase &&
+      operationNames.includes(operationName) &&
+      !hasGenericOperation
+    );
+  });
+}
+
+function validateUseCaseTraceability(
+  rootDir,
+  sourceFiles,
+  contextsByPath,
+  errors,
+) {
+  const useCasesByContext = new Map();
+
+  for (const filePath of sourceFiles) {
+    const relativePath = projectRelative(rootDir, filePath);
+    const match = relativePath.match(
+      /^src\/modules\/([^/]+)\/([^/]+)\/application\/(?:commands|queries)\/(?:.+\/)?([^/]+)\.handler\.(?:[cm]?ts|tsx)$/,
+    );
+
+    if (match === null) {
+      continue;
+    }
+
+    const [, subdomain, contextName, useCaseName] = match;
+    const contextPath = `${subdomain}/${contextName}`;
+    const contextUseCases = useCasesByContext.get(contextPath) ?? new Set();
+    contextUseCases.add(useCaseName);
+    useCasesByContext.set(contextPath, contextUseCases);
+
+    const operationName = kebabToCamelCase(useCaseName);
+    const interfaceName = `${kebabToPascalCase(useCaseName)}UseCase`;
+    const inboundPortPath = join(
+      rootDir,
+      "src",
+      "modules",
+      subdomain,
+      contextName,
+      "application",
+      "ports",
+      "inbound",
+      `${useCaseName}.use-case.ts`,
+    );
+
+    if (!existsSync(inboundPortPath)) {
+      errors.push(
+        `[ARCH-USECASE-001] ${relativePath} requires application/ports/inbound/${useCaseName}.use-case.ts with ${interfaceName}.${operationName}().`,
+      );
+      continue;
+    }
+
+    const handlerSource = ts.createSourceFile(
+      filePath,
+      readFileSync(filePath, "utf8"),
+      ts.ScriptTarget.Latest,
+      true,
+    );
+    const portSource = ts.createSourceFile(
+      inboundPortPath,
+      readFileSync(inboundPortPath, "utf8"),
+      ts.ScriptTarget.Latest,
+      true,
+    );
+
+    if (
+      !hasUseCaseInterface(portSource, interfaceName, operationName) ||
+      !hasUseCaseHandler(handlerSource, interfaceName, operationName)
+    ) {
+      errors.push(
+        `[ARCH-USECASE-001] ${contextPath}/${useCaseName} must trace semantic context -> ${interfaceName} -> ${operationName}() without generic execute/handle/process/run operations.`,
+      );
+    }
+  }
+
+  for (const [contextPath, context] of contextsByPath) {
+    if (
+      context.implementationStatus !== "active" ||
+      (context.kind !== "domain" && context.kind !== "projection")
+    ) {
+      continue;
+    }
+
+    const implementedUseCases = useCasesByContext.get(contextPath) ?? new Set();
+
+    for (const activationScope of context.activationScope) {
+      if (!implementedUseCases.has(activationScope)) {
+        errors.push(
+          `[ARCH-USECASE-001] Active semantic context ${contextPath} must implement activationScope ${activationScope} as a named use-case port, handler, and function.`,
+        );
+      }
+    }
+  }
+}
+
 function validateModuleNamesAndRoles(rootDir, sourceFiles, errors) {
   const modulesRoot = join(rootDir, "src", "modules");
 
@@ -1662,6 +1812,12 @@ export function runArchitectureChecks({
   validateSerenaMemories(repositoryRoot, errors);
 
   validateModuleNamesAndRoles(applicationRoot, sourceFiles, errors);
+  validateUseCaseTraceability(
+    applicationRoot,
+    sourceFiles,
+    contextsByPath,
+    errors,
+  );
 
   const { graph, metadata } = buildGraph(applicationRoot, sourceFiles);
   validateCycles(applicationRoot, graph, errors);

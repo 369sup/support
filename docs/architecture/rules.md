@@ -122,6 +122,13 @@ and ownership but must not redefine these rules.
 
 - One ordinary module file has one primary runtime export and one architecture
   role. Root public entrypoints may explicitly re-export several symbols.
+- **ARCH-USECASE-001:** Every active domain or projection semantic maps each
+  `activationScope` to a same-named inbound use-case port, command/query
+  handler, and camelCase operation. For example,
+  `identity/accounts` -> `get-personal-account-by-username` ->
+  `GetPersonalAccountByUsernameUseCase.getPersonalAccountByUsername()`.
+  Generic application operations such as `execute`, `handle`, `process`, and
+  `run` are prohibited because they erase use-case identity.
 - Domain behavior is deterministic. Time, IDs, randomness, environment,
   network, filesystem, and storage arrive as explicit values or ports.
 - Application handlers coordinate one command or query. They do not contain

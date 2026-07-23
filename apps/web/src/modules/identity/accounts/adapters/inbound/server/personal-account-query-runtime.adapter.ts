@@ -1,16 +1,16 @@
-import type { GetPersonalAccountByUsernameHandler } from "../../../application/queries/get-personal-account-by-username.handler";
+import type { GetPersonalAccountByUsernameUseCase } from "../../../application/ports/inbound/get-personal-account-by-username.use-case";
 
-let handler: GetPersonalAccountByUsernameHandler | undefined;
+let useCase: GetPersonalAccountByUsernameUseCase | undefined;
 
 export const personalAccountQueryRuntime = {
-  configure(nextHandler: GetPersonalAccountByUsernameHandler) {
-    handler = nextHandler;
+  configure(nextUseCase: GetPersonalAccountByUsernameUseCase) {
+    useCase = nextUseCase;
   },
-  getHandler() {
-    if (handler === undefined) {
+  getPersonalAccountByUsernameUseCase() {
+    if (useCase === undefined) {
       throw new Error("Personal account query runtime is not configured.");
     }
 
-    return handler;
+    return useCase;
   },
 };

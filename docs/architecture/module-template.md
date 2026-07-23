@@ -32,6 +32,23 @@ apps/web/src/modules/<subdomain>/<bounded-context>/
 At least one public entrypoint must exist and must expose only capabilities
 that have a real consumer. Public entrypoints explicitly name every export.
 
+## Semantic to use-case to function mapping
+
+Each active `activationScope` has one traceable application chain:
+
+```text
+semantic context
+  -> kebab-case activationScope
+  -> PascalCase inbound UseCase port
+  -> camelCase business function
+  -> command/query Handler implementation
+```
+
+For `get-personal-account-by-username`, create
+`GetPersonalAccountByUsernameUseCase.getPersonalAccountByUsername()` and let
+`GetPersonalAccountByUsernameHandler` implement that port. Do not use generic
+handler operations such as `execute`, `handle`, `process`, or `run`.
+
 ## Required README decisions
 
 Every active context README uses these exact second-level headings so the

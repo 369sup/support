@@ -7,8 +7,8 @@ export async function listActivePublicRepositoriesForPersonalOwner(
   owner: UserOwnerReference,
 ): Promise<readonly PublicRepositorySummary[]> {
   const repositories = await publicRepositoryQueryRuntime
-    .getHandler()
-    .execute({
+    .getListActivePublicRepositoriesForPersonalOwnerUseCase()
+    .listActivePublicRepositoriesForPersonalOwner({
       ownerAccountId: owner.accountId,
     });
 
