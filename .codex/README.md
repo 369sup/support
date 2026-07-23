@@ -16,7 +16,7 @@ configuration pack.
 - [`environments/environment.toml`](environments/environment.toml) defines the
   Codex Desktop worktree setup and the canonical pnpm actions.
 - [`hooks.json`](hooks.json) and [`hooks/`](hooks/) provide the reviewed
-  repository guard.
+  repository guard and automatic Serena task-memory lifecycle.
 - [`rules/`](rules/) contains narrow command policies for repository workflows.
 
 ## Important TOML rule

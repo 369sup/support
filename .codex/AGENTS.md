@@ -24,18 +24,19 @@ security-sensitive.
 ├── hooks/
 │   ├── AGENTS.md
 │   ├── README.md
-│   └── repository-guard.mjs    # active reviewed hook implementation
-├── hooks.json                  # active repository-guard registration
+│   ├── repository-guard.mjs    # generated-file and architecture guard
+│   └── memory-orchestrator.mjs # automatic Serena memory lifecycle
+├── hooks.json                  # active reviewed hook registrations
 └── rules/
     ├── README.md
     └── <rule-name>.rules       # optional; experimental command policy
 ```
 
 The repository currently loads its project model instructions, registers five
-focused custom agents, enables the reviewed `repository-guard` through
-`.codex/hooks.json`, and provides focused validation and development command
-rules. Commands with source-control or generated-file side effects remain
-approval-gated.
+focused custom agents, enables the reviewed repository guard and automatic
+Serena memory lifecycle through `.codex/hooks.json`, and provides focused
+validation and development command rules. Commands with source-control or
+generated-file side effects remain approval-gated.
 
 ## `config.toml` rules
 

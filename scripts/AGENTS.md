@@ -41,6 +41,20 @@ the root `AGENTS.md`.
 - Architecture behavior retains stable `ARCH-*` identifiers and focused
   positive and negative fixtures.
 
+## Serena local-memory automation
+
+- `scripts/memory/**` owns the candidate schema, safe local store,
+  deterministic consolidation, conflict resolution, TTL/archive policy,
+  rendered local memories, CLI, and tests.
+- The engine may read and write only `.serena/memories/local/**`. It must never
+  read transcripts, environment files, provider payloads, source trees, or
+  credentials.
+- Machine state and raw episodes remain ignored local data. Shared committed
+  memories continue to be owned exclusively by
+  `generate-serena-memories.mjs`.
+- Keep the engine dependency-free so Serena activation works before workspace
+  package installation.
+
 ## Validation
 
 ```text
@@ -51,6 +65,8 @@ pnpm governance:knowledge
 pnpm governance
 pnpm architecture:docs
 pnpm serena:memories
+pnpm test:memory
+pnpm memory:validate
 ```
 
 Inspect generated diffs and run `pnpm check` when practical. Mutation tests use

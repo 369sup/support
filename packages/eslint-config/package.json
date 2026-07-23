@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     "./next": "./next.mjs",
+    "./node": "./node.mjs",
     "./react-library": "./react-library.mjs",
     "./typescript-library": "./typescript-library.mjs"
   },
@@ -12,6 +13,7 @@
     "@eslint/js": "catalog:",
     "@support/tooling": "workspace:*",
     "eslint-config-next": "catalog:",
+    "globals": "catalog:",
     "typescript-eslint": "catalog:"
   },
   "devDependencies": {

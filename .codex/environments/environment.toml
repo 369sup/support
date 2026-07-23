@@ -1,8 +1,8 @@
 version = 1
 name = "Support workspace (pnpm)"
 
-# Codex Desktop runs this automatically when it creates a new worktree.
-# This repository pins pnpm in package.json and uses a single pnpm lockfile.
+# Keep worktree creation lightweight. Dependency installation is performed
+# only when the task requires repository tooling.
 [setup]
 script = '''
 set -euo pipefail
@@ -11,44 +11,14 @@ test -f pnpm-lock.yaml || {
   echo 'Expected pnpm-lock.yaml at the Support workspace root.' >&2
   exit 1
 }
+
 command -v pnpm >/dev/null 2>&1 || {
   echo 'pnpm is required; package.json pins pnpm@11.15.1.' >&2
   exit 1
 }
-pnpm install --frozen-lockfile
 '''
 
 [[actions]]
-name = "Status"
-icon = "terminal"
-command = "bash -lc 'git status --short --branch'"
-
-[[actions]]
-name = "Test"
-icon = "test"
-command = "pnpm test"
-
-[[actions]]
-name = "Typecheck"
-icon = "check"
-command = "pnpm typecheck"
-
-[[actions]]
-name = "Lint"
-icon = "check"
-command = "pnpm lint"
-
-[[actions]]
-name = "Architecture"
-icon = "check"
-command = "pnpm architecture"
-
-[[actions]]
-name = "Check"
-icon = "check"
-command = "pnpm check"
-
-[[actions]]
-name = "Build"
-icon = "build"
-command = "pnpm build"
+name = "Install dependencies"
+icon = "download"
+command = "pnpm install --frozen-lockfile"

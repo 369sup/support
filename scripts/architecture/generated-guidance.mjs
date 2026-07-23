@@ -258,4 +258,105 @@ export function validateSerenaMemories(repositoryRoot, errors) {
       "[ARCH-MEM-001] Generated shared Serena memories must be configured read-only.",
     );
   }
+
+  const automationPaths = [
+    ".codex/hooks/memory-orchestrator.mjs",
+    ".codex/hooks/memory-orchestrator.test.mjs",
+    "scripts/memory/AGENTS.md",
+    "scripts/memory/candidate-bundle.schema.json",
+    "scripts/memory/cli.mjs",
+    "scripts/memory/engine.mjs",
+    "scripts/memory/policy.mjs",
+    "scripts/memory/render.mjs",
+    "scripts/memory/schema.mjs",
+    "scripts/memory/storage.mjs",
+  ];
+
+  for (const relativePath of automationPaths) {
+    if (!existsSync(join(repositoryRoot, ...relativePath.split("/")))) {
+      errors.push(
+        `[ARCH-MEM-002] Missing automatic Serena memory asset: ${relativePath}.`,
+      );
+    }
+  }
+
+  if (
+    !projectConfiguration.includes(
+      'activation_command: "node scripts/memory/cli.mjs activate --json"',
+    ) ||
+    !projectConfiguration.includes("activation_command_timeout: 15.0") ||
+    !projectConfiguration.includes(
+      '"^local/(episodes|archive|_state)/.*$"',
+    )
+  ) {
+    errors.push(
+      "[ARCH-MEM-002] Serena project configuration must register the bounded activation command and hide machine-managed local memories.",
+    );
+  }
+
+  const packageManifestPath = join(repositoryRoot, "package.json");
+  let packageManifest;
+
+  try {
+    packageManifest = JSON.parse(readFileSync(packageManifestPath, "utf8"));
+  } catch {
+    errors.push(
+      "[ARCH-MEM-002] package.json must be valid JSON for memory automation validation.",
+    );
+  }
+
+  const requiredScripts = {
+    "memory:activate": "node scripts/memory/cli.mjs activate",
+    "memory:checkpoint": "node scripts/memory/cli.mjs checkpoint",
+    "memory:distill": "node scripts/memory/cli.mjs distill",
+    "memory:maintain": "node scripts/memory/cli.mjs maintain",
+    "memory:status": "node scripts/memory/cli.mjs status",
+    "memory:validate": "node scripts/memory/cli.mjs validate",
+  };
+
+  if (
+    packageManifest !== undefined &&
+    Object.entries(requiredScripts).some(([name, command]) => {
+      return packageManifest.scripts?.[name] !== command;
+    })
+  ) {
+    errors.push(
+      "[ARCH-MEM-002] package.json must expose the canonical automatic Serena memory commands.",
+    );
+  }
+
+  const hookConfigurationPath = join(repositoryRoot, ".codex", "hooks.json");
+  let hookConfiguration;
+
+  try {
+    hookConfiguration = JSON.parse(
+      readFileSync(hookConfigurationPath, "utf8"),
+    );
+  } catch {
+    errors.push(
+      "[ARCH-MEM-002] .codex/hooks.json must be valid JSON for memory automation validation.",
+    );
+  }
+
+  if (hookConfiguration !== undefined) {
+    const serializedHooks = JSON.stringify(hookConfiguration.hooks ?? {});
+    const requiredEvents = [
+      "SessionStart",
+      "PreToolUse",
+      "PostToolUse",
+      "PreCompact",
+      "Stop",
+    ];
+
+    if (
+      !serializedHooks.includes("memory-orchestrator.mjs") ||
+      requiredEvents.some(
+        (eventName) => !Object.hasOwn(hookConfiguration.hooks ?? {}, eventName),
+      )
+    ) {
+      errors.push(
+        "[ARCH-MEM-002] Codex hooks must register the memory orchestrator for the complete lifecycle.",
+      );
+    }
+  }
 }

@@ -26,6 +26,7 @@ export const agentGuidanceSourcePaths = [
   "plugins/AGENTS.md",
   "plugins/plugin-template/AGENTS.md",
   "scripts/AGENTS.md",
+  "scripts/memory/AGENTS.md",
 ];
 
 export const generatedMemoryPaths = [
@@ -95,7 +96,7 @@ export function renderSerenaMemories(sources) {
 
   generated.set(
     "memory_maintenance.md",
-    `${prefix}# Memory Maintenance\n\n- Shared memories are generated, reviewed, committed, and read-only.\n- Local memories live under \`local/\`, may be maintained automatically when requested, and are never committed.\n- Shared memories summarize canonical repository authorities; they never override AGENTS or architecture documents.\n- Navigate through \`mem:core\` and use \`mem:\` references so integrity checks can detect stale links.\n- Regenerate with \`pnpm serena:memories\`; do not hand-edit generated files.\n`,
+    `${prefix}# Memory Maintenance\n\n- Shared memories are generated, reviewed, committed, and read-only.\n- Local memories live under \`local/\`, are maintained automatically when tasks establish verified durable project knowledge, and are never committed.\n- The model authors only \`local/current-task\`; \`scripts/memory/**\` validates candidate bundles and renders managed local index, durable, conflict, episode, archive, and state records.\n- Raw episodes, archives, and machine state are hidden from Serena memory tools and must never contain transcripts, payloads, logs, credentials, or customer data.\n- Shared memories summarize canonical repository authorities; they never override AGENTS or architecture documents.\n- Navigate through \`mem:core\` and use \`mem:\` references so integrity checks can detect stale links.\n- Regenerate with \`pnpm serena:memories\`; do not hand-edit generated files.\n`,
   );
   generated.set(
     "core.md",

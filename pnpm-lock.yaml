@@ -39,6 +39,9 @@ catalogs:
     eslint-config-next:
       specifier: 16.2.10
       version: 16.2.10
+    globals:
+      specifier: ^16.4.0
+      version: 16.4.0
     pino:
       specifier: ^10.3.1
       version: 10.3.1
@@ -62,12 +65,18 @@ importers:
 
   .:
     devDependencies:
+      '@support/eslint-config':
+        specifier: workspace:*
+        version: link:packages/eslint-config
       '@support/testing-config':
         specifier: workspace:*
         version: link:packages/testing-config
       '@support/tooling':
         specifier: workspace:*
         version: link:packages/tooling
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.5(jiti@2.7.0)(supports-color@7.2.0)
       turbo:
         specifier: ^2.10.5
         version: 2.10.5
@@ -196,6 +205,9 @@ importers:
       eslint-config-next:
         specifier: 'catalog:'
         version: 16.2.10(@typescript-eslint/parser@8.64.0(eslint@9.39.5(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3))(eslint@9.39.5(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)
+      globals:
+        specifier: 'catalog:'
+        version: 16.4.0
       typescript-eslint:
         specifier: 'catalog:'
         version: 8.64.0(eslint@9.39.5(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)

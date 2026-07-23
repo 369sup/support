@@ -37,6 +37,7 @@ description = "Verify version-sensitive behavior against current primary documen
 # Public Context7 endpoint for basic use without OAuth or an API key.
 [mcp_servers.context7]
 url = "https://mcp.context7.com/mcp"
+env_http_headers = { "CONTEXT7_API_KEY" = "CONTEXT7_API_KEY" }
 
 [sandbox_workspace_write]
 network_access = true

@@ -46,11 +46,11 @@ encoding: "utf-8"
 # abort activation. a per-project timeout (activation_command_timeout, default 180s) is the safety
 # backstop for non-terminating commands; on expiry the process is killed and activation continues.
 # example: activation_command: "npx nx run-many -t build"
-activation_command:
+activation_command: "node scripts/memory/cli.mjs activate --json"
 
 # maximum time in seconds to wait for activation_command to complete before killing it (default 180s).
 # must be a positive number.
-activation_command_timeout: 180.0
+activation_command_timeout: 15.0
 
 # line ending convention to use when writing source files.
 # Possible values: unset (use global setting), "lf", "crlf", or "native" (platform default)
@@ -158,4 +158,5 @@ read_only_memory_patterns:
 # To access ignored memory files, use the read_file tool on the raw file path.
 # Extends the list from the global configuration, merging the two lists.
 # Example: ["_archive/.*", "_episodes/.*"]
-ignored_memory_patterns: []
+ignored_memory_patterns:
+- "^local/(episodes|archive|_state)/.*$"
