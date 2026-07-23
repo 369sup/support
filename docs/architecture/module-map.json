@@ -1748,7 +1748,7 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Organization teams, nested hierarchy, visibility, membership, maintainers, and mentions.",
       "semanticStatus": "validated",
       "owns": [
@@ -1763,7 +1763,18 @@
         "OutsideCollaborator",
         "RepositoryRole"
       ],
-      "dependencies": [],
+      "dependencies": [
+        {
+          "context": "organizations/organizations",
+          "contract": "OrganizationReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-memberships",
+          "contract": "OrganizationMembershipReference",
+          "mode": "synchronous"
+        }
+      ],
       "officialSources": [
         {
           "id": "organizations-organization-teams-source-01",
@@ -1859,19 +1870,20 @@
           ]
         }
       ],
-      "activationScope": [],
-      "plannedRelationships": [
-        {
-          "context": "organizations/organizations",
-          "contract": "OrganizationReference",
-          "mode": "synchronous"
-        },
-        {
-          "context": "organizations/organization-memberships",
-          "contract": "OrganizationMembershipReference",
-          "mode": "synchronous"
-        }
+      "activationScope": [
+        "add-team-member",
+        "assign-team-maintainer",
+        "create-organization-team",
+        "delete-organization-team",
+        "get-organization-team",
+        "list-organization-teams",
+        "list-team-members",
+        "remove-team-member",
+        "resolve-account-team-memberships",
+        "revoke-team-maintainer",
+        "update-organization-team"
       ],
+      "plannedRelationships": [],
       "semanticClaims": [
         {
           "id": "organization-team-membership-and-maintainers",

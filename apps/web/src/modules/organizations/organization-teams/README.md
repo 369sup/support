@@ -4,7 +4,7 @@
 - **Kind:** `domain`
 - **Classification:** `core`
 - **Maturity:** `stable`
-- **Implementation:** `planned`
+- **Implementation:** `active`
 - **Semantic status:** `validated`
 
 ## Purpose
@@ -14,12 +14,19 @@ an acyclic same-organization parent hierarchy.
 
 ## Context content tree
 
-- Organization teams [planned]
-  - Team queries: get and list teams with visibility filtering.
-  - Team lifecycle: create, update, and soft delete.
+- Organization teams [active]
+  - `create-organization-team`
+  - `get-organization-team`
+  - `list-organization-teams`
+  - `update-organization-team`
+  - `delete-organization-team`
+  - `add-team-member`
+  - `remove-team-member`
+  - `assign-team-maintainer`
+  - `revoke-team-maintainer`
+  - `list-team-members`
+  - `resolve-account-team-memberships`
   - Team hierarchy: one optional parent in the same organization.
-  - Team membership: active organization members only.
-  - Team maintainers: direct team members designated to manage one team.
   - Permission projection: direct memberships plus ancestor team IDs for
     repository-grant resolution.
 - Owned concepts
@@ -44,7 +51,7 @@ an acyclic same-organization parent hierarchy.
 
 ## Designed use cases
 
-### `create-organization-team` [planned]
+### `create-organization-team` [active]
 
 - **Type:** `command`
 - **Application boundary:** `CreateOrganizationTeamUseCase.createOrganizationTeam()`
@@ -60,7 +67,7 @@ an acyclic same-organization parent hierarchy.
 - **Official evidence:** `organizations-organization-teams-source-01`
 - **Local policy:** Team creation is owner-only until organization team-creation policy is active.
 
-### `get-organization-team` [planned]
+### `get-organization-team` [active]
 
 - **Type:** `query`
 - **Application boundary:** `GetOrganizationTeamUseCase.getOrganizationTeam()`
@@ -76,7 +83,7 @@ an acyclic same-organization parent hierarchy.
 - **Official evidence:** `organizations-organization-teams-source-01`
 - **Local policy:** Unauthorized secret-team lookup is indistinguishable from absence.
 
-### `list-organization-teams` [planned]
+### `list-organization-teams` [active]
 
 - **Type:** `query`
 - **Application boundary:** `ListOrganizationTeamsUseCase.listOrganizationTeams()`
@@ -92,7 +99,7 @@ an acyclic same-organization parent hierarchy.
 - **Official evidence:** `organizations-organization-teams-source-01`
 - **Local policy:** Deleted teams are excluded.
 
-### `update-organization-team` [planned]
+### `update-organization-team` [active]
 
 - **Type:** `command`
 - **Application boundary:** `UpdateOrganizationTeamUseCase.updateOrganizationTeam()`
@@ -108,7 +115,7 @@ an acyclic same-organization parent hierarchy.
 - **Official evidence:** `organizations-organization-teams-source-01`
 - **Local policy:** Secret teams cannot have a parent or children.
 
-### `delete-organization-team` [planned]
+### `delete-organization-team` [active]
 
 - **Type:** `command`
 - **Application boundary:** `DeleteOrganizationTeamUseCase.deleteOrganizationTeam()`
@@ -124,7 +131,7 @@ an acyclic same-organization parent hierarchy.
 - **Official evidence:** `organizations-organization-teams-source-01`
 - **Local policy:** Cross-context grants and assignments remain stored but stop contributing.
 
-### `add-team-member` [planned]
+### `add-team-member` [active]
 
 - **Type:** `command`
 - **Application boundary:** `AddTeamMemberUseCase.addTeamMember()`
@@ -140,7 +147,7 @@ an acyclic same-organization parent hierarchy.
 - **Official evidence:** `organizations-organization-teams-source-01`
 - **Local policy:** Invitations and outside collaborators are not created by this command.
 
-### `remove-team-member` [planned]
+### `remove-team-member` [active]
 
 - **Type:** `command`
 - **Application boundary:** `RemoveTeamMemberUseCase.removeTeamMember()`
@@ -156,7 +163,7 @@ an acyclic same-organization parent hierarchy.
 - **Official evidence:** `organizations-organization-teams-source-01`
 - **Local policy:** Removing a member also removes its maintainer designation.
 
-### `assign-team-maintainer` [planned]
+### `assign-team-maintainer` [active]
 
 - **Type:** `command`
 - **Application boundary:** `AssignTeamMaintainerUseCase.assignTeamMaintainer()`
@@ -172,7 +179,7 @@ an acyclic same-organization parent hierarchy.
 - **Official evidence:** `organizations-organization-teams-source-01`
 - **Local policy:** The target must already be a direct active team member.
 
-### `revoke-team-maintainer` [planned]
+### `revoke-team-maintainer` [active]
 
 - **Type:** `command`
 - **Application boundary:** `RevokeTeamMaintainerUseCase.revokeTeamMaintainer()`
@@ -188,7 +195,7 @@ an acyclic same-organization parent hierarchy.
 - **Official evidence:** `organizations-organization-teams-source-01`
 - **Local policy:** Revocation does not remove team membership.
 
-### `list-team-members` [planned]
+### `list-team-members` [active]
 
 - **Type:** `query`
 - **Application boundary:** `ListTeamMembersUseCase.listTeamMembers()`
@@ -204,7 +211,7 @@ an acyclic same-organization parent hierarchy.
 - **Official evidence:** `organizations-organization-teams-source-01`
 - **Local policy:** Parent or child membership is never flattened into this direct-member list.
 
-### `resolve-account-team-memberships` [planned]
+### `resolve-account-team-memberships` [active]
 
 - **Type:** `query`
 - **Application boundary:** `ResolveAccountTeamMembershipsUseCase.resolveAccountTeamMemberships()`
@@ -239,13 +246,13 @@ acyclic. Secret teams cannot have a parent or children.
 
 ## Public capabilities
 
-No runtime capability while the context remains planned. The approved
-application boundaries above are activated together with real server and
-repository-access consumers.
+The server API exposes the approved team commands and queries. Integration
+contracts expose team references and effective membership ancestry without
+exposing persistence.
 
 ## Dependencies and consistency
 
-Planned synchronous dependencies are
+Active synchronous dependencies are
 `organizations/organizations::OrganizationReference` and
 `organizations/organization-memberships::OrganizationMembershipReference`.
 No other context may read the team store.
@@ -258,7 +265,7 @@ semantics.
 
 ## Persistence and transactions
 
-The planned adapter uses a versioned process-local store with indexes by ID,
+The adapter uses a versioned process-local store with indexes by ID,
 organization and slug, parent, account, and maintainer. Each command writes only
 the organization-team store.
 

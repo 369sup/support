@@ -21,6 +21,14 @@ const developmentMemberships: readonly OrganizationMembershipQuerySnapshot[] = [
     source: "enterprise-managed",
   },
   {
+    membershipId: "organization_membership_hubot_community_lab",
+    organizationId: "organization_community_lab",
+    accountId: "account_hubot",
+    role: "member",
+    state: "active",
+    source: "direct",
+  },
+  {
     membershipId: "organization_membership_bob_acme_support",
     organizationId: "organization_acme_support",
     accountId: "account_bob",
