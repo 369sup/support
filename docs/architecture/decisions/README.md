@@ -26,6 +26,7 @@ four-digit number. Add each record to the table below.
 | --- | --- | --- |
 | [ADR-0001](ADR-0001-account-and-dashboard-contexts.md) | Accepted | Separate account sessions, Dashboard context, and enterprise administration. |
 | [ADR-0002](ADR-0002-organization-team-and-role-access.md) | Accepted | Keep team hierarchy, organization roles, and repository grants as separate authorization sources. |
+| [ADR-0003](ADR-0003-in-memory-event-and-policy-runtime.md) | Accepted | Define context-local outbox publication, grant-policy-entitlement ordering, simulated integrations, and acyclic custom-property orchestration. |
 
 ## Template
 
