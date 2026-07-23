@@ -65,6 +65,9 @@ importers:
       '@support/testing-config':
         specifier: workspace:*
         version: link:packages/testing-config
+      '@support/tooling':
+        specifier: workspace:*
+        version: link:packages/tooling
       turbo:
         specifier: ^2.10.5
         version: 2.10.5

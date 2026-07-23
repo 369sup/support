@@ -15,6 +15,7 @@ prompts after `.github` has been selected.
 ├── workflows/
 │   ├── README.md
 │   ├── ci.yml                       # optional normal CI
+│   ├── governance.yml               # optional scheduled knowledge governance
 │   └── codex-review.yml             # optional Codex GitHub Action
 ├── codex/
 │   └── prompts/
@@ -32,9 +33,11 @@ prompts after `.github` has been selected.
 └── SECURITY.md                      # optional vulnerability reporting policy
 ```
 
-The authorized `ci.yml` workflow runs repository verification only. Do not add
-another active workflow, template, bot, or policy until its behavior and owners
-are known.
+The authorized `ci.yml` workflow runs repository verification only.
+`governance.yml` is owned by repository architecture maintainers and performs
+read-only official-source freshness validation on a schedule or manual
+dispatch. Do not add another active workflow, template, bot, or policy until
+its behavior and owners are known.
 
 ## GitHub workflow rules
 

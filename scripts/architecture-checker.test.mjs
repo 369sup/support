@@ -241,16 +241,18 @@ function createValidFixture() {
   return rootDir;
 }
 
-function check(rootDir) {
+function check(rootDir, profile = "required") {
   return runArchitectureChecks({
     applicationRoot: rootDir,
     repositoryRoot: rootDir,
     now: new Date("2026-07-21T00:00:00.000Z"),
+    profile,
+    validateWorkspace: false,
   });
 }
 
 function includesRule(errors, ruleId) {
-  return errors.some((error) => error.includes(ruleId));
+  return errors.some((error) => error.ruleId === ruleId);
 }
 
 test("accepts the canonical bounded-context fixture", () => {
@@ -258,6 +260,28 @@ test("accepts the canonical bounded-context fixture", () => {
 
   try {
     assert.deepEqual(check(rootDir), []);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("returns structured violations and rejects invalid profiles", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    writeFixture(rootDir, "src/lib/forbidden.ts", "export {};\n");
+    const [violation] = check(rootDir);
+
+    assert.deepEqual(
+      Object.keys(violation).sort(),
+      ["category", "gate", "message", "ruleId"],
+    );
+    assert.equal(violation.ruleId, "ARCH-SRC-001");
+    assert.equal(violation.gate, "required");
+    assert.throws(
+      () => check(rootDir, "unsupported"),
+      /Invalid architecture profile unsupported/,
+    );
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -299,7 +323,7 @@ test("rejects invalid catalog dependencies", () => {
   }
 });
 
-test("rejects missing, future, and stale source verification for active contexts", () => {
+test("separates required source validity from knowledge freshness", () => {
   const rootDir = createValidFixture();
 
   try {
@@ -314,7 +338,15 @@ test("rejects missing, future, and stale source verification for active contexts
 
     catalog.contexts[0].officialSources[0].verifiedOn = "2024-01-01";
     writeCatalog(rootDir, catalog);
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-017"), true);
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-017"), false);
+    assert.equal(
+      includesRule(check(rootDir, "knowledge"), "ARCH-KNOWLEDGE-001"),
+      true,
+    );
+    assert.equal(
+      includesRule(check(rootDir, "all"), "ARCH-KNOWLEDGE-001"),
+      true,
+    );
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1386,7 +1418,11 @@ test("rejects a stale generated module map", () => {
 
   try {
     writeFixture(rootDir, "docs/architecture/module-map.md", "# stale\n");
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-012"), true);
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-012"), false);
+    assert.equal(
+      includesRule(check(rootDir, "generated"), "ARCH-MAP-012"),
+      true,
+    );
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1435,10 +1471,53 @@ test("allows only README.md in planned context directories", () => {
       eventRationale: "Technical infrastructure does not publish product events.",
     });
     writeCatalog(rootDir, catalog);
+    const plannedReadme = readFileSync(
+      join(rootDir, "src", "modules", "platform", "event-publication", "README.md"),
+      "utf8",
+    );
+    assert.match(plannedReadme, /## Ownership and invariants/);
+    assert.match(plannedReadme, /## Dependencies and consistency/);
+    assert.doesNotMatch(plannedReadme, /## Authorization/);
+    assert.doesNotMatch(plannedReadme, /## Retention and erasure/);
     assert.equal(includesRule(check(rootDir), "ARCH-MAP-006"), false);
     assert.equal(includesRule(check(rootDir), "ARCH-MAP-027"), false);
     assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), false);
     assert.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), false);
+
+    writeFixture(
+      rootDir,
+      "src/modules/platform/event-publication/README.md",
+      `${plannedReadme}
+## Ubiquitous language
+
+No additional terms.
+
+## Public capabilities
+
+No active capabilities.
+
+## Authorization
+
+Not applicable while planned.
+
+## Persistence and transactions
+
+Not applicable while planned.
+
+## Data classification
+
+Not applicable while planned.
+
+## Retention and erasure
+
+Not applicable while planned.
+
+## Events and failure behavior
+
+No active events.
+`,
+    );
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), false);
 
     writeFixture(
       rootDir,
@@ -1471,7 +1550,11 @@ test("rejects stale or unexpected shared Serena memories", () => {
     writeFixture(rootDir, ".serena/memories/core.md", "# stale\n");
     writeFixture(rootDir, ".serena/memories/manual.md", "# manual shared memory\n");
 
-    assert.equal(includesRule(check(rootDir), "ARCH-MEM-001"), true);
+    assert.equal(includesRule(check(rootDir), "ARCH-MEM-001"), false);
+    assert.equal(
+      includesRule(check(rootDir, "generated"), "ARCH-MEM-001"),
+      true,
+    );
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }

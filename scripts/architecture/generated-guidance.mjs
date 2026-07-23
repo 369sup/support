@@ -1,0 +1,261 @@
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+} from "node:fs";
+import {
+  dirname,
+  join,
+  relative,
+  resolve,
+  sep,
+} from "node:path";
+
+import {
+  agentGuidanceSourcePaths,
+  generatedMemoryPaths,
+  loadSerenaMemorySources,
+  renderSerenaMemories,
+} from "../serena-memory-generator.mjs";
+
+const guidanceTraversalExclusions = new Set([
+  ".git",
+  ".next",
+  ".pnpm-store",
+  "coverage",
+  "dist",
+  "node_modules",
+]);
+
+function normalizePath(value) {
+  return value.split(sep).join("/");
+}
+
+function projectRelative(rootDir, filePath) {
+  return normalizePath(relative(rootDir, filePath));
+}
+
+function listGuidanceFiles(directory) {
+  const files = [];
+
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (entry.isDirectory() && guidanceTraversalExclusions.has(entry.name)) {
+      continue;
+    }
+
+    const entryPath = join(directory, entry.name);
+
+    if (entry.isDirectory()) {
+      files.push(...listGuidanceFiles(entryPath));
+    } else if (
+      entry.isFile() &&
+      (entry.name === "AGENTS.md" || entry.name === "AGENTS.override.md")
+    ) {
+      files.push(entryPath);
+    }
+  }
+
+  return files;
+}
+
+export function validateGeneratedModuleMap(
+  repositoryRoot,
+  expectedContents,
+  errors,
+) {
+  const markdownPath = join(
+    repositoryRoot,
+    "docs",
+    "architecture",
+    "module-map.md",
+  );
+
+  if (!existsSync(markdownPath)) {
+    errors.push("[ARCH-MAP-011] Missing generated docs/architecture/module-map.md.");
+    return;
+  }
+
+  const actual = readFileSync(markdownPath, "utf8").replaceAll("\r\n", "\n");
+
+  if (actual !== expectedContents) {
+    errors.push(
+      "[ARCH-MAP-012] module-map.md is stale; regenerate it from module-map.json.",
+    );
+  }
+}
+
+export function validateAgentGuidance(
+  repositoryRoot,
+  errors,
+  generatedErrors,
+) {
+  const guidanceFiles = listGuidanceFiles(repositoryRoot);
+  const actualAgentPaths = guidanceFiles
+    .filter((filePath) => {
+      return filePath.endsWith(`${sep}AGENTS.md`) ||
+        filePath === join(repositoryRoot, "AGENTS.md");
+    })
+    .map((filePath) => projectRelative(repositoryRoot, filePath))
+    .sort();
+  const expectedAgentPaths = [...agentGuidanceSourcePaths].sort();
+
+  for (const filePath of guidanceFiles) {
+    const relativePath = projectRelative(repositoryRoot, filePath);
+
+    if (filePath.endsWith(`${sep}AGENTS.override.md`)) {
+      errors.push(
+        `[ARCH-GUIDE-001] Permanent AGENTS.override.md is prohibited: ${relativePath}.`,
+      );
+      continue;
+    }
+
+    const contents = readFileSync(filePath, "utf8");
+
+    for (const match of contents.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)) {
+      let target = match[1].trim();
+
+      if (
+        target.startsWith("https://") ||
+        target.startsWith("http://") ||
+        target.startsWith("mailto:") ||
+        target.startsWith("#")
+      ) {
+        continue;
+      }
+
+      if (target.startsWith("<") && target.endsWith(">")) {
+        target = target.slice(1, -1);
+      }
+
+      target = target.split("#", 1)[0];
+
+      if (target === "") {
+        continue;
+      }
+
+      const resolvedTarget = resolve(dirname(filePath), target);
+      const repositoryPrefix = `${resolve(repositoryRoot)}${sep}`;
+
+      if (
+        resolvedTarget !== resolve(repositoryRoot) &&
+        (!resolvedTarget.startsWith(repositoryPrefix) ||
+          !existsSync(resolvedTarget))
+      ) {
+        errors.push(
+          `[ARCH-GUIDE-001] ${relativePath} contains an invalid local link: ${target}.`,
+        );
+      } else if (!existsSync(resolvedTarget)) {
+        errors.push(
+          `[ARCH-GUIDE-001] ${relativePath} contains a missing local link: ${target}.`,
+        );
+      }
+    }
+  }
+
+  if (JSON.stringify(actualAgentPaths) !== JSON.stringify(expectedAgentPaths)) {
+    generatedErrors.push(
+      "[ARCH-GUIDE-002] Serena memory source allowlist must exactly match repository AGENTS.md files.",
+    );
+  }
+}
+
+export function validateSerenaMemories(repositoryRoot, errors) {
+  const memoryRoot = join(repositoryRoot, ".serena", "memories");
+  const projectConfigurationPath = join(
+    repositoryRoot,
+    ".serena",
+    "project.yml",
+  );
+  const gitignorePath = join(repositoryRoot, ".gitignore");
+
+  if (!existsSync(memoryRoot)) {
+    errors.push("[ARCH-MEM-001] Missing generated .serena/memories directory.");
+    return;
+  }
+
+  let expected;
+
+  try {
+    expected = renderSerenaMemories(loadSerenaMemorySources(repositoryRoot));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    errors.push(`[ARCH-MEM-001] Cannot render Serena memories: ${message}`);
+    return;
+  }
+
+  const expectedPaths = new Set(generatedMemoryPaths);
+  const actualPaths = readdirSync(memoryRoot, {
+    recursive: true,
+    withFileTypes: true,
+  })
+    .filter((entry) => entry.isFile())
+    .map((entry) => {
+      return normalizePath(
+        relative(memoryRoot, join(entry.parentPath, entry.name)),
+      );
+    })
+    .filter((relativePath) => {
+      return !relativePath.startsWith("local/");
+    });
+
+  for (const relativePath of actualPaths) {
+    if (!expectedPaths.has(relativePath)) {
+      errors.push(
+        `[ARCH-MEM-001] Unexpected shared Serena memory: ${relativePath}.`,
+      );
+    }
+  }
+
+  for (const [relativePath, expectedContents] of expected) {
+    const filePath = join(memoryRoot, ...relativePath.split("/"));
+
+    if (!existsSync(filePath)) {
+      errors.push(`[ARCH-MEM-001] Missing generated Serena memory: ${relativePath}.`);
+      continue;
+    }
+
+    const actualContents = readFileSync(filePath, "utf8").replaceAll(
+      "\r\n",
+      "\n",
+    );
+
+    if (actualContents !== expectedContents) {
+      errors.push(
+        `[ARCH-MEM-001] Generated Serena memory is stale: ${relativePath}.`,
+      );
+    }
+
+    for (const match of actualContents.matchAll(/mem:([a-z0-9][a-z0-9/-]*)/g)) {
+      const referencedPath = `${match[1]}.md`;
+
+      if (!expectedPaths.has(referencedPath)) {
+        errors.push(
+          `[ARCH-MEM-001] ${relativePath} references missing memory mem:${match[1]}.`,
+        );
+      }
+    }
+  }
+
+  const gitignore = existsSync(gitignorePath)
+    ? readFileSync(gitignorePath, "utf8")
+    : "";
+  const projectConfiguration = existsSync(projectConfigurationPath)
+    ? readFileSync(projectConfigurationPath, "utf8")
+    : "";
+
+  if (!gitignore.split(/\r?\n/).includes(".serena/memories/local/")) {
+    errors.push(
+      "[ARCH-MEM-001] .serena/memories/local/ must be ignored for machine-local memories.",
+    );
+  }
+
+  if (
+    !projectConfiguration.includes(
+      '"^(memory_maintenance|core|shared/.*)$"',
+    )
+  ) {
+    errors.push(
+      "[ARCH-MEM-001] Generated shared Serena memories must be configured read-only.",
+    );
+  }
+}

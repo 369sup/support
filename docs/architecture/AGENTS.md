@@ -5,8 +5,11 @@ repository's architecture contract.
 
 ## Authority map
 
-- `architecture.md` owns human-readable invariants, stable `ARCH-*`
-  identifiers, names, runtime boundaries, and the ADR trigger policy.
+- `architecture.md` owns human-readable invariants, names, runtime boundaries,
+  and the ADR trigger policy.
+- `@support/tooling/architecture/policy` owns the complete stable `ARCH-*`
+  registry, enforcement gate, shared entrypoints, layer names, and workspace
+  package matrix.
 - `module-template.md` owns the bounded-context README schema and activation
   workflow.
 - `decisions/README.md` owns the ADR lifecycle, index, and template.

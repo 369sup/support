@@ -2,25 +2,45 @@ import {
   existsSync,
   readFileSync,
   readdirSync,
-  statSync,
 } from "node:fs";
-import { dirname, join, relative, resolve, sep } from "node:path";
+import { join, relative, sep } from "node:path";
 
 import ts from "typescript";
 
 import {
-  agentGuidanceSourcePaths,
-  generatedMemoryPaths,
-  loadSerenaMemorySources,
-  renderSerenaMemories,
-} from "./serena-memory-generator.mjs";
+  catalogVersion,
+  contextLayerNames,
+  publicEntrypointBasenames,
+} from "@support/tooling/architecture/policy";
+
+import {
+  activeContextReadmeHeadings,
+  blockedUseCaseDesign,
+  designedUseCaseFields,
+  plannedContextReadmeHeadings,
+  sourceFreshnessFor,
+} from "./architecture/catalog.mjs";
+import { validateExceptions } from "./architecture/exceptions.mjs";
+import {
+  assertArchitectureProfile,
+  selectViolations,
+} from "./architecture/violations.mjs";
+import {
+  validateAgentGuidance,
+  validateGeneratedModuleMap,
+  validateSerenaMemories,
+} from "./architecture/generated-guidance.mjs";
+import {
+  buildSourceGraph,
+  validateClientGraphs,
+  validateDeclaredContextDependencies,
+  validateSourceCycles,
+} from "./architecture/source-graph.mjs";
+import { validateWorkspacePackages } from "./architecture/workspace-packages.mjs";
 
 const sourceExtensions = [".ts", ".tsx", ".mts", ".cts"];
 const publicEntrypoints = new Set([
-  "server-api.ts",
-  "browser-ui.ts",
-  "server-actions.ts",
-  "integration-contracts.ts",
+  ...publicEntrypointBasenames.map((entrypoint) => `${entrypoint}.ts`),
 ]);
 const vagueBasenames = new Set([
   "base",
@@ -44,59 +64,7 @@ const vagueBasenames = new Set([
   "types",
   "utils",
 ]);
-const exceptionFields = [
-  "id",
-  "rule",
-  "scope",
-  "owner",
-  "reason",
-  "alternatives",
-  "risk",
-  "spreadPrevention",
-  "reviewAfter",
-  "removalCondition",
-];
-const contextLayers = new Set([
-  "domain",
-  "application",
-  "contracts",
-  "adapters",
-  "composition",
-  "tests",
-]);
-const requiredContextReadmeHeadings = [
-  "Purpose",
-  "Context content tree",
-  "Designed use cases",
-  "Ubiquitous language",
-  "Ownership and invariants",
-  "Public capabilities",
-  "Dependencies and consistency",
-  "Authorization",
-  "Persistence and transactions",
-  "Data classification",
-  "Retention and erasure",
-  "Events and failure behavior",
-  "Official sources",
-  "Exceptions",
-];
-const designedUseCaseFields = [
-  "Type",
-  "Application boundary",
-  "Public entrypoint",
-  "Input",
-  "Success result",
-  "Expected rejections",
-  "Authorization",
-  "Transaction",
-  "Idempotency",
-  "Dependencies",
-  "Published events",
-  "Official evidence",
-  "Local policy",
-];
-const blockedUseCaseDesign =
-  "No approved use cases. Implementation remains blocked.";
+const contextLayers = new Set(contextLayerNames);
 
 function normalizePath(value) {
   return value.split(sep).join("/");
@@ -285,29 +253,6 @@ function contextRootFor(rootDir, context) {
   return join(rootDir, "src", "modules", context.subdomain, context.name);
 }
 
-function sourceFreshnessFor(context, now = new Date()) {
-  if (context.kind === "technical") {
-    return "not-applicable";
-  }
-
-  const sources = context.officialSources ?? [];
-
-  if (sources.some((source) => source.verifiedOn === null)) {
-    return "unverified";
-  }
-
-  const today = now.toISOString().slice(0, 10);
-  const nowTime = Date.parse(`${today}T00:00:00.000Z`);
-  const hasStaleSource = sources.some((source) => {
-    const verifiedTime = Date.parse(`${source.verifiedOn}T00:00:00.000Z`);
-    const maximumAgeDays = (source.maturity ?? context.maturity) === "preview" ? 90 : 365;
-    const ageDays = (nowTime - verifiedTime) / 86_400_000;
-    return !Number.isFinite(verifiedTime) || source.verifiedOn > today || ageDays > maximumAgeDays;
-  });
-
-  return hasStaleSource ? "stale" : "fresh";
-}
-
 function hasExportedContract(contents, symbol) {
   const escapedSymbol = symbol.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const declaration = new RegExp(
@@ -385,14 +330,14 @@ function validateToolAliases(repositoryRoot, applicationRoot, errors) {
   }
 }
 
-function validateCatalog(rootDir, catalog, now, errors) {
+function validateCatalog(rootDir, catalog, now, errors, knowledgeErrors) {
   if (!Array.isArray(catalog?.contexts)) {
     errors.push("[ARCH-MAP-001] module-map.json must contain a contexts array.");
     return new Map();
   }
 
   if (
-    catalog.version !== 6 ||
+    catalog.version !== catalogVersion ||
     typeof catalog.product?.name !== "string" ||
     typeof catalog.product?.goal !== "string" ||
     catalog.product?.sourcePolicy?.protocol !== "https:" ||
@@ -594,9 +539,13 @@ function validateCatalog(rootDir, catalog, now, errors) {
       const maximumAgeDays = (source.maturity ?? context.maturity) === "preview" ? 90 : 365;
       const ageDays = (nowTime - verifiedTime) / 86_400_000;
 
-      if (!Number.isFinite(verifiedTime) || source.verifiedOn > today || ageDays > maximumAgeDays) {
+      if (!Number.isFinite(verifiedTime) || source.verifiedOn > today) {
         errors.push(
-          `[ARCH-MAP-017] Source ${source.id} for ${contextPath} has an invalid, future, or stale verifiedOn date.`,
+          `[ARCH-MAP-017] Source ${source.id} for ${contextPath} has an invalid or future verifiedOn date.`,
+        );
+      } else if (ageDays > maximumAgeDays) {
+        knowledgeErrors.push(
+          `[ARCH-KNOWLEDGE-001] Source ${source.id} for ${contextPath} is older than ${maximumAgeDays} days.`,
         );
       }
     }
@@ -761,7 +710,10 @@ function validateCatalog(rootDir, catalog, now, errors) {
           .filter((line) => line.startsWith("## "))
           .map((line) => line.slice(3).trim()),
       );
-      const missingHeadings = requiredContextReadmeHeadings.filter(
+      const requiredHeadings = context.implementationStatus === "active"
+        ? activeContextReadmeHeadings
+        : plannedContextReadmeHeadings;
+      const missingHeadings = requiredHeadings.filter(
         (heading) => !headings.has(heading),
       );
 
@@ -1639,339 +1591,6 @@ function validateModuleNamesAndRoles(rootDir, sourceFiles, errors) {
   }
 }
 
-function moduleSpecifiers(sourceFile) {
-  const specifiers = [];
-
-  function visit(node) {
-    if (
-      (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
-      node.moduleSpecifier !== undefined &&
-      ts.isStringLiteral(node.moduleSpecifier)
-    ) {
-      specifiers.push(node.moduleSpecifier.text);
-    }
-
-    if (
-      ts.isCallExpression(node) &&
-      node.expression.kind === ts.SyntaxKind.ImportKeyword &&
-      node.arguments.length === 1 &&
-      ts.isStringLiteral(node.arguments[0])
-    ) {
-      specifiers.push(node.arguments[0].text);
-    }
-
-    ts.forEachChild(node, visit);
-  }
-
-  visit(sourceFile);
-  return specifiers;
-}
-
-function resolveSourceImport(rootDir, importer, specifier) {
-  let basePath;
-
-  if (specifier.startsWith("@/")) {
-    basePath = join(rootDir, "src", specifier.slice(2));
-  } else if (specifier.startsWith(".")) {
-    basePath = resolve(dirname(importer), specifier);
-  } else {
-    return undefined;
-  }
-
-  const candidates = [
-    basePath,
-    ...sourceExtensions.map((extension) => `${basePath}${extension}`),
-    ...sourceExtensions.map((extension) => join(basePath, `index${extension}`)),
-  ];
-
-  return candidates.find((candidate) => {
-    return existsSync(candidate) && statSync(candidate).isFile();
-  });
-}
-
-function containsProcessEnvironment(sourceFile) {
-  let found = false;
-
-  function visit(node) {
-    if (
-      ts.isPropertyAccessExpression(node) &&
-      ts.isIdentifier(node.expression) &&
-      node.expression.text === "process" &&
-      node.name.text === "env"
-    ) {
-      found = true;
-    }
-
-    ts.forEachChild(node, visit);
-  }
-
-  visit(sourceFile);
-  return found;
-}
-
-function buildGraph(rootDir, sourceFiles) {
-  const graph = new Map();
-  const metadata = new Map();
-
-  for (const filePath of sourceFiles) {
-    const sourceFile = ts.createSourceFile(
-      filePath,
-      readFileSync(filePath, "utf8"),
-      ts.ScriptTarget.Latest,
-      true,
-    );
-    const specifiers = moduleSpecifiers(sourceFile);
-    const localDependencies = specifiers
-      .map((specifier) => resolveSourceImport(rootDir, filePath, specifier))
-      .filter((dependency) => dependency !== undefined);
-
-    graph.set(filePath, localDependencies);
-    metadata.set(filePath, {
-      hasProcessEnvironment: containsProcessEnvironment(sourceFile),
-      externalSpecifiers: specifiers.filter((specifier) => {
-        return !specifier.startsWith("@/") && !specifier.startsWith(".");
-      }),
-    });
-  }
-
-  return { graph, metadata };
-}
-
-
-function moduleContextForFile(rootDir, filePath) {
-  const relativePath = projectRelative(rootDir, filePath);
-  const segments = relativePath.split("/");
-
-  if (
-    segments[0] !== "src" ||
-    segments[1] !== "modules" ||
-    segments[2] === undefined ||
-    segments[3] === undefined
-  ) {
-    return undefined;
-  }
-
-  return `${segments[2]}/${segments[3]}`;
-}
-
-function validateDeclaredContextDependencies(
-  rootDir,
-  graph,
-  contextsByPath,
-  errors,
-) {
-  const reported = new Set();
-
-  for (const [importer, dependencies] of graph) {
-    const importerContext = moduleContextForFile(rootDir, importer);
-
-    if (importerContext === undefined) {
-      continue;
-    }
-
-    const declaredDependencies =
-      contextsByPath.get(importerContext)?.dependencies ?? [];
-    const plannedRelationships =
-      contextsByPath.get(importerContext)?.plannedRelationships ?? [];
-
-    for (const dependency of dependencies) {
-      const importedContext = moduleContextForFile(rootDir, dependency);
-
-      if (
-        importedContext === undefined ||
-        importedContext === importerContext
-      ) {
-        continue;
-      }
-
-      const isDeclared = declaredDependencies.some((entry) => {
-        return (
-          entry.context === importedContext &&
-          entry.mode === "synchronous"
-        );
-      });
-      const reportKey = `${importerContext}->${importedContext}`;
-
-      if (!isDeclared && !reported.has(reportKey)) {
-        const isOnlyPlanned = plannedRelationships.some((entry) => {
-          return entry.context === importedContext && entry.mode === "synchronous";
-        });
-        errors.push(isOnlyPlanned
-          ? `[ARCH-DEP-013] ${importerContext} imports ${importedContext} through a planned relationship that does not authorize source imports.`
-          : `[ARCH-DEP-010] ${importerContext} imports ${importedContext} without a synchronous module-map dependency.`);
-        reported.add(reportKey);
-      }
-    }
-  }
-}
-
-function validateCycles(rootDir, graph, errors) {
-  const states = new Map();
-  const stack = [];
-  const reported = new Set();
-
-  function visit(filePath) {
-    states.set(filePath, "visiting");
-    stack.push(filePath);
-
-    for (const dependency of graph.get(filePath) ?? []) {
-      const state = states.get(dependency);
-
-      if (state === "visiting") {
-        const cycleStart = stack.indexOf(dependency);
-        const cycle = [...stack.slice(cycleStart), dependency].map((entry) => {
-          return projectRelative(rootDir, entry);
-        });
-        const signature = cycle.join(" -> ");
-
-        if (!reported.has(signature)) {
-          errors.push(`[ARCH-GRAPH-001] Circular dependency: ${signature}.`);
-          reported.add(signature);
-        }
-      } else if (state === undefined) {
-        visit(dependency);
-      }
-    }
-
-    stack.pop();
-    states.set(filePath, "visited");
-  }
-
-  for (const filePath of graph.keys()) {
-    if (states.get(filePath) === undefined) {
-      visit(filePath);
-    }
-  }
-}
-
-function validateClientGraphs(rootDir, graph, metadata, errors) {
-  const clientEntrypoints = [...graph.keys()].filter((filePath) => {
-    const relativePath = projectRelative(rootDir, filePath);
-    return /^src\/modules\/[^/]+\/[^/]+\/browser-ui\.ts$/.test(relativePath);
-  });
-
-  for (const clientEntrypoint of clientEntrypoints) {
-    const visited = new Set();
-    const pending = [clientEntrypoint];
-
-    while (pending.length > 0) {
-      const filePath = pending.pop();
-
-      if (visited.has(filePath)) {
-        continue;
-      }
-
-      visited.add(filePath);
-      const relativePath = projectRelative(rootDir, filePath);
-      const fileMetadata = metadata.get(filePath);
-      const reachesServerLayer =
-        relativePath.includes("/composition/") ||
-        relativePath.includes("/adapters/outbound/") ||
-        relativePath.includes("/application/");
-      const importsServerPackage = fileMetadata.externalSpecifiers.some((specifier) => {
-        return specifier === "server-only" || specifier.startsWith("node:");
-      });
-
-      if (
-        reachesServerLayer ||
-        importsServerPackage ||
-        fileMetadata.hasProcessEnvironment
-      ) {
-        errors.push(
-          `[ARCH-CLIENT-001] ${projectRelative(rootDir, clientEntrypoint)} reaches server-only dependency ${relativePath}.`,
-        );
-      }
-
-      pending.push(...(graph.get(filePath) ?? []));
-    }
-  }
-}
-
-function validateExceptions(rootDir, registry, sourceFiles, now, errors) {
-  if (!Array.isArray(registry)) {
-    errors.push("[ARCH-EXCEPTION-001] exceptions/registry.json must contain an array.");
-    return;
-  }
-
-  const registryById = new Map();
-
-  for (const exception of registry) {
-    const missingFields = exceptionFields.filter((field) => {
-      return typeof exception[field] !== "string" || exception[field].trim() === "";
-    });
-
-    if (missingFields.length > 0) {
-      errors.push(
-        `[ARCH-EXCEPTION-002] Architecture exception is missing: ${missingFields.join(", ")}.`,
-      );
-      continue;
-    }
-
-    if (!/^ARCH-EX-\d{3}$/.test(exception.id)) {
-      errors.push(`[ARCH-EXCEPTION-003] Invalid exception id ${exception.id}.`);
-    }
-
-    if (registryById.has(exception.id)) {
-      errors.push(`[ARCH-EXCEPTION-004] Duplicate exception id ${exception.id}.`);
-    }
-
-    registryById.set(exception.id, exception);
-
-    const today = now.toISOString().slice(0, 10);
-
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(exception.reviewAfter)) {
-      errors.push(
-        `[ARCH-EXCEPTION-005] ${exception.id} reviewAfter must use YYYY-MM-DD.`,
-      );
-    } else if (exception.reviewAfter <= today) {
-      errors.push(
-        `[ARCH-EXCEPTION-006] ${exception.id} reached its review date ${exception.reviewAfter}.`,
-      );
-    }
-  }
-
-  const references = new Map();
-
-  for (const filePath of sourceFiles) {
-    const contents = readFileSync(filePath, "utf8");
-
-    for (const match of contents.matchAll(/ARCH-EX-\d{3}/g)) {
-      const id = match[0];
-      const paths = references.get(id) ?? [];
-      paths.push(projectRelative(rootDir, filePath));
-      references.set(id, paths);
-    }
-  }
-
-  for (const [id, paths] of references) {
-    const exception = registryById.get(id);
-
-    if (exception === undefined) {
-      errors.push(`[ARCH-EXCEPTION-007] ${id} is referenced but not registered.`);
-      continue;
-    }
-
-    for (const referencePath of paths) {
-      const normalizedScope = normalizePath(exception.scope).replace(/\/$/, "");
-
-      if (
-        referencePath !== normalizedScope &&
-        !referencePath.startsWith(`${normalizedScope}/`)
-      ) {
-        errors.push(
-          `[ARCH-EXCEPTION-008] ${id} scope ${normalizedScope} does not cover ${referencePath}.`,
-        );
-      }
-    }
-  }
-
-  for (const id of registryById.keys()) {
-    if (!references.has(id)) {
-      errors.push(`[ARCH-EXCEPTION-009] Registered exception ${id} is not referenced.`);
-    }
-  }
-}
-
 function renderContextRelationship(relationship) {
   const events = relationship.events?.length > 0
     ? `; events ${relationship.events
@@ -2068,6 +1687,73 @@ export function renderContextReadme(context) {
   lines.push("- Explicit exclusions");
   for (const exclusion of context.excludes) {
     lines.push(`  - \`${exclusion}\``);
+  }
+
+  if (context.implementationStatus === "planned") {
+    lines.push(
+      "",
+      "## Designed use cases",
+      "",
+      blockedUseCaseDesign,
+      "",
+      "## Ownership and invariants",
+      "",
+      `This context owns ${context.owns.map((item) => `\`${item}\``).join(", ")}.`,
+      `It excludes ${context.excludes.map((item) => `\`${item}\``).join(", ")}.`,
+      "",
+      "## Dependencies and consistency",
+      "",
+    );
+
+    if (
+      context.dependencies.length === 0 &&
+      context.plannedRelationships.length === 0
+    ) {
+      lines.push("No runtime dependency or planned relationship is cataloged.");
+    } else {
+      lines.push("### Runtime dependencies", "");
+      if (context.dependencies.length === 0) {
+        lines.push("None.");
+      } else {
+        for (const relationship of context.dependencies) {
+          lines.push(`- ${renderContextRelationship(relationship)}`);
+        }
+      }
+
+      lines.push("", "### Planned relationships", "");
+      if (context.plannedRelationships.length === 0) {
+        lines.push("None.");
+      } else {
+        for (const relationship of context.plannedRelationships) {
+          lines.push(`- ${renderContextRelationship(relationship)}`);
+        }
+      }
+    }
+
+    lines.push("", "## Official sources", "");
+    if (context.officialSources.length === 0) {
+      lines.push("Not applicable to this technical context.");
+    } else {
+      for (const source of context.officialSources) {
+        const verification = source.verifiedOn === null
+          ? "not yet verified"
+          : `verified ${source.verifiedOn}`;
+        lines.push(
+          `- \`${source.id}\`: [${source.supports.join(", ")}](${source.url}) (${verification})`,
+        );
+      }
+    }
+
+    lines.push(
+      "",
+      "## Exceptions",
+      "",
+      "No context-specific exception is declared by the catalog. The central",
+      "[exception registry](../../../../../../docs/architecture/exceptions/registry.json) remains authoritative.",
+      "",
+    );
+
+    return lines.join("\n");
   }
 
   lines.push(
@@ -2354,209 +2040,18 @@ export function renderModuleMap(catalog) {
   return lines.join("\n");
 }
 
-function validateGeneratedModuleMap(rootDir, catalog, errors) {
-  const markdownPath = join(rootDir, "docs", "architecture", "module-map.md");
-
-  if (!existsSync(markdownPath)) {
-    errors.push("[ARCH-MAP-011] Missing generated docs/architecture/module-map.md.");
-    return;
-  }
-
-  const expected = renderModuleMap(catalog);
-  const actual = readFileSync(markdownPath, "utf8").replaceAll("\r\n", "\n");
-
-  if (actual !== expected) {
-    errors.push(
-      "[ARCH-MAP-012] module-map.md is stale; regenerate it from module-map.json.",
-    );
-  }
-}
-
-const guidanceTraversalExclusions = new Set([
-  ".git",
-  ".next",
-  ".pnpm-store",
-  "coverage",
-  "dist",
-  "node_modules",
-]);
-
-function listGuidanceFiles(directory) {
-  const files = [];
-
-  for (const entry of readdirSync(directory, { withFileTypes: true })) {
-    if (entry.isDirectory() && guidanceTraversalExclusions.has(entry.name)) {
-      continue;
-    }
-
-    const entryPath = join(directory, entry.name);
-
-    if (entry.isDirectory()) {
-      files.push(...listGuidanceFiles(entryPath));
-    } else if (entry.isFile() &&
-      (entry.name === "AGENTS.md" || entry.name === "AGENTS.override.md")) {
-      files.push(entryPath);
-    }
-  }
-
-  return files;
-}
-
-function validateAgentGuidance(repositoryRoot, errors) {
-  const guidanceFiles = listGuidanceFiles(repositoryRoot);
-  const actualAgentPaths = guidanceFiles
-    .filter((filePath) => filePath.endsWith(`${sep}AGENTS.md`) || filePath === join(repositoryRoot, "AGENTS.md"))
-    .map((filePath) => projectRelative(repositoryRoot, filePath))
-    .sort();
-  const expectedAgentPaths = [...agentGuidanceSourcePaths].sort();
-
-  for (const filePath of guidanceFiles) {
-    const relativePath = projectRelative(repositoryRoot, filePath);
-
-    if (filePath.endsWith(`${sep}AGENTS.override.md`)) {
-      errors.push(
-        `[ARCH-GUIDE-001] Permanent AGENTS.override.md is prohibited: ${relativePath}.`,
-      );
-      continue;
-    }
-
-    const contents = readFileSync(filePath, "utf8");
-
-    for (const match of contents.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)) {
-      let target = match[1].trim();
-
-      if (
-        target.startsWith("https://") ||
-        target.startsWith("http://") ||
-        target.startsWith("mailto:") ||
-        target.startsWith("#")
-      ) {
-        continue;
-      }
-
-      if (target.startsWith("<") && target.endsWith(">")) {
-        target = target.slice(1, -1);
-      }
-
-      target = target.split("#", 1)[0];
-
-      if (target === "") {
-        continue;
-      }
-
-      const resolvedTarget = resolve(dirname(filePath), target);
-      const repositoryPrefix = `${resolve(repositoryRoot)}${sep}`;
-
-      if (
-        resolvedTarget !== resolve(repositoryRoot) &&
-        (!resolvedTarget.startsWith(repositoryPrefix) || !existsSync(resolvedTarget))
-      ) {
-        errors.push(
-          `[ARCH-GUIDE-001] ${relativePath} contains an invalid local link: ${target}.`,
-        );
-      } else if (!existsSync(resolvedTarget)) {
-        errors.push(
-          `[ARCH-GUIDE-001] ${relativePath} contains a missing local link: ${target}.`,
-        );
-      }
-    }
-  }
-
-  if (JSON.stringify(actualAgentPaths) !== JSON.stringify(expectedAgentPaths)) {
-    errors.push(
-      "[ARCH-MEM-001] Serena memory source allowlist must exactly match repository AGENTS.md files.",
-    );
-  }
-}
-
-function validateSerenaMemories(repositoryRoot, errors) {
-  const memoryRoot = join(repositoryRoot, ".serena", "memories");
-  const projectConfigurationPath = join(repositoryRoot, ".serena", "project.yml");
-  const gitignorePath = join(repositoryRoot, ".gitignore");
-
-  if (!existsSync(memoryRoot)) {
-    errors.push("[ARCH-MEM-001] Missing generated .serena/memories directory.");
-    return;
-  }
-
-  let expected;
-
-  try {
-    expected = renderSerenaMemories(loadSerenaMemorySources(repositoryRoot));
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    errors.push(`[ARCH-MEM-001] Cannot render Serena memories: ${message}`);
-    return;
-  }
-
-  const expectedPaths = new Set(generatedMemoryPaths);
-  const actualFiles = listFiles(memoryRoot);
-
-  for (const filePath of actualFiles) {
-    const relativePath = projectRelative(memoryRoot, filePath);
-
-    if (relativePath.startsWith("local/")) {
-      continue;
-    }
-
-    if (!expectedPaths.has(relativePath)) {
-      errors.push(
-        `[ARCH-MEM-001] Unexpected shared Serena memory: ${relativePath}.`,
-      );
-    }
-  }
-
-  for (const [relativePath, expectedContents] of expected) {
-    const filePath = join(memoryRoot, ...relativePath.split("/"));
-
-    if (!existsSync(filePath)) {
-      errors.push(`[ARCH-MEM-001] Missing generated Serena memory: ${relativePath}.`);
-      continue;
-    }
-
-    const actualContents = readFileSync(filePath, "utf8").replaceAll("\r\n", "\n");
-
-    if (actualContents !== expectedContents) {
-      errors.push(
-        `[ARCH-MEM-001] Generated Serena memory is stale: ${relativePath}.`,
-      );
-    }
-
-    for (const match of actualContents.matchAll(/mem:([a-z0-9][a-z0-9/-]*)/g)) {
-      const referencedPath = `${match[1]}.md`;
-
-      if (!expectedPaths.has(referencedPath)) {
-        errors.push(
-          `[ARCH-MEM-001] ${relativePath} references missing memory mem:${match[1]}.`,
-        );
-      }
-    }
-  }
-
-  const gitignore = existsSync(gitignorePath) ? readFileSync(gitignorePath, "utf8") : "";
-  const projectConfiguration = existsSync(projectConfigurationPath)
-    ? readFileSync(projectConfigurationPath, "utf8")
-    : "";
-
-  if (!gitignore.split(/\r?\n/).includes(".serena/memories/local/")) {
-    errors.push(
-      "[ARCH-MEM-001] .serena/memories/local/ must be ignored for machine-local memories.",
-    );
-  }
-
-  if (!projectConfiguration.includes('"^(memory_maintenance|core|shared/.*)$"')) {
-    errors.push(
-      "[ARCH-MEM-001] Generated shared Serena memories must be configured read-only.",
-    );
-  }
-}
-
 export function runArchitectureChecks({
   repositoryRoot,
   applicationRoot,
   now = new Date(),
+  profile = "required",
+  validateWorkspace = true,
 }) {
-  const errors = [];
+  assertArchitectureProfile(profile);
+
+  const requiredErrors = [];
+  const generatedErrors = [];
+  const knowledgeErrors = [];
   const sourceRoot = join(applicationRoot, "src");
   const sourceFiles = listFiles(sourceRoot).filter(isSourceFile);
   const catalogPath = join(repositoryRoot, "docs", "architecture", "module-map.json");
@@ -2568,54 +2063,78 @@ export function runArchitectureChecks({
     "registry.json",
   );
 
-  validateSourceRoot(applicationRoot, errors);
-  validateToolAliases(repositoryRoot, applicationRoot, errors);
+  validateSourceRoot(applicationRoot, requiredErrors);
+  validateToolAliases(repositoryRoot, applicationRoot, requiredErrors);
+  if (validateWorkspace) {
+    validateWorkspacePackages(repositoryRoot, requiredErrors);
+  }
 
-  const catalog = readJson(catalogPath, errors, "[ARCH-MAP-001]");
+  const catalog = readJson(catalogPath, requiredErrors, "[ARCH-MAP-001]");
   let contextsByPath = new Map();
   let designsByContext = new Map();
 
   if (catalog !== undefined) {
-    contextsByPath = validateCatalog(applicationRoot, catalog, now, errors);
+    contextsByPath = validateCatalog(
+      applicationRoot,
+      catalog,
+      now,
+      requiredErrors,
+      knowledgeErrors,
+    );
     designsByContext = validateDesignedUseCases(
       applicationRoot,
       contextsByPath,
-      errors,
+      requiredErrors,
     );
-    validateGeneratedModuleMap(repositoryRoot, catalog, errors);
+    validateGeneratedModuleMap(
+      repositoryRoot,
+      renderModuleMap(catalog),
+      generatedErrors,
+    );
   }
 
-  validateAgentGuidance(repositoryRoot, errors);
-  validateSerenaMemories(repositoryRoot, errors);
+  validateAgentGuidance(repositoryRoot, requiredErrors, generatedErrors);
+  validateSerenaMemories(repositoryRoot, generatedErrors);
 
-  validateModuleNamesAndRoles(applicationRoot, sourceFiles, errors);
+  validateModuleNamesAndRoles(applicationRoot, sourceFiles, requiredErrors);
   validateUseCaseTraceability(
     applicationRoot,
     sourceFiles,
     contextsByPath,
     designsByContext,
-    errors,
+    requiredErrors,
   );
 
-  const { graph, metadata } = buildGraph(applicationRoot, sourceFiles);
-  validateCycles(applicationRoot, graph, errors);
-  validateClientGraphs(applicationRoot, graph, metadata, errors);
+  const { graph, metadata } = buildSourceGraph(applicationRoot, sourceFiles);
+  validateSourceCycles(applicationRoot, graph, requiredErrors);
+  validateClientGraphs(applicationRoot, graph, metadata, requiredErrors);
   validateDeclaredContextDependencies(
     applicationRoot,
     graph,
     contextsByPath,
-    errors,
+    requiredErrors,
   );
 
   const registry = readJson(
     registryPath,
-    errors,
+    requiredErrors,
     "[ARCH-EXCEPTION-001]",
   );
 
   if (registry !== undefined) {
-    validateExceptions(applicationRoot, registry, sourceFiles, now, errors);
+    validateExceptions(
+      applicationRoot,
+      registry,
+      sourceFiles,
+      now,
+      requiredErrors,
+    );
   }
 
-  return errors;
+  return selectViolations({
+    generatedErrors,
+    knowledgeErrors,
+    profile,
+    requiredErrors,
+  });
 }

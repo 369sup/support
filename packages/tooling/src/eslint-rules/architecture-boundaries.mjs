@@ -1,11 +1,8 @@
 import { posix as path } from "node:path";
 
-const publicEntrypoints = new Set([
-  "server-api",
-  "browser-ui",
-  "server-actions",
-  "integration-contracts",
-]);
+import { publicEntrypointBasenames } from "../architecture/policy.mjs";
+
+const publicEntrypoints = new Set(publicEntrypointBasenames);
 
 function normalizeFilename(filename) {
   return filename.replaceAll("\\", "/");
@@ -130,6 +127,8 @@ const enforceImportBoundaries = {
         "[ARCH-DEP-011] Keep inbound and outbound adapters separate and depend only on the permitted inner layers.",
       compositionDirection:
         "[ARCH-DEP-011] Composition may wire only the same context's application, adapters, and contracts.",
+      unsupportedDependencySyntax:
+        "[ARCH-DEP-012] Use static imports, explicit named re-exports, or string-literal dynamic imports so architecture boundaries remain enforceable.",
     },
   },
   create(context) {
@@ -274,10 +273,40 @@ const enforceImportBoundaries = {
 
     return {
       ImportDeclaration: checkImport,
-      ImportExpression: checkImport,
+      ImportExpression(node) {
+        if (
+          node.source.type !== "Literal" ||
+          typeof node.source.value !== "string"
+        ) {
+          context.report({
+            node,
+            messageId: "unsupportedDependencySyntax",
+          });
+          return;
+        }
+
+        checkImport(node);
+      },
       ExportNamedDeclaration(node) {
         if (node.source !== null) {
           checkImport(node);
+        }
+      },
+      ExportAllDeclaration(node) {
+        context.report({
+          node,
+          messageId: "unsupportedDependencySyntax",
+        });
+      },
+      CallExpression(node) {
+        if (
+          node.callee.type === "Identifier" &&
+          node.callee.name === "require"
+        ) {
+          context.report({
+            node,
+            messageId: "unsupportedDependencySyntax",
+          });
         }
       },
     };

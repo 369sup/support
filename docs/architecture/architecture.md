@@ -1,8 +1,10 @@
 # Architecture Contract
 
-This file is the canonical human-readable architecture contract. Mechanical
-checks emit the stable rule IDs listed here. `AGENTS.md` files explain workflow
-and ownership but must not redefine these rules.
+This file is the canonical human-readable architecture contract. The complete
+machine-readable rule registry, enforcement owner, and gate live in
+`@support/tooling/architecture/policy`; every emitted rule ID must be registered
+there. `AGENTS.md` files explain workflow and ownership but must not redefine
+these rules.
 
 Code-level TypeScript style is enforced by the repository ESLint and TypeScript
 configuration. This document records only rules that protect architecture,
@@ -55,8 +57,10 @@ runtime boundaries, data ownership, authorization, or operational safety.
   relationship only. It does not authorize imports or runtime event handling;
   move the relationship to `dependencies` when its activation scope is
   implemented and both contexts are active.
-- Workspace packages are imported only through declared package subpath
-  exports; consumers never import `packages/*/src`.
+- **ARCH-PKG-001..008:** Workspace manifests, package kinds, dependency
+  sections, declared imports, explicit exports, source-root isolation, and the
+  internal package graph follow the shared package policy. Packages never
+  depend on applications, and consumers never import `packages/*/src`.
 - **ARCH-GRAPH-001:** Source dependencies must be acyclic.
 - **ARCH-CLIENT-001:** A client entrypoint must not transitively reach
   application, composition, outbound adapters, Node APIs, secrets, or
@@ -132,17 +136,20 @@ not use wildcard or multi-level barrel re-exports.
   not appear as bounded contexts. Deferred capabilities identify the missing
   prerequisite that prevents activation.
 - **ARCH-MAP-017:** Every official product source has a stable ID and a truthful
-  ISO verification date or `null`. Active stable contexts reject sources older
-  than 365 days; active preview contexts reject sources older than 90 days.
+  ISO verification date or `null`. Active contexts require a non-null,
+  non-future date.
+- **ARCH-KNOWLEDGE-001:** Source-age governance reports stable sources older
+  than 365 days and preview sources older than 90 days. This time-based
+  knowledge check is scheduled and manually runnable, not a merge gate.
 - **ARCH-MAP-018:** Every context declares versioned published events or an
   empty-catalog rationale. Event dependencies name events and versions owned by
   their target context.
-- **ARCH-MAP-019:** Every context README contains the canonical decision
-  headings and designed-use-case fields from `module-template.md`. Its context
-  content tree references every catalog activation scope, owned concept, and
-  published event. Designed use cases reference only cataloged official
-  sources, relationships, and events. A planned tree never describes a
-  capability as active.
+- **ARCH-MAP-019:** Active context READMEs contain the complete canonical
+  decision headings; planned contexts use the lifecycle-minimum heading set
+  from `module-template.md`. Context trees reference catalog activation scopes,
+  owned concepts, and published events. Designed use cases reference only
+  cataloged sources, relationships, and events, and a planned tree never
+  describes an active capability.
 - **ARCH-MAP-020:** Every active event names an exported
   `integration-contracts.ts` schema and a non-empty ordering key. Planned events
   omit contract metadata until activation.
@@ -172,6 +179,8 @@ not use wildcard or multi-level barrel re-exports.
   without authorizing runtime handling.
 - **ARCH-GUIDE-001:** Repository `AGENTS.md` files have resolvable local links;
   permanent `AGENTS.override.md` files are prohibited.
+- **ARCH-GUIDE-002:** The generated-memory authority allowlist exactly matches
+  repository guidance and is checked with generated artifacts.
 - **ARCH-MEM-001:** Committed Serena shared memories are deterministic,
   read-only generated projections of an explicit authority allowlist. Local
   writable memories are ignored by Git.

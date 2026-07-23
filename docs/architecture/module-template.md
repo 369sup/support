@@ -51,7 +51,22 @@ Entrypoints explicitly name their exports and follow the boundary contracts in
 
 ## Required README decisions
 
-Every context README uses these exact second-level headings:
+Every planned context README uses this minimum second-level heading set:
+
+```markdown
+## Purpose
+## Context content tree
+## Designed use cases
+## Ownership and invariants
+## Dependencies and consistency
+## Official sources
+## Exceptions
+```
+
+Existing planned READMEs may retain additional reviewed sections. They are
+valid supersets and are not rewritten merely to match the minimum template.
+
+Every active context README uses the complete decision set:
 
 ```markdown
 ## Purpose
@@ -117,6 +132,11 @@ official source IDs; technical contexts use `not-applicable`. Dependencies and
 events must already exist in the catalog. The active designed-use-case set
 equals `activationScope`, and source code is prohibited for a `[planned]`
 design.
+
+The thirteen fields above are required for approved designed-use-case entries.
+The remaining active-only README headings become mandatory when the context is
+activated; a planned context does not need placeholder authorization,
+persistence, retention, or failure decisions before a use case is approved.
 
 Authorization records the actor source, resource or tenant scope, policy owner,
 and denial model when protection is required. Persistence records data and
