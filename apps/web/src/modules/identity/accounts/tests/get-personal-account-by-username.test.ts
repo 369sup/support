@@ -8,29 +8,30 @@ import { GetPersonalAccountByUsernameHandler } from "../application/queries/get-
 
 class AccountQueryRepositoryFake implements AccountQueryRepositoryPort {
   private readonly account: AccountQuerySnapshot | null;
+  readonly requestedUsernames: string[] = [];
 
   constructor(account: AccountQuerySnapshot | null) {
     this.account = account;
   }
 
-  findPersonalByUsername() {
+  findPersonalByUsername(username: string) {
+    this.requestedUsernames.push(username);
     return Promise.resolve(this.account);
   }
 }
 
 describe("GetPersonalAccountByUsernameHandler", () => {
   it("returns an active personal account", async () => {
-    const handler = new GetPersonalAccountByUsernameHandler(
-      new AccountQueryRepositoryFake({
-        accountId: "account_octocat",
-        username: "octocat",
-        accountKind: "personal",
-        lifecycleState: "active",
-      }),
-    );
+    const repository = new AccountQueryRepositoryFake({
+      accountId: "account_octocat",
+      username: "octocat",
+      accountKind: "personal",
+      lifecycleState: "active",
+    });
+    const handler = new GetPersonalAccountByUsernameHandler(repository);
 
     await expect(
-      handler.getPersonalAccountByUsername({ username: "octocat" }),
+      handler.getPersonalAccountByUsername({ username: " octocat " }),
     ).resolves.toEqual({
       status: "found",
       account: {
@@ -40,6 +41,7 @@ describe("GetPersonalAccountByUsernameHandler", () => {
         lifecycleState: "active",
       },
     });
+    expect(repository.requestedUsernames).toEqual(["octocat"]);
   });
 
   it("does not expose a deleted account", async () => {
@@ -54,6 +56,16 @@ describe("GetPersonalAccountByUsernameHandler", () => {
 
     await expect(
       handler.getPersonalAccountByUsername({ username: "deleted-user" }),
-    ).resolves.toEqual({ status: "not-found" });
+    ).resolves.toEqual({ status: "account-not-found" });
+  });
+
+  it("rejects a blank username before querying the repository", async () => {
+    const repository = new AccountQueryRepositoryFake(null);
+    const handler = new GetPersonalAccountByUsernameHandler(repository);
+
+    await expect(
+      handler.getPersonalAccountByUsername({ username: "   " }),
+    ).resolves.toEqual({ status: "invalid-username" });
+    expect(repository.requestedUsernames).toEqual([]);
   });
 });

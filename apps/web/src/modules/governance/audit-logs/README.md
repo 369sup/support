@@ -63,6 +63,10 @@ Organization and enterprise audit events, scopes, actors, targets, search, expor
   - `StorageRecord`
   - `ArbitraryApplicationLog`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

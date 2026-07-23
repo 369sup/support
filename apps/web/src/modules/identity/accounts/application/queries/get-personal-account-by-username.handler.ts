@@ -19,11 +19,17 @@ export class GetPersonalAccountByUsernameHandler
   async getPersonalAccountByUsername(
     query: GetPersonalAccountByUsernameQuery,
   ): Promise<GetPersonalAccountByUsernameResult> {
+    const normalizedUsername = query.username.trim();
+
+    if (normalizedUsername.length === 0) {
+      return { status: "invalid-username" };
+    }
+
     const account =
-      await this.accountQueryRepository.findPersonalByUsername(query.username);
+      await this.accountQueryRepository.findPersonalByUsername(normalizedUsername);
 
     if (account === null || account.lifecycleState !== "active") {
-      return { status: "not-found" };
+      return { status: "account-not-found" };
     }
 
     return { status: "found", account };

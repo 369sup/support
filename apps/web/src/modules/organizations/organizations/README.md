@@ -41,6 +41,10 @@ Organization identity, profile, lifecycle, verified domains, and enterprise owne
   - `OrganizationTeam`
   - `Repository`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

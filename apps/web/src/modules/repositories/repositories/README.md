@@ -53,6 +53,24 @@ personal owner.
   - `Star`
   - `Subscription`
 
+## Designed use cases
+
+### `list-active-public-repositories-for-personal-owner` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ListActivePublicRepositoriesForPersonalOwnerUseCase.listActivePublicRepositoriesForPersonalOwner()`
+- **Public entrypoint:** `server-api.ts#listActivePublicRepositoriesForPersonalOwner`
+- **Input:** Stable personal-owner `accountId`.
+- **Success result:** Read-only collection of public `RepositoryQuerySnapshot` values, including an empty collection.
+- **Expected rejections:** `none`
+- **Authorization:** None; only public repository summaries are exposed.
+- **Transaction:** Read-only lookup with no transaction.
+- **Idempotency:** Query; repeated input has no side effect.
+- **Dependencies:** `identity/accounts::UserOwnerReference`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repositories-source-11`
+- **Local policy:** Resolve by stable account ID, require personal ownership, filter to `public` and `active`, and return a summary projection without Git content or grants.
+
 ## Ubiquitous language
 
 - **Repository**: the core GitHub product resource.
@@ -118,6 +136,7 @@ propagate as infrastructure errors.
 
 - <https://docs.github.com/en/repositories/creating-and-managing-repositories/about-repositories>
 - <https://docs.github.com/en/repositories/creating-and-managing-repositories/viewing-all-your-repositories>
+- <https://docs.github.com/en/rest/repos/repos#list-repositories-for-a-user>
 
 ## Exceptions
 

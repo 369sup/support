@@ -39,6 +39,10 @@ Enterprise identity, profile, account mode, lifecycle, and organization ownershi
   - `EnterpriseRole`
   - `EnterprisePolicy`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

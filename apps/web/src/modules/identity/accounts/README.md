@@ -39,6 +39,24 @@ active slice resolves a public personal-account reference by username.
   - `Profile`
   - `EnterpriseMembership`
 
+## Designed use cases
+
+### `get-personal-account-by-username` [active]
+
+- **Type:** `query`
+- **Application boundary:** `GetPersonalAccountByUsernameUseCase.getPersonalAccountByUsername()`
+- **Public entrypoint:** `server-api.ts#getPersonalAccountByUsername`
+- **Input:** Raw username string.
+- **Success result:** `found` with an `AccountQuerySnapshot`, mapped publicly to a `UserOwnerReference`.
+- **Expected rejections:** `account-not-found`, `invalid-username`
+- **Authorization:** None; this slice exposes public account identifiers only.
+- **Transaction:** Read-only lookup with no transaction.
+- **Idempotency:** Query; repeated input has no side effect.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `identity-accounts-source-05`
+- **Local policy:** Trim before lookup, reject an empty normalized username, and return only active personal accounts.
+
 ## Ubiquitous language
 
 - **Account**: the identity used to access GitHub product resources.
@@ -101,6 +119,7 @@ failures propagate as infrastructure errors.
 - <https://docs.github.com/en/account-and-profile/concepts/account-management>
 - <https://docs.github.com/en/account-and-profile/reference/username-reference>
 - <https://docs.github.com/en/account-and-profile/reference/personal-account-reference>
+- <https://docs.github.com/en/rest/users/users#get-a-user>
 
 ## Exceptions
 

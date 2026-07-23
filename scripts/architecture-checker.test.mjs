@@ -134,6 +134,24 @@ function createValidFixture() {
     - Owned concepts: \`Repository\`
     - Published events: \`RepositoryCreated@1\`
 
+## Designed use cases
+
+### \`create-repository\` [active]
+
+- **Type:** \`command\`
+- **Application boundary:** \`CreateRepositoryUseCase.createRepository()\`
+- **Public entrypoint:** \`server-api.ts#createRepository\`
+- **Input:** Repository creation request.
+- **Success result:** Created repository identity.
+- **Expected rejections:** \`none\`
+- **Authorization:** Repository creation policy.
+- **Transaction:** One context-local transaction.
+- **Idempotency:** Request-scoped idempotency key.
+- **Dependencies:** \`none\`
+- **Published events:** \`RepositoryCreated@1\`
+- **Official evidence:** \`core-domain-repositories-source-01\`
+- **Local policy:** \`none\`
+
 ## Ubiquitous language
 ## Ownership and invariants
 ## Public capabilities
@@ -146,6 +164,11 @@ function createValidFixture() {
 ## Official sources
 ## Exceptions
 `,
+  );
+  writeFixture(
+    rootDir,
+    "src/modules/core-domain/repositories/server-api.ts",
+    "export async function createRepository(): Promise<void> {}\n",
   );
   writeFixture(
     rootDir,
@@ -1105,6 +1128,193 @@ test("requires semantic context to use-case to function traceability", () => {
   }
 });
 
+test("requires every designed-use-case field", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    const readmePath = join(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+    );
+    const readme = readFileSync(readmePath, "utf8");
+    writeFixture(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+      readme.replace(
+        "- **Authorization:** Repository creation policy.\n",
+        "",
+      ),
+    );
+
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("requires active designs to match activation scope and handler type", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    const readmePath = join(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+    );
+    const readme = readFileSync(readmePath, "utf8");
+    writeFixture(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+      readme.replace(
+        "### `create-repository` [active]",
+        "### `create-repository` [planned]",
+      ),
+    );
+    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), true);
+
+    writeFixture(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+      readme.replace("- **Type:** `command`", "- **Type:** `query`"),
+    );
+    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), true);
+
+    writeFixture(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+      readme.replace(
+        "`CreateRepositoryUseCase.createRepository()`",
+        "`CreateRepositoryUseCase.execute()`",
+      ),
+    );
+    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("rejects handlers without an approved active design", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    const readmePath = join(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+    );
+    const readme = readFileSync(readmePath, "utf8");
+    writeFixture(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+      readme.replace(
+        /## Designed use cases[\s\S]*?## Ubiquitous language/,
+        "## Designed use cases\n\nNo approved use cases. Implementation remains blocked.\n\n## Ubiquitous language",
+      ),
+    );
+
+    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("rejects inbound ports for planned designed use cases", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    const readmePath = join(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+    );
+    const readme = readFileSync(readmePath, "utf8");
+    writeFixture(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+      readme.replace(
+        "### `create-repository` [active]",
+        "### `create-repository` [planned]",
+      ),
+    );
+    const catalog = validCatalog();
+    catalog.contexts[0].activationScope = [];
+    writeCatalog(rootDir, catalog);
+    rmSync(
+      join(
+        rootDir,
+        "src",
+        "modules",
+        "core-domain",
+        "repositories",
+        "application",
+        "commands",
+        "create-repository.handler.ts",
+      ),
+    );
+
+    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("requires designed rejection literals in the inbound result", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    const readmePath = join(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+    );
+    const readme = readFileSync(readmePath, "utf8");
+    writeFixture(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+      readme.replace(
+        "- **Expected rejections:** `none`",
+        "- **Expected rejections:** `repository-name-conflict`",
+      ),
+    );
+
+    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-003"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("rejects uncataloged designed-use-case references", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    const readmePath = join(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+    );
+    const readme = readFileSync(readmePath, "utf8");
+
+    for (const [current, replacement] of [
+      [
+        "- **Dependencies:** `none`",
+        "- **Dependencies:** `identity/accounts::AccountReference`",
+      ],
+      [
+        "- **Published events:** `RepositoryCreated@1`",
+        "- **Published events:** `RepositoryDeleted@1`",
+      ],
+      [
+        "- **Official evidence:** `core-domain-repositories-source-01`",
+        "- **Official evidence:** `missing-source`",
+      ],
+    ]) {
+      writeFixture(
+        rootDir,
+        "src/modules/core-domain/repositories/README.md",
+        readme.replace(current, replacement),
+      );
+      assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
+    }
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
 test("rejects files that bypass the two-level context structure", () => {
   const rootDir = createValidFixture();
 
@@ -1223,6 +1433,8 @@ test("allows only README.md in planned context directories", () => {
     writeCatalog(rootDir, catalog);
     assert.equal(includesRule(check(rootDir), "ARCH-MAP-006"), false);
     assert.equal(includesRule(check(rootDir), "ARCH-MAP-027"), false);
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), false);
+    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), false);
 
     writeFixture(
       rootDir,

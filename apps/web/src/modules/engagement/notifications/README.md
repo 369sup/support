@@ -50,6 +50,10 @@ User notification records, inboxes, reasons, filters, and read, saved, or done s
   - `EmailDelivery`
   - `PushDelivery`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

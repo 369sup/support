@@ -40,6 +40,10 @@ Credentials, sessions, two-factor authentication, recovery, and external login b
   - `ScimProvisioning`
   - `OAuthAppAuthorization`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

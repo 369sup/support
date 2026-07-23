@@ -37,6 +37,10 @@ OAuth App registration, ownership, callback configuration, and client lifecycle.
   - `GitHubAppRegistration`
   - `TokenStorageAdapter`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

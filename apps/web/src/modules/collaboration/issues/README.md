@@ -56,6 +56,10 @@ Issue lifecycle, assignment, hierarchy, dependency, transfer, and work tracking.
   - `Project`
   - `PullRequest`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

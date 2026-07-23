@@ -44,6 +44,10 @@ Organization-level issue type and field definitions, visibility, pinning, and ty
   - `Label`
   - `IssueFieldValue`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

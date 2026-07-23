@@ -119,6 +119,15 @@
             "username reuse after deletion"
           ],
           "verifiedOn": "2026-07-23"
+        },
+        {
+          "id": "identity-accounts-source-05",
+          "url": "https://docs.github.com/en/rest/users/users#get-a-user",
+          "supports": [
+            "public user lookup by username",
+            "resource-not-found response"
+          ],
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -2188,6 +2197,15 @@
             "repository dashboard listing",
             "owner repository views",
             "visibility filtering"
+          ],
+          "verifiedOn": "2026-07-23"
+        },
+        {
+          "id": "repositories-repositories-source-11",
+          "url": "https://docs.github.com/en/rest/repos/repos#list-repositories-for-a-user",
+          "supports": [
+            "public repositories for a specified user",
+            "owner repository filtering"
           ],
           "verifiedOn": "2026-07-23"
         }

@@ -55,6 +55,10 @@ Repository, organization, and enterprise webhook configuration plus GitHub App w
   - `ArbitraryDatabasePolling`
   - `RawSecretStorage`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

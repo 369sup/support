@@ -43,6 +43,10 @@ Repository starring and user-defined star lists for discovery and collection.
   - `Notification`
   - `UserFollow`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

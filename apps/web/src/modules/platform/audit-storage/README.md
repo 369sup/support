@@ -35,6 +35,10 @@ Durable storage, export, and retention enforcement for audit records.
   - `AuditAuthorization`
   - `ProductActivityFeed`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

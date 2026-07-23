@@ -67,6 +67,7 @@ const contextLayers = new Set([
 const requiredContextReadmeHeadings = [
   "Purpose",
   "Context content tree",
+  "Designed use cases",
   "Ubiquitous language",
   "Ownership and invariants",
   "Public capabilities",
@@ -79,6 +80,23 @@ const requiredContextReadmeHeadings = [
   "Official sources",
   "Exceptions",
 ];
+const designedUseCaseFields = [
+  "Type",
+  "Application boundary",
+  "Public entrypoint",
+  "Input",
+  "Success result",
+  "Expected rejections",
+  "Authorization",
+  "Transaction",
+  "Idempotency",
+  "Dependencies",
+  "Published events",
+  "Official evidence",
+  "Local policy",
+];
+const blockedUseCaseDesign =
+  "No approved use cases. Implementation remains blocked.";
 
 function normalizePath(value) {
   return value.split(sep).join("/");
@@ -132,6 +150,135 @@ function readJson(filePath, errors, ruleId) {
 
 function isKebabCase(value) {
   return /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/.test(value);
+}
+
+function sectionBody(readmeLines, heading) {
+  const headingIndex = readmeLines.findIndex((line) => line === `## ${heading}`);
+
+  if (headingIndex < 0) {
+    return undefined;
+  }
+
+  const nextHeadingOffset = readmeLines
+    .slice(headingIndex + 1)
+    .findIndex((line) => line.startsWith("## "));
+  const end = nextHeadingOffset < 0
+    ? readmeLines.length
+    : headingIndex + 1 + nextHeadingOffset;
+
+  return readmeLines.slice(headingIndex + 1, end);
+}
+
+function inlineCodeValues(value) {
+  return [...value.matchAll(/`([^`\n]+)`/g)].map((match) => match[1]);
+}
+
+function parseDesignedUseCases(readmeLines, contextPath, errors) {
+  const bodyLines = sectionBody(readmeLines, "Designed use cases");
+  const designs = new Map();
+
+  if (bodyLines === undefined) {
+    return designs;
+  }
+
+  const body = bodyLines.join("\n").trim();
+
+  if (body === blockedUseCaseDesign) {
+    return designs;
+  }
+
+  if (body === "" || body.includes(blockedUseCaseDesign)) {
+    errors.push(
+      `[ARCH-MAP-019] Context ${contextPath} must use either approved designed-use-case entries or the exact implementation-blocked sentinel.`,
+    );
+    return designs;
+  }
+
+  let currentDesign;
+  let currentField;
+
+  const finishDesign = () => {
+    if (currentDesign === undefined) {
+      return;
+    }
+
+    const missingFields = designedUseCaseFields.filter(
+      (field) => !currentDesign.fields.has(field),
+    );
+    const emptyFields = [...currentDesign.fields]
+      .filter(([, value]) => value.trim() === "")
+      .map(([field]) => field);
+
+    if (missingFields.length > 0 || emptyFields.length > 0) {
+      errors.push(
+        `[ARCH-MAP-019] Designed use case ${contextPath}/${currentDesign.name} requires non-empty fields: ${designedUseCaseFields.join(", ")}.`,
+      );
+    }
+
+    designs.set(currentDesign.name, currentDesign);
+  };
+
+  for (const line of bodyLines) {
+    const designHeading = /^### `([^`]+)` \[(planned|active)\]$/.exec(line);
+
+    if (designHeading !== null) {
+      finishDesign();
+      const [, name, status] = designHeading;
+
+      if (!isKebabCase(name) || designs.has(name)) {
+        errors.push(
+          `[ARCH-MAP-019] Context ${contextPath} has a duplicate or invalid designed use-case name ${name}.`,
+        );
+      }
+
+      currentDesign = {
+        name,
+        status,
+        fields: new Map(),
+        expectedRejections: [],
+      };
+      currentField = undefined;
+      continue;
+    }
+
+    const field = /^- \*\*([^*]+):\*\*\s*(.*)$/.exec(line);
+
+    if (field !== null && currentDesign !== undefined) {
+      const [, fieldName, value] = field;
+
+      if (
+        !designedUseCaseFields.includes(fieldName) ||
+        currentDesign.fields.has(fieldName)
+      ) {
+        errors.push(
+          `[ARCH-MAP-019] Designed use case ${contextPath}/${currentDesign.name} has an unknown or duplicate field ${fieldName}.`,
+        );
+      } else {
+        currentDesign.fields.set(fieldName, value);
+      }
+      currentField = fieldName;
+      continue;
+    }
+
+    if (
+      line.trim() !== "" &&
+      currentDesign !== undefined &&
+      currentField !== undefined
+    ) {
+      const previous = currentDesign.fields.get(currentField) ?? "";
+      currentDesign.fields.set(
+        currentField,
+        `${previous}\n${line.trim()}`.trim(),
+      );
+    } else if (line.trim() !== "" && currentDesign === undefined) {
+      errors.push(
+        `[ARCH-MAP-019] Context ${contextPath} has content outside a designed use-case entry.`,
+      );
+    }
+  }
+
+  finishDesign();
+  return designs;
 }
 
 function contextRootFor(rootDir, context) {
@@ -856,6 +1003,226 @@ function validateCatalog(rootDir, catalog, now, errors) {
   return contextsByPath;
 }
 
+function validateDesignedUseCases(rootDir, contextsByPath, errors) {
+  const designsByContext = new Map();
+
+  for (const [contextPath, context] of contextsByPath) {
+    const readmePath = join(contextRootFor(rootDir, context), "README.md");
+
+    if (!existsSync(readmePath)) {
+      designsByContext.set(contextPath, new Map());
+      continue;
+    }
+
+    const readmeLines = readFileSync(readmePath, "utf8")
+      .replaceAll("\r\n", "\n")
+      .split("\n");
+    const designs = parseDesignedUseCases(readmeLines, contextPath, errors);
+    designsByContext.set(contextPath, designs);
+
+    const activeDesignNames = [...designs.values()]
+      .filter((design) => design.status === "active")
+      .map((design) => design.name)
+      .sort();
+    const activationScope = [...context.activationScope].sort();
+
+    if (
+      activeDesignNames.length !== activationScope.length ||
+      activeDesignNames.some((name, index) => name !== activationScope[index])
+    ) {
+      errors.push(
+        `[ARCH-USECASE-002] Context ${contextPath} active designed use cases must equal activationScope.`,
+      );
+    }
+
+    if (
+      context.implementationStatus === "planned" &&
+      activeDesignNames.length > 0
+    ) {
+      errors.push(
+        `[ARCH-USECASE-002] Planned context ${contextPath} cannot contain an active designed use case.`,
+      );
+    }
+
+    const sourceIds = new Set(
+      (context.officialSources ?? []).map((source) => source.id),
+    );
+    const eventByKey = new Map(
+      (context.publishedEvents ?? []).map((event) => [
+        `${event.name}@${event.version}`,
+        event,
+      ]),
+    );
+    const runtimeRelationships = new Set(
+      (context.dependencies ?? []).map(
+        (relationship) =>
+          `${relationship.context}::${relationship.contract}`,
+      ),
+    );
+    const plannedRelationships = new Set(
+      (context.plannedRelationships ?? []).map(
+        (relationship) =>
+          `${relationship.context}::${relationship.contract}`,
+      ),
+    );
+
+    for (const design of designs.values()) {
+      const typeValue = design.fields.get("Type");
+      const applicationBoundary = design.fields.get("Application boundary");
+      const publicEntrypoint = design.fields.get("Public entrypoint");
+      const expectedRejections = inlineCodeValues(
+        design.fields.get("Expected rejections") ?? "",
+      );
+      const dependencies = inlineCodeValues(
+        design.fields.get("Dependencies") ?? "",
+      );
+      const publishedEvents = inlineCodeValues(
+        design.fields.get("Published events") ?? "",
+      );
+      const officialEvidence = inlineCodeValues(
+        design.fields.get("Official evidence") ?? "",
+      );
+      const operationName = kebabToCamelCase(design.name);
+      const interfaceName = `${kebabToPascalCase(design.name)}UseCase`;
+      const expectedBoundary = `\`${interfaceName}.${operationName}()\``;
+
+      if (
+        design.status === "planned" &&
+        existsSync(
+          join(
+            contextRootFor(rootDir, context),
+            "application",
+            "ports",
+            "inbound",
+            `${design.name}.use-case.ts`,
+          ),
+        )
+      ) {
+        errors.push(
+          `[ARCH-USECASE-002] Planned designed use case ${contextPath}/${design.name} must not have an inbound port implementation.`,
+        );
+      }
+
+      if (typeValue !== "`command`" && typeValue !== "`query`") {
+        errors.push(
+          `[ARCH-MAP-019] Designed use case ${contextPath}/${design.name} Type must be \`command\` or \`query\`.`,
+        );
+      }
+
+      design.type = typeValue?.slice(1, -1);
+
+      if (applicationBoundary !== expectedBoundary) {
+        errors.push(
+          `[ARCH-USECASE-002] Designed use case ${contextPath}/${design.name} must declare ${expectedBoundary} as its application boundary.`,
+        );
+      }
+
+      const entrypointMatch =
+        /^`(server-api\.ts|browser-ui\.ts|server-actions\.ts)#([a-z][A-Za-z0-9]*)`$/.exec(
+          publicEntrypoint ?? "",
+        );
+
+      if (
+        entrypointMatch === null ||
+        entrypointMatch[2] !== operationName
+      ) {
+        errors.push(
+          `[ARCH-USECASE-002] Designed use case ${contextPath}/${design.name} must name an allowed public entrypoint for ${operationName}.`,
+        );
+      } else if (design.status === "active") {
+        const entrypointPath = join(
+          contextRootFor(rootDir, context),
+          entrypointMatch[1],
+        );
+        const entrypointContents = existsSync(entrypointPath)
+          ? readFileSync(entrypointPath, "utf8")
+          : "";
+
+        if (
+          entrypointContents === "" ||
+          !new RegExp(`\\b${operationName}\\b`).test(entrypointContents)
+        ) {
+          errors.push(
+            `[ARCH-USECASE-002] Active designed use case ${contextPath}/${design.name} requires ${entrypointMatch[1]} to export ${operationName}.`,
+          );
+        }
+      }
+
+      if (
+        expectedRejections.length === 0 ||
+        (expectedRejections.includes("none") &&
+          expectedRejections.length !== 1) ||
+        expectedRejections.some(
+          (rejection) => rejection !== "none" && !isKebabCase(rejection),
+        )
+      ) {
+        errors.push(
+          `[ARCH-MAP-019] Designed use case ${contextPath}/${design.name} has invalid Expected rejections.`,
+        );
+      }
+      design.expectedRejections = expectedRejections.filter(
+        (rejection) => rejection !== "none",
+      );
+
+      const allowedRelationships = new Set(runtimeRelationships);
+      if (design.status === "planned") {
+        for (const relationship of plannedRelationships) {
+          allowedRelationships.add(relationship);
+        }
+      }
+      if (
+        dependencies.length === 0 ||
+        (dependencies.includes("none") && dependencies.length !== 1) ||
+        dependencies.some(
+          (dependency) =>
+            dependency !== "none" && !allowedRelationships.has(dependency),
+        )
+      ) {
+        errors.push(
+          `[ARCH-MAP-019] Designed use case ${contextPath}/${design.name} references an uncataloged dependency.`,
+        );
+      }
+
+      if (
+        publishedEvents.length === 0 ||
+        (publishedEvents.includes("none") && publishedEvents.length !== 1) ||
+        publishedEvents.some((eventKey) => {
+          if (eventKey === "none") {
+            return false;
+          }
+
+          const event = eventByKey.get(eventKey);
+          return (
+            event === undefined ||
+            (design.status === "active" &&
+              event.implementationStatus !== "active")
+          );
+        })
+      ) {
+        errors.push(
+          `[ARCH-MAP-019] Designed use case ${contextPath}/${design.name} references an unavailable published event.`,
+        );
+      }
+
+      const hasValidOfficialEvidence =
+        context.kind === "technical"
+          ? officialEvidence.length === 1 &&
+            officialEvidence[0] === "not-applicable"
+          : officialEvidence.length > 0 &&
+            !officialEvidence.includes("not-applicable") &&
+            officialEvidence.every((sourceId) => sourceIds.has(sourceId));
+
+      if (!hasValidOfficialEvidence) {
+        errors.push(
+          `[ARCH-MAP-019] Designed use case ${contextPath}/${design.name} requires valid cataloged official evidence.`,
+        );
+      }
+    }
+  }
+
+  return designsByContext;
+}
+
 function roleLocationError(relativePath) {
   const checks = [
     [/\.aggregate\.[cm]?tsx?$/, "/domain/aggregates/"],
@@ -998,10 +1365,76 @@ function hasUseCaseHandler(sourceFile, interfaceName, operationName) {
   });
 }
 
+function hasExpectedRejectionLiterals(
+  sourceFile,
+  resultTypeName,
+  expectedRejections,
+) {
+  const resultType = sourceFile.statements.find((statement) => {
+    return (
+      ts.isTypeAliasDeclaration(statement) &&
+      statement.name.text === resultTypeName
+    );
+  });
+
+  if (resultType === undefined) {
+    return false;
+  }
+
+  const stringLiterals = new Set();
+  const collectLiteralTypes = (typeNode) => {
+    if (ts.isUnionTypeNode(typeNode)) {
+      for (const member of typeNode.types) {
+        collectLiteralTypes(member);
+      }
+    } else if (
+      ts.isLiteralTypeNode(typeNode) &&
+      ts.isStringLiteral(typeNode.literal)
+    ) {
+      stringLiterals.add(typeNode.literal.text);
+    }
+  };
+  const collectResultMembers = (typeNode) => {
+    if (ts.isUnionTypeNode(typeNode)) {
+      for (const member of typeNode.types) {
+        collectResultMembers(member);
+      }
+      return;
+    }
+
+    if (
+      ts.isTypeReferenceNode(typeNode) &&
+      typeNode.typeArguments?.length === 1
+    ) {
+      collectResultMembers(typeNode.typeArguments[0]);
+      return;
+    }
+
+    if (ts.isParenthesizedTypeNode(typeNode)) {
+      collectResultMembers(typeNode.type);
+      return;
+    }
+
+    if (ts.isTypeLiteralNode(typeNode)) {
+      for (const member of typeNode.members) {
+        if (ts.isPropertySignature(member) && member.type !== undefined) {
+          collectLiteralTypes(member.type);
+        }
+      }
+    }
+  };
+  collectResultMembers(resultType.type);
+
+  return expectedRejections.every((rejection) =>
+    stringLiterals.has(rejection),
+  );
+}
+
 function validateUseCaseTraceability(
   rootDir,
   sourceFiles,
   contextsByPath,
+  designsByContext,
   errors,
 ) {
   const useCasesByContext = new Map();
@@ -1009,18 +1442,32 @@ function validateUseCaseTraceability(
   for (const filePath of sourceFiles) {
     const relativePath = projectRelative(rootDir, filePath);
     const match = relativePath.match(
-      /^src\/modules\/([^/]+)\/([^/]+)\/application\/(?:commands|queries)\/(?:.+\/)?([^/]+)\.handler\.(?:[cm]?ts|tsx)$/,
+      /^src\/modules\/([^/]+)\/([^/]+)\/application\/(commands|queries)\/(?:.+\/)?([^/]+)\.handler\.(?:[cm]?ts|tsx)$/,
     );
 
     if (match === null) {
       continue;
     }
 
-    const [, subdomain, contextName, useCaseName] = match;
+    const [, subdomain, contextName, handlerDirectory, useCaseName] = match;
     const contextPath = `${subdomain}/${contextName}`;
-    const contextUseCases = useCasesByContext.get(contextPath) ?? new Set();
-    contextUseCases.add(useCaseName);
+    const contextUseCases = useCasesByContext.get(contextPath) ?? new Map();
+    contextUseCases.set(useCaseName, {
+      type: handlerDirectory === "commands" ? "command" : "query",
+      relativePath,
+    });
     useCasesByContext.set(contextPath, contextUseCases);
+    const design = designsByContext.get(contextPath)?.get(useCaseName);
+
+    if (
+      design === undefined ||
+      design.status !== "active" ||
+      design.type !== (handlerDirectory === "commands" ? "command" : "query")
+    ) {
+      errors.push(
+        `[ARCH-USECASE-002] Handler ${relativePath} requires a matching active designed use case with the same command/query type.`,
+      );
+    }
 
     const operationName = kebabToCamelCase(useCaseName);
     const interfaceName = `${kebabToPascalCase(useCaseName)}UseCase`;
@@ -1064,22 +1511,43 @@ function validateUseCaseTraceability(
         `[ARCH-USECASE-001] ${contextPath}/${useCaseName} must trace semantic context -> ${interfaceName} -> ${operationName}() without generic execute/handle/process/run operations.`,
       );
     }
+
+    if (
+      design !== undefined &&
+      design.expectedRejections.length > 0 &&
+      !hasExpectedRejectionLiterals(
+        portSource,
+        `${kebabToPascalCase(useCaseName)}Result`,
+        design.expectedRejections,
+      )
+    ) {
+      errors.push(
+        `[ARCH-USECASE-003] ${contextPath}/${useCaseName} inbound result must declare every designed expected rejection as a string literal.`,
+      );
+    }
   }
 
   for (const [contextPath, context] of contextsByPath) {
-    if (
-      context.implementationStatus !== "active" ||
-      (context.kind !== "domain" && context.kind !== "projection")
-    ) {
-      continue;
-    }
-
-    const implementedUseCases = useCasesByContext.get(contextPath) ?? new Set();
+    const implementedUseCases =
+      useCasesByContext.get(contextPath) ?? new Map();
+    const designedUseCases =
+      designsByContext.get(contextPath) ?? new Map();
 
     for (const activationScope of context.activationScope) {
       if (!implementedUseCases.has(activationScope)) {
         errors.push(
           `[ARCH-USECASE-001] Active semantic context ${contextPath} must implement activationScope ${activationScope} as a named use-case port, handler, and function.`,
+        );
+      }
+    }
+
+    for (const design of designedUseCases.values()) {
+      if (
+        design.status === "planned" &&
+        implementedUseCases.has(design.name)
+      ) {
+        errors.push(
+          `[ARCH-USECASE-002] Planned designed use case ${contextPath}/${design.name} must not have a handler implementation.`,
         );
       }
     }
@@ -1604,6 +2072,10 @@ export function renderContextReadme(context) {
 
   lines.push(
     "",
+    "## Designed use cases",
+    "",
+    blockedUseCaseDesign,
+    "",
     "## Ubiquitous language",
     "",
     "The catalog reserves these terms for this context:",
@@ -2101,9 +2573,15 @@ export function runArchitectureChecks({
 
   const catalog = readJson(catalogPath, errors, "[ARCH-MAP-001]");
   let contextsByPath = new Map();
+  let designsByContext = new Map();
 
   if (catalog !== undefined) {
     contextsByPath = validateCatalog(applicationRoot, catalog, now, errors);
+    designsByContext = validateDesignedUseCases(
+      applicationRoot,
+      contextsByPath,
+      errors,
+    );
     validateGeneratedModuleMap(repositoryRoot, catalog, errors);
   }
 
@@ -2115,6 +2593,7 @@ export function runArchitectureChecks({
     applicationRoot,
     sourceFiles,
     contextsByPath,
+    designsByContext,
     errors,
   );
 

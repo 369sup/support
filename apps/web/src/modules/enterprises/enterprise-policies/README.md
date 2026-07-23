@@ -36,6 +36,10 @@ Enterprise policy constraints applied across owned organizations and repositorie
   - `CodeRuleset`
   - `ActionsPolicy`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

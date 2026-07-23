@@ -38,6 +38,10 @@ Public and private personal profiles, profile status, and pinned-item presentati
   - `RepositoryStar`
   - `Project`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

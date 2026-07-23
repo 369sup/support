@@ -10,7 +10,10 @@ export type GetPersonalAccountByUsernameResult =
       account: AccountQuerySnapshot;
     }>
   | Readonly<{
-      status: "not-found";
+      status: "account-not-found";
+    }>
+  | Readonly<{
+      status: "invalid-username";
     }>;
 
 export interface GetPersonalAccountByUsernameUseCase {

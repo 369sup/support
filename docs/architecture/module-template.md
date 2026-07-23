@@ -63,6 +63,7 @@ decisions remain discoverable and mechanically verifiable:
 ```markdown
 ## Purpose
 ## Context content tree
+## Designed use cases
 ## Ubiquitous language
 ## Ownership and invariants
 ## Public capabilities
@@ -105,6 +106,42 @@ README is the complete human-readable semantic model and may add capability
 hierarchy, rules, invariants, and decisions that do not belong in the catalog.
 Overlapping activation scopes, owned concepts, event versions, relationships,
 and exclusions must agree.
+
+`## Designed use cases` is the only authority for approved application
+boundaries. A use case appears there only after its design is complete; drafts
+remain outside the architecture contract. Use `[planned]` for an approved
+design that has no implementation and `[active]` for an implemented design.
+When no design is approved, use exactly:
+
+```text
+No approved use cases. Implementation remains blocked.
+```
+
+Each approved use case uses this exact shape:
+
+```markdown
+### `<use-case-kebab-case>` [planned|active]
+
+- **Type:** `command` | `query`
+- **Application boundary:** `<PascalCaseUseCase>.<camelCaseOperation>()`
+- **Public entrypoint:** `<entrypoint>.ts#<camelCaseOperation>`
+- **Input:** <complete input contract>
+- **Success result:** <complete success contract>
+- **Expected rejections:** `none` | `<named-rejection>`, ...
+- **Authorization:** <policy owner and resource scope>
+- **Transaction:** <transaction and consistency boundary>
+- **Idempotency:** <idempotency boundary or query rationale>
+- **Dependencies:** `none` | `<context>::<contract>`, ...
+- **Published events:** `none` | `<EventName>@<version>`, ...
+- **Official evidence:** `<catalog-source-id>` | `not-applicable`
+- **Local policy:** <explicit local decisions or `none`>
+```
+
+Every field is required and must be non-empty. Product contexts reference only
+their cataloged official source IDs; technical contexts use
+`not-applicable`. Dependencies and events must already exist in the catalog.
+The active designed-use-case set must equal `activationScope`, and source code
+is prohibited for a `[planned]` design.
 
 The sections record owner and out-of-scope concerns, public commands and
 queries, transaction ownership, resource scope, permission ports, sensitive

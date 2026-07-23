@@ -39,6 +39,10 @@ Organization policies for repositories, collaborators, projects, discussions, an
   - `RepositoryGrant`
   - `CodeRuleset`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

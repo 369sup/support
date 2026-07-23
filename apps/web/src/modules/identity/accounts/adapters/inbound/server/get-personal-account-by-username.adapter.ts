@@ -4,18 +4,12 @@ import { personalAccountQueryRuntime } from "./personal-account-query-runtime.ad
 export async function getPersonalAccountByUsername(
   username: string,
 ): Promise<PersonalAccountLookupResult> {
-  const normalizedUsername = username.trim();
-
-  if (normalizedUsername.length === 0) {
-    return { ok: false, error: "invalid-username" };
-  }
-
   const result = await personalAccountQueryRuntime
     .getPersonalAccountByUsernameUseCase()
-    .getPersonalAccountByUsername({ username: normalizedUsername });
+    .getPersonalAccountByUsername({ username });
 
-  if (result.status === "not-found") {
-    return { ok: false, error: "account-not-found" };
+  if (result.status !== "found") {
+    return { ok: false, error: result.status };
   }
 
   return {

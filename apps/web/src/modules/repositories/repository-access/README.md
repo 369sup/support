@@ -60,6 +60,10 @@ Repository invitations, direct and inherited grants, outside collaborators, role
   - `OrganizationRoleDefinition`
   - `EffectivePermissionAsSourceOfTruth`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

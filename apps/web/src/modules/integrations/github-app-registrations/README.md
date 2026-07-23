@@ -48,6 +48,10 @@ GitHub App registration, ownership and ownership transfer, requested permissions
   - `UserAuthorization`
   - `WebhookDelivery`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

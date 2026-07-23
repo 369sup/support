@@ -42,6 +42,10 @@ Permission-filtered search projections across users, organizations, repositories
   - `AuthorizationSourceOfTruth`
   - `CodeSearch`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

@@ -87,9 +87,11 @@ and ownership but must not redefine these rules.
   empty-catalog rationale. Event dependencies name events and versions owned by
   their target context.
 - **ARCH-MAP-019:** Every context README contains the canonical decision
-  headings from `module-template.md`. Its context content tree references every
-  catalog activation scope, owned concept, and published event. A planned tree
-  never describes a capability as active.
+  headings and designed-use-case fields from `module-template.md`. Its context
+  content tree references every catalog activation scope, owned concept, and
+  published event. Designed use cases reference only cataloged official
+  sources, relationships, and events. A planned tree never describes a
+  capability as active.
 - **ARCH-MAP-020:** Every active event names an exported
   `integration-contracts.ts` schema and a non-empty ordering key. Planned events
   omit contract metadata until activation.
@@ -134,6 +136,15 @@ and ownership but must not redefine these rules.
   `GetPersonalAccountByUsernameUseCase.getPersonalAccountByUsername()`.
   Generic application operations such as `execute`, `handle`, `process`, and
   `run` are prohibited because they erase use-case identity.
+- **ARCH-USECASE-002:** `## Designed use cases` is the sole approved
+  application-boundary contract. Its `[active]` entries equal
+  `activationScope`, use the derived UseCase interface and camelCase operation,
+  match the command/query handler directory, and name a public entrypoint.
+  `[planned]` entries have no handler or source implementation.
+- **ARCH-USECASE-003:** Every named expected rejection in an active designed
+  use case appears as a string-literal discriminant in its inbound
+  `<UseCaseName>Result` type. Expected business rejections never exist only in
+  an adapter.
 - Domain behavior is deterministic. Time, IDs, randomness, environment,
   network, filesystem, and storage arrive as explicit values or ports.
 - Application handlers coordinate one command or query. They do not contain

@@ -48,6 +48,10 @@ GitHub App installation targets, selected repositories, granted permissions, sus
   - `OAuthAuthorization`
   - `RepositoryGrant`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

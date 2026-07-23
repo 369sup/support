@@ -40,6 +40,10 @@ Predefined and custom enterprise roles, permissions, and assignments.
   - `RepositoryRole`
   - `BillingAccount`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

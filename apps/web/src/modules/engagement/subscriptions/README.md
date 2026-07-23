@@ -42,6 +42,10 @@ Repository watch preferences, conversation participation and manual subscription
   - `EmailDelivery`
   - `RepositoryStar`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

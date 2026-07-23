@@ -44,6 +44,10 @@ Predefined and custom organization roles and custom repository-role definitions.
   - `RepositoryRoleAssignment`
   - `TeamMaintainer`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

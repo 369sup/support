@@ -35,6 +35,10 @@ External email or push delivery adapters for accepted notification delivery requ
   - `SubscriptionPreference`
   - `RecipientSelection`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

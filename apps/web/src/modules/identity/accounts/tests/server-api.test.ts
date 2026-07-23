@@ -23,4 +23,13 @@ describe("accounts server API", () => {
       error: "account-not-found",
     });
   });
+
+  it("preserves the public invalid-username result", async () => {
+    await expect(
+      getPersonalAccountByUsername("   "),
+    ).resolves.toEqual({
+      ok: false,
+      error: "invalid-username",
+    });
+  });
 });

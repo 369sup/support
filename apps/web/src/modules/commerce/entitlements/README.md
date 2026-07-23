@@ -44,6 +44,10 @@ Plans, feature entitlements, licenses, assignments, and usage limits.
   - `OrganizationMembership`
   - `EnterpriseRole`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

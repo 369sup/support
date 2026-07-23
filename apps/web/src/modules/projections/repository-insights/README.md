@@ -41,6 +41,10 @@ Non-code repository engagement trends and integration-health projections.
   - `SourceAggregate`
   - `RepositoryTrafficMetric`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

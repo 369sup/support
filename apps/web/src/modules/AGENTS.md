@@ -45,7 +45,9 @@ entrypoints, fixtures, or local agent instructions. To activate one:
    confirm the recorded semantics and preview maturity still match current
    HTTPS documentation under `docs.github.com/en/`.
 6. Record every permitted cross-context dependency and required official
-   source in `module-map.json`, then change `implementationStatus` to `active`.
+   source in `module-map.json`. Complete the approved use-case contract under
+   `## Designed use cases`, mark it `[active]`, then change
+   `implementationStatus` and `activationScope`.
 7. Generate the module map and Serena shared memories, then review both diffs.
 8. Create only the layers and public entrypoints required by the first real
    use case.
@@ -57,11 +59,12 @@ excluded or deferred code-adjacent capabilities.
 
 ## Implementation workflow
 
-Before coding, state the use case, aggregate or policy owner, invariants,
-inputs, result, command/query classification, and required ports. Implement
-domain and application behavior before concrete adapters, then expose only the
-smallest public surface required by a real consumer. Add tests at the boundary
-carrying the risk.
+Before coding, record the approved use case, aggregate or policy owner,
+invariants, inputs, result, command/query classification, required ports,
+official evidence, and local policy in the context README. Implement domain and
+application behavior before concrete adapters, then expose only the smallest
+public surface required by a real consumer. Add tests at the boundary carrying
+the risk.
 
 Add `<bounded-context>/AGENTS.md` only when an active context has durable local
 terminology, workflow, validation, or an approved exception not expressible by

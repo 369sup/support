@@ -42,6 +42,10 @@ Organization membership, invitations, member roles, and membership lifecycle.
   - `RepositoryInvitation`
   - `EnterpriseRole`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

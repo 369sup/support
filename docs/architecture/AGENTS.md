@@ -37,6 +37,9 @@ changes.
   owner of a product event.
 - A context whose `implementationStatus` is `planned` has a README-only design
   directory. Do not add source files, layers, or entrypoints before activation.
+- Treat `## Designed use cases` in the context README as the only authority for
+  approved application boundaries. An `[active]` entry must exist before its
+  handler, port, public entrypoint, or `activationScope` is implemented.
 - Give each exception one stable ID, the narrowest scope, a concrete reason,
   an owner, and a removal condition. An exception is not a reusable example.
 - Regenerate the Markdown catalog with `pnpm architecture:docs` after changing

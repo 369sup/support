@@ -42,6 +42,10 @@ Enterprise membership, invitations, affiliation, guest collaborators, and unaffi
   - `RepositoryGrant`
   - `License`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

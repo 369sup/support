@@ -39,6 +39,10 @@ Repository-scoped autolink definitions for external resource references.
   - `RepositoryContent`
   - `ContentRendering`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

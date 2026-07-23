@@ -35,6 +35,10 @@ Search document indexing, querying, and index lifecycle adapters.
   - `AuthorizationDecision`
   - `SourceAggregate`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

@@ -38,6 +38,10 @@ User authorization of registered OAuth Apps, scopes, approval, and revocation.
   - `InteractiveSession`
   - `TokenStorageAdapter`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

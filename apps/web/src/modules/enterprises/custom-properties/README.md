@@ -49,6 +49,10 @@ Enterprise-defined repository and organization custom-property schemas, organiza
   - `RepositoryTopic`
   - `IssueField`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

@@ -50,6 +50,10 @@ Capability-constrained comments, discussion replies, reactions, mentions, revisi
   - `ModerationCase`
   - `ArbitrarySubjectType`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:

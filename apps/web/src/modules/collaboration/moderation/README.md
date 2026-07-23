@@ -48,6 +48,10 @@ Content reports, moderation cases, blocks, interaction limits, and visibility de
   - `IssueState`
   - `DiscussionState`
 
+## Designed use cases
+
+No approved use cases. Implementation remains blocked.
+
 ## Ubiquitous language
 
 The catalog reserves these terms for this context:
