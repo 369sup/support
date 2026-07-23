@@ -1750,7 +1750,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Organization teams, nested hierarchy, visibility, membership, maintainers, and mentions.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "OrganizationTeam",
         "TeamMembership",
@@ -1774,7 +1774,7 @@
             "team visibility",
             "team maintainers"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -1868,11 +1868,49 @@
         },
         {
           "context": "organizations/organization-memberships",
-          "contract": "OrganizationMemberReference",
+          "contract": "OrganizationMembershipReference",
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "organization-team-membership-and-maintainers",
+          "statement": "Organization teams contain active organization members, and a team maintainer must remain a direct member of that team.",
+          "ownership": [
+            "TeamMembership",
+            "TeamMaintainer"
+          ],
+          "events": [
+            "OrganizationTeamCreated@1",
+            "OrganizationTeamUpdated@1",
+            "OrganizationTeamDeleted@1",
+            "TeamMemberAdded@1",
+            "TeamMemberRemoved@1",
+            "TeamMaintainerChanged@1",
+            "ParentTeamChanged@1",
+            "TeamVisibilityChanged@1"
+          ],
+          "sourceIds": [
+            "organizations-organization-teams-source-01"
+          ]
+        },
+        {
+          "id": "organization-team-hierarchy-and-visibility",
+          "statement": "Nested organization teams form an acyclic same-organization hierarchy, while secret teams do not participate in parent-child nesting.",
+          "ownership": [
+            "OrganizationTeam",
+            "ParentTeamReference",
+            "TeamVisibility"
+          ],
+          "events": [
+            "ParentTeamChanged@1",
+            "TeamVisibilityChanged@1"
+          ],
+          "sourceIds": [
+            "organizations-organization-teams-source-01"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "organizations",
@@ -1882,7 +1920,7 @@
       "maturity": "stable",
       "implementationStatus": "planned",
       "responsibility": "Predefined and custom organization roles and custom repository-role definitions.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "OrganizationRoleDefinition",
         "OrganizationRoleAssignment",
@@ -1904,7 +1942,27 @@
             "custom organization roles",
             "custom repository roles"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
+        },
+        {
+          "id": "organizations-organization-roles-source-02",
+          "url": "https://docs.github.com/en/organizations/managing-peoples-access-to-your-organization-with-roles/using-organization-roles",
+          "supports": [
+            "organization role assignments",
+            "user and team role subjects",
+            "multiple role assignments"
+          ],
+          "verifiedOn": "2026-07-23"
+        },
+        {
+          "id": "organizations-organization-roles-source-03",
+          "url": "https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-peoples-access-to-your-organization-with-roles/permissions-of-predefined-organization-roles",
+          "supports": [
+            "predefined organization roles",
+            "all-repository permissions",
+            "security manager repository read"
+          ],
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -1998,7 +2056,7 @@
         },
         {
           "context": "organizations/organization-memberships",
-          "contract": "OrganizationMemberReference",
+          "contract": "OrganizationMembershipReference",
           "mode": "synchronous"
         },
         {
@@ -2007,7 +2065,44 @@
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "predefined-organization-role-assignments",
+          "statement": "Organization owners can assign multiple predefined organization roles to existing organization members or organization teams.",
+          "ownership": [
+            "OrganizationRoleDefinition",
+            "OrganizationRoleAssignment",
+            "OrganizationPermission"
+          ],
+          "events": [
+            "OrganizationRoleDefined@1",
+            "OrganizationRoleUpdated@1",
+            "OrganizationRoleDeleted@1",
+            "OrganizationRoleAssigned@1",
+            "OrganizationRoleRevoked@1"
+          ],
+          "sourceIds": [
+            "organizations-organization-roles-source-01",
+            "organizations-organization-roles-source-02",
+            "organizations-organization-roles-source-03"
+          ]
+        },
+        {
+          "id": "custom-organization-and-repository-role-definitions",
+          "statement": "Organizations can define custom organization roles and custom repository roles in addition to immutable predefined organization roles.",
+          "ownership": [
+            "CustomRepositoryRoleDefinition"
+          ],
+          "events": [
+            "CustomRepositoryRoleDefined@1",
+            "CustomRepositoryRoleUpdated@1",
+            "CustomRepositoryRoleDeleted@1"
+          ],
+          "sourceIds": [
+            "organizations-organization-roles-source-01"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "organizations",
