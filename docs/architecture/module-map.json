@@ -64,9 +64,9 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
-      "responsibility": "Personal, managed, setup, and bot account identity and lifecycle.",
-      "semanticStatus": "candidate",
+      "implementationStatus": "active",
+      "responsibility": "Personal account identity, username, deletion lifecycle, and ghost attribution.",
+      "semanticStatus": "validated",
       "owns": [
         "Account",
         "Username",
@@ -86,10 +86,39 @@
           "url": "https://docs.github.com/en/account-and-profile/concepts/account-management",
           "supports": [
             "personal accounts",
-            "managed accounts",
-            "account lifecycle"
+            "account deletion",
+            "ghost attribution"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
+        },
+        {
+          "id": "identity-accounts-source-02",
+          "url": "https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github",
+          "supports": [
+            "personal account identity",
+            "username",
+            "account creation"
+          ],
+          "verifiedOn": "2026-07-23"
+        },
+        {
+          "id": "identity-accounts-source-03",
+          "url": "https://docs.github.com/en/account-and-profile/reference/username-reference",
+          "supports": [
+            "username changes",
+            "account namespace redirects"
+          ],
+          "verifiedOn": "2026-07-23"
+        },
+        {
+          "id": "identity-accounts-source-04",
+          "url": "https://docs.github.com/en/account-and-profile/reference/personal-account-reference",
+          "supports": [
+            "personal account deletion",
+            "ghost attribution",
+            "username reuse after deletion"
+          ],
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -114,26 +143,6 @@
           ]
         },
         {
-          "name": "AccountSuspended",
-          "version": 1,
-          "kind": "domain",
-          "implementationStatus": "planned",
-          "meaning": "account suspended.",
-          "sourceIds": [
-            "identity-accounts-source-01"
-          ]
-        },
-        {
-          "name": "AccountReinstated",
-          "version": 1,
-          "kind": "domain",
-          "implementationStatus": "planned",
-          "meaning": "account reinstated.",
-          "sourceIds": [
-            "identity-accounts-source-01"
-          ]
-        },
-        {
           "name": "AccountDeleted",
           "version": 1,
           "kind": "domain",
@@ -144,9 +153,43 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "get-personal-account-by-username"
+      ],
       "plannedRelationships": [],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "personal-account-identity",
+          "statement": "A personal account is a GitHub identity with a username.",
+          "ownership": [
+            "Account",
+            "Username"
+          ],
+          "events": [
+            "AccountCreated@1",
+            "UsernameChanged@1"
+          ],
+          "sourceIds": [
+            "identity-accounts-source-02",
+            "identity-accounts-source-03"
+          ]
+        },
+        {
+          "id": "personal-account-deletion",
+          "statement": "Deleting a personal account changes resource attribution to the ghost user and eventually permits username reuse.",
+          "ownership": [
+            "AccountLifecycle",
+            "GhostAttribution"
+          ],
+          "events": [
+            "AccountDeleted@1"
+          ],
+          "sourceIds": [
+            "identity-accounts-source-01",
+            "identity-accounts-source-04"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "identity",
@@ -2023,7 +2066,7 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Repository identity, personal or organization ownership, name, description, homepage, visibility, lifecycle, redirects, and transfer.",
       "semanticStatus": "validated",
       "owns": [
@@ -2043,7 +2086,13 @@
         "Star",
         "Subscription"
       ],
-      "dependencies": [],
+      "dependencies": [
+        {
+          "context": "identity/accounts",
+          "contract": "UserOwnerReference",
+          "mode": "synchronous"
+        }
+      ],
       "officialSources": [
         {
           "id": "repositories-repositories-source-01",
@@ -2131,6 +2180,16 @@
             "repository homepage updates"
           ],
           "verifiedOn": "2026-07-22"
+        },
+        {
+          "id": "repositories-repositories-source-10",
+          "url": "https://docs.github.com/en/repositories/creating-and-managing-repositories/viewing-all-your-repositories",
+          "supports": [
+            "repository dashboard listing",
+            "owner repository views",
+            "visibility filtering"
+          ],
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -2245,13 +2304,10 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "list-active-public-repositories-for-personal-owner"
+      ],
       "plannedRelationships": [
-        {
-          "context": "identity/accounts",
-          "contract": "UserOwnerReference",
-          "mode": "synchronous"
-        },
         {
           "context": "organizations/organizations",
           "contract": "OrganizationOwnerReference",
@@ -6452,14 +6508,6 @@
           "contract": "PublishedEventContract",
           "mode": "event",
           "events": [
-            {
-              "name": "AccountSuspended",
-              "version": 1
-            },
-            {
-              "name": "AccountReinstated",
-              "version": 1
-            },
             {
               "name": "AccountDeleted",
               "version": 1

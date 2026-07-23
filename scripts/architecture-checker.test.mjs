@@ -532,9 +532,46 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
   assert.equal(catalog.version, 6);
   assert.equal(catalog.contexts.length, 48);
   assert.equal(catalog.contexts.every((item) => item.status === undefined), true);
-  assert.equal(catalog.contexts.every((item) => item.implementationStatus === "planned"), true);
-  assert.equal(catalog.contexts.every((item) => item.activationScope.length === 0), true);
-  assert.equal(catalog.contexts.every((item) => item.dependencies.length === 0), true);
+  assert.deepEqual(
+    catalog.contexts
+      .filter((item) => item.implementationStatus === "active")
+      .map((item) => `${item.subdomain}/${item.name}`),
+    ["identity/accounts", "repositories/repositories"],
+  );
+  assert.equal(
+    catalog.contexts.filter((item) => item.implementationStatus === "planned").length,
+    46,
+  );
+  assert.deepEqual(
+    byPath.get("identity/accounts").activationScope,
+    ["get-personal-account-by-username"],
+  );
+  assert.deepEqual(
+    byPath.get("repositories/repositories").activationScope,
+    ["list-active-public-repositories-for-personal-owner"],
+  );
+  assert.deepEqual(
+    byPath.get("repositories/repositories").dependencies,
+    [
+      {
+        context: "identity/accounts",
+        contract: "UserOwnerReference",
+        mode: "synchronous",
+      },
+    ],
+  );
+  assert.equal(
+    catalog.contexts
+      .filter((item) => item.implementationStatus === "planned")
+      .every((item) => item.activationScope.length === 0),
+    true,
+  );
+  assert.equal(
+    catalog.contexts
+      .filter((item) => `${item.subdomain}/${item.name}` !== "repositories/repositories")
+      .every((item) => item.dependencies.length === 0),
+    true,
+  );
   assert.equal(
     catalog.contexts.every((item) => item.publishedEvents.every(
       (event) => event.implementationStatus === "planned",
