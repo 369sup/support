@@ -2,7 +2,7 @@ import type {
   OrganizationTeamReference,
   TeamMaintainerReference,
   TeamMembershipReference,
-} from "../../../contracts/organization-team-reference";
+} from "../../../domain/organization-team";
 
 export interface OrganizationTeamRepositoryPort {
   findTeamById(teamId: string): Promise<OrganizationTeamReference | null>;

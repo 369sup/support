@@ -18,12 +18,22 @@ import type { TeamRepositoryGrantIdGeneratorPort } from "../ports/outbound/team-
 import type { TeamRepositoryGrantRepositoryPort } from "../ports/outbound/team-repository-grant.repository.port";
 
 export class TeamRepositoryAccessService {
+  private readonly grantRepository: TeamRepositoryGrantRepositoryPort;
+  private readonly teamGateway: OrganizationTeamGatewayPort;
+  private readonly permissionResolver: ResolveEffectiveRepositoryPermissionUseCase;
+  private readonly idGenerator: TeamRepositoryGrantIdGeneratorPort;
+
   constructor(
-    private readonly grantRepository: TeamRepositoryGrantRepositoryPort,
-    private readonly teamGateway: OrganizationTeamGatewayPort,
-    private readonly permissionResolver: ResolveEffectiveRepositoryPermissionUseCase,
-    private readonly idGenerator: TeamRepositoryGrantIdGeneratorPort,
-  ) {}
+    grantRepository: TeamRepositoryGrantRepositoryPort,
+    teamGateway: OrganizationTeamGatewayPort,
+    permissionResolver: ResolveEffectiveRepositoryPermissionUseCase,
+    idGenerator: TeamRepositoryGrantIdGeneratorPort,
+  ) {
+    this.grantRepository = grantRepository;
+    this.teamGateway = teamGateway;
+    this.permissionResolver = permissionResolver;
+    this.idGenerator = idGenerator;
+  }
 
   async grant(
     command: GrantTeamRepositoryAccessCommand,

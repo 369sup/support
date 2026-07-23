@@ -8,7 +8,11 @@ import type { OrganizationTeamService } from "../services/organization-team.serv
 export class ResolveAccountTeamMembershipsHandler
   implements ResolveAccountTeamMembershipsUseCase
 {
-  constructor(private readonly service: OrganizationTeamService) {}
+  private readonly service: OrganizationTeamService;
+
+  constructor(service: OrganizationTeamService) {
+    this.service = service;
+  }
 
   resolveAccountTeamMemberships(
     query: ResolveAccountTeamMembershipsQuery,

@@ -8,7 +8,11 @@ import type { OrganizationTeamService } from "../services/organization-team.serv
 export class CreateOrganizationTeamHandler
   implements CreateOrganizationTeamUseCase
 {
-  constructor(private readonly service: OrganizationTeamService) {}
+  private readonly service: OrganizationTeamService;
+
+  constructor(service: OrganizationTeamService) {
+    this.service = service;
+  }
 
   createOrganizationTeam(
     command: CreateOrganizationTeamCommand,

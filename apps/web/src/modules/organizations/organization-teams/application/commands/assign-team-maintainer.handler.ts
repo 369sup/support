@@ -8,7 +8,11 @@ import type { OrganizationTeamService } from "../services/organization-team.serv
 export class AssignTeamMaintainerHandler
   implements AssignTeamMaintainerUseCase
 {
-  constructor(private readonly service: OrganizationTeamService) {}
+  private readonly service: OrganizationTeamService;
+
+  constructor(service: OrganizationTeamService) {
+    this.service = service;
+  }
 
   assignTeamMaintainer(
     command: AssignTeamMaintainerCommand,

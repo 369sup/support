@@ -2,7 +2,7 @@ import type {
   OrganizationRoleAssignmentReference,
   OrganizationRoleAssignmentSubject,
   PredefinedOrganizationRoleKey,
-} from "../../../contracts/organization-role-reference";
+} from "../../../domain/organization-role";
 
 export type AssignOrganizationRoleCommand = Readonly<{
   actorAccountId: string;

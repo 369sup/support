@@ -8,7 +8,7 @@ import type { OrganizationRoleGatewayPort } from "../ports/outbound/organization
 import type { OrganizationTeamGatewayPort } from "../ports/outbound/organization-team.gateway.port";
 import type { RepositoryGrantRepositoryPort } from "../ports/outbound/repository-grant.repository.port";
 import type { TeamRepositoryGrantRepositoryPort } from "../ports/outbound/team-repository-grant.repository.port";
-import type { RepositoryPermission } from "../../contracts/effective-repository-permission-decision";
+import type { RepositoryPermission } from "../../domain/repository-permission";
 import { compareRepositoryPermission } from "../../domain/repository-permission-lattice";
 
 export class ResolveEffectiveRepositoryPermissionHandler

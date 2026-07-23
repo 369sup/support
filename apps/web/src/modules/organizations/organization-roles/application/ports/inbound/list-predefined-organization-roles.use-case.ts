@@ -1,4 +1,4 @@
-import type { PredefinedOrganizationRoleDefinition } from "../../../contracts/organization-role-reference";
+import type { PredefinedOrganizationRoleDefinition } from "../../../domain/organization-role";
 
 export type ListPredefinedOrganizationRolesQuery = Readonly<{
   actorAccountId: string;

@@ -52,15 +52,25 @@ import type { TeamIdGeneratorPort } from "../ports/outbound/team-id-generator.po
 import type {
   OrganizationTeamReference,
   TeamVisibility,
-} from "../../contracts/organization-team-reference";
+} from "../../domain/organization-team";
 
 export class OrganizationTeamService {
+  private readonly repository: OrganizationTeamRepositoryPort;
+  private readonly membershipGateway: OrganizationMembershipGatewayPort;
+  private readonly organizationGateway: OrganizationReferenceGatewayPort;
+  private readonly idGenerator: TeamIdGeneratorPort;
+
   constructor(
-    private readonly repository: OrganizationTeamRepositoryPort,
-    private readonly membershipGateway: OrganizationMembershipGatewayPort,
-    private readonly organizationGateway: OrganizationReferenceGatewayPort,
-    private readonly idGenerator: TeamIdGeneratorPort,
-  ) {}
+    repository: OrganizationTeamRepositoryPort,
+    membershipGateway: OrganizationMembershipGatewayPort,
+    organizationGateway: OrganizationReferenceGatewayPort,
+    idGenerator: TeamIdGeneratorPort,
+  ) {
+    this.repository = repository;
+    this.membershipGateway = membershipGateway;
+    this.organizationGateway = organizationGateway;
+    this.idGenerator = idGenerator;
+  }
 
   async create(
     command: CreateOrganizationTeamCommand,

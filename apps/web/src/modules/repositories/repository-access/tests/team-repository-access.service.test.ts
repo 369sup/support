@@ -24,19 +24,19 @@ function createHarness(input?: {
   const grants = new InMemoryRepositoryGrantAdapter(
     [],
     [
-      ...(input?.parentGrant
+      ...(input?.parentGrant === true
         ? [
-          {
-            grantId: "parent_grant",
-            repositoryId: "repository",
-            organizationId: "organization",
-            teamId: "parent",
-            permission: "read",
-            state: "active",
-          },
+            {
+              grantId: "parent_grant",
+              repositoryId: "repository",
+              organizationId: "organization",
+              teamId: "parent",
+              permission: "read",
+              state: "active",
+            },
           ] as const
         : []),
-      ...(input?.directGrant
+      ...(input?.directGrant === true
         ? [
             {
               grantId: "direct_grant",

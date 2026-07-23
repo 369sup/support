@@ -1,4 +1,4 @@
-import type { TeamMembershipReference } from "../../../contracts/organization-team-reference";
+import type { TeamMembershipReference } from "../../../domain/organization-team";
 
 export type AddTeamMemberCommand = Readonly<{
   actorAccountId: string;

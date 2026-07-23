@@ -1,4 +1,4 @@
-import type { EffectiveTeamMembershipReference } from "../../../contracts/organization-team-reference";
+import type { EffectiveTeamMembershipReference } from "../../../domain/organization-team";
 
 export type ResolveAccountTeamMembershipsQuery = Readonly<{
   accountId: string;

@@ -3,7 +3,7 @@ import type {
   OrganizationRepositoryRoleContribution,
   OrganizationRoleAssignmentSubject,
   PredefinedOrganizationRoleKey,
-} from "../../contracts/organization-role-reference";
+} from "../../domain/organization-role";
 import type {
   AssignOrganizationRoleCommand,
   AssignOrganizationRoleResult,
@@ -36,12 +36,22 @@ function subjectKey(subject: OrganizationRoleAssignmentSubject) {
 }
 
 export class OrganizationRoleService {
+  private readonly assignmentRepository: OrganizationRoleAssignmentRepositoryPort;
+  private readonly membershipGateway: OrganizationMembershipGatewayPort;
+  private readonly teamGateway: OrganizationTeamGatewayPort;
+  private readonly idGenerator: OrganizationRoleIdGeneratorPort;
+
   constructor(
-    private readonly assignmentRepository: OrganizationRoleAssignmentRepositoryPort,
-    private readonly membershipGateway: OrganizationMembershipGatewayPort,
-    private readonly teamGateway: OrganizationTeamGatewayPort,
-    private readonly idGenerator: OrganizationRoleIdGeneratorPort,
-  ) {}
+    assignmentRepository: OrganizationRoleAssignmentRepositoryPort,
+    membershipGateway: OrganizationMembershipGatewayPort,
+    teamGateway: OrganizationTeamGatewayPort,
+    idGenerator: OrganizationRoleIdGeneratorPort,
+  ) {
+    this.assignmentRepository = assignmentRepository;
+    this.membershipGateway = membershipGateway;
+    this.teamGateway = teamGateway;
+    this.idGenerator = idGenerator;
+  }
 
   async listDefinitions(
     query: ListPredefinedOrganizationRolesQuery,

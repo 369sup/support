@@ -1,4 +1,4 @@
-import type { TeamRepositoryGrantReference } from "../../../contracts/effective-repository-permission-decision";
+import type { TeamRepositoryGrantReference } from "../../../domain/repository-permission";
 
 export type RevokeTeamRepositoryAccessCommand = Readonly<{
   actorAccountId: string;

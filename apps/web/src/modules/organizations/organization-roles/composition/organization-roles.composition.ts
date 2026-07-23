@@ -14,12 +14,13 @@ import { ListPredefinedOrganizationRolesHandler } from "../application/queries/l
 import { ResolveOrganizationRepositoryRoleContributionsHandler } from "../application/queries/resolve-organization-repository-role-contributions.handler";
 import { OrganizationRoleService } from "../application/services/organization-role.service";
 
-export type OrganizationRolesServerFacade =
-  ListPredefinedOrganizationRolesUseCase &
-    ListOrganizationRoleAssignmentsUseCase &
-    AssignOrganizationRoleUseCase &
-    RevokeOrganizationRoleUseCase &
-    ResolveOrganizationRepositoryRoleContributionsUseCase;
+export interface OrganizationRolesServerFacade {
+  listPredefinedOrganizationRoles: ListPredefinedOrganizationRolesUseCase["listPredefinedOrganizationRoles"];
+  listOrganizationRoleAssignments: ListOrganizationRoleAssignmentsUseCase["listOrganizationRoleAssignments"];
+  assignOrganizationRole: AssignOrganizationRoleUseCase["assignOrganizationRole"];
+  revokeOrganizationRole: RevokeOrganizationRoleUseCase["revokeOrganizationRole"];
+  resolveOrganizationRepositoryRoleContributions: ResolveOrganizationRepositoryRoleContributionsUseCase["resolveOrganizationRepositoryRoleContributions"];
+}
 
 function composeOrganizationRolesServerFacade(): OrganizationRolesServerFacade {
   const service = new OrganizationRoleService(

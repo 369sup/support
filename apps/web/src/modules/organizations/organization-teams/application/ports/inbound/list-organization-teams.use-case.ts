@@ -1,4 +1,4 @@
-import type { OrganizationTeamReference } from "../../../contracts/organization-team-reference";
+import type { OrganizationTeamReference } from "../../../domain/organization-team";
 
 export type ListOrganizationTeamsQuery = Readonly<{
   actorAccountId: string;

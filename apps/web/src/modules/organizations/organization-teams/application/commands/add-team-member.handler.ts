@@ -6,7 +6,11 @@ import type {
 import type { OrganizationTeamService } from "../services/organization-team.service";
 
 export class AddTeamMemberHandler implements AddTeamMemberUseCase {
-  constructor(private readonly service: OrganizationTeamService) {}
+  private readonly service: OrganizationTeamService;
+
+  constructor(service: OrganizationTeamService) {
+    this.service = service;
+  }
 
   addTeamMember(command: AddTeamMemberCommand): Promise<AddTeamMemberResult> {
     return this.service.addMember(command);

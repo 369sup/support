@@ -1,4 +1,4 @@
-import type { TeamMemberView } from "../../../contracts/organization-team-reference";
+import type { TeamMemberView } from "../../../domain/organization-team";
 
 export type ListTeamMembersQuery = Readonly<{
   actorAccountId: string;

@@ -665,6 +665,8 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "enterprises/enterprise-roles",
       "organizations/organizations",
       "organizations/organization-memberships",
+      "organizations/organization-teams",
+      "organizations/organization-roles",
       "repositories/repositories",
       "repositories/repository-access",
       "projections/dashboard",
@@ -672,11 +674,46 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
   );
   assert.equal(
     catalog.contexts.filter((item) => item.implementationStatus === "planned").length,
-    39,
+    37,
   );
   assert.deepEqual(
     byPath.get("identity/accounts").activationScope,
     ["get-account-reference-by-id", "get-personal-account-by-username"],
+  );
+  assert.deepEqual(
+    byPath.get("organizations/organization-teams").activationScope,
+    [
+      "add-team-member",
+      "assign-team-maintainer",
+      "create-organization-team",
+      "delete-organization-team",
+      "get-organization-team",
+      "list-organization-teams",
+      "list-team-members",
+      "remove-team-member",
+      "resolve-account-team-memberships",
+      "revoke-team-maintainer",
+      "update-organization-team",
+    ],
+  );
+  assert.deepEqual(
+    byPath.get("organizations/organization-roles").activationScope,
+    [
+      "assign-organization-role",
+      "list-organization-role-assignments",
+      "list-predefined-organization-roles",
+      "resolve-organization-repository-role-contributions",
+      "revoke-organization-role",
+    ],
+  );
+  assert.deepEqual(
+    byPath.get("repositories/repository-access").activationScope,
+    [
+      "change-team-repository-access",
+      "grant-team-repository-access",
+      "revoke-team-repository-access",
+      "resolve-effective-repository-permission",
+    ],
   );
   assert.deepEqual(
     byPath.get("repositories/repositories").activationScope,

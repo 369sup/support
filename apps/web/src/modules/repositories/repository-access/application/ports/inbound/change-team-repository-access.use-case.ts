@@ -1,7 +1,7 @@
 import type {
   RepositoryPermission,
   TeamRepositoryGrantReference,
-} from "../../../contracts/effective-repository-permission-decision";
+} from "../../../domain/repository-permission";
 
 export type ChangeTeamRepositoryAccessCommand = Readonly<{
   actorAccountId: string;

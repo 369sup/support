@@ -1,4 +1,4 @@
-import type { PredefinedOrganizationRoleDefinition } from "../contracts/organization-role-reference";
+import type { PredefinedOrganizationRoleDefinition } from "./organization-role";
 
 export const predefinedOrganizationRoleCatalog: readonly PredefinedOrganizationRoleDefinition[] =
   [

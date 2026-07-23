@@ -8,7 +8,11 @@ import type { OrganizationRoleService } from "../services/organization-role.serv
 export class ListOrganizationRoleAssignmentsHandler
   implements ListOrganizationRoleAssignmentsUseCase
 {
-  constructor(private readonly service: OrganizationRoleService) {}
+  private readonly service: OrganizationRoleService;
+
+  constructor(service: OrganizationRoleService) {
+    this.service = service;
+  }
 
   listOrganizationRoleAssignments(
     query: ListOrganizationRoleAssignmentsQuery,

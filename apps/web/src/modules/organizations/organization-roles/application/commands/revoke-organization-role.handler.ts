@@ -8,7 +8,11 @@ import type { OrganizationRoleService } from "../services/organization-role.serv
 export class RevokeOrganizationRoleHandler
   implements RevokeOrganizationRoleUseCase
 {
-  constructor(private readonly service: OrganizationRoleService) {}
+  private readonly service: OrganizationRoleService;
+
+  constructor(service: OrganizationRoleService) {
+    this.service = service;
+  }
 
   revokeOrganizationRole(
     command: RevokeOrganizationRoleCommand,

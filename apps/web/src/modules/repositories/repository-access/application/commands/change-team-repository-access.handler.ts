@@ -8,7 +8,11 @@ import type { TeamRepositoryAccessService } from "../services/team-repository-ac
 export class ChangeTeamRepositoryAccessHandler
   implements ChangeTeamRepositoryAccessUseCase
 {
-  constructor(private readonly service: TeamRepositoryAccessService) {}
+  private readonly service: TeamRepositoryAccessService;
+
+  constructor(service: TeamRepositoryAccessService) {
+    this.service = service;
+  }
 
   changeTeamRepositoryAccess(
     command: ChangeTeamRepositoryAccessCommand,

@@ -26,17 +26,19 @@ import { ListTeamMembersHandler } from "../application/queries/list-team-members
 import { ResolveAccountTeamMembershipsHandler } from "../application/queries/resolve-account-team-memberships.handler";
 import { OrganizationTeamService } from "../application/services/organization-team.service";
 
-export type OrganizationTeamsServerFacade = CreateOrganizationTeamUseCase &
-  GetOrganizationTeamUseCase &
-  ListOrganizationTeamsUseCase &
-  UpdateOrganizationTeamUseCase &
-  DeleteOrganizationTeamUseCase &
-  AddTeamMemberUseCase &
-  RemoveTeamMemberUseCase &
-  AssignTeamMaintainerUseCase &
-  RevokeTeamMaintainerUseCase &
-  ListTeamMembersUseCase &
-  ResolveAccountTeamMembershipsUseCase;
+export interface OrganizationTeamsServerFacade {
+  createOrganizationTeam: CreateOrganizationTeamUseCase["createOrganizationTeam"];
+  getOrganizationTeam: GetOrganizationTeamUseCase["getOrganizationTeam"];
+  listOrganizationTeams: ListOrganizationTeamsUseCase["listOrganizationTeams"];
+  updateOrganizationTeam: UpdateOrganizationTeamUseCase["updateOrganizationTeam"];
+  deleteOrganizationTeam: DeleteOrganizationTeamUseCase["deleteOrganizationTeam"];
+  addTeamMember: AddTeamMemberUseCase["addTeamMember"];
+  removeTeamMember: RemoveTeamMemberUseCase["removeTeamMember"];
+  assignTeamMaintainer: AssignTeamMaintainerUseCase["assignTeamMaintainer"];
+  revokeTeamMaintainer: RevokeTeamMaintainerUseCase["revokeTeamMaintainer"];
+  listTeamMembers: ListTeamMembersUseCase["listTeamMembers"];
+  resolveAccountTeamMemberships: ResolveAccountTeamMembershipsUseCase["resolveAccountTeamMemberships"];
+}
 
 function composeOrganizationTeamsServerFacade(): OrganizationTeamsServerFacade {
   const service = new OrganizationTeamService(

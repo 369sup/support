@@ -212,16 +212,13 @@ describe("OrganizationTeamService", () => {
       maintainers: [],
     });
 
-    await expect(
-      service.resolveMemberships({
-        accountId: "member",
-        organizationId: "organization_test",
-      }),
-    ).resolves.toEqual([
-      expect.objectContaining({
-        membership: expect.objectContaining({ teamId: "child" }),
-        ancestorTeamIds: ["parent"],
-      }),
-    ]);
+    const result = await service.resolveMemberships({
+      accountId: "member",
+      organizationId: "organization_test",
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]?.membership.teamId).toBe("child");
+    expect(result[0]?.ancestorTeamIds).toEqual(["parent"]);
   });
 });

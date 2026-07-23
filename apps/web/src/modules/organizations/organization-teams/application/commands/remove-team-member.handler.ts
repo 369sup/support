@@ -6,7 +6,11 @@ import type {
 import type { OrganizationTeamService } from "../services/organization-team.service";
 
 export class RemoveTeamMemberHandler implements RemoveTeamMemberUseCase {
-  constructor(private readonly service: OrganizationTeamService) {}
+  private readonly service: OrganizationTeamService;
+
+  constructor(service: OrganizationTeamService) {
+    this.service = service;
+  }
 
   removeTeamMember(
     command: RemoveTeamMemberCommand,

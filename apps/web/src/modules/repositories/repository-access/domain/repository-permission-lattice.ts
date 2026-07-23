@@ -1,4 +1,4 @@
-import type { RepositoryPermission } from "../contracts/effective-repository-permission-decision";
+import type { RepositoryPermission } from "./repository-permission";
 
 const permissionRank: Readonly<Record<RepositoryPermission, number>> = {
   read: 1,

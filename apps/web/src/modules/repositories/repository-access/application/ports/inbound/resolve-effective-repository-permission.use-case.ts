@@ -1,4 +1,4 @@
-import type { EffectiveRepositoryPermissionDecision } from "../../../contracts/effective-repository-permission-decision";
+import type { EffectiveRepositoryPermissionDecision } from "../../../domain/repository-permission";
 
 export type ResolveEffectiveRepositoryPermissionQuery = Readonly<{
   repository: Readonly<{

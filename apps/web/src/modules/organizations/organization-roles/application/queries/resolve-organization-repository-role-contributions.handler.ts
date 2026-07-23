@@ -8,7 +8,11 @@ import type { OrganizationRoleService } from "../services/organization-role.serv
 export class ResolveOrganizationRepositoryRoleContributionsHandler
   implements ResolveOrganizationRepositoryRoleContributionsUseCase
 {
-  constructor(private readonly service: OrganizationRoleService) {}
+  private readonly service: OrganizationRoleService;
+
+  constructor(service: OrganizationRoleService) {
+    this.service = service;
+  }
 
   resolveOrganizationRepositoryRoleContributions(
     query: ResolveOrganizationRepositoryRoleContributionsQuery,

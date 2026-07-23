@@ -1,4 +1,4 @@
-import type { OrganizationRepositoryRoleContribution } from "../../../contracts/organization-role-reference";
+import type { OrganizationRepositoryRoleContribution } from "../../../domain/organization-role";
 
 export type ResolveOrganizationRepositoryRoleContributionsQuery = Readonly<{
   accountId: string;

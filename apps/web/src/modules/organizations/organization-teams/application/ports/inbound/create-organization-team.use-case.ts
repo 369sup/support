@@ -1,7 +1,7 @@
 import type {
   OrganizationTeamReference,
   TeamVisibility,
-} from "../../../contracts/organization-team-reference";
+} from "../../../domain/organization-team";
 
 export type CreateOrganizationTeamCommand = Readonly<{
   actorAccountId: string;

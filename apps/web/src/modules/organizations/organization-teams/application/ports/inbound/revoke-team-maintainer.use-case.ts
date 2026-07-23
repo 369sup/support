@@ -1,4 +1,4 @@
-import type { TeamMaintainerReference } from "../../../contracts/organization-team-reference";
+import type { TeamMaintainerReference } from "../../../domain/organization-team";
 
 export type RevokeTeamMaintainerCommand = Readonly<{
   actorAccountId: string;

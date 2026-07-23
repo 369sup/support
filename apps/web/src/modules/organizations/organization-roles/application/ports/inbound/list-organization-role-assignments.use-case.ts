@@ -1,4 +1,4 @@
-import type { OrganizationRoleAssignmentReference } from "../../../contracts/organization-role-reference";
+import type { OrganizationRoleAssignmentReference } from "../../../domain/organization-role";
 
 export type ListOrganizationRoleAssignmentsQuery = Readonly<{
   actorAccountId: string;
