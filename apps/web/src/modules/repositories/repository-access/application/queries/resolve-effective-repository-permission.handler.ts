@@ -4,35 +4,41 @@ import type {
   ResolveEffectiveRepositoryPermissionUseCase,
 } from "../ports/inbound/resolve-effective-repository-permission.use-case";
 import type { OrganizationMembershipGatewayPort } from "../ports/outbound/organization-membership.gateway.port";
+import type { OrganizationRoleGatewayPort } from "../ports/outbound/organization-role.gateway.port";
+import type { OrganizationTeamGatewayPort } from "../ports/outbound/organization-team.gateway.port";
 import type { RepositoryGrantRepositoryPort } from "../ports/outbound/repository-grant.repository.port";
-
-const permissionRank = {
-  read: 1,
-  triage: 2,
-  write: 3,
-  maintain: 4,
-  admin: 5,
-} as const;
+import type { TeamRepositoryGrantRepositoryPort } from "../ports/outbound/team-repository-grant.repository.port";
+import type { RepositoryPermission } from "../../contracts/effective-repository-permission-decision";
+import { compareRepositoryPermission } from "../../domain/repository-permission-lattice";
 
 export class ResolveEffectiveRepositoryPermissionHandler
   implements ResolveEffectiveRepositoryPermissionUseCase
 {
   private readonly grantRepository: RepositoryGrantRepositoryPort;
   private readonly membershipGateway: OrganizationMembershipGatewayPort;
+  private readonly teamGrantRepository: TeamRepositoryGrantRepositoryPort;
+  private readonly teamGateway: OrganizationTeamGatewayPort;
+  private readonly roleGateway: OrganizationRoleGatewayPort;
 
   constructor(
     grantRepository: RepositoryGrantRepositoryPort,
     membershipGateway: OrganizationMembershipGatewayPort,
+    teamGrantRepository: TeamRepositoryGrantRepositoryPort,
+    teamGateway: OrganizationTeamGatewayPort,
+    roleGateway: OrganizationRoleGatewayPort,
   ) {
     this.grantRepository = grantRepository;
     this.membershipGateway = membershipGateway;
+    this.teamGrantRepository = teamGrantRepository;
+    this.teamGateway = teamGateway;
+    this.roleGateway = roleGateway;
   }
 
   async resolveEffectiveRepositoryPermission(
     query: ResolveEffectiveRepositoryPermissionQuery,
   ): Promise<ResolveEffectiveRepositoryPermissionResult> {
     const contributions: {
-      permission: keyof typeof permissionRank;
+      permission: RepositoryPermission;
       source: ResolveEffectiveRepositoryPermissionResult["sources"][number];
     }[] = [];
 
@@ -81,9 +87,68 @@ export class ResolveEffectiveRepositoryPermissionHandler
       })),
     );
 
+    if (query.repository.owner.kind === "organization") {
+      const [teamMemberships, teamGrants, roleContributions] =
+        await Promise.all([
+          this.teamGateway.listAccountTeamPermissions(
+            query.accountId,
+            query.repository.owner.organizationId,
+          ),
+          this.teamGrantRepository.findActiveByRepository(
+            query.repository.repositoryId,
+          ),
+          this.roleGateway.listRepositoryPermissionContributions(
+            query.accountId,
+            query.repository.owner.organizationId,
+          ),
+        ]);
+      const seenTeamSources = new Set<string>();
+      for (const membership of teamMemberships) {
+        const eligibleTeamIds = new Set([
+          membership.directTeamId,
+          ...membership.ancestorTeamIds,
+        ]);
+        for (const grant of teamGrants) {
+          if (
+            grant.organizationId !==
+              query.repository.owner.organizationId ||
+            !eligibleTeamIds.has(grant.teamId)
+          ) {
+            continue;
+          }
+          const sourceKey = `${grant.grantId}\u0000${membership.directTeamId}`;
+          if (seenTeamSources.has(sourceKey)) {
+            continue;
+          }
+          seenTeamSources.add(sourceKey);
+          contributions.push({
+            permission: grant.permission,
+            source: {
+              kind: "team-grant",
+              grantId: grant.grantId,
+              teamId: grant.teamId,
+              matchedTeamId: membership.directTeamId,
+              inherited: grant.teamId !== membership.directTeamId,
+            },
+          });
+        }
+      }
+      contributions.push(
+        ...roleContributions.map((contribution) => ({
+          permission: contribution.permission,
+          source: {
+            kind: "organization-role" as const,
+            assignmentId: contribution.assignmentId,
+            roleKey: contribution.roleKey,
+            subject: contribution.subject,
+          },
+        })),
+      );
+    }
+
     const strongest = contributions.toSorted(
       (left, right) =>
-        permissionRank[right.permission] - permissionRank[left.permission],
+        compareRepositoryPermission(right.permission, left.permission),
     )[0];
 
     return {

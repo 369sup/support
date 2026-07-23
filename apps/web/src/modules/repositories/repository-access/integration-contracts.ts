@@ -1,1 +1,5 @@
-export type { EffectiveRepositoryPermissionDecision } from "./contracts/effective-repository-permission-decision";
+export type {
+  EffectiveRepositoryPermissionDecision,
+  RepositoryPermission,
+  RepositoryPermissionSource,
+} from "./contracts/effective-repository-permission-decision";

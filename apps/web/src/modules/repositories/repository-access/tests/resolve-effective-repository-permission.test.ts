@@ -21,6 +21,19 @@ describe("effective repository permission", () => {
         getActiveMembership: () =>
           Promise.resolve({ membershipId: "membership", role: "owner" }),
       },
+      {
+        findActiveByRepository: () => Promise.resolve([]),
+        findActiveByRepositoryAndTeam: () => Promise.resolve(null),
+        saveTeamGrant: () => Promise.resolve(),
+      },
+      {
+        listAccountTeamPermissions: () => Promise.resolve([]),
+        getTeamForActor: () => Promise.resolve(null),
+        listAncestorTeamIds: () => Promise.resolve([]),
+      },
+      {
+        listRepositoryPermissionContributions: () => Promise.resolve([]),
+      },
     );
     const decision = await handler.resolveEffectiveRepositoryPermission({
       repository: {
@@ -38,6 +51,85 @@ describe("effective repository permission", () => {
         { kind: "public-read" },
         { kind: "organization-owner", membershipId: "membership" },
         { kind: "direct-grant", grantId: "grant_read" },
+      ],
+    });
+  });
+
+  it("aggregates inherited team and organization-role sources", async () => {
+    const handler = new ResolveEffectiveRepositoryPermissionHandler(
+      {
+        findActiveByRepositoryAndAccount: () => Promise.resolve([]),
+      },
+      {
+        getActiveMembership: () =>
+          Promise.resolve({ membershipId: "membership", role: "member" }),
+      },
+      {
+        findActiveByRepository: () =>
+          Promise.resolve([
+            {
+              grantId: "team_grant",
+              repositoryId: "repository",
+              organizationId: "organization",
+              teamId: "parent",
+              permission: "triage",
+              state: "active",
+            },
+          ]),
+        findActiveByRepositoryAndTeam: () => Promise.resolve(null),
+        saveTeamGrant: () => Promise.resolve(),
+      },
+      {
+        listAccountTeamPermissions: () =>
+          Promise.resolve([
+            {
+              directTeamId: "child",
+              ancestorTeamIds: ["parent"],
+              isMaintainer: false,
+            },
+          ]),
+        getTeamForActor: () => Promise.resolve(null),
+        listAncestorTeamIds: () => Promise.resolve([]),
+      },
+      {
+        listRepositoryPermissionContributions: () =>
+          Promise.resolve([
+            {
+              assignmentId: "role_assignment",
+              roleKey: "all-repository-write",
+              subject: { kind: "account", accountId: "account" },
+              permission: "write",
+            },
+          ]),
+      },
+    );
+
+    await expect(
+      handler.resolveEffectiveRepositoryPermission({
+        repository: {
+          repositoryId: "repository",
+          owner: { kind: "organization", organizationId: "organization" },
+          visibility: "private",
+        },
+        accountId: "account",
+      }),
+    ).resolves.toEqual({
+      allowed: true,
+      permission: "write",
+      sources: [
+        {
+          kind: "team-grant",
+          grantId: "team_grant",
+          teamId: "parent",
+          matchedTeamId: "child",
+          inherited: true,
+        },
+        {
+          kind: "organization-role",
+          assignmentId: "role_assignment",
+          roleKey: "all-repository-write",
+          subject: { kind: "account", accountId: "account" },
+        },
       ],
     });
   });

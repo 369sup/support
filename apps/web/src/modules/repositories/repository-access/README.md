@@ -16,6 +16,9 @@ Repository invitations, direct and inherited grants, outside collaborators, role
 - `repositories/repository-access` [active]
   - Purpose: Repository invitations, direct and inherited grants, outside collaborators, role assignments, and source-attributed effective permission resolution.
   - Capabilities
+    - `grant-team-repository-access` [active]
+    - `change-team-repository-access` [active]
+    - `revoke-team-repository-access` [active]
     - `resolve-effective-repository-permission` [active]
   - Owned domain concepts
     - `RepositoryGrant`
@@ -73,10 +76,58 @@ Repository invitations, direct and inherited grants, outside collaborators, role
 - **Authorization:** This context owns the repository visibility and permission decision.
 - **Transaction:** Read-only aggregation.
 - **Idempotency:** Query.
-- **Dependencies:** `repositories/repositories::RepositoryCandidateReference`, `identity/accounts::AccountReference`, `organizations/organization-memberships::OrganizationMembershipReference`
+- **Dependencies:** `repositories/repositories::RepositoryCandidateReference`, `identity/accounts::AccountReference`, `organizations/organization-memberships::OrganizationMembershipReference`, `organizations/organization-teams::EffectiveTeamMembershipReference`, `organizations/organization-roles::OrganizationRepositoryRoleContribution`
 - **Published events:** `none`
 - **Official evidence:** `repositories-repository-access-source-01`
-- **Local policy:** Active sources are public read, personal owner, organization owner, and direct grant; general membership is not a base permission.
+- **Local policy:** Active sources are public read, personal owner, organization owner, direct grant, direct or inherited team grant, and predefined organization role; general membership is not a base permission.
+
+### `grant-team-repository-access` [active]
+
+- **Type:** `command`
+- **Application boundary:** `GrantTeamRepositoryAccessUseCase.grantTeamRepositoryAccess()`
+- **Public entrypoint:** `server-api.ts#grantTeamRepositoryAccess`
+- **Input:** Active organization-owned repository candidate, authenticated actor, team ID, and repository permission.
+- **Success result:** Active `TeamRepositoryGrantReference`.
+- **Expected rejections:** `permission-denied`, `repository-not-organization-owned`, `team-not-eligible`, `team-grant-conflict`
+- **Authorization:** Effective repository admin permission and visible active team in the repository organization.
+- **Transaction:** One repository-access team-grant transaction.
+- **Idempotency:** Duplicate active repository/team grant is rejected.
+- **Dependencies:** `repositories/repositories::RepositoryCandidateReference`, `identity/accounts::AccountReference`, `organizations/organization-teams::EffectiveTeamMembershipReference`, `organizations/organization-roles::OrganizationRepositoryRoleContribution`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repository-access-source-03`
+- **Local policy:** Context selection never grants access.
+
+### `change-team-repository-access` [active]
+
+- **Type:** `command`
+- **Application boundary:** `ChangeTeamRepositoryAccessUseCase.changeTeamRepositoryAccess()`
+- **Public entrypoint:** `server-api.ts#changeTeamRepositoryAccess`
+- **Input:** Active organization-owned repository candidate, authenticated actor, directly granted team ID, and new permission.
+- **Success result:** Updated `TeamRepositoryGrantReference`.
+- **Expected rejections:** `permission-denied`, `repository-not-organization-owned`, `team-not-eligible`, `team-grant-not-found`
+- **Authorization:** Effective repository admin permission.
+- **Transaction:** One repository-access team-grant transaction.
+- **Idempotency:** Reapplying the same permission is a no-op update.
+- **Dependencies:** `repositories/repositories::RepositoryCandidateReference`, `identity/accounts::AccountReference`, `organizations/organization-teams::EffectiveTeamMembershipReference`, `organizations/organization-roles::OrganizationRepositoryRoleContribution`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repository-access-source-03`
+- **Local policy:** Inherited grants can only be changed at the granting ancestor team.
+
+### `revoke-team-repository-access` [active]
+
+- **Type:** `command`
+- **Application boundary:** `RevokeTeamRepositoryAccessUseCase.revokeTeamRepositoryAccess()`
+- **Public entrypoint:** `server-api.ts#revokeTeamRepositoryAccess`
+- **Input:** Active organization-owned repository candidate, authenticated actor, and team ID.
+- **Success result:** Revoked `TeamRepositoryGrantReference`.
+- **Expected rejections:** `permission-denied`, `repository-not-organization-owned`, `team-not-eligible`, `team-grant-not-found`, `inherited-access-cannot-be-removed`
+- **Authorization:** Effective repository admin or maintainer of the directly granted target team.
+- **Transaction:** One repository-access team-grant transaction.
+- **Idempotency:** Missing or revoked direct grants are rejected.
+- **Dependencies:** `repositories/repositories::RepositoryCandidateReference`, `identity/accounts::AccountReference`, `organizations/organization-teams::EffectiveTeamMembershipReference`, `organizations/organization-roles::OrganizationRepositoryRoleContribution`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repository-access-source-03`
+- **Local policy:** A child cannot revoke access inherited from an ancestor.
 
 ## Ubiquitous language
 
@@ -119,6 +170,7 @@ It excludes `OrganizationMembership`, `OrganizationRoleDefinition`, `EffectivePe
 
 `resolveEffectiveRepositoryPermission` is exposed through `server-api.ts`.
 `EffectiveRepositoryPermissionDecision` is the integration contract.
+Team grant, change, and revoke commands are exposed through `server-api.ts`.
 
 ## Dependencies and consistency
 
@@ -127,14 +179,14 @@ It excludes `OrganizationMembership`, `OrganizationRoleDefinition`, `EffectivePe
 - `repositories/repositories::RepositoryCandidateReference`
 - `identity/accounts::AccountReference`
 - `organizations/organization-memberships::OrganizationMembershipReference`
+- `organizations/organization-teams::EffectiveTeamMembershipReference`
+- `organizations/organization-roles::OrganizationRepositoryRoleContribution`
 
 ### Planned relationships
 
 - `repositories/repositories::RepositoryPermissionContextAndLifecycleState` (synchronous)
 - `identity/accounts::AccountReference` (synchronous)
 - `organizations/organization-memberships::OrganizationMembershipPermissionContribution` (synchronous)
-- `organizations/organization-teams::TeamRepositoryPermissionContribution` (synchronous)
-- `organizations/organization-roles::OrganizationRepositoryRoleContribution` (synchronous)
 - `organizations/organization-policies::OrganizationRepositoryPolicyContribution` (synchronous)
 - `enterprises/enterprise-teams::EnterpriseTeamPermissionContribution` (synchronous)
 - `enterprises/enterprise-roles::EnterpriseRepositoryPermissionContribution` (synchronous)
@@ -143,12 +195,14 @@ It excludes `OrganizationMembership`, `OrganizationRoleDefinition`, `EffectivePe
 ## Authorization
 
 The decision denies when no source contributes permission. Dashboard context is
-never treated as a grant.
+never treated as a grant. Team grant creation and change require effective
+repository admin. A team maintainer may revoke only the team's direct grant.
 
 ## Persistence and transactions
 
-Direct grants are context-local deterministic fixtures. Permission aggregation
-is read-only and does not create a cross-context transaction.
+Direct and team grants are context-local versioned in-memory records.
+Permission aggregation is read-only and does not create a cross-context
+transaction.
 
 ## Data classification
 

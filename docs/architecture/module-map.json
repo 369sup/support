@@ -2767,6 +2767,16 @@
           "context": "organizations/organization-memberships",
           "contract": "OrganizationMembershipReference",
           "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-teams",
+          "contract": "EffectiveTeamMembershipReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-roles",
+          "contract": "OrganizationRepositoryRoleContribution",
+          "mode": "synchronous"
         }
       ],
       "officialSources": [
@@ -2958,19 +2968,12 @@
         }
       ],
       "activationScope": [
+        "change-team-repository-access",
+        "grant-team-repository-access",
+        "revoke-team-repository-access",
         "resolve-effective-repository-permission"
       ],
       "plannedRelationships": [
-        {
-          "context": "organizations/organization-teams",
-          "contract": "TeamRepositoryPermissionContribution",
-          "mode": "synchronous"
-        },
-        {
-          "context": "organizations/organization-roles",
-          "contract": "OrganizationRepositoryRoleContribution",
-          "mode": "synchronous"
-        },
         {
           "context": "organizations/organization-policies",
           "contract": "OrganizationRepositoryPolicyContribution",
