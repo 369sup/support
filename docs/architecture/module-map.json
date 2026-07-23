@@ -1930,7 +1930,7 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Predefined and custom organization roles and custom repository-role definitions.",
       "semanticStatus": "validated",
       "owns": [
@@ -1944,7 +1944,18 @@
         "RepositoryRoleAssignment",
         "TeamMaintainer"
       ],
-      "dependencies": [],
+      "dependencies": [
+        {
+          "context": "organizations/organization-memberships",
+          "contract": "OrganizationMembershipReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-teams",
+          "contract": "OrganizationTeamReference",
+          "mode": "synchronous"
+        }
+      ],
       "officialSources": [
         {
           "id": "organizations-organization-roles-source-01",
@@ -2059,21 +2070,17 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "assign-organization-role",
+        "list-organization-role-assignments",
+        "list-predefined-organization-roles",
+        "resolve-organization-repository-role-contributions",
+        "revoke-organization-role"
+      ],
       "plannedRelationships": [
         {
           "context": "organizations/organizations",
           "contract": "OrganizationReference",
-          "mode": "synchronous"
-        },
-        {
-          "context": "organizations/organization-memberships",
-          "contract": "OrganizationMembershipReference",
-          "mode": "synchronous"
-        },
-        {
-          "context": "organizations/organization-teams",
-          "contract": "OrganizationTeamReference",
           "mode": "synchronous"
         }
       ],

@@ -4,7 +4,7 @@
 - **Kind:** `domain`
 - **Classification:** `supporting`
 - **Maturity:** `stable`
-- **Implementation:** `planned`
+- **Implementation:** `active`
 - **Semantic status:** `validated`
 
 ## Purpose
@@ -15,10 +15,12 @@ repository permission contributions.
 
 ## Context content tree
 
-- Predefined organization roles [planned]
-  - Immutable role catalog.
-  - Account and team assignments.
-  - Multiple roles per subject.
+- Predefined organization roles [active]
+  - `list-predefined-organization-roles`
+  - `list-organization-role-assignments`
+  - `assign-organization-role`
+  - `revoke-organization-role`
+  - `resolve-organization-repository-role-contributions`
   - Repository permission contributions from security-manager and
     all-repository roles.
 - Custom organization and repository roles [planned]
@@ -45,7 +47,7 @@ repository permission contributions.
 
 ## Designed use cases
 
-### `list-predefined-organization-roles` [planned]
+### `list-predefined-organization-roles` [active]
 
 - **Type:** `query`
 - **Application boundary:** `ListPredefinedOrganizationRolesUseCase.listPredefinedOrganizationRoles()`
@@ -61,7 +63,7 @@ repository permission contributions.
 - **Official evidence:** `organizations-organization-roles-source-03`
 - **Local policy:** Owner and member remain membership roles and are not duplicated as assignments.
 
-### `list-organization-role-assignments` [planned]
+### `list-organization-role-assignments` [active]
 
 - **Type:** `query`
 - **Application boundary:** `ListOrganizationRoleAssignmentsUseCase.listOrganizationRoleAssignments()`
@@ -77,7 +79,7 @@ repository permission contributions.
 - **Official evidence:** `organizations-organization-roles-source-02`
 - **Local policy:** Assignment administration is owner-only.
 
-### `assign-organization-role` [planned]
+### `assign-organization-role` [active]
 
 - **Type:** `command`
 - **Application boundary:** `AssignOrganizationRoleUseCase.assignOrganizationRole()`
@@ -93,7 +95,7 @@ repository permission contributions.
 - **Official evidence:** `organizations-organization-roles-source-02`
 - **Local policy:** Team assignments apply only to direct active team members.
 
-### `revoke-organization-role` [planned]
+### `revoke-organization-role` [active]
 
 - **Type:** `command`
 - **Application boundary:** `RevokeOrganizationRoleUseCase.revokeOrganizationRole()`
@@ -109,7 +111,7 @@ repository permission contributions.
 - **Official evidence:** `organizations-organization-roles-source-02`
 - **Local policy:** Revocation takes effect on the next permission resolution.
 
-### `resolve-organization-repository-role-contributions` [planned]
+### `resolve-organization-repository-role-contributions` [active]
 
 - **Type:** `query`
 - **Application boundary:** `ResolveOrganizationRepositoryRoleContributionsUseCase.resolveOrganizationRepositoryRoleContributions()`
@@ -147,14 +149,15 @@ remain catalog ownership but are not activated by this slice.
 
 ## Public capabilities
 
-No runtime capability while planned. The approved application boundaries are
-activated with management routes and repository-access integration.
+The server API exposes the predefined role catalog and assignment operations.
+Integration contracts expose source-attributed repository permission
+contributions without exposing assignment persistence.
 
 ## Dependencies and consistency
 
-Planned synchronous dependencies are organization references, organization
-memberships, and organization teams. Assignment resolution never reads another
-context's persistence.
+Active synchronous dependencies are organization memberships and organization
+teams. Organization references remain a planned relationship. Assignment
+resolution never reads another context's persistence.
 
 ## Authorization
 
