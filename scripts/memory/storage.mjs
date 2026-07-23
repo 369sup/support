@@ -22,7 +22,7 @@ import {
   sep,
 } from "node:path";
 
-import { lockPolicy } from "./policy.mjs";
+import { lockPolicy } from "./model.mjs";
 
 export function memoryPaths(repositoryRoot) {
   const root = resolve(repositoryRoot);

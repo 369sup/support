@@ -12,7 +12,7 @@ import {
   normalizeRepositoryPath,
   normalizeStatement,
   normalizeSubject,
-} from "./policy.mjs";
+} from "./model.mjs";
 
 export const candidateBundleStart =
   "<!-- serena-memory-candidates:start -->";

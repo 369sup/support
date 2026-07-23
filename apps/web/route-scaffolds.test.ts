@@ -16,6 +16,12 @@ const expectedUrlPatterns = [
   "/sign-up",
   "/signup",
   "/verify-email",
+  "/explore",
+  "/topics",
+  "/topics/{topic}",
+  "/trending",
+  "/collections",
+  "/marketplace",
   "/new",
   "/notifications",
   "/projects",
@@ -59,6 +65,7 @@ const expectedUrlPatterns = [
   "/{owner}/{repository}/issues/new",
   "/{owner}/{repository}/issues/{number}",
   "/{owner}/{repository}/labels",
+  "/{owner}/{repository}/labels/{label}",
   "/{owner}/{repository}/milestones",
   "/{owner}/{repository}/milestone/{number}",
   "/{owner}/{repository}/discussions",
@@ -71,28 +78,123 @@ const expectedUrlPatterns = [
   "/{owner}/{repository}/activity",
   "/{owner}/{repository}/pulse",
   "/{owner}/{repository}/custom-properties",
+  "/{owner}/{repository}/tree/{*refAndPath}",
+  "/{owner}/{repository}/blob/{*refAndPath}",
+  "/{owner}/{repository}/raw/{*refAndPath}",
+  "/{owner}/{repository}/blame/{*refAndPath}",
+  "/{owner}/{repository}/commit/{sha}",
+  "/{owner}/{repository}/commits/{*refAndPath}",
+  "/{owner}/{repository}/branches",
+  "/{owner}/{repository}/branches/{view}",
+  "/{owner}/{repository}/tags",
+  "/{owner}/{repository}/compare",
+  "/{owner}/{repository}/compare/{*comparison}",
+  "/{owner}/{repository}/pull/{*pullPath}",
+  "/{owner}/{repository}/pulls",
+  "/{owner}/{repository}/actions",
+  "/{owner}/{repository}/actions/{*actionPath}",
+  "/{owner}/{repository}/packages",
+  "/{owner}/{repository}/pages",
+  "/{owner}/{repository}/releases",
+  "/{owner}/{repository}/releases/latest",
+  "/{owner}/{repository}/releases/tag/{*tag}",
+  "/{owner}/{repository}/releases/download/{*assetPath}",
+  "/{owner}/{repository}/archive/{*archivePath}",
+  "/{owner}/{repository}/forks",
+  "/{owner}/{repository}/community",
+  "/{owner}/{repository}/wiki",
+  "/{owner}/{repository}/wiki/{*pageName}",
+  "/{owner}/{repository}/graphs/traffic",
 ] as const;
 
-const excludedRouteSegments = [
-  "/actions",
-  "/archive",
-  "/blame",
-  "/blob",
-  "/branches",
-  "/codespaces",
-  "/commit",
-  "/commits",
-  "/compare",
-  "/models",
-  "/packages",
-  "/pages",
-  "/pull",
-  "/pulls",
-  "/raw",
-  "/releases",
-  "/security",
-  "/tags",
-  "/tree",
+const unownedUrlPatterns = [
+  "/explore",
+  "/topics",
+  "/topics/{topic}",
+  "/trending",
+  "/collections",
+  "/marketplace",
+] as const;
+
+const excludedUrlPatterns = [
+  "/{owner}/{repository}/tree/{*refAndPath}",
+  "/{owner}/{repository}/blob/{*refAndPath}",
+  "/{owner}/{repository}/raw/{*refAndPath}",
+  "/{owner}/{repository}/blame/{*refAndPath}",
+  "/{owner}/{repository}/commit/{sha}",
+  "/{owner}/{repository}/commits/{*refAndPath}",
+  "/{owner}/{repository}/branches",
+  "/{owner}/{repository}/branches/{view}",
+  "/{owner}/{repository}/tags",
+  "/{owner}/{repository}/compare",
+  "/{owner}/{repository}/compare/{*comparison}",
+  "/{owner}/{repository}/pull/{*pullPath}",
+  "/{owner}/{repository}/pulls",
+  "/{owner}/{repository}/actions",
+  "/{owner}/{repository}/actions/{*actionPath}",
+  "/{owner}/{repository}/packages",
+  "/{owner}/{repository}/pages",
+  "/{owner}/{repository}/archive/{*archivePath}",
+] as const;
+
+const deferredUrlPatterns = [
+  "/{owner}/{repository}/releases",
+  "/{owner}/{repository}/releases/latest",
+  "/{owner}/{repository}/releases/tag/{*tag}",
+  "/{owner}/{repository}/releases/download/{*assetPath}",
+  "/{owner}/{repository}/forks",
+  "/{owner}/{repository}/community",
+  "/{owner}/{repository}/wiki",
+  "/{owner}/{repository}/wiki/{*pageName}",
+  "/{owner}/{repository}/graphs/traffic",
+] as const;
+
+const documentedRouteDirectories = [
+  "(public)/explore",
+  "(public)/topics",
+  "(public)/topics/[topic]",
+  "(public)/trending",
+  "(public)/collections",
+  "(public)/marketplace",
+  "(resources)/[owner]/[repository]/labels/[label]",
+  "(resources)/[owner]/[repository]/tree",
+  "(resources)/[owner]/[repository]/tree/[...refAndPath]",
+  "(resources)/[owner]/[repository]/blob",
+  "(resources)/[owner]/[repository]/blob/[...refAndPath]",
+  "(resources)/[owner]/[repository]/raw",
+  "(resources)/[owner]/[repository]/raw/[...refAndPath]",
+  "(resources)/[owner]/[repository]/blame",
+  "(resources)/[owner]/[repository]/blame/[...refAndPath]",
+  "(resources)/[owner]/[repository]/commit",
+  "(resources)/[owner]/[repository]/commit/[sha]",
+  "(resources)/[owner]/[repository]/commits",
+  "(resources)/[owner]/[repository]/commits/[...refAndPath]",
+  "(resources)/[owner]/[repository]/branches",
+  "(resources)/[owner]/[repository]/branches/[view]",
+  "(resources)/[owner]/[repository]/tags",
+  "(resources)/[owner]/[repository]/compare",
+  "(resources)/[owner]/[repository]/compare/[...comparison]",
+  "(resources)/[owner]/[repository]/pull",
+  "(resources)/[owner]/[repository]/pull/[...pullPath]",
+  "(resources)/[owner]/[repository]/pulls",
+  "(resources)/[owner]/[repository]/actions",
+  "(resources)/[owner]/[repository]/actions/[...actionPath]",
+  "(resources)/[owner]/[repository]/packages",
+  "(resources)/[owner]/[repository]/pages",
+  "(resources)/[owner]/[repository]/releases",
+  "(resources)/[owner]/[repository]/releases/latest",
+  "(resources)/[owner]/[repository]/releases/tag",
+  "(resources)/[owner]/[repository]/releases/tag/[...tag]",
+  "(resources)/[owner]/[repository]/releases/download",
+  "(resources)/[owner]/[repository]/releases/download/[...assetPath]",
+  "(resources)/[owner]/[repository]/archive",
+  "(resources)/[owner]/[repository]/archive/[...archivePath]",
+  "(resources)/[owner]/[repository]/forks",
+  "(resources)/[owner]/[repository]/community",
+  "(resources)/[owner]/[repository]/wiki",
+  "(resources)/[owner]/[repository]/wiki/[...pageName]",
+  "(resources)/[owner]/[repository]/graphs",
+  "(resources)/[owner]/[repository]/graphs/traffic",
 ] as const;
 
 describe("App Router route scaffolds", () => {
@@ -115,11 +217,28 @@ describe("App Router route scaffolds", () => {
     }
   });
 
-  it("keeps excluded and deferred code-product URLs out of the scaffold", () => {
-    for (const urlPattern of expectedUrlPatterns) {
-      for (const excludedSegment of excludedRouteSegments) {
-        expect(urlPattern).not.toContain(excludedSegment);
-      }
+  it("marks reserved, excluded, and deferred route families explicitly", () => {
+    const scaffolds = new Map(
+      findScaffoldPages(appRoot).map(({ content }) => [
+        readStringField(content, "urlPattern"),
+        content,
+      ]),
+    );
+
+    for (const urlPattern of unownedUrlPatterns) {
+      expect(scaffolds.get(urlPattern)).toContain(
+        'catalogStatus: "unowned"',
+      );
+    }
+    for (const urlPattern of excludedUrlPatterns) {
+      expect(scaffolds.get(urlPattern)).toContain(
+        'catalogStatus: "excluded"',
+      );
+    }
+    for (const urlPattern of deferredUrlPatterns) {
+      expect(scaffolds.get(urlPattern)).toContain(
+        'catalogStatus: "deferred"',
+      );
     }
 
     const insightsPage = readFileSync(
@@ -134,6 +253,17 @@ describe("App Router route scaffolds", () => {
       "utf8",
     );
     expect(insightsPage).toContain("without traffic or Git metrics");
+  });
+
+  it("documents every newly reserved route directory", () => {
+    for (const directory of documentedRouteDirectories) {
+      const readme = readFileSync(
+        resolve(appRoot, directory, "README.md"),
+        "utf8",
+      );
+      expect(readme, directory).toContain("Status:");
+      expect(readme, directory).toContain("This route returns 404.");
+    }
   });
 
   it("uses a single not-found boundary for unavailable route scaffolds", () => {
@@ -229,11 +359,14 @@ function toRoutePattern(file: string): string {
     .split("/")
     .filter(Boolean)
     .filter((segment) => !(segment.startsWith("(") && segment.endsWith(")")))
-    .map((segment) =>
-      segment.startsWith("[") && segment.endsWith("]")
+    .map((segment) => {
+      if (segment.startsWith("[...") && segment.endsWith("]")) {
+        return `{*${segment.slice(4, -1)}}`;
+      }
+      return segment.startsWith("[") && segment.endsWith("]")
         ? `{${segment.slice(1, -1)}}`
-        : segment,
-    );
+        : segment;
+    });
   return `/${segments.join("/")}`;
 }
 

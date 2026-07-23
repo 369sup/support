@@ -17,26 +17,21 @@ the root `AGENTS.md`.
 
 ## Architecture automation
 
-- `architecture-checker.mjs` is the compatibility facade and orchestration
-  entrypoint. Focused implementations live under `scripts/architecture/`.
-- `check-architecture.mjs` is the repository CLI wrapper and accepts
-  `required`, `generated`, `knowledge`, or `all` profiles.
+- `architecture.mjs` is the library and CLI entrypoint. Its `check` command
+  accepts `required`, `generated`, `knowledge`, or `all` profiles; `generate`
+  writes the module-map projection; `scaffold` creates missing context
+  READMEs without overwriting existing models.
 - `@support/tooling/architecture/policy` owns shared rule metadata, public
   entrypoints, layer names, and workspace package policy.
-- `scripts/architecture/catalog.mjs` owns lifecycle-specific README and
+- `scripts/architecture/context.mjs` owns lifecycle-specific README and
   source-freshness policy used by catalog validation and rendering.
-- `scripts/architecture/source-graph.mjs` owns local source dependency graphs,
+- `scripts/architecture/source.mjs` owns local source dependency graphs,
   cycle checks, client reachability, and declared context dependencies.
-- `scripts/architecture/workspace-packages.mjs` owns manifest, export, import,
+- `scripts/architecture/workspace.mjs` owns manifest, export, import,
   and internal package-graph validation.
-- `scripts/architecture/exceptions.mjs` and
-  `scripts/architecture/generated-guidance.mjs` own their corresponding
-  registry and deterministic-projection checks.
-- `generate-module-map.mjs` writes only
-  `docs/architecture/module-map.md` from the JSON catalog.
-- `scaffold-context-readmes.mjs` creates missing bounded-context READMEs from
-  catalog metadata and never overwrites existing semantic models.
-- `generate-serena-memories.mjs` writes only the reviewed shared-memory files
+- `scripts/architecture/governance.mjs` owns exception, violation selection,
+  and deterministic-projection checks.
+- `serena-memories.mjs` writes only the reviewed shared-memory files
   under `.serena/memories` from its explicit authority allowlist.
 - Architecture behavior retains stable `ARCH-*` identifiers and focused
   positive and negative fixtures.
@@ -51,11 +46,9 @@ the root `AGENTS.md`.
   credentials.
 - Machine state and raw episodes remain ignored local data. Shared committed
   memories continue to be owned exclusively by
-  `generate-serena-memories.mjs`.
-- `memory:migrate` is the only supported transition from unmanaged visible
-  local memories to exclusive engine ownership. Preview must be read-only;
-  apply must validate and distill before purging retired source files, writing
-  content-free tombstones, and enabling the ownership marker.
+  `serena-memories.mjs`.
+- Exclusive ownership is permanent. Activation quarantines any unmanaged
+  visible local memory without interpreting its contents.
 - In exclusive mode, activation quarantines unknown visible local memories
   without interpreting their contents and records only bounded metadata in
   `local/unresolved`.

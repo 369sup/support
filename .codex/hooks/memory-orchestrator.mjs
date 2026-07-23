@@ -4,13 +4,12 @@ import { isAbsolute, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import {
+  markMemoryDirty,
   preCompactMemory,
-  recordMemorySessionEvent,
   startMemorySession,
   stopMemorySession,
-} from "../../scripts/memory/engine.mjs";
-import { containsSensitiveValue, memoryLimits } from "../../scripts/memory/policy.mjs";
-import { extractPatchPaths } from "./repository-guard.mjs";
+} from "../../scripts/memory/index.mjs";
+import { containsSensitiveValue, memoryLimits } from "../../scripts/memory/model.mjs";
 
 const defaultRepositoryRoot = resolve(import.meta.dirname, "..", "..");
 
@@ -196,7 +195,7 @@ function toolSucceeded(input) {
 function isMaterialTool(input) {
   const toolName = input.tool_name;
 
-  if (toolName === "apply_patch") {
+  if (["Edit", "Write", "apply_patch"].includes(toolName)) {
     return true;
   }
 
@@ -214,22 +213,6 @@ function isMaterialTool(input) {
   return /\b(?:serena:memories|architecture:docs|git\s+(?:add|commit|restore|mv|rm)|Set-Content|Out-File|Move-Item|Remove-Item|Copy-Item)\b/i.test(
     input.tool_input.command,
   );
-}
-
-function hookEvent(input) {
-  const paths =
-    input.tool_name === "apply_patch" &&
-    typeof input.tool_input?.command === "string"
-      ? extractPatchPaths(input.tool_input.command)
-      : [];
-
-  return {
-    material: isMaterialTool(input),
-    paths,
-    success: toolSucceeded(input),
-    toolName:
-      typeof input.tool_name === "string" ? input.tool_name : "unknown",
-  };
 }
 
 function additionalContext(eventName, context) {
@@ -274,8 +257,8 @@ export async function evaluateHook(input, dependencies = {}) {
         : additionalContext("PreToolUse", serena.context);
     }
     case "PostToolUse": {
-      await recordMemorySessionEvent(repositoryRoot, {
-        event: hookEvent(input),
+      await markMemoryDirty(repositoryRoot, {
+        material: toolSucceeded(input) && isMaterialTool(input),
         now,
         sessionId: input.session_id,
       });
@@ -370,4 +353,3 @@ if (
 ) {
   await run();
 }
-

@@ -137,7 +137,7 @@ test("SessionStart injects a checkpoint token and Serena activation context", as
   );
 });
 
-test("PostToolUse persists only bounded metadata and never tool output", async () => {
+test("PostToolUse persists only dirty state and never tool metadata or output", async () => {
   const root = await repositoryFixture();
   await evaluateHook(
     hookInput("SessionStart", { cwd: root, source: "startup" }),
@@ -167,8 +167,38 @@ test("PostToolUse persists only bounded metadata and never tool output", async (
   );
   assert.equal(
     contents.some((value) => value.includes("apps/web/page.tsx")),
-    true,
+    false,
   );
+  assert.equal(contents.some((value) => value.includes('"dirty": true')), true);
+});
+
+test("Edit and Write mark dirty only after a successful tool response", async () => {
+  for (const [toolName, toolResponse, expectedDirty] of [
+    ["Edit", { ok: true }, true],
+    ["Write", { error: "failed" }, false],
+  ]) {
+    const root = await repositoryFixture();
+    await evaluateHook(
+      hookInput("SessionStart", { cwd: root, source: "startup" }),
+      { repositoryRoot: root, runSerenaHook: noSerenaOutput },
+    );
+    await evaluateHook(
+      hookInput("PostToolUse", {
+        cwd: root,
+        tool_input: { file_path: "apps/web/page.tsx" },
+        tool_name: toolName,
+        tool_response: toolResponse,
+      }),
+      { repositoryRoot: root, runSerenaHook: noSerenaOutput },
+    );
+    const contents = await allContents(
+      join(root, ".serena", "memories", "local", "_state", "sessions"),
+    );
+    assert.equal(
+      contents.some((value) => value.includes('"dirty": true')),
+      expectedDirty,
+    );
+  }
 });
 
 test("Stop requests one checkpoint continuation and then fails open", async () => {
@@ -239,7 +269,7 @@ test("Stop validates and distills a no-memory checkpoint before cleanup", async 
   assert.equal(cleanupCalls, 1);
 });
 
-test("PreCompact warns without blocking when current-task is unavailable", async () => {
+test("PreCompact is a no-op when the clean current-task baseline is absent", async () => {
   const root = await repositoryFixture();
   await evaluateHook(
     hookInput("SessionStart", { cwd: root, source: "startup" }),
@@ -253,8 +283,7 @@ test("PreCompact warns without blocking when current-task is unavailable", async
     { repositoryRoot: root, runSerenaHook: noSerenaOutput },
   );
 
-  assert.match(result.systemMessage, /No local\/current-task/);
-  assert.equal(result.continue, undefined);
+  assert.equal(result, undefined);
 });
 
 test("missing Serena lifecycle helper degrades to model-visible context", async () => {
@@ -275,4 +304,3 @@ test("missing Serena lifecycle helper degrades to model-visible context", async 
     /helper is unavailable/,
   );
 });
-

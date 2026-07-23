@@ -78,7 +78,7 @@ must not be treated as durable storage or external provider integrations.
 - `pnpm lint` - run ESLint and immediate architecture boundary rules.
 - `pnpm typecheck` - run TypeScript without emitting files.
 - `pnpm architecture` - validate structure, graph, module map, and exceptions.
-- `pnpm test` - run ESLint-rule and architecture-checker tests with Vitest.
+- `pnpm test` - run ESLint-rule and architecture automation tests with Vitest.
 - `pnpm test:e2e` - run Playwright Chromium against the production server.
 - `pnpm check` - run the browser-free local gate.
 - `pnpm check:full` - add production build and E2E verification.

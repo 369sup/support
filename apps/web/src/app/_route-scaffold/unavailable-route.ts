@@ -5,7 +5,13 @@ export type RouteSummary = Readonly<{
   title: string;
   summary: string;
   contexts: readonly string[];
-  catalogStatus: "active" | "planned" | "mixed";
+  catalogStatus:
+    | "active"
+    | "planned"
+    | "mixed"
+    | "excluded"
+    | "deferred"
+    | "unowned";
 }>;
 
 export function unavailableRoute(summary: RouteSummary): never {

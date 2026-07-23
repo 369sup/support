@@ -30,31 +30,9 @@ or archives.
 6. Serena activation performs only bounded deterministic maintenance. It never
    calls an LLM or scans repository source.
 
-## Legacy migration
-
-Preview the exact unmanaged visible inventory without writing local state:
-
-```text
-pnpm memory:migrate
-```
-
-The preview returns an inventory hash and checkpoint token. Put that exact token
-in a valid candidate bundle in `local/current-task`, then apply:
-
-```text
-pnpm memory:migrate -- --apply
-```
-
-Apply refuses inventory drift or an invalid candidate bundle. It distills valid
-candidates, validates every source hash, and writes content-free tombstones to
-`local/_state/migrations/<migration-id>.json`. Only after those checks does it
-permanently remove the retired legacy Markdown and set
-`local/_state/ownership.json` to `exclusive`. Existing content-preserving
-legacy archives are upgraded and purged idempotently on apply or activation.
-
 ## Exclusive ownership and quarantine
 
-In exclusive mode, the only visible local memories are:
+The engine always owns the local namespace. The only visible local memories are:
 
 - `local/current-task`
 - `local/index`
@@ -71,11 +49,9 @@ never the archived content. Normal repository work remains fail-open.
 ```text
 pnpm memory:activate
 pnpm memory:checkpoint
-pnpm memory:distill
 pnpm memory:maintain
 pnpm memory:status
 pnpm memory:validate
-pnpm memory:migrate
 pnpm test:memory
 ```
 
@@ -85,14 +61,9 @@ configured architecture checks.
 
 ## Recovery
 
-- If migration preview and apply tokens differ, do not move files manually.
-  Re-run preview and update the current-task bundle.
-- If apply stops before exclusive ownership is enabled, fix the reported
-  validation or filesystem error and re-run apply; the applying state and
-  tombstone metadata make recovery idempotent.
-- If `memory:validate` reports tombstone or quarantine archive drift, preserve
+- If `memory:validate` reports quarantine archive drift, preserve
   the remaining evidence and investigate. Do not rewrite hashes to silence the
   error.
-- Inspect legacy tombstones under `local/_state/migrations/**` and quarantine
-  evidence under `local/archive/quarantine/**` through raw filesystem paths.
+- Inspect quarantine evidence under `local/archive/quarantine/**` through raw
+  filesystem paths.
   Do not change ignored patterns merely to expose them in Serena.

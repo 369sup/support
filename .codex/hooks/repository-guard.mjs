@@ -64,8 +64,8 @@ export function isArchitectureSensitivePath(repositoryPath) {
   if (
     repositoryPath === moduleMapSourcePath ||
     repositoryPath === exceptionRegistryPath ||
-    repositoryPath === "scripts/architecture-checker.mjs" ||
-    repositoryPath === "scripts/check-architecture.mjs"
+    repositoryPath === "scripts/architecture.mjs" ||
+    repositoryPath.startsWith("scripts/architecture/")
   ) {
     return true;
   }
@@ -92,12 +92,12 @@ function denyGeneratedModuleMapEdit() {
 
 async function runRepositoryArchitectureChecks() {
   const checkerUrl = pathToFileURL(
-    join(repositoryRoot, "scripts", "architecture-checker.mjs"),
+    join(repositoryRoot, "scripts", "architecture.mjs"),
   ).href;
   const checker = await import(checkerUrl);
 
   if (typeof checker.runArchitectureChecks !== "function") {
-    throw new Error("scripts/architecture-checker.mjs has no runArchitectureChecks export.");
+    throw new Error("scripts/architecture.mjs has no runArchitectureChecks export.");
   }
 
   return checker.runArchitectureChecks({ applicationRoot, repositoryRoot });

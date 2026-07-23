@@ -49,22 +49,14 @@ root and source-tree `AGENTS.md` files.
 - The engine owns every other project-local memory. The only visible layout is
   `local/current-task`, `local/index`, `local/unresolved`, and
   `local/durable/**`.
-- Before exclusive ownership is enabled, `pnpm memory:migrate` previews every
-  unmanaged local memory and returns the checkpoint token required to distill
-  verified knowledge through `local/current-task`.
-- `pnpm memory:migrate -- --apply` permanently removes the unchanged retired
-  legacy inventory only after its candidate bundle validates and distills
-  successfully. It writes bounded hash tombstones under
-  `local/_state/migrations/**`, then writes `local/_state/ownership.json` as the
-  final activation step.
-- In exclusive mode, activation quarantines future unmanaged local memories.
+- Exclusive ownership is always enabled. Activation quarantines unmanaged
+  local memories.
   It preserves their complete contents and hashes under hidden archive state,
   removes them from Serena's visible memory list, and renders a bounded notice
   in `local/unresolved`.
 - Never store new credentials, tokens, personal/customer data, provider
   payloads, raw logs, source-file copies, or embargoed security findings.
-  Migration tombstones and quarantine metadata must never reproduce source
-  contents.
+  Quarantine metadata must never reproduce source contents.
 - Read only memories relevant by name and verify drift-prone facts against the
   current worktree. Repository authorities always override local state.
 
@@ -79,12 +71,11 @@ root and source-tree `AGENTS.md` files.
   machine-managed and hidden from Serena memory tools through
   `ignored_memory_patterns`.
 - The engine may archive managed expired or superseded records but never
-  deletes their only retained representation. Retired legacy migration inputs
-  are permanently purged after distillation and retain only bounded hash
-  tombstones. Unexpected future local memories are quarantined with their
-  original content because the engine cannot infer that they are obsolete.
+  deletes their only retained representation. Unexpected local memories are
+  quarantined with their original content because the engine cannot infer that
+  they are obsolete.
 - Run `pnpm memory:validate` for local managed-state integrity and
-  `pnpm test:memory` after engine, schema, migration, hook, or lifecycle
+  `pnpm test:memory` after engine, schema, hook, or lifecycle
   changes. Use `pnpm memory:status` to inspect ownership and quarantine counts.
 - Context7 and external model APIs are not runtime dependencies. Activation
   must remain deterministic, offline, dependency-free, and bounded to 15

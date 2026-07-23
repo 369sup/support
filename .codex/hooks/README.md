@@ -9,7 +9,7 @@ automatic Serena memory lifecycle.
 
 - blocks direct edits to the generated `docs/architecture/module-map.md`;
 - runs the existing architecture checker after relevant TypeScript, module-map,
-  exception-registry, or architecture-checker edits;
+  exception-registry, or architecture-automation edits;
 - reports actionable feedback without rewriting repository files; and
 - bounds and validates the JSON event received on standard input.
 
@@ -22,7 +22,8 @@ hook with Node.js. It does not interpolate event data into a shell command.
 `PostToolUse`, `PreCompact`, and `Stop` with the deterministic engine under
 `scripts/memory/`.
 
-It injects a checkpoint token, records only bounded metadata, validates the
+It injects a checkpoint token, records only a dirty/hash checkpoint state,
+validates the
 model-authored candidate bundle in `local/current-task`, and performs
 checkpoint, distillation, conflict handling, TTL, archive, and rendering. It
 never reads `transcript_path` or persists prompts, tool output, logs, provider
@@ -33,12 +34,8 @@ a warning without blocking normal repository work.
 checkpoint. A second failure is reported and allowed to stop so the hook cannot
 loop indefinitely.
 
-Legacy migration permanently removes reviewed retired Markdown only after
-distillation and hash-tombstone validation. It does not use the quarantine
-archive as permanent legacy storage.
-
-After `memory:migrate -- --apply` enables exclusive ownership, activation also
-quarantines any unknown visible local memory. The original content and SHA-256
+Exclusive ownership is always enabled. Activation quarantines any unknown
+visible local memory. The original content and SHA-256
 remain in the hidden archive; `local/unresolved` receives only the memory name,
 hash, archive reference, and reason.
 
