@@ -5,7 +5,7 @@ const developmentAssignments: readonly OrganizationRoleAssignmentReference[] = [
   {
     assignmentId: "organization_role_assignment_docs_ops_all_read",
     organizationId: "organization_community_lab",
-    roleKey: "all-repository-read",
+    roleKey: "moderator",
     subject: { kind: "team", teamId: "team_community_docs_ops" },
     state: "active",
   },

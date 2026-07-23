@@ -31,6 +31,19 @@ const developmentRepositories: readonly RepositoryQuerySnapshot[] = [
     updatedAt: "2026-07-23T00:00:00.000Z",
   },
   {
+    repositoryId: "repository_community_lab_private_handbook",
+    owner: {
+      kind: "organization",
+      id: "organization_community_lab",
+      username: "community-lab",
+    },
+    name: "private-handbook",
+    description: "Private operating handbook for Community Lab teams.",
+    visibility: "private",
+    lifecycleState: "active",
+    updatedAt: "2026-07-23T00:00:00.000Z",
+  },
+  {
     repositoryId: "repository_acme_platform_internal_tools",
     owner: {
       kind: "organization",

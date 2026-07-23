@@ -23,10 +23,29 @@ const consoleRoutes = [
   { path: "/projects", heading: "Projects" },
   { path: "/repositories", heading: "Repositories" },
   { path: "/settings", heading: "Settings" },
+  {
+    path: "/organizations/community-lab/settings/teams",
+    heading: "Organization teams",
+  },
+  {
+    path: "/organizations/community-lab/settings/roles",
+    heading: "Organization roles",
+  },
+  {
+    path: "/organizations/community-lab/settings/repository-access/private-handbook",
+    heading: "Repository team access",
+  },
 ];
 
 async function signIn(page: Page) {
   await page.goto("/sign-in");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+}
+
+async function signInAs(page: Page, username: string) {
+  await page.goto("/sign-in");
+  await page.getByLabel("Username").fill(username);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
 }
@@ -69,6 +88,31 @@ test("invalid development credentials remain on sign-in", async ({ page }) => {
     "Incorrect development username or password.",
   );
   await expect(page).toHaveURL(/\/sign-in$/);
+});
+
+test("organization administration APIs require authentication and same origin", async ({
+  context,
+  page,
+}) => {
+  const unauthenticated = await context.request.get(
+    "/api/organizations/community-lab/teams",
+  );
+  expect(unauthenticated.status()).toBe(401);
+
+  await signIn(page);
+  const crossOrigin = await context.request.post(
+    "/api/organizations/community-lab/teams",
+    {
+      data: {
+        name: "Cross origin",
+        slug: "cross-origin",
+        description: "",
+        visibility: "visible",
+      },
+      headers: { origin: "https://invalid.example" },
+    },
+  );
+  expect(crossOrigin.status()).toBe(403);
 });
 
 test("sign-in uses an HttpOnly cookie and sign-out-all completes the flow", async ({
@@ -192,6 +236,122 @@ test("pending membership is not a selectable Dashboard context", async ({
   await expect(page.getByLabel("Dashboard context")).not.toContainText(
     "ACME Support",
   );
+});
+
+test("a child team member receives an inherited repository grant", async ({
+  page,
+}) => {
+  await signInAs(page, "hubot");
+  await page.getByLabel("Dashboard context").selectOption({
+    label: "Community Lab",
+  });
+
+  const privateRepository = page
+    .getByRole("listitem")
+    .filter({ hasText: "community-lab/private-handbook" });
+  await expect(privateRepository).toBeVisible();
+  await expect(
+    privateRepository.getByText("read", { exact: true }),
+  ).toBeVisible();
+});
+
+test("team and role administration preserve inherited access boundaries", async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.getByLabel("Dashboard context").selectOption({
+    label: "Community Lab",
+  });
+  await expect(page.getByRole("link", { name: "Teams" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Roles" })).toBeVisible();
+
+  const inheritedRevoke = await page.evaluate(async () => {
+    const response = await fetch(
+      "/api/organizations/community-lab/repositories/private-handbook/teams/docs-ops",
+      { method: "DELETE" },
+    );
+    const payload: unknown = await response.json();
+    return {
+      httpStatus: response.status,
+      status:
+        payload !== null &&
+        typeof payload === "object" &&
+        "status" in payload &&
+        typeof payload.status === "string"
+          ? payload.status
+          : null,
+    };
+  });
+  expect(inheritedRevoke).toEqual({
+    httpStatus: 409,
+    status: "inherited-access-cannot-be-removed",
+  });
+
+  const assignmentId = await page.evaluate(async () => {
+    const response = await fetch(
+      "/api/organizations/community-lab/roles/assignments",
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          roleKey: "all-repository-read",
+          subjectKind: "account",
+          subjectIdentifier: "account_hubot",
+        }),
+      },
+    );
+    const payload: unknown = await response.json();
+    if (
+      response.status !== 201 ||
+      payload === null ||
+      typeof payload !== "object" ||
+      !("assignment" in payload) ||
+      payload.assignment === null ||
+      typeof payload.assignment !== "object" ||
+      !("assignmentId" in payload.assignment) ||
+      typeof payload.assignment.assignmentId !== "string"
+    ) {
+      return null;
+    }
+    return payload.assignment.assignmentId;
+  });
+  expect(assignmentId).not.toBeNull();
+  if (assignmentId === null) {
+    throw new Error("Role assignment was not created.");
+  }
+  const revokeStatus = await page.evaluate(async (id) => {
+    const response = await fetch(
+      `/api/organizations/community-lab/roles/assignments/${id}`,
+      { method: "DELETE" },
+    );
+    return response.status;
+  }, assignmentId);
+  expect(revokeStatus).toBe(200);
+});
+
+test("secret teams and pending members are not disclosed or accepted", async ({
+  page,
+}) => {
+  await signInAs(page, "carol_ACME");
+  const secretTeamStatus = await page.evaluate(async () => {
+    const response = await fetch(
+      "/api/organizations/community-lab/teams/private-planning",
+    );
+    return response.status;
+  });
+  expect(secretTeamStatus).toBe(404);
+
+  await page.getByLabel("Account menu for @carol_ACME").click();
+  await page.getByRole("button", { name: "Sign out all" }).click();
+  await signIn(page);
+  const pendingMemberStatus = await page.evaluate(async () => {
+    const response = await fetch(
+      "/api/organizations/community-lab/teams/docs/members/bob",
+      { method: "PUT" },
+    );
+    return response.status;
+  });
+  expect(pendingMemberStatus).toBe(400);
 });
 
 test("an account session can be removed without exposing its account", async ({

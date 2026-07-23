@@ -23,15 +23,22 @@ export default async function DashboardPage() {
           filtered by source-attributed repository permissions.
         </p>
         <Separator className="my-10" />
-        <RepositoryCards repositories={view.repositories} />
+        <RepositoryCards
+          organizationLogin={
+            view.context.kind === "organization" ? view.context.login : null
+          }
+          repositories={view.repositories}
+        />
       </section>
     </main>
   );
 }
 
 function RepositoryCards({
+  organizationLogin,
   repositories,
 }: Readonly<{
+  organizationLogin: string | null;
   repositories: Awaited<
     ReturnType<typeof getDashboardRepositoryView>
   >["repositories"];
@@ -61,8 +68,18 @@ function RepositoryCards({
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
             {repository.description}
           </p>
+          {organizationLogin !== null &&
+          repository.permission === "admin" ? (
+            <Link
+              className="mt-3 inline-flex text-sm font-medium underline-offset-4 hover:underline"
+              href={`/organizations/${organizationLogin}/settings/repository-access/${repository.name}`}
+            >
+              Manage team access
+            </Link>
+          ) : null}
         </li>
       ))}
     </ul>
   );
 }
+import Link from "next/link";

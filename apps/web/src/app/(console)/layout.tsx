@@ -34,6 +34,20 @@ export default async function ConsoleLayout({
         enterpriseId: "enterprise_acme",
       }),
     ]);
+  const navigation =
+    selectedContext.context.kind === "organization"
+      ? [
+          ...consoleNavigation,
+          {
+            href: `/organizations/${selectedContext.context.login}/settings/teams`,
+            label: "Teams",
+          },
+          {
+            href: `/organizations/${selectedContext.context.login}/settings/roles`,
+            label: "Roles",
+          },
+        ]
+      : consoleNavigation;
 
   return (
     <div className="flex min-h-dvh flex-col bg-background text-foreground">
@@ -52,7 +66,7 @@ export default async function ConsoleLayout({
           aria-label="Console"
           className="flex min-w-0 flex-1 gap-5 overflow-x-auto text-sm text-muted-foreground"
         >
-          {consoleNavigation.map((item) => (
+          {navigation.map((item) => (
             <Link
               className="shrink-0 transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-none"
               href={item.href}

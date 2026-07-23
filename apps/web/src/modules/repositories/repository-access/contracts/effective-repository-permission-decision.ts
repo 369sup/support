@@ -5,6 +5,14 @@ export type RepositoryPermission =
   | "maintain"
   | "admin";
 
+export const repositoryPermissionOptions: readonly RepositoryPermission[] = [
+  "read",
+  "triage",
+  "write",
+  "maintain",
+  "admin",
+];
+
 export type RepositoryPermissionSource =
   | Readonly<{ kind: "public-read" }>
   | Readonly<{ kind: "personal-owner" }>
