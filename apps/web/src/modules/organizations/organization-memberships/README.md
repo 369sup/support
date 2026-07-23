@@ -1,115 +1,109 @@
-# Organization Memberships Bounded Context
-
-- **Catalog path:** `organizations/organization-memberships`
-- **Kind:** `domain`
-- **Classification:** `core`
-- **Maturity:** `stable`
-- **Implementation:** `planned`
-- **Semantic status:** `candidate`
+# Organization Memberships
 
 ## Purpose
 
-Organization membership, invitations, member roles, and membership lifecycle.
+Own organization membership, invitations, member/owner role, state, and source.
 
 ## Context content tree
 
-- `organizations/organization-memberships` [planned]
-  - Purpose: Organization membership, invitations, member roles, and membership lifecycle.
-  - Capabilities
-    - No active use cases; activation scope remains empty.
-  - Owned domain concepts
-    - `OrganizationMembership`
-    - `OrganizationInvitation`
-    - `MembershipRole`
-    - `MembershipState`
-  - Business rules and invariants
-    - Pending official-source validation before activation.
-  - Published events
-    - `OrganizationInvitationCreated@1` [planned]: organization invitation created.
-    - `OrganizationInvitationAccepted@1` [planned]: organization invitation accepted.
-    - `OrganizationInvitationRevoked@1` [planned]: organization invitation revoked.
-    - `OrganizationMemberAdded@1` [planned]: organization member added.
-    - `OrganizationMemberRemoved@1` [planned]: organization member removed.
-    - `OrganizationMemberRoleChanged@1` [planned]: organization member role changed.
+- Membership eligibility [active]
+  - `check-organization-context-eligibility`
+  - `list-active-organization-memberships-for-account`
+  - Owned: `OrganizationMembership`, `MembershipRole`, `MembershipState`
+  - Only active membership is Dashboard-eligible.
+- Invitations [planned]
+  - Owned: `OrganizationInvitation`
+- Planned events
+  - `OrganizationInvitationCreated@1`, `OrganizationInvitationAccepted@1`,
+    `OrganizationInvitationRevoked@1`, `OrganizationMemberAdded@1`,
+    `OrganizationMemberRemoved@1`, `OrganizationMemberRoleChanged@1`
 - External relationships
-  - Runtime dependencies: none.
-  - Planned relationships
-    - `organizations/organizations::OrganizationReference` (synchronous)
-    - `identity/accounts::AccountReference` (synchronous)
-    - `enterprises/enterprise-memberships::EnterpriseAffiliation` (synchronous)
-- Explicit exclusions
-  - `OutsideCollaborator`
-  - `RepositoryInvitation`
-  - `EnterpriseRole`
+  - `organizations/organizations::OrganizationReference`
+  - `identity/accounts::AccountReference`
+  - planned `enterprises/enterprise-memberships::EnterpriseAffiliation`
+- Excludes
+  - `OutsideCollaborator`, `RepositoryInvitation`, `EnterpriseRole`
 
 ## Designed use cases
 
-No approved use cases. Implementation remains blocked.
+### `check-organization-context-eligibility` [active]
+
+- **Type:** `query`
+- **Application boundary:** `CheckOrganizationContextEligibilityUseCase.checkOrganizationContextEligibility()`
+- **Public entrypoint:** `server-api.ts#checkOrganizationContextEligibility`
+- **Input:** Account ID and organization ID.
+- **Success result:** `eligible` with active membership.
+- **Expected rejections:** `context-not-available`
+- **Authorization:** The account ID must match the membership.
+- **Transaction:** Read-only.
+- **Idempotency:** Query.
+- **Dependencies:** `organizations/organizations::OrganizationReference`, `identity/accounts::AccountReference`
+- **Published events:** `none`
+- **Official evidence:** `organizations-organization-memberships-source-01`
+- **Local policy:** Pending, suspended, and removed membership is unavailable.
+
+### `list-active-organization-memberships-for-account` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ListActiveOrganizationMembershipsForAccountUseCase.listActiveOrganizationMembershipsForAccount()`
+- **Public entrypoint:** `server-api.ts#listActiveOrganizationMembershipsForAccount`
+- **Input:** Account ID.
+- **Success result:** Active memberships, possibly empty.
+- **Expected rejections:** `none`
+- **Authorization:** Caller must already possess the authenticated account ID.
+- **Transaction:** Read-only.
+- **Idempotency:** Query.
+- **Dependencies:** `organizations/organizations::OrganizationReference`, `identity/accounts::AccountReference`
+- **Published events:** `none`
+- **Official evidence:** `organizations-organization-memberships-source-01`
+- **Local policy:** Membership source does not itself grant repository access.
 
 ## Ubiquitous language
 
-The catalog reserves these terms for this context:
-
-- `OrganizationMembership`
-- `OrganizationInvitation`
-- `MembershipRole`
-- `MembershipState`
-
-Precise definitions must be refined against the official sources before activation.
+- **Membership role**: `member` or `owner`.
+- **Membership state**: `active`, `pending`, `suspended`, or `removed`.
 
 ## Ownership and invariants
 
-This context owns `OrganizationMembership`, `OrganizationInvitation`, `MembershipRole`, `MembershipState`.
-It excludes `OutsideCollaborator`, `RepositoryInvitation`, `EnterpriseRole`.
-
-No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
+Only this context owns membership state. An organization never embeds its
+membership collection.
 
 ## Public capabilities
 
-None while planned. Activation requires at least one real use case and public consumer.
+The two active queries are exposed through `server-api.ts`.
+`OrganizationMembershipReference` is the integration contract.
 
 ## Dependencies and consistency
 
-### Runtime dependencies
-
-None.
-
-### Planned relationships
-
-- `organizations/organizations::OrganizationReference` (synchronous)
-- `identity/accounts::AccountReference` (synchronous)
-- `enterprises/enterprise-memberships::EnterpriseAffiliation` (synchronous)
+References use stable Account and Organization IDs. Enterprise-derived source
+semantics remain a planned relationship.
 
 ## Authorization
 
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Eligibility is always evaluated for the authenticated account ID and requested
+organization ID; client-provided IDs are not trusted by themselves.
 
 ## Persistence and transactions
 
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
+Context-local process Maps index account and account/organization pairs.
 
 ## Data classification
 
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Membership affiliation is account-associated product data.
 
 ## Retention and erasure
 
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Fixtures live for the process lifetime. Durable invitation retention remains
+planned.
 
 ## Events and failure behavior
 
-- `OrganizationInvitationCreated@1` (domain, planned): organization invitation created. contract and ordering pending activation.
-- `OrganizationInvitationAccepted@1` (domain, planned): organization invitation accepted. contract and ordering pending activation.
-- `OrganizationInvitationRevoked@1` (domain, planned): organization invitation revoked. contract and ordering pending activation.
-- `OrganizationMemberAdded@1` (domain, planned): organization member added. contract and ordering pending activation.
-- `OrganizationMemberRemoved@1` (domain, planned): organization member removed. contract and ordering pending activation.
-- `OrganizationMemberRoleChanged@1` (domain, planned): organization member role changed. contract and ordering pending activation.
+The active queries emit no events. Expected ineligibility is discriminated.
 
 ## Official sources
 
-- `organizations-organization-memberships-source-01`: [organization membership, organization invitations, membership lifecycle](https://docs.github.com/en/organizations/managing-membership-in-your-organization) (not yet verified)
+- `organizations-organization-memberships-source-01`: <https://docs.github.com/en/organizations/managing-membership-in-your-organization>
 
 ## Exceptions
 
-No context-specific exception is declared by the catalog. The central
-[exception registry](../../../../../../docs/architecture/exceptions/registry.json) remains authoritative.
+None.

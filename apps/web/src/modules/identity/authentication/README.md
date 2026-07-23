@@ -1,111 +1,222 @@
-# Authentication Bounded Context
-
-- **Catalog path:** `identity/authentication`
-- **Kind:** `domain`
-- **Classification:** `core`
-- **Maturity:** `stable`
-- **Implementation:** `planned`
-- **Semantic status:** `candidate`
+# Authentication
 
 ## Purpose
 
-Credentials, sessions, two-factor authentication, recovery, and external login binding.
+Own development credentials, browser session sets, account-session lifecycle,
+and active account selection. Account identity remains in `identity/accounts`.
 
 ## Context content tree
 
-- `identity/authentication` [planned]
-  - Purpose: Credentials, sessions, two-factor authentication, recovery, and external login binding.
-  - Capabilities
-    - No active use cases; activation scope remains empty.
-  - Owned domain concepts
-    - `Credential`
-    - `Session`
-    - `TwoFactorConfiguration`
-    - `ExternalLoginBinding`
-  - Business rules and invariants
-    - Pending official-source validation before activation.
-  - Published events
-    - `SessionCreated@1` [planned]: session created.
-    - `SessionRevoked@1` [planned]: session revoked.
-    - `TwoFactorEnabled@1` [planned]: two factor enabled.
-    - `TwoFactorDisabled@1` [planned]: two factor disabled.
-    - `ExternalLoginLinked@1` [planned]: external login linked.
-    - `ExternalLoginUnlinked@1` [planned]: external login unlinked.
+- Browser account sessions [active]
+  - `create-development-session`
+  - `get-current-authenticated-session`
+  - `list-browser-account-sessions`
+  - `switch-active-account-session`
+  - `remove-account-session`
+  - `sign-out-all-sessions`
+  - `expire-session`
+  - `reauthenticate-session`
+  - Owned: `Credential`, `Session`
+  - Invariants:
+    - One browser token identifies one session set.
+    - `activeSessionId` is null or references a session in that set.
+    - Expired or revoked sessions cannot become active.
+    - An expired managed-user session requires reauthentication.
+- Additional authentication factors [planned]
+  - Owned: `TwoFactorConfiguration`, `ExternalLoginBinding`
+  - Events: `TwoFactorEnabled@1`, `TwoFactorDisabled@1`,
+    `ExternalLoginLinked@1`, `ExternalLoginUnlinked@1`
+- Session events [planned]
+  - `SessionCreated@1`, `SessionRevoked@1`
 - External relationships
-  - Runtime dependencies: none.
-  - Planned relationships
-    - `identity/accounts::AccountReference` (synchronous)
-- Explicit exclusions
-  - `AccountLifecycle`
-  - `ScimProvisioning`
-  - `OAuthAppAuthorization`
+  - `identity/accounts::AccountReference` (synchronous)
+- Excludes
+  - `AccountLifecycle`, `ScimProvisioning`, `OAuthAppAuthorization`
 
 ## Designed use cases
 
-No approved use cases. Implementation remains blocked.
+### `create-development-session` [active]
+
+- **Type:** `command`
+- **Application boundary:** `CreateDevelopmentSessionUseCase.createDevelopmentSession()`
+- **Public entrypoint:** `server-api.ts#createDevelopmentSession`
+- **Input:** Optional browser token plus development username and password.
+- **Success result:** `created` with opaque browser token and authenticated session reference.
+- **Expected rejections:** `invalid-credentials`, `account-unavailable`
+- **Authorization:** Development credential verification owned here.
+- **Transaction:** One browser session-set replacement.
+- **Idempotency:** Reauthentication replaces the same account session in the set.
+- **Dependencies:** `identity/accounts::AccountReference`
+- **Published events:** `none`
+- **Official evidence:** `identity-authentication-source-02`
+- **Local policy:** Available only in development and explicit E2E runtime.
+
+### `expire-session` [active]
+
+- **Type:** `command`
+- **Application boundary:** `ExpireSessionUseCase.expireSession()`
+- **Public entrypoint:** `server-api.ts#expireSession`
+- **Input:** Browser token and session ID.
+- **Success result:** `expired`.
+- **Expected rejections:** `browser-session-not-found`, `session-not-found`
+- **Authorization:** Development-only authenticated browser set.
+- **Transaction:** One session-set replacement.
+- **Idempotency:** Repeated expiration preserves expired state.
+- **Dependencies:** `identity/accounts::AccountReference`
+- **Published events:** `none`
+- **Official evidence:** `identity-authentication-source-02`
+- **Local policy:** Test support only.
+
+### `get-current-authenticated-session` [active]
+
+- **Type:** `query`
+- **Application boundary:** `GetCurrentAuthenticatedSessionUseCase.getCurrentAuthenticatedSession()`
+- **Public entrypoint:** `server-api.ts#getCurrentAuthenticatedSession`
+- **Input:** Opaque browser token.
+- **Success result:** `authenticated` with active session and account reference.
+- **Expected rejections:** `authentication-required`
+- **Authorization:** The browser token is the session-set credential.
+- **Transaction:** Read-only except lazy expiry persistence.
+- **Idempotency:** Query with deterministic expiry transition for a fixed clock.
+- **Dependencies:** `identity/accounts::AccountReference`
+- **Published events:** `none`
+- **Official evidence:** `identity-authentication-source-02`
+- **Local policy:** Inactive accounts invalidate the session.
+
+### `list-browser-account-sessions` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ListBrowserAccountSessionsUseCase.listBrowserAccountSessions()`
+- **Public entrypoint:** `server-api.ts#listBrowserAccountSessions`
+- **Input:** Opaque browser token.
+- **Success result:** `found` with account sessions and current-session marker.
+- **Expected rejections:** `browser-session-not-found`
+- **Authorization:** The browser token scopes the list.
+- **Transaction:** Read-only.
+- **Idempotency:** Query.
+- **Dependencies:** `identity/accounts::AccountReference`
+- **Published events:** `none`
+- **Official evidence:** `identity-authentication-source-02`
+- **Local policy:** Raw browser tokens are never returned through HTTP.
+
+### `reauthenticate-session` [active]
+
+- **Type:** `command`
+- **Application boundary:** `ReauthenticateSessionUseCase.reauthenticateSession()`
+- **Public entrypoint:** `server-api.ts#reauthenticateSession`
+- **Input:** Browser token, session ID, and development password.
+- **Success result:** `reauthenticated` with refreshed session.
+- **Expected rejections:** `browser-session-not-found`, `session-not-found`, `invalid-credentials`, `account-unavailable`
+- **Authorization:** Development credential verification owned here.
+- **Transaction:** One session-set replacement.
+- **Idempotency:** Repeated success refreshes authentication time.
+- **Dependencies:** `identity/accounts::AccountReference`
+- **Published events:** `none`
+- **Official evidence:** `identity-authentication-source-02`
+- **Local policy:** Reauthentication does not silently switch the active account.
+
+### `remove-account-session` [active]
+
+- **Type:** `command`
+- **Application boundary:** `RemoveAccountSessionUseCase.removeAccountSession()`
+- **Public entrypoint:** `server-api.ts#removeAccountSession`
+- **Input:** Browser token and session ID.
+- **Success result:** `removed` with optional replacement current session.
+- **Expected rejections:** `browser-session-not-found`, `session-not-found`
+- **Authorization:** The browser token scopes the removal.
+- **Transaction:** One session-set replacement or deletion.
+- **Idempotency:** A second removal returns `session-not-found`.
+- **Dependencies:** `identity/accounts::AccountReference`
+- **Published events:** `none`
+- **Official evidence:** `identity-authentication-source-02`
+- **Local policy:** Removing the last session deletes the browser set.
+
+### `sign-out-all-sessions` [active]
+
+- **Type:** `command`
+- **Application boundary:** `SignOutAllSessionsUseCase.signOutAllSessions()`
+- **Public entrypoint:** `server-api.ts#signOutAllSessions`
+- **Input:** Opaque browser token.
+- **Success result:** `signed-out`.
+- **Expected rejections:** `browser-session-not-found`
+- **Authorization:** The browser token scopes deletion.
+- **Transaction:** Delete one browser session set.
+- **Idempotency:** A second call returns `browser-session-not-found`.
+- **Dependencies:** `identity/accounts::AccountReference`
+- **Published events:** `none`
+- **Official evidence:** `identity-authentication-source-02`
+- **Local policy:** HTTP clears the cookie even if the process store was reset.
+
+### `switch-active-account-session` [active]
+
+- **Type:** `command`
+- **Application boundary:** `SwitchActiveAccountSessionUseCase.switchActiveAccountSession()`
+- **Public entrypoint:** `server-api.ts#switchActiveAccountSession`
+- **Input:** Browser token and target session ID.
+- **Success result:** `switched` with authenticated session reference.
+- **Expected rejections:** `browser-session-not-found`, `session-not-found`, `session-not-switchable`, `reauthentication-required`
+- **Authorization:** The target must belong to the identified browser set.
+- **Transaction:** One active-session pointer update.
+- **Idempotency:** Selecting the current active session is safe.
+- **Dependencies:** `identity/accounts::AccountReference`
+- **Published events:** `none`
+- **Official evidence:** `identity-authentication-source-02`
+- **Local policy:** Expired managed sessions never change the active pointer.
 
 ## Ubiquitous language
 
-The catalog reserves these terms for this context:
-
-- `Credential`
-- `Session`
-- `TwoFactorConfiguration`
-- `ExternalLoginBinding`
-
-Precise definitions must be refined against the official sources before activation.
+- **Browser session set**: account sessions retained for one opaque browser token.
+- **Account session**: authentication state for one user account.
+- **Active session**: the account session used by the current request.
 
 ## Ownership and invariants
 
-This context owns `Credential`, `Session`, `TwoFactorConfiguration`, `ExternalLoginBinding`.
-It excludes `AccountLifecycle`, `ScimProvisioning`, `OAuthAppAuthorization`.
-
-No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
+This context owns credentials and sessions. It does not own account lifecycle.
+All session-set mutations preserve the active-session membership invariant.
 
 ## Public capabilities
 
-None while planned. Activation requires at least one real use case and public consumer.
+`server-api.ts` exposes the eight active operations.
+`integration-contracts.ts` exposes `AuthenticatedSessionReference`.
 
 ## Dependencies and consistency
 
-### Runtime dependencies
-
-None.
-
-### Planned relationships
-
-- `identity/accounts::AccountReference` (synchronous)
+Account state is resolved synchronously through
+`identity/accounts::AccountReference`. Session-set writes are context-local;
+Dashboard context restoration occurs after account switching.
 
 ## Authorization
 
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
+The opaque HttpOnly cookie identifies the browser set. Mutating Route Handlers
+also enforce same-origin requests. Development credentials are never returned.
 
 ## Persistence and transactions
 
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
+A versioned process-local Map is used only for development and explicit E2E.
+Each command replaces or deletes one session set. There is no cross-process
+consistency.
 
 ## Data classification
 
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Passwords and opaque session tokens are secret. HTTP responses expose neither.
+Account IDs and usernames are public identifiers.
 
 ## Retention and erasure
 
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
+The cookie has a 30-day maximum age. Process restart invalidates all tokens;
+sign-out-all deletes the set and cookie.
 
 ## Events and failure behavior
 
-- `SessionCreated@1` (domain, planned): session created. contract and ordering pending activation.
-- `SessionRevoked@1` (domain, planned): session revoked. contract and ordering pending activation.
-- `TwoFactorEnabled@1` (domain, planned): two factor enabled. contract and ordering pending activation.
-- `TwoFactorDisabled@1` (domain, planned): two factor disabled. contract and ordering pending activation.
-- `ExternalLoginLinked@1` (domain, planned): external login linked. contract and ordering pending activation.
-- `ExternalLoginUnlinked@1` (domain, planned): external login unlinked. contract and ordering pending activation.
+The active slice emits no events; all catalog events remain planned. Expected
+failures use discriminated results and infrastructure failures propagate.
 
 ## Official sources
 
-- `identity-authentication-source-01`: [authentication, sessions, two-factor authentication](https://docs.github.com/en/authentication) (not yet verified)
+- `identity-authentication-source-01`: <https://docs.github.com/en/authentication>
+- `identity-authentication-source-02`: <https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/switching-between-accounts>
 
 ## Exceptions
 
-No context-specific exception is declared by the catalog. The central
-[exception registry](../../../../../../docs/architecture/exceptions/registry.json) remains authoritative.
+The password credential adapter and expire/reauthenticate operations are
+development/E2E-only.

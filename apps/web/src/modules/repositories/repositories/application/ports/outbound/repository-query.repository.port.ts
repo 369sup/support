@@ -14,4 +14,8 @@ export type RepositoryQuerySnapshot = Readonly<{
 
 export interface RepositoryQueryRepositoryPort {
   findByOwnerId(ownerId: string): Promise<readonly RepositoryQuerySnapshot[]>;
+  findByOwnerIdAndName(
+    ownerId: string,
+    name: string,
+  ): Promise<RepositoryQuerySnapshot | null>;
 }

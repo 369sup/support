@@ -651,25 +651,41 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       dependency.events.some((selected) => selected.name === event && selected.version === 1));
 
   assert.equal(catalog.version, 6);
-  assert.equal(catalog.contexts.length, 48);
+  assert.equal(catalog.contexts.length, 49);
   assert.equal(catalog.contexts.every((item) => item.status === undefined), true);
   assert.deepEqual(
     catalog.contexts
       .filter((item) => item.implementationStatus === "active")
       .map((item) => `${item.subdomain}/${item.name}`),
-    ["identity/accounts", "repositories/repositories"],
+    [
+      "identity/accounts",
+      "identity/authentication",
+      "enterprises/enterprises",
+      "enterprises/enterprise-memberships",
+      "enterprises/enterprise-roles",
+      "organizations/organizations",
+      "organizations/organization-memberships",
+      "repositories/repositories",
+      "repositories/repository-access",
+      "projections/dashboard",
+    ],
   );
   assert.equal(
     catalog.contexts.filter((item) => item.implementationStatus === "planned").length,
-    46,
+    39,
   );
   assert.deepEqual(
     byPath.get("identity/accounts").activationScope,
-    ["get-personal-account-by-username"],
+    ["get-account-reference-by-id", "get-personal-account-by-username"],
   );
   assert.deepEqual(
     byPath.get("repositories/repositories").activationScope,
-    ["list-active-public-repositories-for-personal-owner"],
+    [
+      "get-repository-by-owner-and-name",
+      "list-active-public-repositories-for-organization-owner",
+      "list-active-public-repositories-for-personal-owner",
+      "list-active-repositories-for-owner",
+    ],
   );
   assert.deepEqual(
     byPath.get("repositories/repositories").dependencies,
@@ -677,6 +693,11 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       {
         context: "identity/accounts",
         contract: "UserOwnerReference",
+        mode: "synchronous",
+      },
+      {
+        context: "organizations/organizations",
+        contract: "OrganizationOwnerReference",
         mode: "synchronous",
       },
     ],
@@ -687,11 +708,15 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       .every((item) => item.activationScope.length === 0),
     true,
   );
-  assert.equal(
-    catalog.contexts
-      .filter((item) => `${item.subdomain}/${item.name}` !== "repositories/repositories")
-      .every((item) => item.dependencies.length === 0),
-    true,
+  assert.deepEqual(
+    byPath.get("projections/dashboard").activationScope,
+    [
+      "get-dashboard-repository-view",
+      "get-selected-dashboard-context",
+      "list-available-dashboard-contexts",
+      "restore-last-valid-dashboard-context",
+      "select-dashboard-context",
+    ],
   );
   assert.equal(
     catalog.contexts.every((item) => item.publishedEvents.every(

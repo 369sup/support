@@ -24,7 +24,7 @@ four-digit number. Add each record to the table below.
 
 | ADR | Status | Decision |
 | --- | --- | --- |
-| None | — | No architecture decisions have been recorded yet. |
+| [ADR-0001](ADR-0001-account-and-dashboard-contexts.md) | Accepted | Separate account sessions, Dashboard context, and enterprise administration. |
 
 ## Template
 

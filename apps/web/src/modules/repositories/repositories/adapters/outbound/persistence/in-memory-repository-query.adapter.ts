@@ -18,6 +18,32 @@ const developmentRepositories: readonly RepositoryQuerySnapshot[] = [
     updatedAt: "2026-07-23T00:00:00.000Z",
   },
   {
+    repositoryId: "repository_community_lab_docs",
+    owner: {
+      kind: "organization",
+      id: "organization_community_lab",
+      username: "community-lab",
+    },
+    name: "docs",
+    description: "Public documentation maintained by Community Lab.",
+    visibility: "public",
+    lifecycleState: "active",
+    updatedAt: "2026-07-23T00:00:00.000Z",
+  },
+  {
+    repositoryId: "repository_acme_platform_internal_tools",
+    owner: {
+      kind: "organization",
+      id: "organization_acme_platform",
+      username: "acme-platform",
+    },
+    name: "internal-tools",
+    description: "Internal tools for the ACME Platform organization.",
+    visibility: "internal",
+    lifecycleState: "active",
+    updatedAt: "2026-07-23T00:00:00.000Z",
+  },
+  {
     repositoryId: "repository_private_fixture",
     owner: {
       kind: "personal",
@@ -45,25 +71,87 @@ const developmentRepositories: readonly RepositoryQuerySnapshot[] = [
   },
 ];
 
+type RepositoryStore = Readonly<{
+  byId: Map<string, RepositoryQuerySnapshot>;
+  idsByOwnerId: Map<string, readonly string[]>;
+  idByOwnerAndName: Map<string, string>;
+}>;
+
+declare global {
+  var __supportRepositoryStoreV1: RepositoryStore | undefined;
+}
+
+function ownerAndNameKey(ownerId: string, name: string) {
+  return `${ownerId}\u0000${name}`;
+}
+
+function createStore(
+  repositories: readonly RepositoryQuerySnapshot[],
+): RepositoryStore {
+  const byId = new Map<string, RepositoryQuerySnapshot>();
+  const mutableIdsByOwnerId = new Map<string, string[]>();
+  const idByOwnerAndName = new Map<string, string>();
+  for (const repository of repositories) {
+    byId.set(repository.repositoryId, repository);
+    const ownerIds = mutableIdsByOwnerId.get(repository.owner.id) ?? [];
+    ownerIds.push(repository.repositoryId);
+    mutableIdsByOwnerId.set(repository.owner.id, ownerIds);
+    idByOwnerAndName.set(
+      ownerAndNameKey(repository.owner.id, repository.name),
+      repository.repositoryId,
+    );
+  }
+  return {
+    byId,
+    idsByOwnerId: mutableIdsByOwnerId,
+    idByOwnerAndName,
+  };
+}
+
+function getProcessStore(): RepositoryStore {
+  globalThis.__supportRepositoryStoreV1 ??= createStore(
+    developmentRepositories,
+  );
+  return globalThis.__supportRepositoryStoreV1;
+}
+
 export class InMemoryRepositoryQueryAdapter
   implements RepositoryQueryRepositoryPort
 {
-  private readonly repositories: readonly RepositoryQuerySnapshot[];
+  private readonly store: RepositoryStore;
 
   constructor(
-    repositories: readonly RepositoryQuerySnapshot[] =
-      developmentRepositories,
+    repositories?: readonly RepositoryQuerySnapshot[],
   ) {
-    this.repositories = repositories;
+    this.store =
+      repositories === undefined
+        ? getProcessStore()
+        : createStore(repositories);
   }
 
   findByOwnerId(
     ownerId: string,
   ): Promise<readonly RepositoryQuerySnapshot[]> {
+    const repositoryIds = this.store.idsByOwnerId.get(ownerId) ?? [];
     return Promise.resolve(
-      this.repositories.filter(
-        (repository) => repository.owner.id === ownerId,
-      ),
+      repositoryIds.flatMap((repositoryId) => {
+        const repository = this.store.byId.get(repositoryId);
+        return repository === undefined ? [] : [repository];
+      }),
+    );
+  }
+
+  findByOwnerIdAndName(
+    ownerId: string,
+    name: string,
+  ): Promise<RepositoryQuerySnapshot | null> {
+    const repositoryId = this.store.idByOwnerAndName.get(
+      ownerAndNameKey(ownerId, name),
+    );
+    return Promise.resolve(
+      repositoryId === undefined
+        ? null
+        : (this.store.byId.get(repositoryId) ?? null),
     );
   }
 }

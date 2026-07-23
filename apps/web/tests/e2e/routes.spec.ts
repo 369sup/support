@@ -27,7 +27,7 @@ const consoleRoutes = [
 
 async function signIn(page: Page) {
   await page.goto("/sign-in");
-  await page.getByRole("button", { name: "Sign in with mock account" }).click();
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
 }
 
@@ -43,7 +43,7 @@ for (const route of publicRoutes) {
 }
 
 for (const route of consoleRoutes) {
-  test(`${route.path} renders after mock authentication`, async ({ page }) => {
+  test(`${route.path} renders after authentication`, async ({ page }) => {
     await signIn(page);
     await page.goto(route.path);
 
@@ -60,21 +60,32 @@ test("unauthenticated console navigation redirects to sign-in", async ({ page })
   await expect(page.getByRole("heading", { level: 1, name: "Sign in" })).toBeVisible();
 });
 
-test("invalid mock credentials remain on sign-in", async ({ page }) => {
+test("invalid development credentials remain on sign-in", async ({ page }) => {
   await page.goto("/sign-in");
   await page.getByLabel("Password").fill("incorrect");
-  await page.getByRole("button", { name: "Sign in with mock account" }).click();
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
   await expect(page.locator("form").getByRole("alert")).toHaveText(
-    "Incorrect mock username or password.",
+    "Incorrect development username or password.",
   );
   await expect(page).toHaveURL(/\/sign-in$/);
 });
 
-test("mock sign-in and sign-out complete the session flow", async ({ page }) => {
+test("sign-in uses an HttpOnly cookie and sign-out-all completes the flow", async ({
+  context,
+  page,
+}) => {
   await signIn(page);
   await expect(page.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible();
-  await page.getByRole("button", { name: "Sign out" }).click();
+  const sessionCookie = (await context.cookies()).find(
+    (cookie) => cookie.name === "support.browser-session",
+  );
+  expect(sessionCookie).toMatchObject({
+    httpOnly: true,
+    sameSite: "Lax",
+  });
+  await page.getByLabel("Account menu for @octocat").click();
+  await page.getByRole("button", { name: "Sign out all" }).click();
 
   await expect(page).toHaveURL(/\/sign-in$/);
 });
@@ -101,4 +112,204 @@ test("unknown routes render the application not-found page", async ({ page }) =>
 
   expect(response?.status()).toBe(404);
   await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
+});
+
+test("account, Dashboard context, enterprise role, and repository access integrate", async ({
+  page,
+}) => {
+  await signIn(page);
+
+  const contextSwitcher = page.getByLabel("Dashboard context");
+  await expect(contextSwitcher).toContainText("Community Lab");
+  await expect(contextSwitcher).not.toContainText("ACME Enterprise");
+  await contextSwitcher.selectOption({
+    label: "Community Lab",
+  });
+  await expect(page.getByText("community-lab/docs")).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("Dashboard context")).toHaveValue(
+    "organization:organization_community_lab",
+  );
+  await page.getByRole("link", { name: "Repositories" }).click();
+  await expect(page).toHaveURL(/\/repositories$/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page.getByLabel("Dashboard context")).toHaveValue(
+    "organization:organization_community_lab",
+  );
+  await page.goForward();
+  await expect(page).toHaveURL(/\/repositories$/);
+  await page.goBack();
+  await expect(page.getByText("community-lab/docs")).toBeVisible();
+
+  await page.getByLabel("Account menu for @octocat").click();
+  await page.getByRole("link", { name: "Add account" }).click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Add account" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Add account" }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page.getByLabel("Account menu for @carol_ACME")).toBeVisible();
+
+  await expect(page.getByLabel("Dashboard context")).toContainText(
+    "ACME Platform",
+  );
+  await page.getByLabel("Dashboard context").selectOption({
+    label: "ACME Platform",
+  });
+  await expect(page.getByText("acme-platform/internal-tools")).toBeVisible();
+  await expect(page.getByText("read", { exact: true })).toBeVisible();
+
+  await page.getByLabel("Account menu for @carol_ACME").click();
+  await page
+    .getByRole("link", { name: "Enterprise administration" })
+    .click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "ACME Enterprise" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 2, name: "ACME Platform" }),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: /@octocat/ }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page.getByLabel("Dashboard context")).toHaveValue(
+    "organization:organization_community_lab",
+  );
+  await expect(page.getByText("community-lab/docs")).toBeVisible();
+  await expect(page.getByLabel("Dashboard context")).not.toContainText(
+    "ACME Platform",
+  );
+});
+
+test("pending membership is not a selectable Dashboard context", async ({
+  page,
+}) => {
+  await page.goto("/sign-in");
+  await page.getByLabel("Username").fill("bob");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page.getByLabel("Dashboard context")).not.toContainText(
+    "ACME Support",
+  );
+});
+
+test("an account session can be removed without exposing its account", async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.getByLabel("Account menu for @octocat").click();
+  await page.getByRole("link", { name: "Add account" }).click();
+  await page.getByRole("button", { name: "Add account" }).click();
+  await expect(page.getByLabel("Account menu for @carol_ACME")).toBeVisible();
+
+  await page.getByLabel("Account menu for @carol_ACME").click();
+  await page
+    .getByRole("button", { name: "Remove octocat session" })
+    .click();
+  await page.getByLabel("Account menu for @carol_ACME").click();
+  await expect(
+    page.getByRole("button", { name: /@octocat/ }),
+  ).toHaveCount(0);
+});
+
+test("a process-invalidated opaque cookie safely redirects to sign-in", async ({
+  context,
+  page,
+}) => {
+  await context.addCookies([
+    {
+      name: "support.browser-session",
+      value: "invalidated-browser-session",
+      url: "http://127.0.0.1:3100",
+    },
+  ]);
+
+  await page.goto("/dashboard");
+  await expect(page).toHaveURL(/\/sign-in$/);
+});
+
+test("expired managed session requires reauthentication and keeps active account", async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.getByLabel("Account menu for @octocat").click();
+  await page.getByRole("link", { name: "Add account" }).click();
+  await page.getByRole("button", { name: "Add account" }).click();
+
+  const carolSessionId = await page.evaluate(async () => {
+    const response = await fetch("/api/auth/account-sessions");
+    const payload: unknown = await response.json();
+    if (
+      payload === null ||
+      typeof payload !== "object" ||
+      !("sessions" in payload) ||
+      !Array.isArray(payload.sessions)
+    ) {
+      return null;
+    }
+    const sessions: unknown[] = payload.sessions;
+    for (const session of sessions) {
+      if (
+        session !== null &&
+        typeof session === "object" &&
+        "sessionId" in session &&
+        typeof session.sessionId === "string" &&
+        "account" in session &&
+        session.account !== null &&
+        typeof session.account === "object" &&
+        "username" in session.account &&
+        session.account.username === "carol_ACME"
+      ) {
+        return session.sessionId;
+      }
+    }
+    return null;
+  });
+  expect(carolSessionId).not.toBeNull();
+
+  await page.evaluate(async (sessionId) => {
+    await fetch(
+      `/api/development/auth/account-sessions/${sessionId}/expire`,
+      { method: "POST" },
+    );
+  }, carolSessionId);
+  await page.goto("/dashboard");
+  await expect(page).toHaveURL(/\/sign-in$/);
+
+  await page.goto("/sign-in");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await page.getByLabel("Account menu for @octocat").click();
+  const expiredManagedSession = page.getByRole("button", {
+    name: /@carol_ACME/,
+  });
+  await expect(expiredManagedSession).toBeDisabled();
+  await expect(expiredManagedSession).toContainText(
+    "Reauthentication required",
+  );
+  const activationStatus = await page.evaluate(async (sessionId) => {
+    const response = await fetch(
+      `/api/auth/account-sessions/${sessionId}/activate`,
+      { method: "POST" },
+    );
+    const payload: unknown = await response.json();
+    let status: string | null = null;
+    if (
+      payload !== null &&
+      typeof payload === "object" &&
+      "status" in payload &&
+      typeof payload.status === "string"
+    ) {
+      status = payload.status;
+    }
+    return {
+      httpStatus: response.status,
+      status,
+    };
+  }, carolSessionId);
+  expect(activationStatus).toEqual({
+    httpStatus: 409,
+    status: "reauthentication-required",
+  });
+  await expect(page.getByLabel("Account menu for @octocat")).toBeVisible();
 });

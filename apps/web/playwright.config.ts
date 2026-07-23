@@ -5,4 +5,7 @@ export default createPlaywrightConfig({
   testDir: "./tests/e2e",
   webServerCommand:
     "node node_modules/next/dist/bin/next start --port 3100",
+  webServerEnvironment: {
+    SUPPORT_IN_MEMORY_RUNTIME: "enabled",
+  },
 });

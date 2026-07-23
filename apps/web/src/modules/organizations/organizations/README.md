@@ -1,113 +1,110 @@
-# Organizations Bounded Context
-
-- **Catalog path:** `organizations/organizations`
-- **Kind:** `domain`
-- **Classification:** `core`
-- **Maturity:** `stable`
-- **Implementation:** `planned`
-- **Semantic status:** `candidate`
+# Organizations
 
 ## Purpose
 
-Organization identity, profile, lifecycle, verified domains, and enterprise ownership.
+Own organization identity, login, profile, lifecycle, and verified domains.
+Enterprise organization links are owned by `enterprises/enterprises`.
 
 ## Context content tree
 
-- `organizations/organizations` [planned]
-  - Purpose: Organization identity, profile, lifecycle, verified domains, and enterprise ownership.
-  - Capabilities
-    - No active use cases; activation scope remains empty.
-  - Owned domain concepts
-    - `Organization`
-    - `OrganizationProfile`
-    - `OrganizationLifecycle`
-    - `VerifiedDomain`
-  - Business rules and invariants
-    - Pending official-source validation before activation.
-  - Published events
-    - `OrganizationCreated@1` [planned]: organization created.
-    - `OrganizationProfileUpdated@1` [planned]: organization profile updated.
-    - `OrganizationRenamed@1` [planned]: organization renamed.
-    - `OrganizationLifecycleChanged@1` [planned]: organization lifecycle changed.
-    - `VerifiedDomainAdded@1` [planned]: verified domain added.
-    - `VerifiedDomainRemoved@1` [planned]: verified domain removed.
-    - `EnterpriseOwnershipChanged@1` [planned]: enterprise ownership changed.
-- External relationships
-  - Runtime dependencies: none.
-  - Planned relationships
-    - `enterprises/enterprises::EnterpriseReference` (synchronous)
-- Explicit exclusions
-  - `OrganizationMembership`
-  - `OrganizationTeam`
-  - `Repository`
+- Organization discovery [active]
+  - `get-organization-by-login`
+  - `get-organization-reference-by-id`
+  - Owned: `Organization`, `OrganizationProfile`, `OrganizationLifecycle`
+  - Active-only organizations are returned.
+- Verified domains [planned]
+  - Owned: `VerifiedDomain`
+- Planned events
+  - `OrganizationCreated@1`, `OrganizationProfileUpdated@1`,
+    `OrganizationRenamed@1`, `OrganizationLifecycleChanged@1`,
+    `VerifiedDomainAdded@1`, `VerifiedDomainRemoved@1`
+- Excludes
+  - `OrganizationMembership`, `OrganizationTeam`, `Repository`,
+    `EnterpriseOrganizationLink`
 
 ## Designed use cases
 
-No approved use cases. Implementation remains blocked.
+### `get-organization-by-login` [active]
+
+- **Type:** `query`
+- **Application boundary:** `GetOrganizationByLoginUseCase.getOrganizationByLogin()`
+- **Public entrypoint:** `server-api.ts#getOrganizationByLogin`
+- **Input:** Organization login.
+- **Success result:** `found` with active organization reference.
+- **Expected rejections:** `organization-not-found`
+- **Authorization:** None; public identity only.
+- **Transaction:** Read-only.
+- **Idempotency:** Query.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `organizations-organizations-source-01`
+- **Local policy:** Empty, suspended, and deleted organizations are absent.
+
+### `get-organization-reference-by-id` [active]
+
+- **Type:** `query`
+- **Application boundary:** `GetOrganizationReferenceByIdUseCase.getOrganizationReferenceById()`
+- **Public entrypoint:** `server-api.ts#getOrganizationReferenceById`
+- **Input:** Organization ID.
+- **Success result:** `found` with active organization reference.
+- **Expected rejections:** `organization-not-found`
+- **Authorization:** None; public identity only.
+- **Transaction:** Read-only.
+- **Idempotency:** Query.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `organizations-organizations-source-01`
+- **Local policy:** Suspended and deleted organizations are absent.
 
 ## Ubiquitous language
 
-The catalog reserves these terms for this context:
-
-- `Organization`
-- `OrganizationProfile`
-- `OrganizationLifecycle`
-- `VerifiedDomain`
-
-Precise definitions must be refined against the official sources before activation.
+- **Organization**: a shared account that groups people and repositories but
+  cannot authenticate.
+- **Organization login**: the public organization namespace.
 
 ## Ownership and invariants
 
-This context owns `Organization`, `OrganizationProfile`, `OrganizationLifecycle`, `VerifiedDomain`.
-It excludes `OrganizationMembership`, `OrganizationTeam`, `Repository`.
-
-No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
+Organization identity is separate from user accounts and from memberships.
+Enterprise ownership links are excluded to preserve one authority.
 
 ## Public capabilities
 
-None while planned. Activation requires at least one real use case and public consumer.
+The two active queries are exposed through `server-api.ts`.
+`OrganizationReference` and `OrganizationOwnerReference` are integration
+contracts.
 
 ## Dependencies and consistency
 
-### Runtime dependencies
-
-None.
-
-### Planned relationships
-
-- `enterprises/enterprises::EnterpriseReference` (synchronous)
+The active queries have no cross-context dependencies. Fixed fixture IDs are
+validated by scenario integration tests.
 
 ## Authorization
 
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Public identity lookup requires no authorization.
 
 ## Persistence and transactions
 
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
+A versioned context-local process Map indexes ID and login. Queries do not
+write.
 
 ## Data classification
 
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Organization ID, login, and display name are public identifiers.
 
 ## Retention and erasure
 
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Fixtures live for the process lifetime. Durable lifecycle behavior remains
+planned.
 
 ## Events and failure behavior
 
-- `OrganizationCreated@1` (domain, planned): organization created. contract and ordering pending activation.
-- `OrganizationProfileUpdated@1` (domain, planned): organization profile updated. contract and ordering pending activation.
-- `OrganizationRenamed@1` (domain, planned): organization renamed. contract and ordering pending activation.
-- `OrganizationLifecycleChanged@1` (domain, planned): organization lifecycle changed. contract and ordering pending activation.
-- `VerifiedDomainAdded@1` (domain, planned): verified domain added. contract and ordering pending activation.
-- `VerifiedDomainRemoved@1` (domain, planned): verified domain removed. contract and ordering pending activation.
-- `EnterpriseOwnershipChanged@1` (domain, planned): enterprise ownership changed. contract and ordering pending activation.
+The active slice emits no events; catalog events remain planned. Expected
+absence is a named result.
 
 ## Official sources
 
-- `organizations-organizations-source-01`: [organizations, organization ownership, organization profile](https://docs.github.com/en/organizations/collaborating-with-groups-in-organizations/about-organizations) (not yet verified)
+- `organizations-organizations-source-01`: <https://docs.github.com/en/organizations/collaborating-with-groups-in-organizations/about-organizations>
 
 ## Exceptions
 
-No context-specific exception is declared by the catalog. The central
-[exception registry](../../../../../../docs/architecture/exceptions/registry.json) remains authoritative.
+None.

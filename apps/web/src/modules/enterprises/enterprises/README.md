@@ -1,109 +1,109 @@
-# Enterprises Bounded Context
-
-- **Catalog path:** `enterprises/enterprises`
-- **Kind:** `domain`
-- **Classification:** `core`
-- **Maturity:** `stable`
-- **Implementation:** `planned`
-- **Semantic status:** `candidate`
+# Enterprises
 
 ## Purpose
 
-Enterprise identity, profile, account mode, lifecycle, and organization ownership.
+Own enterprise identity, type, lifecycle, and authoritative links to
+organizations. Enterprises do not directly own repositories.
 
 ## Context content tree
 
-- `enterprises/enterprises` [planned]
-  - Purpose: Enterprise identity, profile, account mode, lifecycle, and organization ownership.
-  - Capabilities
-    - No active use cases; activation scope remains empty.
-  - Owned domain concepts
-    - `Enterprise`
-    - `EnterpriseType`
-    - `EnterpriseLifecycle`
-    - `EnterpriseOrganizationLink`
-  - Business rules and invariants
-    - Pending official-source validation before activation.
-  - Published events
-    - `EnterpriseCreated@1` [planned]: enterprise created.
-    - `EnterpriseProfileUpdated@1` [planned]: enterprise profile updated.
-    - `EnterpriseOrganizationLinked@1` [planned]: enterprise organization linked.
-    - `EnterpriseOrganizationUnlinked@1` [planned]: enterprise organization unlinked.
-    - `EnterpriseLifecycleChanged@1` [planned]: enterprise lifecycle changed.
+- Enterprise discovery [active]
+  - `get-enterprise-by-slug`
+  - `list-enterprise-organizations`
+  - Owned: `Enterprise`, `EnterpriseType`, `EnterpriseLifecycle`,
+    `EnterpriseOrganizationLink`
+- Planned events
+  - `EnterpriseCreated@1`, `EnterpriseProfileUpdated@1`,
+    `EnterpriseOrganizationLinked@1`, `EnterpriseOrganizationUnlinked@1`,
+    `EnterpriseLifecycleChanged@1`
 - External relationships
-  - Runtime dependencies: none.
-  - Planned relationships
-    - `identity/accounts::ActorReference` (synchronous)
-- Explicit exclusions
-  - `EnterpriseMembership`
-  - `EnterpriseRole`
-  - `EnterprisePolicy`
+  - `organizations/organizations::OrganizationReference`
+  - planned `identity/accounts::ActorReference`
+- Excludes
+  - `EnterpriseMembership`, `EnterpriseRole`, `EnterprisePolicy`
 
 ## Designed use cases
 
-No approved use cases. Implementation remains blocked.
+### `get-enterprise-by-slug` [active]
+
+- **Type:** `query`
+- **Application boundary:** `GetEnterpriseBySlugUseCase.getEnterpriseBySlug()`
+- **Public entrypoint:** `server-api.ts#getEnterpriseBySlug`
+- **Input:** Enterprise slug.
+- **Success result:** `found` with active enterprise reference.
+- **Expected rejections:** `enterprise-not-found`
+- **Authorization:** Public identity lookup only.
+- **Transaction:** Read-only.
+- **Idempotency:** Query.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `enterprises-enterprises-source-01`
+- **Local policy:** Suspended and deleted enterprises are absent.
+
+### `list-enterprise-organizations` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ListEnterpriseOrganizationsUseCase.listEnterpriseOrganizations()`
+- **Public entrypoint:** `server-api.ts#listEnterpriseOrganizations`
+- **Input:** Enterprise slug.
+- **Success result:** `found` with enterprise and active linked organizations.
+- **Expected rejections:** `enterprise-not-found`
+- **Authorization:** Transport caller must separately obtain enterprise administration authorization.
+- **Transaction:** Read-only cross-context composition.
+- **Idempotency:** Query.
+- **Dependencies:** `organizations/organizations::OrganizationReference`
+- **Published events:** `none`
+- **Official evidence:** `enterprises-enterprises-source-02`
+- **Local policy:** The enterprise context owns links; organizations own identity.
 
 ## Ubiquitous language
 
-The catalog reserves these terms for this context:
-
-- `Enterprise`
-- `EnterpriseType`
-- `EnterpriseLifecycle`
-- `EnterpriseOrganizationLink`
-
-Precise definitions must be refined against the official sources before activation.
+- **Enterprise organization link**: the authoritative relation that an
+  enterprise contains an organization.
 
 ## Ownership and invariants
 
-This context owns `Enterprise`, `EnterpriseType`, `EnterpriseLifecycle`, `EnterpriseOrganizationLink`.
-It excludes `EnterpriseMembership`, `EnterpriseRole`, `EnterprisePolicy`.
-
-No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
+An enterprise contains organizations and never enters the repository owner
+union.
 
 ## Public capabilities
 
-None while planned. Activation requires at least one real use case and public consumer.
+The active queries are exposed through `server-api.ts`.
+`EnterpriseReference` is the integration contract.
 
 ## Dependencies and consistency
 
-### Runtime dependencies
-
-None.
-
-### Planned relationships
-
-- `identity/accounts::ActorReference` (synchronous)
+Organization references are resolved synchronously; no shared storage or
+cross-context transaction is used.
 
 ## Authorization
 
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
+The identity query is public. Enterprise organization administration is
+protected at HTTP and page boundaries by `enterprise-roles`.
 
 ## Persistence and transactions
 
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
+A versioned context-local process Map stores enterprise records and links.
 
 ## Data classification
 
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Enterprise ID, slug, display name, type, and linked organization identities are
+product identifiers.
 
 ## Retention and erasure
 
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Fixtures live for the process lifetime. Durable lifecycle transitions remain
+planned.
 
 ## Events and failure behavior
 
-- `EnterpriseCreated@1` (domain, planned): enterprise created. contract and ordering pending activation.
-- `EnterpriseProfileUpdated@1` (domain, planned): enterprise profile updated. contract and ordering pending activation.
-- `EnterpriseOrganizationLinked@1` (domain, planned): enterprise organization linked. contract and ordering pending activation.
-- `EnterpriseOrganizationUnlinked@1` (domain, planned): enterprise organization unlinked. contract and ordering pending activation.
-- `EnterpriseLifecycleChanged@1` (domain, planned): enterprise lifecycle changed. contract and ordering pending activation.
+The active queries emit no events; catalog events remain planned.
 
 ## Official sources
 
-- `enterprises-enterprises-source-01`: [enterprise accounts, enterprise organizations, enterprise repositories](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories) (not yet verified)
+- `enterprises-enterprises-source-01`: <https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories>
+- `enterprises-enterprises-source-02`: <https://docs.github.com/en/enterprise-cloud@latest/get-started/learning-about-github/types-of-github-accounts>
 
 ## Exceptions
 
-No context-specific exception is declared by the catalog. The central
-[exception registry](../../../../../../docs/architecture/exceptions/registry.json) remains authoritative.
+None.

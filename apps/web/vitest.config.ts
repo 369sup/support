@@ -1,5 +1,18 @@
+import { fileURLToPath } from "node:url";
+
 import { createNodeTestConfig } from "@support/testing-config/vitest-node";
 
-export default createNodeTestConfig({
+const config = createNodeTestConfig({
   include: ["*.test.ts", "src/modules/**/*.test.ts"],
 });
+
+const webTestConfig = {
+  ...config,
+  resolve: {
+    alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+    },
+  },
+};
+
+export default webTestConfig;

@@ -1,111 +1,91 @@
-# Enterprise Roles Bounded Context
-
-- **Catalog path:** `enterprises/enterprise-roles`
-- **Kind:** `domain`
-- **Classification:** `core`
-- **Maturity:** `stable`
-- **Implementation:** `planned`
-- **Semantic status:** `candidate`
+# Enterprise Roles
 
 ## Purpose
 
-Predefined and custom enterprise roles, permissions, and assignments.
+Own predefined/custom enterprise roles, assignments, permissions, and
+administration decisions.
 
 ## Context content tree
 
-- `enterprises/enterprise-roles` [planned]
-  - Purpose: Predefined and custom enterprise roles, permissions, and assignments.
-  - Capabilities
-    - No active use cases; activation scope remains empty.
-  - Owned domain concepts
-    - `EnterpriseRoleDefinition`
-    - `EnterpriseRoleAssignment`
-    - `EnterprisePermission`
-  - Business rules and invariants
-    - Pending official-source validation before activation.
-  - Published events
-    - `EnterpriseRoleDefined@1` [planned]: enterprise role defined.
-    - `EnterpriseRoleUpdated@1` [planned]: enterprise role updated.
-    - `EnterpriseRoleDeleted@1` [planned]: enterprise role deleted.
-    - `EnterpriseRoleAssigned@1` [planned]: enterprise role assigned.
-    - `EnterpriseRoleRevoked@1` [planned]: enterprise role revoked.
+- Administration authorization [active]
+  - `authorize-enterprise-administration`
+  - Owned: `EnterpriseRoleDefinition`, `EnterpriseRoleAssignment`,
+    `EnterprisePermission`
+  - Active affiliation and `view-enterprise` permission are both required.
+- Planned events
+  - `EnterpriseRoleDefined@1`, `EnterpriseRoleUpdated@1`,
+    `EnterpriseRoleDeleted@1`, `EnterpriseRoleAssigned@1`,
+    `EnterpriseRoleRevoked@1`
 - External relationships
-  - Runtime dependencies: none.
-  - Planned relationships
-    - `enterprises/enterprises::EnterpriseReference` (synchronous)
-    - `enterprises/enterprise-memberships::EnterpriseMemberReference` (synchronous)
-    - `enterprises/enterprise-teams::EnterpriseTeamReference` (synchronous)
-- Explicit exclusions
-  - `OrganizationRole`
-  - `RepositoryRole`
-  - `BillingAccount`
+  - `enterprises/enterprises::EnterpriseReference`
+  - `enterprises/enterprise-memberships::EnterpriseAffiliation`
+  - planned `enterprises/enterprise-teams::EnterpriseTeamReference`
+- Excludes
+  - `OrganizationRole`, `RepositoryRole`, `BillingAccount`
 
 ## Designed use cases
 
-No approved use cases. Implementation remains blocked.
+### `authorize-enterprise-administration` [active]
+
+- **Type:** `query`
+- **Application boundary:** `AuthorizeEnterpriseAdministrationUseCase.authorizeEnterpriseAdministration()`
+- **Public entrypoint:** `server-api.ts#authorizeEnterpriseAdministration`
+- **Input:** Account ID and enterprise ID.
+- **Success result:** `allowed` with predefined role and `view-enterprise`.
+- **Expected rejections:** `membership-inactive`, `permission-missing`
+- **Authorization:** This context owns the enterprise permission decision.
+- **Transaction:** Read-only.
+- **Idempotency:** Query.
+- **Dependencies:** `enterprises/enterprises::EnterpriseReference`, `enterprises/enterprise-memberships::EnterpriseAffiliation`
+- **Published events:** `none`
+- **Official evidence:** `enterprises-enterprise-roles-source-01`
+- **Local policy:** Ordinary enterprise membership never implies administration.
 
 ## Ubiquitous language
 
-The catalog reserves these terms for this context:
-
-- `EnterpriseRoleDefinition`
-- `EnterpriseRoleAssignment`
-- `EnterprisePermission`
-
-Precise definitions must be refined against the official sources before activation.
+- **Enterprise administration decision**: source role and permission result for
+  one account and enterprise.
 
 ## Ownership and invariants
 
-This context owns `EnterpriseRoleDefinition`, `EnterpriseRoleAssignment`, `EnterprisePermission`.
-It excludes `OrganizationRole`, `RepositoryRole`, `BillingAccount`.
-
-No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
+Role assignment is the only source of enterprise administration permissions in
+the active slice.
 
 ## Public capabilities
 
-None while planned. Activation requires at least one real use case and public consumer.
+`authorizeEnterpriseAdministration` is exposed through `server-api.ts`.
 
 ## Dependencies and consistency
 
-### Runtime dependencies
-
-None.
-
-### Planned relationships
-
-- `enterprises/enterprises::EnterpriseReference` (synchronous)
-- `enterprises/enterprise-memberships::EnterpriseMemberReference` (synchronous)
-- `enterprises/enterprise-teams::EnterpriseTeamReference` (synchronous)
+Active affiliation is read synchronously from enterprise memberships before
+role assignments are evaluated.
 
 ## Authorization
 
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Denials distinguish inactive affiliation from missing permission. Neither
+grants repository access.
 
 ## Persistence and transactions
 
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
+Role assignments are deterministic in-memory fixtures.
 
 ## Data classification
 
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Role assignment is security-sensitive authorization data.
 
 ## Retention and erasure
 
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Fixtures live for the process lifetime.
 
 ## Events and failure behavior
 
-- `EnterpriseRoleDefined@1` (domain, planned): enterprise role defined. contract and ordering pending activation.
-- `EnterpriseRoleUpdated@1` (domain, planned): enterprise role updated. contract and ordering pending activation.
-- `EnterpriseRoleDeleted@1` (domain, planned): enterprise role deleted. contract and ordering pending activation.
-- `EnterpriseRoleAssigned@1` (domain, planned): enterprise role assigned. contract and ordering pending activation.
-- `EnterpriseRoleRevoked@1` (domain, planned): enterprise role revoked. contract and ordering pending activation.
+The active query emits no events; catalog role events remain planned.
 
 ## Official sources
 
-- `enterprises-enterprise-roles-source-01`: [enterprise roles, custom enterprise roles, enterprise permissions](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories/managing-roles-in-your-enterprise/abilities-of-roles) (not yet verified)
+- `enterprises-enterprise-roles-source-01`: <https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories/managing-roles-in-your-enterprise/abilities-of-roles>
 
 ## Exceptions
 
-No context-specific exception is declared by the catalog. The central
-[exception registry](../../../../../../docs/architecture/exceptions/registry.json) remains authoritative.
+Only predefined fixture assignments are active; custom-role management remains
+planned.

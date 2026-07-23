@@ -65,7 +65,7 @@
       "classification": "core",
       "maturity": "stable",
       "implementationStatus": "active",
-      "responsibility": "Personal account identity, username, deletion lifecycle, and ghost attribution.",
+      "responsibility": "User account identity, personal or managed account type, human or machine usage, username, lifecycle, and ghost attribution.",
       "semanticStatus": "validated",
       "owns": [
         "Account",
@@ -128,6 +128,17 @@
             "resource-not-found response"
           ],
           "verifiedOn": "2026-07-23"
+        },
+        {
+          "id": "identity-accounts-source-06",
+          "url": "https://docs.github.com/en/enterprise-cloud@latest/get-started/learning-about-github/types-of-github-accounts",
+          "supports": [
+            "personal accounts",
+            "managed user accounts",
+            "machine user account usage",
+            "organizations cannot sign in"
+          ],
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -163,13 +174,14 @@
         }
       ],
       "activationScope": [
+        "get-account-reference-by-id",
         "get-personal-account-by-username"
       ],
       "plannedRelationships": [],
       "semanticClaims": [
         {
           "id": "personal-account-identity",
-          "statement": "A personal account is a GitHub identity with a username.",
+          "statement": "A user account has a username; it may be personal or enterprise-managed, while machine user describes account usage rather than a third account type.",
           "ownership": [
             "Account",
             "Username"
@@ -180,7 +192,8 @@
           ],
           "sourceIds": [
             "identity-accounts-source-02",
-            "identity-accounts-source-03"
+            "identity-accounts-source-03",
+            "identity-accounts-source-06"
           ]
         },
         {
@@ -206,9 +219,9 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
-      "responsibility": "Credentials, sessions, two-factor authentication, recovery, and external login binding.",
-      "semanticStatus": "candidate",
+      "implementationStatus": "active",
+      "responsibility": "Credentials, browser session sets, active account-session selection, two-factor authentication, recovery, and external login binding.",
+      "semanticStatus": "validated",
       "owns": [
         "Credential",
         "Session",
@@ -220,7 +233,13 @@
         "ScimProvisioning",
         "OAuthAppAuthorization"
       ],
-      "dependencies": [],
+      "dependencies": [
+        {
+          "context": "identity/accounts",
+          "contract": "AccountReference",
+          "mode": "synchronous"
+        }
+      ],
       "officialSources": [
         {
           "id": "identity-authentication-source-01",
@@ -230,7 +249,17 @@
             "sessions",
             "two-factor authentication"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
+        },
+        {
+          "id": "identity-authentication-source-02",
+          "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/switching-between-accounts",
+          "supports": [
+            "multiple browser account sessions",
+            "active account switching",
+            "managed user reauthentication"
+          ],
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -295,15 +324,52 @@
           ]
         }
       ],
-      "activationScope": [],
-      "plannedRelationships": [
-        {
-          "context": "identity/accounts",
-          "contract": "AccountReference",
-          "mode": "synchronous"
-        }
+      "activationScope": [
+        "create-development-session",
+        "expire-session",
+        "get-current-authenticated-session",
+        "list-browser-account-sessions",
+        "reauthenticate-session",
+        "remove-account-session",
+        "sign-out-all-sessions",
+        "switch-active-account-session"
       ],
-      "semanticClaims": []
+      "plannedRelationships": [],
+      "semanticClaims": [
+        {
+          "id": "authentication-session-lifecycle",
+          "statement": "A browser can retain multiple account sessions, selects one active session, and requires reauthentication before an expired managed-user session can be activated.",
+          "ownership": [
+            "Credential",
+            "Session"
+          ],
+          "events": [
+            "SessionCreated@1",
+            "SessionRevoked@1"
+          ],
+          "sourceIds": [
+            "identity-authentication-source-01",
+            "identity-authentication-source-02"
+          ]
+        },
+        {
+          "id": "authentication-additional-factors",
+          "statement": "Authentication owns two-factor configuration and external login binding lifecycle.",
+          "ownership": [
+            "TwoFactorConfiguration",
+            "ExternalLoginBinding"
+          ],
+          "events": [
+            "TwoFactorEnabled@1",
+            "TwoFactorDisabled@1",
+            "ExternalLoginLinked@1",
+            "ExternalLoginUnlinked@1"
+          ],
+          "sourceIds": [
+            "identity-authentication-source-01"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "identity",
@@ -483,9 +549,9 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
-      "responsibility": "Enterprise identity, profile, account mode, lifecycle, and organization ownership.",
-      "semanticStatus": "candidate",
+      "implementationStatus": "active",
+      "responsibility": "Enterprise identity, profile, account mode, lifecycle, and authoritative organization ownership links.",
+      "semanticStatus": "validated",
       "owns": [
         "Enterprise",
         "EnterpriseType",
@@ -497,7 +563,13 @@
         "EnterpriseRole",
         "EnterprisePolicy"
       ],
-      "dependencies": [],
+      "dependencies": [
+        {
+          "context": "organizations/organizations",
+          "contract": "OrganizationReference",
+          "mode": "synchronous"
+        }
+      ],
       "officialSources": [
         {
           "id": "enterprises-enterprises-source-01",
@@ -505,9 +577,18 @@
           "supports": [
             "enterprise accounts",
             "enterprise organizations",
-            "enterprise repositories"
+            "enterprise organization ownership"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
+        },
+        {
+          "id": "enterprises-enterprises-source-02",
+          "url": "https://docs.github.com/en/enterprise-cloud@latest/get-started/learning-about-github/types-of-github-accounts",
+          "supports": [
+            "enterprise accounts contain organizations",
+            "enterprise accounts do not directly own repositories"
+          ],
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -562,7 +643,10 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "get-enterprise-by-slug",
+        "list-enterprise-organizations"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/accounts",
@@ -570,7 +654,29 @@
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "enterprise-identity-and-organization-links",
+          "statement": "An enterprise account has identity and lifecycle semantics and contains organizations; it does not directly own repositories.",
+          "ownership": [
+            "Enterprise",
+            "EnterpriseType",
+            "EnterpriseLifecycle",
+            "EnterpriseOrganizationLink"
+          ],
+          "events": [
+            "EnterpriseCreated@1",
+            "EnterpriseProfileUpdated@1",
+            "EnterpriseOrganizationLinked@1",
+            "EnterpriseOrganizationUnlinked@1",
+            "EnterpriseLifecycleChanged@1"
+          ],
+          "sourceIds": [
+            "enterprises-enterprises-source-01",
+            "enterprises-enterprises-source-02"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "enterprises",
@@ -578,9 +684,9 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Enterprise membership, invitations, affiliation, guest collaborators, and unaffiliated users.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "EnterpriseMembership",
         "EnterpriseInvitation",
@@ -592,7 +698,18 @@
         "RepositoryGrant",
         "License"
       ],
-      "dependencies": [],
+      "dependencies": [
+        {
+          "context": "enterprises/enterprises",
+          "contract": "EnterpriseReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "identity/accounts",
+          "contract": "AccountReference",
+          "mode": "synchronous"
+        }
+      ],
       "officialSources": [
         {
           "id": "enterprises-enterprise-memberships-source-01",
@@ -602,7 +719,7 @@
             "unaffiliated users",
             "guest collaborators"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -677,20 +794,34 @@
           ]
         }
       ],
-      "activationScope": [],
-      "plannedRelationships": [
-        {
-          "context": "enterprises/enterprises",
-          "contract": "EnterpriseReference",
-          "mode": "synchronous"
-        },
-        {
-          "context": "identity/accounts",
-          "contract": "AccountReference",
-          "mode": "synchronous"
-        }
+      "activationScope": [
+        "list-active-enterprise-affiliations-for-account"
       ],
-      "semanticClaims": []
+      "plannedRelationships": [],
+      "semanticClaims": [
+        {
+          "id": "enterprise-affiliation-lifecycle",
+          "statement": "Enterprise people views distinguish active members, unaffiliated users, and guest collaborators without embedding administrative roles in membership.",
+          "ownership": [
+            "EnterpriseMembership",
+            "EnterpriseInvitation",
+            "EnterpriseAffiliation",
+            "GuestCollaboratorStatus"
+          ],
+          "events": [
+            "EnterpriseInvitationCreated@1",
+            "EnterpriseInvitationAccepted@1",
+            "EnterpriseInvitationRevoked@1",
+            "EnterpriseMemberAdded@1",
+            "EnterpriseMemberRemoved@1",
+            "EnterpriseAffiliationChanged@1",
+            "GuestCollaboratorStatusChanged@1"
+          ],
+          "sourceIds": [
+            "enterprises-enterprise-memberships-source-01"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "enterprises",
@@ -817,9 +948,9 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Predefined and custom enterprise roles, permissions, and assignments.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "EnterpriseRoleDefinition",
         "EnterpriseRoleAssignment",
@@ -830,7 +961,18 @@
         "RepositoryRole",
         "BillingAccount"
       ],
-      "dependencies": [],
+      "dependencies": [
+        {
+          "context": "enterprises/enterprises",
+          "contract": "EnterpriseReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "enterprises/enterprise-memberships",
+          "contract": "EnterpriseAffiliation",
+          "mode": "synchronous"
+        }
+      ],
       "officialSources": [
         {
           "id": "enterprises-enterprise-roles-source-01",
@@ -840,7 +982,7 @@
             "custom enterprise roles",
             "enterprise permissions"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -895,25 +1037,37 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "authorize-enterprise-administration"
+      ],
       "plannedRelationships": [
-        {
-          "context": "enterprises/enterprises",
-          "contract": "EnterpriseReference",
-          "mode": "synchronous"
-        },
-        {
-          "context": "enterprises/enterprise-memberships",
-          "contract": "EnterpriseMemberReference",
-          "mode": "synchronous"
-        },
         {
           "context": "enterprises/enterprise-teams",
           "contract": "EnterpriseTeamReference",
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "enterprise-role-administration",
+          "statement": "Enterprise administrative abilities come from predefined or custom role assignments and permissions, not from membership alone.",
+          "ownership": [
+            "EnterpriseRoleDefinition",
+            "EnterpriseRoleAssignment",
+            "EnterprisePermission"
+          ],
+          "events": [
+            "EnterpriseRoleDefined@1",
+            "EnterpriseRoleUpdated@1",
+            "EnterpriseRoleDeleted@1",
+            "EnterpriseRoleAssigned@1",
+            "EnterpriseRoleRevoked@1"
+          ],
+          "sourceIds": [
+            "enterprises-enterprise-roles-source-01"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "enterprises",
@@ -1328,9 +1482,9 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
-      "responsibility": "Organization identity, profile, lifecycle, verified domains, and enterprise ownership.",
-      "semanticStatus": "candidate",
+      "implementationStatus": "active",
+      "responsibility": "Organization identity, login, profile, lifecycle, and verified domains.",
+      "semanticStatus": "validated",
       "owns": [
         "Organization",
         "OrganizationProfile",
@@ -1340,7 +1494,8 @@
       "excludes": [
         "OrganizationMembership",
         "OrganizationTeam",
-        "Repository"
+        "Repository",
+        "EnterpriseOrganizationLink"
       ],
       "dependencies": [],
       "officialSources": [
@@ -1352,7 +1507,7 @@
             "organization ownership",
             "organization profile"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -1415,27 +1570,36 @@
           "sourceIds": [
             "organizations-organizations-source-01"
           ]
-        },
+        }
+      ],
+      "activationScope": [
+        "get-organization-by-login",
+        "get-organization-reference-by-id"
+      ],
+      "plannedRelationships": [],
+      "semanticClaims": [
         {
-          "name": "EnterpriseOwnershipChanged",
-          "version": 1,
-          "kind": "domain",
-          "implementationStatus": "planned",
-          "meaning": "enterprise ownership changed.",
+          "id": "organization-identity-and-lifecycle",
+          "statement": "An organization has its own identity, profile, login, lifecycle, and verified-domain semantics, but it cannot authenticate as a user account.",
+          "ownership": [
+            "Organization",
+            "OrganizationProfile",
+            "OrganizationLifecycle",
+            "VerifiedDomain"
+          ],
+          "events": [
+            "OrganizationCreated@1",
+            "OrganizationProfileUpdated@1",
+            "OrganizationRenamed@1",
+            "OrganizationLifecycleChanged@1",
+            "VerifiedDomainAdded@1",
+            "VerifiedDomainRemoved@1"
+          ],
           "sourceIds": [
             "organizations-organizations-source-01"
           ]
         }
-      ],
-      "activationScope": [],
-      "plannedRelationships": [
-        {
-          "context": "enterprises/enterprises",
-          "contract": "EnterpriseReference",
-          "mode": "synchronous"
-        }
-      ],
-      "semanticClaims": []
+      ]
     },
     {
       "subdomain": "organizations",
@@ -1443,9 +1607,9 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Organization membership, invitations, member roles, and membership lifecycle.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "OrganizationMembership",
         "OrganizationInvitation",
@@ -1457,7 +1621,18 @@
         "RepositoryInvitation",
         "EnterpriseRole"
       ],
-      "dependencies": [],
+      "dependencies": [
+        {
+          "context": "organizations/organizations",
+          "contract": "OrganizationReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "identity/accounts",
+          "contract": "AccountReference",
+          "mode": "synchronous"
+        }
+      ],
       "officialSources": [
         {
           "id": "organizations-organization-memberships-source-01",
@@ -1467,7 +1642,7 @@
             "organization invitations",
             "membership lifecycle"
           ],
-          "verifiedOn": null
+          "verifiedOn": "2026-07-23"
         }
       ],
       "publishedEvents": [
@@ -1532,25 +1707,40 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "check-organization-context-eligibility",
+        "list-active-organization-memberships-for-account"
+      ],
       "plannedRelationships": [
-        {
-          "context": "organizations/organizations",
-          "contract": "OrganizationReference",
-          "mode": "synchronous"
-        },
-        {
-          "context": "identity/accounts",
-          "contract": "AccountReference",
-          "mode": "synchronous"
-        },
         {
           "context": "enterprises/enterprise-memberships",
           "contract": "EnterpriseAffiliation",
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "organization-membership-lifecycle",
+          "statement": "Organization membership has member or owner roles and lifecycle states; pending, suspended, and removed memberships are not active membership.",
+          "ownership": [
+            "OrganizationMembership",
+            "OrganizationInvitation",
+            "MembershipRole",
+            "MembershipState"
+          ],
+          "events": [
+            "OrganizationInvitationCreated@1",
+            "OrganizationInvitationAccepted@1",
+            "OrganizationInvitationRevoked@1",
+            "OrganizationMemberAdded@1",
+            "OrganizationMemberRemoved@1",
+            "OrganizationMemberRoleChanged@1"
+          ],
+          "sourceIds": [
+            "organizations-organization-memberships-source-01"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "organizations",
@@ -2100,6 +2290,11 @@
           "context": "identity/accounts",
           "contract": "UserOwnerReference",
           "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organizations",
+          "contract": "OrganizationOwnerReference",
+          "mode": "synchronous"
         }
       ],
       "officialSources": [
@@ -2323,14 +2518,12 @@
         }
       ],
       "activationScope": [
-        "list-active-public-repositories-for-personal-owner"
+        "get-repository-by-owner-and-name",
+        "list-active-public-repositories-for-organization-owner",
+        "list-active-public-repositories-for-personal-owner",
+        "list-active-repositories-for-owner"
       ],
       "plannedRelationships": [
-        {
-          "context": "organizations/organizations",
-          "contract": "OrganizationOwnerReference",
-          "mode": "synchronous"
-        },
         {
           "context": "organizations/organization-policies",
           "contract": "RepositoryPolicyConstraints",
@@ -2428,7 +2621,7 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Repository invitations, direct and inherited grants, outside collaborators, role assignments, and source-attributed effective permission resolution.",
       "semanticStatus": "validated",
       "owns": [
@@ -2445,7 +2638,23 @@
         "OrganizationRoleDefinition",
         "EffectivePermissionAsSourceOfTruth"
       ],
-      "dependencies": [],
+      "dependencies": [
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryCandidateReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "identity/accounts",
+          "contract": "AccountReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-memberships",
+          "contract": "OrganizationMembershipReference",
+          "mode": "synchronous"
+        }
+      ],
       "officialSources": [
         {
           "id": "repositories-repository-access-source-01",
@@ -2634,23 +2843,10 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "resolve-effective-repository-permission"
+      ],
       "plannedRelationships": [
-        {
-          "context": "repositories/repositories",
-          "contract": "RepositoryPermissionContextAndLifecycleState",
-          "mode": "synchronous"
-        },
-        {
-          "context": "identity/accounts",
-          "contract": "AccountReference",
-          "mode": "synchronous"
-        },
-        {
-          "context": "organizations/organization-memberships",
-          "contract": "OrganizationMembershipPermissionContribution",
-          "mode": "synchronous"
-        },
         {
           "context": "organizations/organization-teams",
           "contract": "TeamRepositoryPermissionContribution",
@@ -7319,6 +7515,115 @@
         }
       ],
       "semanticClaims": []
+    },
+    {
+      "subdomain": "projections",
+      "name": "dashboard",
+      "kind": "projection",
+      "maturity": "stable",
+      "implementationStatus": "active",
+      "responsibility": "Available and selected personal or organization Dashboard contexts plus permission-filtered repository views.",
+      "semanticStatus": "validated",
+      "owns": [
+        "AvailableDashboardContext",
+        "SelectedDashboardContext",
+        "DashboardRepositoryView"
+      ],
+      "excludes": [
+        "AuthenticationSession",
+        "OrganizationMembership",
+        "RepositoryGrant",
+        "EnterpriseDashboardContext"
+      ],
+      "dependencies": [
+        {
+          "context": "identity/accounts",
+          "contract": "AccountReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "identity/authentication",
+          "contract": "AuthenticatedSessionReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organizations",
+          "contract": "OrganizationReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-memberships",
+          "contract": "OrganizationMembershipReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryCandidateReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "repositories/repository-access",
+          "contract": "EffectiveRepositoryPermissionDecision",
+          "mode": "synchronous"
+        }
+      ],
+      "officialSources": [
+        {
+          "id": "projections-dashboard-source-01",
+          "url": "https://docs.github.com/en/account-and-profile/concepts/personal-dashboard",
+          "supports": [
+            "personal dashboard",
+            "personal repository view"
+          ],
+          "verifiedOn": "2026-07-23"
+        },
+        {
+          "id": "projections-dashboard-source-02",
+          "url": "https://docs.github.com/en/enterprise-cloud@latest/organizations/collaborating-with-groups-in-organizations/about-your-organization-dashboard",
+          "supports": [
+            "personal and organization dashboard selection",
+            "organization dashboard repository view"
+          ],
+          "verifiedOn": "2026-07-23"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "The Dashboard is a read-model projection and does not publish product facts.",
+      "activationScope": [
+        "get-dashboard-repository-view",
+        "get-selected-dashboard-context",
+        "list-available-dashboard-contexts",
+        "restore-last-valid-dashboard-context",
+        "select-dashboard-context"
+      ],
+      "plannedRelationships": [],
+      "semanticClaims": [
+        {
+          "id": "dashboard-context-selection",
+          "statement": "The Dashboard can switch between the authenticated user's personal context and organizations where the user has an active membership; enterprise administration is a separate surface.",
+          "ownership": [
+            "AvailableDashboardContext",
+            "SelectedDashboardContext"
+          ],
+          "events": [],
+          "sourceIds": [
+            "projections-dashboard-source-01",
+            "projections-dashboard-source-02"
+          ]
+        },
+        {
+          "id": "dashboard-repository-projection",
+          "statement": "A Dashboard repository view scopes by selected owner context and remains independently filtered by effective repository permissions.",
+          "ownership": [
+            "DashboardRepositoryView"
+          ],
+          "events": [],
+          "sourceIds": [
+            "projections-dashboard-source-01",
+            "projections-dashboard-source-02"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "projections",

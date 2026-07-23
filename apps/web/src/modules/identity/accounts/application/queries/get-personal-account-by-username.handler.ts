@@ -28,7 +28,11 @@ export class GetPersonalAccountByUsernameHandler
     const account =
       await this.accountQueryRepository.findPersonalByUsername(normalizedUsername);
 
-    if (account === null || account.lifecycleState !== "active") {
+    if (
+      account === null ||
+      account.accountType !== "personal" ||
+      account.lifecycleState !== "active"
+    ) {
       return { status: "account-not-found" };
     }
 

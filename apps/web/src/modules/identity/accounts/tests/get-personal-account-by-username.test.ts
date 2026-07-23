@@ -18,6 +18,10 @@ class AccountQueryRepositoryFake implements AccountQueryRepositoryPort {
     this.requestedUsernames.push(username);
     return Promise.resolve(this.account);
   }
+
+  findById() {
+    return Promise.resolve(this.account);
+  }
 }
 
 describe("GetPersonalAccountByUsernameHandler", () => {
@@ -25,7 +29,9 @@ describe("GetPersonalAccountByUsernameHandler", () => {
     const repository = new AccountQueryRepositoryFake({
       accountId: "account_octocat",
       username: "octocat",
-      accountKind: "personal",
+      displayName: "The Octocat",
+      accountType: "personal",
+      usage: "human",
       lifecycleState: "active",
     });
     const handler = new GetPersonalAccountByUsernameHandler(repository);
@@ -37,7 +43,9 @@ describe("GetPersonalAccountByUsernameHandler", () => {
       account: {
         accountId: "account_octocat",
         username: "octocat",
-        accountKind: "personal",
+        displayName: "The Octocat",
+        accountType: "personal",
+        usage: "human",
         lifecycleState: "active",
       },
     });
@@ -49,7 +57,9 @@ describe("GetPersonalAccountByUsernameHandler", () => {
       new AccountQueryRepositoryFake({
         accountId: "account_deleted",
         username: "deleted-user",
-        accountKind: "personal",
+        displayName: "Deleted",
+        accountType: "personal",
+        usage: "human",
         lifecycleState: "deleted",
       }),
     );

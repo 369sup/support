@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-import { MockApiProvider } from "@/app/mock-api-provider";
 import { siteConfig } from "@/app/site-config";
 
 const geistSans = Geist({
@@ -35,11 +34,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
-        <MockApiProvider developmentBuild={process.env.NODE_ENV === "development"}>
-          {children}
-        </MockApiProvider>
-      </body>
+      <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
 }

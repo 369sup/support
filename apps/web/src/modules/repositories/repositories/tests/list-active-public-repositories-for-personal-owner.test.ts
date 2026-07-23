@@ -18,6 +18,10 @@ class RepositoryQueryRepositoryFake
   findByOwnerId() {
     return Promise.resolve(this.repositories);
   }
+
+  findByOwnerIdAndName() {
+    return Promise.resolve(null);
+  }
 }
 
 const matchingRepository: RepositoryQuerySnapshot = {

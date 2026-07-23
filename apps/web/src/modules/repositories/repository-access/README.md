@@ -4,7 +4,7 @@
 - **Kind:** `domain`
 - **Classification:** `core`
 - **Maturity:** `stable`
-- **Implementation:** `planned`
+- **Implementation:** `active`
 - **Semantic status:** `validated`
 
 ## Purpose
@@ -13,10 +13,10 @@ Repository invitations, direct and inherited grants, outside collaborators, role
 
 ## Context content tree
 
-- `repositories/repository-access` [planned]
+- `repositories/repository-access` [active]
   - Purpose: Repository invitations, direct and inherited grants, outside collaborators, role assignments, and source-attributed effective permission resolution.
   - Capabilities
-    - No active use cases; activation scope remains empty.
+    - `resolve-effective-repository-permission` [active]
   - Owned domain concepts
     - `RepositoryGrant`
     - `RepositoryInvitation`
@@ -44,11 +44,11 @@ Repository invitations, direct and inherited grants, outside collaborators, role
     - `OutsideCollaboratorAccessGranted@1` [planned]: outside collaborator access granted.
     - `OutsideCollaboratorAccessRevoked@1` [planned]: outside collaborator access revoked.
 - External relationships
-  - Runtime dependencies: none.
+  - Runtime dependencies:
+    - `repositories/repositories::RepositoryCandidateReference`
+    - `identity/accounts::AccountReference`
+    - `organizations/organization-memberships::OrganizationMembershipReference`
   - Planned relationships
-    - `repositories/repositories::RepositoryPermissionContextAndLifecycleState` (synchronous)
-    - `identity/accounts::AccountReference` (synchronous)
-    - `organizations/organization-memberships::OrganizationMembershipPermissionContribution` (synchronous)
     - `organizations/organization-teams::TeamRepositoryPermissionContribution` (synchronous)
     - `organizations/organization-roles::OrganizationRepositoryRoleContribution` (synchronous)
     - `organizations/organization-policies::OrganizationRepositoryPolicyContribution` (synchronous)
@@ -62,7 +62,21 @@ Repository invitations, direct and inherited grants, outside collaborators, role
 
 ## Designed use cases
 
-No approved use cases. Implementation remains blocked.
+### `resolve-effective-repository-permission` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ResolveEffectiveRepositoryPermissionUseCase.resolveEffectiveRepositoryPermission()`
+- **Public entrypoint:** `server-api.ts#resolveEffectiveRepositoryPermission`
+- **Input:** Active repository candidate and authenticated account reference.
+- **Success result:** Source-attributed effective permission decision.
+- **Expected rejections:** `none`
+- **Authorization:** This context owns the repository visibility and permission decision.
+- **Transaction:** Read-only aggregation.
+- **Idempotency:** Query.
+- **Dependencies:** `repositories/repositories::RepositoryCandidateReference`, `identity/accounts::AccountReference`, `organizations/organization-memberships::OrganizationMembershipReference`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repository-access-source-01`
+- **Local policy:** Active sources are public read, personal owner, organization owner, and direct grant; general membership is not a base permission.
 
 ## Ubiquitous language
 
@@ -76,7 +90,8 @@ The catalog reserves these terms for this context:
 - `RepositoryRoleAssignment`
 - `EffectiveRepositoryPermissionDecision`
 
-Precise definitions must be refined against the official sources before activation.
+The active decision aggregates explicit sources and chooses the strongest
+permission.
 
 ## Ownership and invariants
 
@@ -102,13 +117,16 @@ It excludes `OrganizationMembership`, `OrganizationRoleDefinition`, `EffectivePe
 
 ## Public capabilities
 
-None while planned. Activation requires at least one real use case and public consumer.
+`resolveEffectiveRepositoryPermission` is exposed through `server-api.ts`.
+`EffectiveRepositoryPermissionDecision` is the integration contract.
 
 ## Dependencies and consistency
 
 ### Runtime dependencies
 
-None.
+- `repositories/repositories::RepositoryCandidateReference`
+- `identity/accounts::AccountReference`
+- `organizations/organization-memberships::OrganizationMembershipReference`
 
 ### Planned relationships
 
@@ -124,19 +142,22 @@ None.
 
 ## Authorization
 
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
+The decision denies when no source contributes permission. Dashboard context is
+never treated as a grant.
 
 ## Persistence and transactions
 
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
+Direct grants are context-local deterministic fixtures. Permission aggregation
+is read-only and does not create a cross-context transaction.
 
 ## Data classification
 
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Repository grants and permission sources are authorization-sensitive data.
 
 ## Retention and erasure
 
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Fixtures live for the process lifetime. Durable grant lifecycle remains
+planned.
 
 ## Events and failure behavior
 
@@ -152,6 +173,9 @@ Retention, erasure, and tombstone rules are not defined while this context is pl
 - `TeamRepositoryAccessRevoked@1` (domain, planned): team repository access revoked. contract and ordering pending activation.
 - `OutsideCollaboratorAccessGranted@1` (domain, planned): outside collaborator access granted. contract and ordering pending activation.
 - `OutsideCollaboratorAccessRevoked@1` (domain, planned): outside collaborator access revoked. contract and ordering pending activation.
+
+The active query emits no events. Expected denial is returned as
+`allowed: false`; unexpected dependency failures propagate.
 
 ## Official sources
 

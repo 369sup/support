@@ -2,20 +2,22 @@
 
 ## Purpose
 
-Own GitHub-like personal account identity and username semantics. The first
-active slice resolves a public personal-account reference by username.
+Own GitHub-like user account identity, username, account type, usage, and
+lifecycle semantics. Active queries resolve public account references.
 
 ## Context content tree
 
 - Personal account identity
   - Account discovery [active]
     - Use case: `get-personal-account-by-username`
+    - Use case: `get-account-reference-by-id`
     - Application boundary:
       `GetPersonalAccountByUsernameUseCase.getPersonalAccountByUsername()`
     - Owned concepts: `Account`, `Username`
     - Rules and invariants:
       - Only personal accounts are returned.
       - Only active accounts are discoverable.
+      - Account type is `personal` or `managed`; `machine` is usage.
       - Username input must remain non-empty after trimming.
     - Decisions:
       - Return a `UserOwnerReference`.
@@ -41,6 +43,22 @@ active slice resolves a public personal-account reference by username.
 
 ## Designed use cases
 
+### `get-account-reference-by-id` [active]
+
+- **Type:** `query`
+- **Application boundary:** `GetAccountReferenceByIdUseCase.getAccountReferenceById()`
+- **Public entrypoint:** `server-api.ts#getAccountReferenceById`
+- **Input:** Account ID string.
+- **Success result:** `found` with an active `AccountReference`.
+- **Expected rejections:** `account-not-found`
+- **Authorization:** None; only public account identity is returned.
+- **Transaction:** Read-only context-local lookup.
+- **Idempotency:** Query; repeated input has no side effect.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `identity-accounts-source-06`
+- **Local policy:** Suspended and deleted accounts are not returned.
+
 ### `get-personal-account-by-username` [active]
 
 - **Type:** `query`
@@ -60,6 +78,8 @@ active slice resolves a public personal-account reference by username.
 ## Ubiquitous language
 
 - **Account**: the identity used to access GitHub product resources.
+- **Managed account**: a user account managed by an enterprise identity system.
+- **Machine usage**: a personal account used for automation; not an account type.
 - **Username**: the public account namespace.
 - **User owner reference**: the stable account ID and current username used by
   another context to refer to a personal repository owner.
@@ -73,7 +93,9 @@ does not own credentials, sessions, profiles, or repository permissions.
 ## Public capabilities
 
 - `getPersonalAccountByUsername(username)` through `server-api.ts`.
-- `UserOwnerReference` through `integration-contracts.ts`.
+- `getAccountReferenceById(accountId)` through `server-api.ts`.
+- `AccountReference`, `ActorReference`, and `UserOwnerReference` through
+  `integration-contracts.ts`.
 - `GetPersonalAccountByUsernameUseCase.getPersonalAccountByUsername()` is the
   application boundary implemented by `GetPersonalAccountByUsernameHandler`.
 
@@ -122,6 +144,7 @@ failures propagate as infrastructure errors.
 - <https://docs.github.com/en/account-and-profile/reference/username-reference>
 - <https://docs.github.com/en/account-and-profile/reference/personal-account-reference>
 - <https://docs.github.com/en/rest/users/users#get-a-user>
+- <https://docs.github.com/en/enterprise-cloud@latest/get-started/learning-about-github/types-of-github-accounts>
 
 ## Exceptions
 

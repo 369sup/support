@@ -3,8 +3,8 @@
 ## Purpose
 
 Own GitHub-like Repository identity, owner, visibility, profile, and lifecycle
-semantics. The first active slice lists active public repositories for a
-personal owner.
+semantics. Active slices support personal and organization owner queries plus
+trusted candidate retrieval for permission-aware projections.
 
 ## Context content tree
 
@@ -23,6 +23,13 @@ personal owner.
     - Decisions: return a collection, including an empty collection when no
       repository matches.
     - Published events: none for this query-only active slice.
+  - Public organization-owner repository listing [active]
+    - Use case: `list-active-public-repositories-for-organization-owner`
+    - Only active public repositories for the stable organization ID.
+  - Trusted repository candidate queries [active]
+    - Use case: `get-repository-by-owner-and-name`
+    - Use case: `list-active-repositories-for-owner`
+    - Private and internal candidates are never a visibility decision.
   - Repository identity and profile [planned]
     - Owned concept: `RepositoryHomepage`
     - Planned events: `RepositoryCreated@1`, `RepositoryProfileUpdated@1`
@@ -42,8 +49,9 @@ personal owner.
 - External relationships
   - Active synchronous dependency:
     `identity/accounts::UserOwnerReference`
+  - Active synchronous dependency:
+    `organizations/organizations::OrganizationOwnerReference`
   - Planned synchronous relationships:
-    `organizations/organizations::OrganizationOwnerReference`,
     `organizations/organization-policies::RepositoryPolicyConstraints`, and
     `commerce/entitlements::RepositoryEntitlement`
 - Explicit exclusions
@@ -54,6 +62,38 @@ personal owner.
   - `Subscription`
 
 ## Designed use cases
+
+### `get-repository-by-owner-and-name` [active]
+
+- **Type:** `query`
+- **Application boundary:** `GetRepositoryByOwnerAndNameUseCase.getRepositoryByOwnerAndName()`
+- **Public entrypoint:** `server-api.ts#getRepositoryByOwnerAndName`
+- **Input:** Stable owner ID and repository name.
+- **Success result:** `found` with active repository candidate.
+- **Expected rejections:** `repository-not-found`
+- **Authorization:** Trusted server callers must apply repository access before disclosure.
+- **Transaction:** Read-only.
+- **Idempotency:** Query.
+- **Dependencies:** `identity/accounts::UserOwnerReference`, `organizations/organizations::OrganizationOwnerReference`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repositories-source-01`
+- **Local policy:** Archived and deleted records are absent.
+
+### `list-active-public-repositories-for-organization-owner` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ListActivePublicRepositoriesForOrganizationOwnerUseCase.listActivePublicRepositoriesForOrganizationOwner()`
+- **Public entrypoint:** `server-api.ts#listActivePublicRepositoriesForOrganizationOwner`
+- **Input:** Stable organization-owner ID and login.
+- **Success result:** Public repository summaries, possibly empty.
+- **Expected rejections:** `none`
+- **Authorization:** None; only public repositories are returned.
+- **Transaction:** Read-only.
+- **Idempotency:** Query.
+- **Dependencies:** `organizations/organizations::OrganizationOwnerReference`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repositories-source-10`
+- **Local policy:** Require organization ownership, public visibility, and active lifecycle.
 
 ### `list-active-public-repositories-for-personal-owner` [active]
 
@@ -71,10 +111,27 @@ personal owner.
 - **Official evidence:** `repositories-repositories-source-11`
 - **Local policy:** Resolve by stable account ID, require personal ownership, filter to `public` and `active`, and return a summary projection without Git content or grants.
 
+### `list-active-repositories-for-owner` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ListActiveRepositoriesForOwnerUseCase.listActiveRepositoriesForOwner()`
+- **Public entrypoint:** `server-api.ts#listActiveRepositoriesForOwner`
+- **Input:** Stable personal or organization owner ID.
+- **Success result:** Active repository candidates, possibly empty.
+- **Expected rejections:** `none`
+- **Authorization:** Trusted projection only; candidates are not visibility decisions.
+- **Transaction:** Read-only.
+- **Idempotency:** Query.
+- **Dependencies:** `identity/accounts::UserOwnerReference`, `organizations/organizations::OrganizationOwnerReference`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repositories-source-10`
+- **Local policy:** Every candidate must pass `repository-access` before user disclosure.
+
 ## Ubiquitous language
 
 - **Repository**: the core GitHub product resource.
 - **Personal owner**: an account referenced by stable account ID and username.
+- **Organization owner**: an organization referenced by stable ID and login.
 - **Visibility**: public, private, or internal repository access classification.
 - **Lifecycle state**: active, archived, or deleted product state.
 
@@ -101,21 +158,18 @@ consumers do not configure or select its adapter.
 
 ## Dependencies and consistency
 
-This context synchronously consumes
-`identity/accounts::UserOwnerReference` through its framework-free integration
-contract. It does not read identity storage or import identity internals.
+This context synchronously consumes account and organization owner references
+through framework-free integration contracts. It does not read their storage.
 
 ## Authorization
 
-Public active Repository summaries require no authorization. Private, internal,
-archived, deleted, or permission-filtered queries are not active. The
-client-side mock session boundary is UX scaffolding and is not treated as an
-authorization decision.
+Public summaries require no authorization. Trusted private/internal candidate
+queries require a separate `repository-access` decision before disclosure.
 
 ## Persistence and transactions
 
-The first slice uses a context-local in-memory query adapter with deterministic
-development fixtures. It performs no writes and owns no transaction.
+A context-local in-memory query adapter owns deterministic development
+fixtures and owner/name indexes. Queries perform no writes.
 
 ## Data classification
 
