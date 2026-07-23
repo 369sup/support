@@ -266,10 +266,14 @@ export function validateSerenaMemories(repositoryRoot, errors) {
     "scripts/memory/candidate-bundle.schema.json",
     "scripts/memory/cli.mjs",
     "scripts/memory/engine.mjs",
+    "scripts/memory/engine.test.mjs",
     "scripts/memory/policy.mjs",
     "scripts/memory/render.mjs",
+    "scripts/memory/render.test.mjs",
     "scripts/memory/schema.mjs",
+    "scripts/memory/schema.test.mjs",
     "scripts/memory/storage.mjs",
+    "scripts/memory/storage.test.mjs",
   ];
 
   for (const relativePath of automationPaths) {
@@ -312,6 +316,7 @@ export function validateSerenaMemories(repositoryRoot, errors) {
     "memory:maintain": "node scripts/memory/cli.mjs maintain",
     "memory:status": "node scripts/memory/cli.mjs status",
     "memory:validate": "node scripts/memory/cli.mjs validate",
+    "test:memory": "node --test scripts/memory/schema.test.mjs scripts/memory/render.test.mjs scripts/memory/storage.test.mjs scripts/memory/engine.test.mjs .codex/hooks/repository-guard.test.mjs .codex/hooks/memory-orchestrator.test.mjs",
   };
 
   if (

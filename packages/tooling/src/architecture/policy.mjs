@@ -173,6 +173,7 @@ const ruleEntries = [
   rule("ARCH-MAP-026", "catalog", "required", "checker", "Event implementation status is coherent."),
   rule("ARCH-MAP-027", "catalog", "required", "checker", "Every context owns one README directory."),
   rule("ARCH-MEM-001", "generated", "generated", "checker", "Shared Serena memories are current and read-only."),
+  rule("ARCH-MEM-002", "generated", "generated", "checker", "Automatic Serena local-memory automation is complete and safely configured."),
   rule("ARCH-NAME-001", "naming", "required", "checker", "Source names use canonical casing."),
   rule("ARCH-NAME-002", "naming", "required", "checker", "Source filenames communicate architectural roles."),
   rule("ARCH-NAME-003", "naming", "required", "checker", "Role suffixes match source placement."),

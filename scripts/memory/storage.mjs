@@ -8,11 +8,18 @@ import {
   rename,
   rm,
   stat,
-  unlink,
   writeFile,
 } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
-import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import {
+  basename,
+  dirname,
+  isAbsolute,
+  join,
+  relative,
+  resolve,
+  sep,
+} from "node:path";
 
 import { lockPolicy } from "./policy.mjs";
 
@@ -160,10 +167,18 @@ export async function atomicWriteText(repositoryRoot, filePath, contents) {
   assertPathInside(repositoryRoot, filePath, "File");
   await ensureDirectorySafe(repositoryRoot, dirname(filePath));
   await assertRegularOrMissing(repositoryRoot, filePath);
+  const operationId = randomUUID();
+  const fileName = basename(filePath);
   const temporaryPath = join(
     dirname(filePath),
-    `.${randomUUID()}.${filePath.split(/[\\/]/).at(-1)}.tmp`,
+    `.${fileName}.${operationId}.memory-tmp`,
   );
+  const backupPath = join(
+    dirname(filePath),
+    `.${fileName}.${operationId}.memory-bak`,
+  );
+  let backupCreated = false;
+  let committed = false;
 
   await writeFile(temporaryPath, contents, {
     encoding: "utf8",
@@ -172,15 +187,39 @@ export async function atomicWriteText(repositoryRoot, filePath, contents) {
 
   try {
     await rename(temporaryPath, filePath);
+    committed = true;
   } catch (error) {
     if (!["EEXIST", "EPERM"].includes(error?.code)) {
       throw error;
     }
 
-    await unlink(filePath);
-    await rename(temporaryPath, filePath);
+    await rename(filePath, backupPath);
+    backupCreated = true;
+
+    try {
+      await rename(temporaryPath, filePath);
+      committed = true;
+    } catch (commitError) {
+      try {
+        if ((await pathType(filePath)) === null) {
+          await rename(backupPath, filePath);
+          backupCreated = false;
+        }
+      } catch (recoveryError) {
+        throw new AggregateError(
+          [commitError, recoveryError],
+          `Atomic memory write failed and could not restore ${filePath}.`,
+        );
+      }
+
+      throw commitError;
+    }
   } finally {
     await rm(temporaryPath, { force: true });
+
+    if (committed && backupCreated) {
+      await rm(backupPath, { force: true });
+    }
   }
 }
 
@@ -262,6 +301,63 @@ export async function listRegularFiles(repositoryRoot, directoryPath, options = 
   return results.sort();
 }
 
+const atomicArtifactPattern =
+  /^\.(?<fileName>.+)\.(?<operationId>[0-9a-f-]{36})\.memory-(?<kind>tmp|bak)$/i;
+
+export async function recoverAtomicWrites(repositoryRoot, directoryPath) {
+  const artifacts = new Map();
+
+  for (const artifactPath of await listRegularFiles(
+    repositoryRoot,
+    directoryPath,
+  )) {
+    const match = atomicArtifactPattern.exec(basename(artifactPath));
+
+    if (!match?.groups) {
+      continue;
+    }
+
+    const targetPath = join(dirname(artifactPath), match.groups.fileName);
+    const key = `${targetPath}\0${match.groups.operationId}`;
+    const record = artifacts.get(key) ?? {
+      backupPath: null,
+      targetPath,
+      temporaryPath: null,
+    };
+
+    if (match.groups.kind === "bak") {
+      record.backupPath = artifactPath;
+    } else {
+      record.temporaryPath = artifactPath;
+    }
+
+    artifacts.set(key, record);
+  }
+
+  let recovered = 0;
+
+  for (const artifact of artifacts.values()) {
+    await assertRegularOrMissing(repositoryRoot, artifact.targetPath);
+
+    if (artifact.backupPath !== null) {
+      if ((await pathType(artifact.targetPath)) === null) {
+        await rename(artifact.backupPath, artifact.targetPath);
+      } else {
+        await removeManagedFile(repositoryRoot, artifact.backupPath);
+      }
+
+      recovered += 1;
+    }
+
+    if (artifact.temporaryPath !== null) {
+      await removeManagedFile(repositoryRoot, artifact.temporaryPath);
+      recovered += 1;
+    }
+  }
+
+  return recovered;
+}
+
 function delay(milliseconds) {
   return new Promise((resolveDelay) => {
     setTimeout(resolveDelay, milliseconds);
@@ -322,6 +418,7 @@ export async function withMemoryLock(repositoryRoot, operation, options = {}) {
   }
 
   try {
+    await recoverAtomicWrites(paths.repositoryRoot, paths.localRoot);
     return await operation(paths);
   } finally {
     await handle?.close();

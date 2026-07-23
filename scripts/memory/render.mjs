@@ -76,18 +76,38 @@ function compactIndex(entries, options = {}) {
   const sorted = [...entries].sort((left, right) => {
     return managedMemoryName(left).localeCompare(managedMemoryName(right));
   });
+  const entryLines = [];
 
   for (const entry of sorted) {
-    lines.push(`- \`mem:${managedMemoryName(entry)}\``);
+    const nextEntryLines = [
+      ...entryLines,
+      `- \`mem:${managedMemoryName(entry)}\``,
+    ];
+    const remaining = sorted.length - nextEntryLines.length;
+    const candidate = [...lines, ...nextEntryLines];
 
-    if (estimateTokens(`${lines.join("\n")}\n`) > memoryLimits.indexTokens) {
-      lines.pop();
+    if (remaining > 0) {
+      candidate.push(
+        "",
+        `${remaining} additional managed memories are available by topic under \`local/durable\`.`,
+      );
+    }
+
+    candidate.push(
+      "",
+      "Repository authorities and generated shared memories remain authoritative.",
+      "",
+    );
+
+    if (estimateTokens(candidate.join("\n")) > memoryLimits.indexTokens) {
       break;
     }
+
+    entryLines.push(nextEntryLines.at(-1));
   }
 
-  const listedCount = lines.filter((line) => line.startsWith("- `mem:local/durable/"))
-    .length;
+  lines.push(...entryLines);
+  const listedCount = entryLines.length;
 
   if (listedCount < sorted.length) {
     lines.push(

@@ -196,7 +196,26 @@ function createValidFixture() {
     'import type { CreateRepositoryUseCase } from "../ports/inbound/create-repository.use-case";\nexport class CreateRepositoryHandler implements CreateRepositoryUseCase { async createRepository(): Promise<void> {} }\n',
   );
   writeCatalog(rootDir, catalog);
-  writeFixture(rootDir, "package.json", `${JSON.stringify({ scripts: { architecture: "node scripts/check-architecture.mjs" } }, null, 2)}\n`);
+  writeFixture(
+    rootDir,
+    "package.json",
+    `${JSON.stringify(
+      {
+        scripts: {
+          architecture: "node scripts/check-architecture.mjs",
+          "memory:activate": "node scripts/memory/cli.mjs activate",
+          "memory:checkpoint": "node scripts/memory/cli.mjs checkpoint",
+          "memory:distill": "node scripts/memory/cli.mjs distill",
+          "memory:maintain": "node scripts/memory/cli.mjs maintain",
+          "memory:status": "node scripts/memory/cli.mjs status",
+          "memory:validate": "node scripts/memory/cli.mjs validate",
+          "test:memory": "node --test scripts/memory/schema.test.mjs scripts/memory/render.test.mjs scripts/memory/storage.test.mjs scripts/memory/engine.test.mjs .codex/hooks/repository-guard.test.mjs .codex/hooks/memory-orchestrator.test.mjs",
+        },
+      },
+      null,
+      2,
+    )}\n`,
+  );
   writeFixture(
     rootDir,
     "docs/architecture/architecture.md",
@@ -206,8 +225,60 @@ function createValidFixture() {
   writeFixture(
     rootDir,
     ".serena/project.yml",
-    'read_only_memory_patterns:\n- "^(memory_maintenance|core|shared/.*)$"\n',
+    [
+      'activation_command: "node scripts/memory/cli.mjs activate --json"',
+      "activation_command_timeout: 15.0",
+      "read_only_memory_patterns:",
+      '- "^(memory_maintenance|core|shared/.*)$"',
+      "ignored_memory_patterns:",
+      '- "^local/(episodes|archive|_state)/.*$"',
+      "",
+    ].join("\n"),
   );
+  writeFixture(
+    rootDir,
+    ".codex/hooks.json",
+    `${JSON.stringify(
+      {
+        hooks: {
+          SessionStart: [],
+          PreToolUse: [],
+          PostToolUse: [],
+          PreCompact: [],
+          Stop: [
+            {
+              hooks: [
+                {
+                  command: "node .codex/hooks/memory-orchestrator.mjs",
+                  type: "command",
+                },
+              ],
+            },
+          ],
+        },
+      },
+      null,
+      2,
+    )}\n`,
+  );
+
+  for (const path of [
+    ".codex/hooks/memory-orchestrator.mjs",
+    ".codex/hooks/memory-orchestrator.test.mjs",
+    "scripts/memory/candidate-bundle.schema.json",
+    "scripts/memory/cli.mjs",
+    "scripts/memory/engine.mjs",
+    "scripts/memory/engine.test.mjs",
+    "scripts/memory/policy.mjs",
+    "scripts/memory/render.mjs",
+    "scripts/memory/render.test.mjs",
+    "scripts/memory/schema.mjs",
+    "scripts/memory/schema.test.mjs",
+    "scripts/memory/storage.mjs",
+    "scripts/memory/storage.test.mjs",
+  ]) {
+    writeFixture(rootDir, path, `// ${path} fixture\n`);
+  }
 
   for (const path of agentGuidanceSourcePaths) {
     writeFixture(rootDir, path, `# ${path} guidance\n`);
@@ -1627,6 +1698,45 @@ test("rejects stale or unexpected shared Serena memories", () => {
       includesRule(check(rootDir, "generated"), "ARCH-MEM-001"),
       true,
     );
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("rejects incomplete automatic Serena memory integration", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    rmSync(join(rootDir, "scripts", "memory", "engine.mjs"));
+    writeFixture(
+      rootDir,
+      ".serena/project.yml",
+      'read_only_memory_patterns:\n- "^(memory_maintenance|core|shared/.*)$"\n',
+    );
+    writeFixture(
+      rootDir,
+      ".codex/hooks.json",
+      `${JSON.stringify({ hooks: {} }, null, 2)}\n`,
+    );
+    writeFixture(
+      rootDir,
+      "package.json",
+      `${JSON.stringify(
+        {
+          scripts: {
+            architecture: "node scripts/check-architecture.mjs",
+          },
+        },
+        null,
+        2,
+      )}\n`,
+    );
+
+    const errors = check(rootDir, "generated").filter((error) => {
+      return error.ruleId === "ARCH-MEM-002";
+    });
+
+    assert.equal(errors.length >= 4, true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }

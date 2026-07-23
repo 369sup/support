@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { basename, dirname, join, relative } from "node:path";
+import { basename, join, relative } from "node:path";
 
 import {
   authorityRank,
@@ -1009,4 +1009,3 @@ export async function stopMemorySession(
     { now },
   );
 }
-
