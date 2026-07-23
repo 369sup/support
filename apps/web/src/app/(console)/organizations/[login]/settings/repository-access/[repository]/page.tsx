@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 
 import { Separator } from "@support/shadcn/ui/separator";
 
-import { requireCurrentSession } from "@/app/_authentication/current-session";
-import { RepositoryTeamAccessManager } from "@/app/repository-team-access-manager";
+import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
+import { RepositoryTeamAccessManager } from "@/modules/repositories/repository-access/browser-ui";
 import {
   listOrganizationTeams,
   listTeamMembers,
@@ -68,7 +68,7 @@ export default async function RepositoryTeamAccessPage({
   }
   const directlyGrantedTeamIds = new Set(
     permission.sources.flatMap((source) =>
-      source.kind === "team-grant" && !source.inherited
+                    source.kind === "team-grant" && !source.isInherited
         ? [source.teamId]
         : [],
     ),

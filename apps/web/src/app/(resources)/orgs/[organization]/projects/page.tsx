@@ -1,11 +1,12 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function OrganizationProjectsPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/orgs/{organization}/projects",
     title: "Organization projects",
     summary: "List projects owned by an organization.",
     contexts: ["collaboration/projects"],
     catalogStatus: "planned",
-  });
+  };
+  notFound();
 }

@@ -9,7 +9,7 @@ import {
 
 type DevelopmentApiGateProps = {
   children: ReactNode;
-  developmentBuild: boolean;
+  isDevelopmentBuild: boolean;
   start: () => Promise<void>;
 };
 
@@ -22,42 +22,42 @@ function isLocalBrowserHost() {
 
 export function DevelopmentApiGate({
   children,
-  developmentBuild,
+  isDevelopmentBuild,
   start,
 }: DevelopmentApiGateProps) {
   const [state, setState] = useState<DevelopmentApiState>("starting");
 
   useEffect(() => {
-    let current = true;
+    let isCurrent = true;
 
-    if (!developmentBuild && !isLocalBrowserHost()) {
+    if (!isDevelopmentBuild && !isLocalBrowserHost()) {
       queueMicrotask(() => {
-        if (current) {
+        if (isCurrent) {
           setState("disabled");
         }
       });
 
       return () => {
-        current = false;
+        isCurrent = false;
       };
     }
 
     void start()
       .then(() => {
-        if (current) {
+        if (isCurrent) {
           setState("ready");
         }
       })
       .catch(() => {
-        if (current) {
+        if (isCurrent) {
           setState("failed");
         }
       });
 
     return () => {
-      current = false;
+      isCurrent = false;
     };
-  }, [developmentBuild, start]);
+  }, [isDevelopmentBuild, start]);
 
   let content = children;
 

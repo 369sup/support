@@ -4,15 +4,15 @@ import {
   clearBrowserSessionToken,
   isInMemoryRuntimeEnabled,
   readBrowserSessionToken,
-} from "@/app/_authentication/browser-session-cookie";
-import { hasSameOrigin } from "@/app/_authentication/same-origin";
+} from "@/modules/identity/authentication/server-api";
+import { hasSameOrigin } from "@/modules/identity/authentication/server-api";
 import { removeAccountSession } from "@/modules/identity/authentication/server-api";
 import { restoreLastValidDashboardContext } from "@/modules/projections/dashboard/server-api";
 
 export async function DELETE(
   request: Request,
   context: { params: Promise<{ sessionId: string }> },
-) {
+): Promise<Response> {
   if (!isInMemoryRuntimeEnabled()) {
     return new NextResponse(null, { status: 404 });
   }
@@ -33,7 +33,7 @@ export async function DELETE(
       status: result.status === "session-not-found" ? 404 : 401,
     });
   }
-  if (result.browserSessionEmpty) {
+  if (result.isBrowserSessionEmpty) {
     await clearBrowserSessionToken();
   } else if (result.currentSession !== null) {
     await restoreLastValidDashboardContext(result.currentSession);

@@ -1,3 +1,5 @@
+import "server-only";
+
 import { randomUUID } from "node:crypto";
 
 import type { PublicationIdGeneratorPort } from "../../application/ports/outbound/publication-id-generator.port";

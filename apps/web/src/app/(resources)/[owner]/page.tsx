@@ -1,7 +1,7 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function OwnerPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/{owner}",
     title: "Owner profile",
     summary: "Resolve a user or organization namespace and its supported profile tabs.",
@@ -15,5 +15,6 @@ export default function OwnerPage(): never {
       "engagement/stars",
     ],
     catalogStatus: "mixed",
-  });
+  };
+  notFound();
 }

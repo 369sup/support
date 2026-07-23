@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getOptionalCurrentSession } from "@/app/_authentication/current-session";
+import { getOptionalCurrentSession } from "@/modules/identity/authentication/server-api";
 import { authorizeEnterpriseAdministration } from "@/modules/enterprises/enterprise-roles/server-api";
 import {
   getEnterpriseBySlug,
@@ -10,7 +10,7 @@ import {
 export async function GET(
   _request: Request,
   context: { params: Promise<{ slug: string }> },
-) {
+): Promise<Response> {
   const session = await getOptionalCurrentSession();
   if (session === null) {
     return NextResponse.json(

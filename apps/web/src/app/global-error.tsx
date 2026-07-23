@@ -15,6 +15,10 @@ export default function GlobalError({
     console.error(error);
   }, [error]);
 
+  function handleReset(): void {
+    reset();
+  }
+
   return (
     <html lang="en" className="dark">
       <body className="flex min-h-dvh items-center bg-background px-6 text-foreground">
@@ -25,7 +29,7 @@ export default function GlobalError({
           <p className="mt-4 text-muted-foreground">
             An unexpected error occurred. You can safely try the request again.
           </p>
-          <Button className="mt-8" size="lg" onClick={reset}>
+          <Button className="mt-8" size="lg" onClick={handleReset}>
             Try again
           </Button>
         </main>

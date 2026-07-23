@@ -6,11 +6,11 @@ import { listActivePublicRepositoriesForPersonalOwner } from "@/modules/reposito
 export async function GET(
   _request: Request,
   context: { params: Promise<{ username: string }> },
-) {
+): Promise<Response> {
   const account = await getPersonalAccountByUsername(
     (await context.params).username,
   );
-  if (!account.ok) {
+  if (!account.isSuccessful) {
     return NextResponse.json(
       { status: account.error },
       { status: account.error === "invalid-username" ? 400 : 404 },

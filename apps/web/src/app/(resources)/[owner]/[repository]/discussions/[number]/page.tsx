@@ -1,7 +1,7 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function DiscussionPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/{owner}/{repository}/discussions/{number}",
     title: "Discussion",
     summary: "Review one discussion, its conversation, answer state, and moderation status.",
@@ -11,5 +11,6 @@ export default function DiscussionPage(): never {
       "collaboration/moderation",
     ],
     catalogStatus: "planned",
-  });
+  };
+  notFound();
 }

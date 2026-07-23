@@ -149,54 +149,6 @@ const deferredUrlPatterns = [
   "/{owner}/{repository}/graphs/traffic",
 ] as const;
 
-const documentedRouteDirectories = [
-  "(public)/explore",
-  "(public)/topics",
-  "(public)/topics/[topic]",
-  "(public)/trending",
-  "(public)/collections",
-  "(public)/marketplace",
-  "(resources)/[owner]/[repository]/labels/[label]",
-  "(resources)/[owner]/[repository]/tree",
-  "(resources)/[owner]/[repository]/tree/[...refAndPath]",
-  "(resources)/[owner]/[repository]/blob",
-  "(resources)/[owner]/[repository]/blob/[...refAndPath]",
-  "(resources)/[owner]/[repository]/raw",
-  "(resources)/[owner]/[repository]/raw/[...refAndPath]",
-  "(resources)/[owner]/[repository]/blame",
-  "(resources)/[owner]/[repository]/blame/[...refAndPath]",
-  "(resources)/[owner]/[repository]/commit",
-  "(resources)/[owner]/[repository]/commit/[sha]",
-  "(resources)/[owner]/[repository]/commits",
-  "(resources)/[owner]/[repository]/commits/[...refAndPath]",
-  "(resources)/[owner]/[repository]/branches",
-  "(resources)/[owner]/[repository]/branches/[view]",
-  "(resources)/[owner]/[repository]/tags",
-  "(resources)/[owner]/[repository]/compare",
-  "(resources)/[owner]/[repository]/compare/[...comparison]",
-  "(resources)/[owner]/[repository]/pull",
-  "(resources)/[owner]/[repository]/pull/[...pullPath]",
-  "(resources)/[owner]/[repository]/pulls",
-  "(resources)/[owner]/[repository]/actions",
-  "(resources)/[owner]/[repository]/actions/[...actionPath]",
-  "(resources)/[owner]/[repository]/packages",
-  "(resources)/[owner]/[repository]/pages",
-  "(resources)/[owner]/[repository]/releases",
-  "(resources)/[owner]/[repository]/releases/latest",
-  "(resources)/[owner]/[repository]/releases/tag",
-  "(resources)/[owner]/[repository]/releases/tag/[...tag]",
-  "(resources)/[owner]/[repository]/releases/download",
-  "(resources)/[owner]/[repository]/releases/download/[...assetPath]",
-  "(resources)/[owner]/[repository]/archive",
-  "(resources)/[owner]/[repository]/archive/[...archivePath]",
-  "(resources)/[owner]/[repository]/forks",
-  "(resources)/[owner]/[repository]/community",
-  "(resources)/[owner]/[repository]/wiki",
-  "(resources)/[owner]/[repository]/wiki/[...pageName]",
-  "(resources)/[owner]/[repository]/graphs",
-  "(resources)/[owner]/[repository]/graphs/traffic",
-] as const;
-
 describe("App Router route scaffolds", () => {
   it("defines every approved URL as a summarized unavailable page", () => {
     const scaffolds = findScaffoldPages(appRoot);
@@ -255,25 +207,14 @@ describe("App Router route scaffolds", () => {
     expect(insightsPage).toContain("without traffic or Git metrics");
   });
 
-  it("documents every newly reserved route directory", () => {
-    for (const directory of documentedRouteDirectories) {
-      const readme = readFileSync(
-        resolve(appRoot, directory, "README.md"),
-        "utf8",
+  it("uses the official not-found API directly in every unavailable page", () => {
+    for (const scaffold of findScaffoldPages(appRoot)) {
+      expect(scaffold.content).toContain(
+        'import { notFound } from "next/navigation"',
       );
-      expect(readme, directory).toContain("Status:");
-      expect(readme, directory).toContain("This route returns 404.");
+      expect(scaffold.content).toContain("notFound();");
+      expect(scaffold.content).not.toContain("unavailableRoute");
     }
-  });
-
-  it("uses a single not-found boundary for unavailable route scaffolds", () => {
-    const helper = readFileSync(
-      resolve(appRoot, "_route-scaffold", "unavailable-route.ts"),
-      "utf8",
-    );
-
-    expect(helper).toContain('import { notFound } from "next/navigation"');
-    expect(helper).toContain("notFound();");
   });
 });
 
@@ -332,7 +273,7 @@ function findScaffoldPages(directory: string): Array<{
       continue;
     }
     const content = readFileSync(path, "utf8");
-    if (content.includes("unavailableRoute")) {
+    if (content.includes("catalogStatus:")) {
       pages.push({ file: path, content });
     }
   }

@@ -1,7 +1,7 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function EnterpriseSettingsPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/enterprises/{slug}/settings",
     title: "Enterprise settings",
     summary: "Open the enterprise settings entry point for IAM, policies, and custom properties.",
@@ -11,5 +11,6 @@ export default function EnterpriseSettingsPage(): never {
       "enterprises/custom-properties",
     ],
     catalogStatus: "planned",
-  });
+  };
+  notFound();
 }

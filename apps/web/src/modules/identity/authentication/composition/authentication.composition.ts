@@ -1,3 +1,5 @@
+import { browserSessionCookie } from "../adapters/inbound/next/browser-session-cookie.adapter";
+import { createCurrentSessionAdapter } from "../adapters/inbound/next/current-session.adapter";
 import { AccountReferenceAdapter } from "../adapters/outbound/integration/account-reference.adapter";
 import { InMemoryBrowserSessionSetAdapter } from "../adapters/outbound/persistence/in-memory-browser-session-set.adapter";
 import { InMemoryDevelopmentCredentialAdapter } from "../adapters/outbound/persistence/in-memory-development-credential.adapter";
@@ -11,6 +13,7 @@ import { SwitchActiveAccountSessionHandler } from "../application/commands/switc
 import { GetCurrentAuthenticatedSessionHandler } from "../application/queries/get-current-authenticated-session.handler";
 import { ListBrowserAccountSessionsHandler } from "../application/queries/list-browser-account-sessions.handler";
 import type {
+  AuthenticatedSessionReference,
   CreateDevelopmentSessionResult,
   CurrentSessionResult,
   ExpireSessionResult,
@@ -21,6 +24,7 @@ import type {
 } from "../contracts/authenticated-session-reference";
 
 export interface AuthenticationServerFacade {
+  clearBrowserSessionToken: () => Promise<void>;
   createDevelopmentSession: (input: {
     browserToken: string | null;
     username: string;
@@ -33,6 +37,8 @@ export interface AuthenticationServerFacade {
   getCurrentAuthenticatedSession: (
     browserToken: string,
   ) => Promise<CurrentSessionResult>;
+  getOptionalCurrentSession: () => Promise<AuthenticatedSessionReference | null>;
+  isInMemoryRuntimeEnabled: () => boolean;
   listBrowserAccountSessions: (
     browserToken: string,
   ) => Promise<ListBrowserAccountSessionsResult>;
@@ -55,6 +61,9 @@ export interface AuthenticationServerFacade {
     browserToken: string;
     sessionId: string;
   }) => Promise<SwitchAccountSessionResult>;
+  readBrowserSessionToken: () => Promise<string | null>;
+  requireCurrentSession: () => Promise<AuthenticatedSessionReference>;
+  writeBrowserSessionToken: (browserToken: string) => Promise<void>;
 }
 
 function composeAuthenticationServerFacade(): AuthenticationServerFacade {
@@ -97,13 +106,25 @@ function composeAuthenticationServerFacade(): AuthenticationServerFacade {
     accountGateway,
     runtime,
   );
+  const currentSession = createCurrentSessionAdapter({
+    isInMemoryRuntimeEnabled:
+      browserSessionCookie.isInMemoryRuntimeEnabled,
+    readBrowserSessionToken: browserSessionCookie.read,
+    getCurrentAuthenticatedSession: (browserToken) =>
+      current.getCurrentAuthenticatedSession({ browserToken }),
+  });
 
   return {
+    clearBrowserSessionToken: browserSessionCookie.clear,
     createDevelopmentSession: (input) =>
       create.createDevelopmentSession(input),
     expireSession: (input) => expire.expireSession(input),
     getCurrentAuthenticatedSession: (browserToken) =>
       current.getCurrentAuthenticatedSession({ browserToken }),
+    getOptionalCurrentSession:
+      currentSession.getOptionalCurrentSession,
+    isInMemoryRuntimeEnabled:
+      browserSessionCookie.isInMemoryRuntimeEnabled,
     listBrowserAccountSessions: (browserToken) =>
       list.listBrowserAccountSessions({ browserToken }),
     reauthenticateSession: (input) =>
@@ -113,6 +134,9 @@ function composeAuthenticationServerFacade(): AuthenticationServerFacade {
       signOut.signOutAllSessions({ browserToken }),
     switchActiveAccountSession: (input) =>
       switchSession.switchActiveAccountSession(input),
+    readBrowserSessionToken: browserSessionCookie.read,
+    requireCurrentSession: currentSession.requireCurrentSession,
+    writeBrowserSessionToken: browserSessionCookie.write,
   };
 }
 

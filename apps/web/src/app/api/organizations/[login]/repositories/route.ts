@@ -6,7 +6,7 @@ import { listActivePublicRepositoriesForOrganizationOwner } from "@/modules/repo
 export async function GET(
   _request: Request,
   context: { params: Promise<{ login: string }> },
-) {
+): Promise<Response> {
   const organization = await getOrganizationByLogin(
     (await context.params).login,
   );

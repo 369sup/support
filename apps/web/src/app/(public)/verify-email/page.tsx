@@ -1,11 +1,12 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function VerifyEmailPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/verify-email",
     title: "Verify email",
     summary: "Verify an account email as part of the authentication lifecycle.",
     contexts: ["identity/authentication"],
     catalogStatus: "active",
-  });
+  };
+  notFound();
 }

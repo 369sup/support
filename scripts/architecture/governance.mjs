@@ -403,11 +403,12 @@ const exceptionFields = [
   "rule",
   "scope",
   "owner",
+  "approvedOn",
+  "expiresOn",
   "reason",
   "alternatives",
   "risk",
   "spreadPrevention",
-  "reviewAfter",
   "removalCondition",
 ];
 
@@ -443,13 +444,20 @@ export function validateExceptions(rootDir, registry, sourceFiles, now, errors) 
       );
     }
     const today = now.toISOString().slice(0, 10);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(exception.reviewAfter)) {
+    const hasValidApprovalDate =
+      /^\d{4}-\d{2}-\d{2}$/.test(exception.approvedOn) &&
+      exception.approvedOn <= today;
+    const hasValidExpiryDate =
+      /^\d{4}-\d{2}-\d{2}$/.test(exception.expiresOn) &&
+      exception.approvedOn < exception.expiresOn;
+
+    if (!hasValidApprovalDate || !hasValidExpiryDate) {
       errors.push(
-        `[ARCH-EXCEPTION-005] ${exception.id} reviewAfter must use YYYY-MM-DD.`,
+        `[ARCH-EXCEPTION-005] ${exception.id} approvedOn and expiresOn must use YYYY-MM-DD, approval cannot be future, and expiry must be later than approval.`,
       );
-    } else if (exception.reviewAfter <= today) {
+    } else if (exception.expiresOn <= today) {
       errors.push(
-        `[ARCH-EXCEPTION-006] ${exception.id} reached its review date ${exception.reviewAfter}.`,
+        `[ARCH-EXCEPTION-006] ${exception.id} expired on ${exception.expiresOn}.`,
       );
     }
   }

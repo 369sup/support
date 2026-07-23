@@ -9,10 +9,11 @@ Nearest-file precedence applies. Each file below remains authoritative only for 
 - `.github/AGENTS.md`: GitHub Collaboration and Automation Contract
 - `.serena/AGENTS.md`: Serena Project Configuration Workflow
 - `AGENTS.md`: Support Repository Guidance
-- `apps/AGENTS.md`: Deployable Applications Workflow
-- `apps/web/AGENTS.md`: Web Application Workflow
-- `apps/web/src/app/AGENTS.md`: App Router Delivery Workflow
-- `apps/web/src/modules/AGENTS.md`: Bounded-Context Development Workflow
+- `apps/AGENTS.md`: Deployable Applications Contract
+- `apps/web/AGENTS.md`: Next.js Web Application Contract
+- `apps/web/src/AGENTS.md`: Web Source Architecture Contract
+- `apps/web/src/app/AGENTS.md`: App Router Delivery Contract
+- `apps/web/src/modules/AGENTS.md`: Bounded-Context Implementation Contract
 - `docs/AGENTS.md`: Documentation Workflow
 - `docs/architecture/AGENTS.md`: Architecture Documentation Workflow
 - `packages/AGENTS.md`: Workspace Package Workflow

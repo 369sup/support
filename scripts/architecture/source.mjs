@@ -228,6 +228,24 @@ export function validateSourceCycles(rootDir, graph, errors) {
   }
 }
 
+export function validateServerOnlyMarkers(rootDir, metadata, errors) {
+  for (const [filePath, fileMetadata] of metadata) {
+    const importsServerOnly =
+      fileMetadata.externalSpecifiers.includes("server-only");
+    const usesServerCapability =
+      fileMetadata.hasProcessEnvironment ||
+      fileMetadata.externalSpecifiers.some((specifier) => {
+        return specifier.startsWith("node:");
+      });
+
+    if (usesServerCapability && !importsServerOnly) {
+      errors.push(
+        `[ARCH-SERVER-001] ${projectRelative(rootDir, filePath)} uses a server capability without importing server-only.`,
+      );
+    }
+  }
+}
+
 export function validateClientGraphs(rootDir, graph, metadata, errors) {
   const clientEntrypoints = [...graph.keys()].filter((filePath) => {
     const relativePath = projectRelative(rootDir, filePath);

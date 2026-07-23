@@ -1,11 +1,12 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function NewIssuePage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/{owner}/{repository}/issues/new",
     title: "New issue",
     summary: "Create an issue using the repository's enabled issue schema.",
     contexts: ["collaboration/issues", "collaboration/issue-schema"],
     catalogStatus: "planned",
-  });
+  };
+  notFound();
 }

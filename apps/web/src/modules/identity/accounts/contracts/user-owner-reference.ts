@@ -5,10 +5,10 @@ export type UserOwnerReference = Readonly<{
 
 export type PersonalAccountLookupResult =
   | Readonly<{
-      ok: true;
+      isSuccessful: true;
       account: UserOwnerReference;
     }>
   | Readonly<{
-      ok: false;
+      isSuccessful: false;
       error: "account-not-found" | "invalid-username";
     }>;

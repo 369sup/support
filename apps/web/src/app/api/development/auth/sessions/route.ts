@@ -5,8 +5,8 @@ import {
   isInMemoryRuntimeEnabled,
   readBrowserSessionToken,
   writeBrowserSessionToken,
-} from "@/app/_authentication/browser-session-cookie";
-import { hasSameOrigin } from "@/app/_authentication/same-origin";
+} from "@/modules/identity/authentication/server-api";
+import { hasSameOrigin } from "@/modules/identity/authentication/server-api";
 import { createDevelopmentSession } from "@/modules/identity/authentication/server-api";
 
 const requestSchema = z.object({
@@ -14,7 +14,7 @@ const requestSchema = z.object({
   password: z.string().min(1),
 });
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
   if (!isInMemoryRuntimeEnabled()) {
     return new NextResponse(null, { status: 404 });
   }

@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { isInMemoryRuntimeEnabled } from "@/app/_authentication/browser-session-cookie";
-import { hasSameOrigin } from "@/app/_authentication/same-origin";
-import { resolveOrganizationRouteContext } from "@/app/_organization-administration/route-context";
+import { isInMemoryRuntimeEnabled } from "@/modules/identity/authentication/server-api";
+import { hasSameOrigin } from "@/modules/identity/authentication/server-api";
+import { getOptionalCurrentSession } from "@/modules/identity/authentication/server-api";
 import { getOrganizationTeam } from "@/modules/organizations/organization-teams/server-api";
+import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
 import { getRepositoryByOwnerAndName } from "@/modules/repositories/repositories/server-api";
 import {
   changeTeamRepositoryAccess,
@@ -15,6 +16,22 @@ import {
 const permissionSchema = z.object({
   permission: z.enum(["read", "triage", "write", "maintain", "admin"]),
 });
+
+async function resolveOrganizationRouteContext(login: string) {
+  const session = await getOptionalCurrentSession();
+  if (session === null) {
+    return { status: "authentication-required" as const };
+  }
+  const organization = await getOrganizationByLogin(login);
+  if (organization.status !== "found") {
+    return { status: "organization-not-found" as const };
+  }
+  return {
+    status: "resolved" as const,
+    session,
+    organization: organization.organization,
+  };
+}
 
 type RouteContext = {
   params: Promise<{
@@ -83,7 +100,10 @@ function resultStatus(status: string, success: string) {
   return 404;
 }
 
-export async function PUT(request: Request, context: RouteContext) {
+export async function PUT(
+  request: Request,
+  context: RouteContext,
+): Promise<Response> {
   if (!isInMemoryRuntimeEnabled()) {
     return new NextResponse(null, { status: 404 });
   }
@@ -111,7 +131,10 @@ export async function PUT(request: Request, context: RouteContext) {
   });
 }
 
-export async function PATCH(request: Request, context: RouteContext) {
+export async function PATCH(
+  request: Request,
+  context: RouteContext,
+): Promise<Response> {
   if (!isInMemoryRuntimeEnabled()) {
     return new NextResponse(null, { status: 404 });
   }
@@ -139,7 +162,10 @@ export async function PATCH(request: Request, context: RouteContext) {
   });
 }
 
-export async function DELETE(request: Request, context: RouteContext) {
+export async function DELETE(
+  request: Request,
+  context: RouteContext,
+): Promise<Response> {
   if (!isInMemoryRuntimeEnabled()) {
     return new NextResponse(null, { status: 404 });
   }

@@ -1,7 +1,7 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function RepositoryPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/{owner}/{repository}",
     title: "Repository",
     summary: "Open the non-code repository overview and its enabled collaboration capabilities.",
@@ -12,5 +12,6 @@ export default function RepositoryPage(): never {
       "repositories/repository-metadata",
     ],
     catalogStatus: "mixed",
-  });
+  };
+  notFound();
 }

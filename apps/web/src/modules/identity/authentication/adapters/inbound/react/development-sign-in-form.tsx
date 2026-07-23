@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@support/shadcn/ui/button";
@@ -17,8 +17,8 @@ function readResponseStatus(payload: unknown) {
   return null;
 }
 
-function getSubmitLabel(pending: boolean, isAddingAccount: boolean) {
-  if (pending) {
+function getSubmitLabel(isPending: boolean, isAddingAccount: boolean) {
+  if (isPending) {
     return "Signing in...";
   }
   if (isAddingAccount) {
@@ -28,19 +28,21 @@ function getSubmitLabel(pending: boolean, isAddingAccount: boolean) {
 }
 
 export function DevelopmentSignInForm({
-  enabled,
+  isEnabled,
   isAddingAccount,
-}: Readonly<{ enabled: boolean; isAddingAccount: boolean }>) {
+}: Readonly<{ isEnabled: boolean; isAddingAccount: boolean }>) {
   const router = useRouter();
-  const [pending, setPending] = useState(false);
+  const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string>();
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: SyntheticEvent<HTMLFormElement, SubmitEvent>,
+  ) {
     event.preventDefault();
-    if (!enabled) {
+    if (!isEnabled) {
       return;
     }
-    setPending(true);
+    setIsPending(true);
     setError(undefined);
     const formData = new FormData(event.currentTarget);
     const response = await fetch("/api/development/auth/sessions", {
@@ -58,7 +60,7 @@ export function DevelopmentSignInForm({
           ? "Incorrect development username or password."
           : "The development session could not be created.",
       );
-      setPending(false);
+    setIsPending(false);
       return;
     }
     router.push("/dashboard");
@@ -88,7 +90,7 @@ export function DevelopmentSignInForm({
               autoComplete="username"
               className="mt-2 h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
               defaultValue={isAddingAccount ? "carol_ACME" : "octocat"}
-              disabled={!enabled}
+              disabled={!isEnabled}
               id="username"
               name="username"
               required
@@ -100,7 +102,7 @@ export function DevelopmentSignInForm({
               autoComplete="current-password"
               className="mt-2 h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
               defaultValue="github"
-              disabled={!enabled}
+              disabled={!isEnabled}
               id="password"
               name="password"
               required
@@ -112,12 +114,16 @@ export function DevelopmentSignInForm({
               {error}
             </p>
           )}
-          <Button className="w-full" disabled={!enabled || pending} type="submit">
-            {getSubmitLabel(pending, isAddingAccount)}
+          <Button
+            className="w-full"
+            disabled={!isEnabled || isPending}
+            type="submit"
+          >
+            {getSubmitLabel(isPending, isAddingAccount)}
           </Button>
         </form>
         <p className="mt-6 rounded-lg bg-muted px-3 py-2 text-xs leading-5 text-muted-foreground">
-          {enabled
+          {isEnabled
             ? 'Development fixtures use password "github".'
             : "In-memory authentication is disabled for this deployment."}
         </p>

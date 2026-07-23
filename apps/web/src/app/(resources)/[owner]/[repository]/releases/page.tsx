@@ -1,12 +1,13 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function RepositoryReleasesPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/{owner}/{repository}/releases",
     title: "Repository releases",
     summary:
       "Reserve the GitHub-style release listing route while release behavior remains deferred.",
     contexts: [],
     catalogStatus: "deferred",
-  });
+  };
+  notFound();
 }

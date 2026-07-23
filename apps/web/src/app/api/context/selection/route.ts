@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { isInMemoryRuntimeEnabled } from "@/app/_authentication/browser-session-cookie";
-import { getOptionalCurrentSession } from "@/app/_authentication/current-session";
-import { hasSameOrigin } from "@/app/_authentication/same-origin";
+import { isInMemoryRuntimeEnabled } from "@/modules/identity/authentication/server-api";
+import { getOptionalCurrentSession } from "@/modules/identity/authentication/server-api";
+import { hasSameOrigin } from "@/modules/identity/authentication/server-api";
 import { selectDashboardContext } from "@/modules/projections/dashboard/server-api";
 
 const requestSchema = z.discriminatedUnion("kind", [
@@ -11,7 +11,7 @@ const requestSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("organization"), id: z.string().min(1) }),
 ]);
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
   if (!isInMemoryRuntimeEnabled()) {
     return new NextResponse(null, { status: 404 });
   }

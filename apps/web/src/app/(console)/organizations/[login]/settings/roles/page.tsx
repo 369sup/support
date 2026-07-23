@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 
 import { Separator } from "@support/shadcn/ui/separator";
 
-import { requireCurrentSession } from "@/app/_authentication/current-session";
-import { OrganizationRolesManager } from "@/app/organization-roles-manager";
+import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
+import { OrganizationRolesManager } from "@/modules/organizations/organization-roles/browser-ui";
 import { checkOrganizationContextEligibility } from "@/modules/organizations/organization-memberships/server-api";
 import {
   listOrganizationRoleAssignments,

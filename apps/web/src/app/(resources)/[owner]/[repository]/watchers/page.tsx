@@ -1,11 +1,12 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function WatchersPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/{owner}/{repository}/watchers",
     title: "Watchers",
     summary: "List visible repository subscription relationships.",
     contexts: ["engagement/subscriptions"],
     catalogStatus: "planned",
-  });
+  };
+  notFound();
 }

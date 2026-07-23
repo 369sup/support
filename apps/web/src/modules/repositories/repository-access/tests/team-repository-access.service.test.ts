@@ -30,17 +30,17 @@ function createTestOutbox() {
 
 function createHarness(
   input?: {
-    admin?: boolean;
-    maintainer?: boolean;
-    parentGrant?: boolean;
-    directGrant?: boolean;
+    isAdmin?: boolean;
+    isMaintainer?: boolean;
+    hasParentGrant?: boolean;
+    hasDirectGrant?: boolean;
   },
   eventRecorder?: EventRecorderPort,
 ) {
   const grants = new InMemoryRepositoryGrantAdapter(
     [],
     [
-      ...(input?.parentGrant === true
+      ...(input?.hasParentGrant === true
         ? [
             {
               grantId: "parent_grant",
@@ -52,7 +52,7 @@ function createHarness(
             },
           ] as const
         : []),
-      ...(input?.directGrant === true
+      ...(input?.hasDirectGrant === true
         ? [
             {
               grantId: "direct_grant",
@@ -76,7 +76,7 @@ function createHarness(
               teamId,
               organizationId,
               parentTeamId: teamId === "child" ? "parent" : null,
-              isMaintainer: input?.maintainer ?? false,
+              isMaintainer: input?.isMaintainer ?? false,
             }
           : null,
       ),
@@ -86,8 +86,8 @@ function createHarness(
   const resolver: ResolveEffectiveRepositoryPermissionUseCase = {
     resolveEffectiveRepositoryPermission: () =>
       Promise.resolve({
-        allowed: input?.admin ?? true,
-        permission: input?.admin === false ? "read" : "admin",
+        isAllowed: input?.isAdmin ?? true,
+        permission: input?.isAdmin === false ? "read" : "admin",
         sources: [],
       }),
   };
@@ -125,7 +125,7 @@ describe("TeamRepositoryAccessService", () => {
   });
 
   it("rejects grant creation without repository admin", async () => {
-    const service = createHarness({ admin: false });
+    const service = createHarness({ isAdmin: false });
 
     await expect(
       service.grant({
@@ -139,9 +139,9 @@ describe("TeamRepositoryAccessService", () => {
 
   it("allows a maintainer to revoke its direct grant", async () => {
     const service = createHarness({
-      admin: false,
-      maintainer: true,
-      directGrant: true,
+      isAdmin: false,
+      isMaintainer: true,
+      hasDirectGrant: true,
     });
 
     await expect(
@@ -155,9 +155,9 @@ describe("TeamRepositoryAccessService", () => {
 
   it("does not revoke inherited access from the child team", async () => {
     const service = createHarness({
-      admin: true,
-      maintainer: true,
-      parentGrant: true,
+      isAdmin: true,
+      isMaintainer: true,
+      hasParentGrant: true,
     });
 
     await expect(
@@ -173,7 +173,7 @@ describe("TeamRepositoryAccessService", () => {
 
   it("records team grant events after persistence succeeds", async () => {
     const outbox = createTestOutbox();
-    const service = createHarness({ admin: true }, outbox);
+    const service = createHarness({ isAdmin: true }, outbox);
 
     await expect(
       service.grant({

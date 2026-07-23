@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { siteConfig } from "@/app/site-config";
+import { siteConfig } from "../../site-configuration";
 
 const publicRoutes = ["", "/docs", "/accessibility", "/privacy", "/terms"];
 

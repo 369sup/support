@@ -192,9 +192,9 @@ export class OrganizationTeamService {
     if (actorMembership === null) {
       return { status: "permission-denied" };
     }
-    const hierarchyChange = Object.hasOwn(command, "parentTeamId");
+    const isHierarchyChange = Object.hasOwn(command, "parentTeamId");
     if (
-      hierarchyChange
+      isHierarchyChange
         ? actorMembership.role !== "owner"
         : !(await this.canManageTeam(
             command.actorAccountId,

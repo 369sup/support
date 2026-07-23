@@ -3,15 +3,15 @@ import { NextResponse } from "next/server";
 import {
   isInMemoryRuntimeEnabled,
   readBrowserSessionToken,
-} from "@/app/_authentication/browser-session-cookie";
-import { hasSameOrigin } from "@/app/_authentication/same-origin";
+} from "@/modules/identity/authentication/server-api";
+import { hasSameOrigin } from "@/modules/identity/authentication/server-api";
 import { switchActiveAccountSession } from "@/modules/identity/authentication/server-api";
 import { restoreLastValidDashboardContext } from "@/modules/projections/dashboard/server-api";
 
 export async function POST(
   request: Request,
   context: { params: Promise<{ sessionId: string }> },
-) {
+): Promise<Response> {
   if (!isInMemoryRuntimeEnabled()) {
     return new NextResponse(null, { status: 404 });
   }

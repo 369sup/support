@@ -1,12 +1,13 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function RepositoryArchivePage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/{owner}/{repository}/archive/{*archivePath}",
     title: "Repository archive",
     summary:
       "Reserve GitHub-style archive routes without introducing Git content downloads.",
     contexts: [],
     catalogStatus: "excluded",
-  });
+  };
+  notFound();
 }

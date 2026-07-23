@@ -1,11 +1,12 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function OrganizationCustomPropertiesPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/organizations/{organization}/settings/custom_properties",
     title: "Organization custom properties",
     summary: "Define organization-owned custom property schemas and values.",
     contexts: ["organizations/custom-properties"],
     catalogStatus: "planned",
-  });
+  };
+  notFound();
 }

@@ -1,7 +1,7 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function SettingsPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/settings",
     title: "Settings",
     summary: "Open the account-level settings entry point for identity, integrations, and billing.",
@@ -11,5 +11,6 @@ export default function SettingsPage(): never {
       "commerce/billing",
     ],
     catalogStatus: "mixed",
-  });
+  };
+  notFound();
 }

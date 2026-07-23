@@ -86,7 +86,7 @@ describe("development scenario integrity", () => {
           source.kind === "team-grant" &&
           source.teamId === "team_community_docs" &&
           source.matchedTeamId === "team_community_docs_ops" &&
-          source.inherited,
+          source.isInherited,
       ),
     ).toBe(true);
     expect(

@@ -1,7 +1,7 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function NotificationsPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/notifications",
     title: "Notifications",
     summary: "Review subscription-driven product notifications and delivery state.",
@@ -11,5 +11,6 @@ export default function NotificationsPage(): never {
       "platform/notification-channels",
     ],
     catalogStatus: "planned",
-  });
+  };
+  notFound();
 }

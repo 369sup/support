@@ -9,7 +9,7 @@ import type {
   OrganizationTeamReference,
   TeamMemberView,
   TeamVisibility,
-} from "@/modules/organizations/organization-teams/browser-ui";
+} from "../../../contracts/organization-team-reference";
 
 type TeamView = OrganizationTeamReference &
   Readonly<{
@@ -29,7 +29,7 @@ export function OrganizationTeamsManager({
 }>) {
   const router = useRouter();
   const [message, setMessage] = useState<string>();
-  const [pending, setPending] = useState(false);
+  const [isPending, setIsPending] = useState(false);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [visibility, setVisibility] =
@@ -40,7 +40,7 @@ export function OrganizationTeamsManager({
     method: "POST" | "PATCH" | "PUT" | "DELETE",
     body?: unknown,
   ) {
-    setPending(true);
+    setIsPending(true);
     setMessage(undefined);
     const response = await fetch(url, {
       method,
@@ -60,21 +60,23 @@ export function OrganizationTeamsManager({
         ? payload.status
         : "request-failed";
     setMessage(status);
-    setPending(false);
+    setIsPending(false);
     if (response.ok) {
       router.refresh();
     }
     return response.ok;
   }
 
-  async function createTeam(event: React.FormEvent<HTMLFormElement>) {
+  async function handleCreateTeam(
+    event: React.SyntheticEvent<HTMLFormElement, SubmitEvent>,
+  ) {
     event.preventDefault();
-    const ok = await mutate(
+    const isSuccessful = await mutate(
       `/api/organizations/${organizationLogin}/teams`,
       "POST",
       { name, slug, description: "", visibility },
     );
-    if (ok) {
+    if (isSuccessful) {
       setName("");
       setSlug("");
     }
@@ -86,14 +88,14 @@ export function OrganizationTeamsManager({
         <form
           className="grid gap-3 rounded-xl border p-5 sm:grid-cols-4"
           onSubmit={(event) => {
-            void createTeam(event);
+          void handleCreateTeam(event);
           }}
         >
           <label className="grid gap-1 text-sm">
             Team name
             <input
               className="h-10 rounded-md border bg-background px-3"
-              disabled={pending}
+              disabled={isPending}
               onChange={(event) => {
                 setName(event.currentTarget.value);
               }}
@@ -105,7 +107,7 @@ export function OrganizationTeamsManager({
             Slug
             <input
               className="h-10 rounded-md border bg-background px-3"
-              disabled={pending}
+              disabled={isPending}
               onChange={(event) => {
                 setSlug(event.currentTarget.value);
               }}
@@ -118,7 +120,7 @@ export function OrganizationTeamsManager({
             Visibility
             <select
               className="h-10 rounded-md border bg-background px-3"
-              disabled={pending}
+              disabled={isPending}
               onChange={(event) => {
                 const value = event.currentTarget.value;
                 if (isTeamVisibility(value)) {
@@ -131,7 +133,7 @@ export function OrganizationTeamsManager({
               <option value="secret">Secret</option>
             </select>
           </label>
-          <Button className="self-end" disabled={pending} type="submit">
+          <Button className="self-end" disabled={isPending} type="submit">
             Create team
           </Button>
         </form>
@@ -148,7 +150,7 @@ export function OrganizationTeamsManager({
           <TeamEditor
             canManageAll={canManageAll}
             currentAccountId={currentAccountId}
-            disabled={pending}
+        isDisabled={isPending}
             key={team.teamId}
             mutate={mutate}
             organizationLogin={organizationLogin}
@@ -164,7 +166,7 @@ export function OrganizationTeamsManager({
 function TeamEditor({
   canManageAll,
   currentAccountId,
-  disabled,
+  isDisabled,
   mutate,
   organizationLogin,
   team,
@@ -172,7 +174,7 @@ function TeamEditor({
 }: Readonly<{
   canManageAll: boolean;
   currentAccountId: string;
-  disabled: boolean;
+  isDisabled: boolean;
   mutate: (
     url: string,
     method: "POST" | "PATCH" | "PUT" | "DELETE",
@@ -209,7 +211,7 @@ function TeamEditor({
         </div>
         {canManageAll ? (
           <Button
-            disabled={disabled}
+        disabled={isDisabled}
             onClick={() => {
               void mutate(teamUrl, "DELETE");
             }}
@@ -225,7 +227,7 @@ function TeamEditor({
           <select
             aria-label={`Visibility for ${team.name}`}
             className="h-9 rounded-md border bg-background px-2 text-sm"
-            disabled={disabled}
+        disabled={isDisabled}
             onChange={(event) => {
               const value = event.currentTarget.value;
               if (isTeamVisibility(value)) {
@@ -241,7 +243,7 @@ function TeamEditor({
             aria-label={`Parent for ${team.name}`}
             className="h-9 rounded-md border bg-background px-2 text-sm"
             disabled={
-              disabled || !canManageAll || nextVisibility === "secret"
+          isDisabled || !canManageAll || nextVisibility === "secret"
             }
             onChange={(event) => {
               setParentTeamId(event.currentTarget.value);
@@ -262,7 +264,7 @@ function TeamEditor({
               ))}
           </select>
           <Button
-            disabled={disabled}
+        disabled={isDisabled}
             onClick={() => {
               void mutate(teamUrl, "PATCH", {
                 visibility: nextVisibility,
@@ -287,8 +289,8 @@ function TeamEditor({
             void mutate(
               `${teamUrl}/members/${encodeURIComponent(memberUsername)}`,
               "PUT",
-            ).then((ok) => {
-              if (ok) {
+        ).then((isSuccessful) => {
+          if (isSuccessful) {
                 setMemberUsername("");
               }
             });
@@ -297,7 +299,7 @@ function TeamEditor({
           <input
             aria-label={`Add member to ${team.name}`}
             className="h-9 rounded-md border bg-background px-3 text-sm"
-            disabled={disabled}
+        disabled={isDisabled}
             onChange={(event) => {
               setMemberUsername(event.currentTarget.value);
             }}
@@ -305,7 +307,7 @@ function TeamEditor({
             required
             value={memberUsername}
           />
-          <Button disabled={disabled} size="sm" type="submit">
+      <Button disabled={isDisabled} size="sm" type="submit">
             Add member
           </Button>
         </form>
@@ -325,7 +327,7 @@ function TeamEditor({
               </span>
               {canManageAll ? (
                 <Button
-                  disabled={disabled}
+              disabled={isDisabled}
                   onClick={() => {
                     void mutate(
                       maintainerUrl,
@@ -342,7 +344,7 @@ function TeamEditor({
               ) : null}
               {canManageTeam ? (
                 <Button
-                  disabled={disabled}
+                  disabled={isDisabled}
                   onClick={() => {
                     void mutate(memberUrl, "DELETE");
                   }}

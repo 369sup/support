@@ -16,6 +16,7 @@ import ts from "typescript";
 
 import {
   allowedWorkspaceDependencyKinds,
+  exclusiveDependencyFamilies,
   workspacePackagePolicy,
 } from "@support/tooling/architecture/policy";
 
@@ -120,7 +121,7 @@ function listSourceFiles(directory) {
   return files;
 }
 
-function internalDependencyEntries(manifest) {
+function dependencyEntries(manifest) {
   const entries = [];
 
   for (const section of dependencySections) {
@@ -130,13 +131,75 @@ function internalDependencyEntries(manifest) {
     }
 
     for (const [name, version] of Object.entries(dependencies)) {
-      if (name.startsWith("@support/")) {
-        entries.push({ name, section, version });
-      }
+      entries.push({ name, section, version });
     }
   }
 
   return entries;
+}
+
+function internalDependencyEntries(manifest) {
+  return dependencyEntries(manifest).filter((entry) => {
+    return entry.name.startsWith("@support/");
+  });
+}
+
+function validateExclusiveDependencyFamilies(workspaces, errors) {
+  for (const family of exclusiveDependencyFamilies) {
+    const providers = new Map();
+
+    for (const workspace of workspaces) {
+      for (const dependency of dependencyEntries(workspace.manifest)) {
+        if (!family.packages.includes(dependency.name)) {
+          continue;
+        }
+
+        const locations = providers.get(dependency.name) ?? [];
+        locations.push(`${workspace.name}/${dependency.section}`);
+        providers.set(dependency.name, locations);
+      }
+    }
+
+    if (providers.size <= 1) {
+      continue;
+    }
+
+    const providerSummary = [...providers.entries()]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([name, locations]) => {
+        return `${name} (${[...locations].sort().join(", ")})`;
+      })
+      .join("; ");
+
+    errors.push(
+      `[ARCH-PKG-009] ${family.capability} capability has overlapping providers: ${providerSummary}. Keep one provider across the workspace.`,
+    );
+  }
+}
+
+function validateSupplyChainBaseline(repositoryRoot, rootManifest, errors) {
+  const lockfilePath = join(repositoryRoot, "pnpm-lock.yaml");
+  const workspacePath = join(repositoryRoot, "pnpm-workspace.yaml");
+  const ciPath = join(repositoryRoot, ".github", "workflows", "ci.yml");
+  const hasPinnedPackageManager =
+    /^pnpm@\d+\.\d+\.\d+$/.test(rootManifest.packageManager ?? "");
+  const workspaceContents = existsSync(workspacePath)
+    ? readFileSync(workspacePath, "utf8")
+    : "";
+  const ciContents = existsSync(ciPath)
+    ? readFileSync(ciPath, "utf8")
+    : "";
+
+  if (
+    !hasPinnedPackageManager ||
+    !existsSync(lockfilePath) ||
+    !/^allowBuilds:/m.test(workspaceContents) ||
+    !/\bpnpm install --frozen-lockfile\b/.test(ciContents)
+  ) {
+    errors.push(
+      "[ARCH-PKG-010] Pin an exact pnpm packageManager version, commit pnpm-lock.yaml, declare allowBuilds, and install with --frozen-lockfile in CI.",
+    );
+  }
 }
 
 function exportTargets(value) {
@@ -414,6 +477,17 @@ export function validateWorkspacePackages(repositoryRoot, errors) {
   const workspacesByName = new Map(
     workspaces.map((workspace) => [workspace.name, workspace]),
   );
+  const rootWorkspace = workspacesByName.get("support-workspace");
+
+  if (rootWorkspace !== undefined) {
+    validateSupplyChainBaseline(
+      repositoryRoot,
+      rootWorkspace.manifest,
+      errors,
+    );
+  }
+
+  validateExclusiveDependencyFamilies(workspaces, errors);
 
   for (const workspace of workspaces) {
     validateExportTargets(workspace, repositoryRoot, errors);

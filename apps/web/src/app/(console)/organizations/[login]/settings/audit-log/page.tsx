@@ -1,11 +1,12 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function OrganizationAuditLogPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/organizations/{organization}/settings/audit-log",
     title: "Organization audit log",
     summary: "Review permission-filtered organization governance events.",
     contexts: ["governance/audit-logs", "platform/audit-storage"],
     catalogStatus: "mixed",
-  });
+  };
+  notFound();
 }

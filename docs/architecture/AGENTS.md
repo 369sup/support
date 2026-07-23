@@ -19,11 +19,14 @@ repository's architecture contract.
   human-maintained semantic model for each catalog context.
 - `exceptions/registry.json` is the only architecture exception registry.
 
-`AGENTS.md` files may explain workflow and local ownership, but they must not
-redefine these contracts. ESLint and TypeScript configuration own code-style
-enforcement that does not protect an architecture boundary. Update the
-canonical document, the mechanical check, and its positive and negative
-fixtures together when an enforceable architecture rule changes.
+`AGENTS.md` files may translate these contracts into concise subtree-local
+workflow and review checklists, but the contract named above resolves any
+semantic conflict. A nested instruction must not create a competing
+definition, weaken an invariant, or broaden an exception. ESLint and TypeScript
+configuration own code-style enforcement that does not protect an architecture
+boundary. Update the canonical document, the mechanical check, and its
+positive and negative fixtures together when an enforceable architecture rule
+changes.
 
 ## Catalog and exception changes
 

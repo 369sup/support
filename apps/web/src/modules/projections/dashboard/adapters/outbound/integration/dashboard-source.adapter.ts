@@ -61,7 +61,7 @@ export class DashboardSourceAdapter implements DashboardSourceGatewayPort {
   ): Promise<DashboardRepositoryPermissionSnapshot> {
     const accountResult = await getAccountReferenceById(accountId);
     if (accountResult.status !== "found") {
-      return { allowed: false, permission: null };
+      return { isAllowed: false, permission: null };
     }
     return resolveEffectiveRepositoryPermission({
       repository: {

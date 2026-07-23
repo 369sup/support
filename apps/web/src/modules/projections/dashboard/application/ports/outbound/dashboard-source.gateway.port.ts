@@ -28,7 +28,7 @@ export type DashboardRepositoryCandidateSnapshot = Readonly<{
 }>;
 
 export type DashboardRepositoryPermissionSnapshot = Readonly<{
-  allowed: boolean;
+  isAllowed: boolean;
   permission: "read" | "triage" | "write" | "maintain" | "admin" | null;
 }>;
 

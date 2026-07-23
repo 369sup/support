@@ -26,7 +26,7 @@ describe("Dashboard context restoration", () => {
         listActiveOrganizationMemberships: () => Promise.resolve([]),
         listActiveRepositories: () => Promise.resolve([]),
         resolveRepositoryPermission: () =>
-          Promise.resolve({ allowed: false, permission: null }),
+          Promise.resolve({ isAllowed: false, permission: null }),
       },
     );
 

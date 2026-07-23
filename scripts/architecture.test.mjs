@@ -1212,6 +1212,20 @@ test("requires a declared synchronous dependency for cross-context imports", () 
   }
 });
 
+test("allows only AGENTS.md as the src-root instruction file", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    writeFixture(rootDir, "src/AGENTS.md", "# Source instructions\n");
+    assert.equal(includesRule(check(rootDir), "ARCH-SRC-001"), false);
+
+    writeFixture(rootDir, "src/README.md", "# Unsupported source-root file\n");
+    assert.equal(includesRule(check(rootDir), "ARCH-SRC-001"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
 test("rejects a third src root", () => {
   const rootDir = createValidFixture();
 
@@ -1253,6 +1267,30 @@ test("rejects circular dependencies", () => {
       'import { first } from "./first";\nexport const second = first;\n',
     );
     assert.equal(includesRule(check(rootDir), "ARCH-GRAPH-001"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("requires server-only markers for direct server capabilities", () => {
+  const rootDir = createValidFixture();
+  const adapterPath =
+    "src/modules/core-domain/repositories/adapters/outbound/runtime/node-id.adapter.ts";
+
+  try {
+    writeFixture(
+      rootDir,
+      adapterPath,
+      'import { randomUUID } from "node:crypto";\nexport function createId(): string { return randomUUID(); }\n',
+    );
+    assert.equal(includesRule(check(rootDir), "ARCH-SERVER-001"), true);
+
+    writeFixture(
+      rootDir,
+      adapterPath,
+      'import "server-only";\nimport { randomUUID } from "node:crypto";\nexport function createId(): string { return randomUUID(); }\n',
+    );
+    assert.equal(includesRule(check(rootDir), "ARCH-SERVER-001"), false);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1560,11 +1598,12 @@ test("rejects unregistered and expired architecture exceptions", () => {
         rule: "ARCH-DEP-006",
         scope: buttonPath,
         owner: "platform-team",
+        approvedOn: "2026-07-01",
+        expiresOn: "2026-07-21",
         reason: "Vendor constraint.",
         alternatives: "No compatible alternative.",
         risk: "Temporary coupling.",
         spreadPrevention: "Exact file scope.",
-        reviewAfter: "2026-07-21",
         removalCondition: "Remove after vendor migration.",
       },
     ];
@@ -1575,7 +1614,17 @@ test("rejects unregistered and expired architecture exceptions", () => {
     );
     assert.equal(includesRule(check(rootDir), "ARCH-EXCEPTION-006"), true);
 
-    registry[0].reviewAfter = "2027-07-21";
+    registry[0].approvedOn = "2027-07-01";
+    registry[0].expiresOn = "2027-07-21";
+    writeFixture(
+      rootDir,
+      "docs/architecture/exceptions/registry.json",
+      `${JSON.stringify(registry, null, 2)}\n`,
+    );
+    assert.equal(includesRule(check(rootDir), "ARCH-EXCEPTION-005"), true);
+
+    registry[0].approvedOn = "2026-07-01";
+    registry[0].expiresOn = "2027-07-21";
     registry[0].scope = "src/modules/core-domain/repositories/browser-ui.ts";
     writeFixture(
       rootDir,

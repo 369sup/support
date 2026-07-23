@@ -1,6 +1,6 @@
 import { Separator } from "@support/shadcn/ui/separator";
 
-import { requireCurrentSession } from "@/app/_authentication/current-session";
+import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
 
 export default async function AccountPage() {
   const session = await requireCurrentSession();

@@ -1,6 +1,6 @@
 import { Separator } from "@support/shadcn/ui/separator";
 
-import { requireCurrentSession } from "@/app/_authentication/current-session";
+import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
 import { getDashboardRepositoryView } from "@/modules/projections/dashboard/server-api";
 
 export default async function DashboardPage() {

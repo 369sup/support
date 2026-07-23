@@ -1,11 +1,12 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function DiscussionCategoryPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/{owner}/{repository}/discussions/categories/{slug}",
     title: "Discussion category",
     summary: "List repository discussions in one category.",
     contexts: ["collaboration/discussions"],
     catalogStatus: "planned",
-  });
+  };
+  notFound();
 }

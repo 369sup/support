@@ -1,9 +1,9 @@
 import Link from "next/link";
 
-import { AccountMenu } from "@/app/account-menu";
-import { readBrowserSessionToken } from "@/app/_authentication/browser-session-cookie";
-import { requireCurrentSession } from "@/app/_authentication/current-session";
-import { DashboardContextSwitcher } from "@/app/dashboard-context-switcher";
+import { AccountMenu } from "@/modules/identity/authentication/browser-ui";
+import { readBrowserSessionToken } from "@/modules/identity/authentication/server-api";
+import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
+import { DashboardContextSwitcher } from "@/modules/projections/dashboard/browser-ui";
 import { authorizeEnterpriseAdministration } from "@/modules/enterprises/enterprise-roles/server-api";
 import { listBrowserAccountSessions } from "@/modules/identity/authentication/server-api";
 import {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { hasSameOrigin } from "./src/app/_authentication/same-origin";
+import { hasSameOrigin } from "./src/modules/identity/authentication/server-api";
 
 describe("same-origin mutation guard", () => {
   it("uses the browser-visible Host header instead of an internally normalized URL host", () => {

@@ -4,14 +4,14 @@ import {
   clearBrowserSessionToken,
   isInMemoryRuntimeEnabled,
   readBrowserSessionToken,
-} from "@/app/_authentication/browser-session-cookie";
-import { hasSameOrigin } from "@/app/_authentication/same-origin";
+} from "@/modules/identity/authentication/server-api";
+import { hasSameOrigin } from "@/modules/identity/authentication/server-api";
 import {
   listBrowserAccountSessions,
   signOutAllSessions,
 } from "@/modules/identity/authentication/server-api";
 
-export async function GET() {
+export async function GET(): Promise<Response> {
   if (!isInMemoryRuntimeEnabled()) {
     return new NextResponse(null, { status: 404 });
   }
@@ -28,7 +28,7 @@ export async function GET() {
   });
 }
 
-export async function DELETE(request: Request) {
+export async function DELETE(request: Request): Promise<Response> {
   if (!isInMemoryRuntimeEnabled()) {
     return new NextResponse(null, { status: 404 });
   }

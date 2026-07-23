@@ -1,3 +1,5 @@
+import "server-only";
+
 import { createHash } from "node:crypto";
 
 import type { AuditStorageExporterPort } from "../../application/ports/outbound/audit-storage-exporter.port";

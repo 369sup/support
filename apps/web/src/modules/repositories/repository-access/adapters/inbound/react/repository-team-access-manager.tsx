@@ -9,7 +9,7 @@ import type { OrganizationTeamReference } from "@/modules/organizations/organiza
 import {
   repositoryPermissionOptions,
   type RepositoryPermission,
-} from "@/modules/repositories/repository-access/browser-ui";
+} from "../../../contracts/effective-repository-permission-decision";
 
 export function RepositoryTeamAccessManager({
   canManageAll,
@@ -30,11 +30,13 @@ export function RepositoryTeamAccessManager({
     canManageAll ? "grant" : "revoke",
   );
   const [message, setMessage] = useState<string>();
-  const [pending, setPending] = useState(false);
+  const [isPending, setIsPending] = useState(false);
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: React.SyntheticEvent<HTMLFormElement, SubmitEvent>,
+  ) {
     event.preventDefault();
-    setPending(true);
+    setIsPending(true);
     const response = await fetch(
       `/api/organizations/${organizationLogin}/repositories/${repositoryName}/teams/${teamSlug}`,
       {
@@ -56,7 +58,7 @@ export function RepositoryTeamAccessManager({
         ? payload.status
         : "request-failed",
     );
-    setPending(false);
+    setIsPending(false);
     if (response.ok) {
       router.refresh();
     }
@@ -66,14 +68,14 @@ export function RepositoryTeamAccessManager({
     <form
       className="grid gap-3 rounded-xl border p-5 sm:grid-cols-4"
       onSubmit={(event) => {
-        void submit(event);
+        void handleSubmit(event);
       }}
     >
       <label className="grid gap-1 text-sm">
         Team
         <select
           className="h-10 rounded-md border bg-background px-2"
-          disabled={pending || teams.length === 0}
+          disabled={isPending || teams.length === 0}
           onChange={(event) => {
             setTeamSlug(event.currentTarget.value);
           }}
@@ -90,7 +92,7 @@ export function RepositoryTeamAccessManager({
         Action
         <select
           className="h-10 rounded-md border bg-background px-2"
-          disabled={pending}
+          disabled={isPending}
           onChange={(event) => {
             const value = event.currentTarget.value;
             if (isRepositoryAccessAction(value)) {
@@ -108,7 +110,7 @@ export function RepositoryTeamAccessManager({
         Permission
         <select
           className="h-10 rounded-md border bg-background px-2"
-          disabled={pending || action === "revoke"}
+          disabled={isPending || action === "revoke"}
           onChange={(event) => {
             const value = event.currentTarget.value;
             if (isRepositoryPermission(value)) {
@@ -126,7 +128,7 @@ export function RepositoryTeamAccessManager({
       </label>
       <Button
         className="self-end"
-        disabled={pending || teams.length === 0}
+        disabled={isPending || teams.length === 0}
         type="submit"
       >
         Apply access

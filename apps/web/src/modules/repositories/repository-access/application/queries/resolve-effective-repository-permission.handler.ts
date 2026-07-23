@@ -128,7 +128,7 @@ export class ResolveEffectiveRepositoryPermissionHandler
               grantId: grant.grantId,
               teamId: grant.teamId,
               matchedTeamId: membership.directTeamId,
-              inherited: grant.teamId !== membership.directTeamId,
+              isInherited: grant.teamId !== membership.directTeamId,
             },
           });
         }
@@ -152,7 +152,7 @@ export class ResolveEffectiveRepositoryPermissionHandler
     )[0];
 
     return {
-      allowed: strongest !== undefined,
+      isAllowed: strongest !== undefined,
       permission: strongest?.permission ?? null,
       sources: contributions.map((contribution) => contribution.source),
     };

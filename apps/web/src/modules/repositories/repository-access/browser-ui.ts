@@ -1,5 +1,6 @@
 "use client";
 
+export { RepositoryTeamAccessManager } from "./adapters/inbound/react/repository-team-access-manager";
 export type {
   RepositoryPermission,
   TeamRepositoryGrantReference,

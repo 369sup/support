@@ -11,6 +11,7 @@ export const agentGuidanceSourcePaths = [
   "AGENTS.md",
   "apps/AGENTS.md",
   "apps/web/AGENTS.md",
+  "apps/web/src/AGENTS.md",
   "apps/web/src/app/AGENTS.md",
   "apps/web/src/modules/AGENTS.md",
   "docs/AGENTS.md",

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { isInMemoryRuntimeEnabled } from "@/app/_authentication/browser-session-cookie";
-import { hasSameOrigin } from "@/app/_authentication/same-origin";
-import { resolveOrganizationRouteContext } from "@/app/_organization-administration/route-context";
+import { isInMemoryRuntimeEnabled } from "@/modules/identity/authentication/server-api";
+import { hasSameOrigin } from "@/modules/identity/authentication/server-api";
+import { getOptionalCurrentSession } from "@/modules/identity/authentication/server-api";
+import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
 import {
   deleteOrganizationTeam,
   getOrganizationTeam,
@@ -25,6 +26,22 @@ const updateSchema = z
     parentTeamId: z.string().min(1).nullable().optional(),
   })
   .refine((value) => Object.keys(value).length > 0);
+
+async function resolveOrganizationRouteContext(login: string) {
+  const session = await getOptionalCurrentSession();
+  if (session === null) {
+    return { status: "authentication-required" as const };
+  }
+  const organization = await getOrganizationByLogin(login);
+  if (organization.status !== "found") {
+    return { status: "organization-not-found" as const };
+  }
+  return {
+    status: "resolved" as const,
+    session,
+    organization: organization.organization,
+  };
+}
 
 async function resolveTeam(login: string, teamSlug: string) {
   const resolved = await resolveOrganizationRouteContext(login);
@@ -51,7 +68,7 @@ function unresolvedResponse(status: string) {
 export async function GET(
   _request: Request,
   context: { params: Promise<{ login: string; teamSlug: string }> },
-) {
+): Promise<Response> {
   if (!isInMemoryRuntimeEnabled()) {
     return new NextResponse(null, { status: 404 });
   }
@@ -65,7 +82,7 @@ export async function GET(
 export async function PATCH(
   request: Request,
   context: { params: Promise<{ login: string; teamSlug: string }> },
-) {
+): Promise<Response> {
   if (!isInMemoryRuntimeEnabled()) {
     return new NextResponse(null, { status: 404 });
   }
@@ -110,7 +127,7 @@ export async function PATCH(
 export async function DELETE(
   request: Request,
   context: { params: Promise<{ login: string; teamSlug: string }> },
-) {
+): Promise<Response> {
   if (!isInMemoryRuntimeEnabled()) {
     return new NextResponse(null, { status: 404 });
   }

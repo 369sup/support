@@ -1,11 +1,12 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function RepositoryActivityPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/{owner}/{repository}/activity",
     title: "Repository activity",
     summary: "Present a permission-filtered feed of supported non-code repository events.",
     contexts: ["projections/activity-feed"],
     catalogStatus: "planned",
-  });
+  };
+  notFound();
 }

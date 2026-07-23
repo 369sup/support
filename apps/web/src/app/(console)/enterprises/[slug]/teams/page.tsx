@@ -1,11 +1,12 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function EnterpriseTeamsPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/enterprises/{slug}/teams",
     title: "Enterprise teams",
     summary: "List enterprise-owned team definitions and organization connections.",
     contexts: ["enterprises/enterprise-teams"],
     catalogStatus: "planned",
-  });
+  };
+  notFound();
 }

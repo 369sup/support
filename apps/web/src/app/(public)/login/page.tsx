@@ -1,11 +1,12 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function LoginPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/login",
     title: "Login",
     summary: "GitHub-style canonical login URL for the account authentication journey.",
     contexts: ["identity/authentication"],
     catalogStatus: "active",
-  });
+  };
+  notFound();
 }

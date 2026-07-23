@@ -56,6 +56,54 @@ export const workspacePackagePolicy = Object.freeze({
   }),
 });
 
+export const exclusiveDependencyFamilies = Object.freeze([
+  Object.freeze({
+    capability: "date",
+    packages: Object.freeze([
+      "@js-temporal/polyfill",
+      "date-fns",
+      "dayjs",
+      "luxon",
+      "moment",
+    ]),
+  }),
+  Object.freeze({
+    capability: "form",
+    packages: Object.freeze([
+      "@tanstack/react-form",
+      "final-form",
+      "formik",
+      "react-final-form",
+      "react-hook-form",
+    ]),
+  }),
+  Object.freeze({
+    capability: "state",
+    packages: Object.freeze([
+      "@reduxjs/toolkit",
+      "jotai",
+      "mobx",
+      "recoil",
+      "redux",
+      "valtio",
+      "zustand",
+    ]),
+  }),
+  Object.freeze({
+    capability: "ui",
+    packages: Object.freeze([
+      "@chakra-ui/react",
+      "@mantine/core",
+      "@mui/material",
+      "@support/shadcn",
+      "antd",
+      "primereact",
+      "react-bootstrap",
+      "semantic-ui-react",
+    ]),
+  }),
+]);
+
 export const allowedWorkspaceDependencyKinds = Object.freeze({
   dependencies: Object.freeze({
     root: Object.freeze([]),
@@ -137,7 +185,7 @@ const ruleEntries = [
   rule("ARCH-EXCEPTION-002", "exception", "required", "checker", "Exceptions contain every required field."),
   rule("ARCH-EXCEPTION-003", "exception", "required", "checker", "Exception identifiers are valid."),
   rule("ARCH-EXCEPTION-004", "exception", "required", "checker", "Exception identifiers are unique."),
-  rule("ARCH-EXCEPTION-005", "exception", "required", "checker", "Exception review dates are valid."),
+  rule("ARCH-EXCEPTION-005", "exception", "required", "checker", "Exception approval and expiry dates are valid."),
   rule("ARCH-EXCEPTION-006", "exception", "required", "checker", "Expired exceptions fail validation."),
   rule("ARCH-EXCEPTION-007", "exception", "required", "checker", "Referenced exceptions are registered."),
   rule("ARCH-EXCEPTION-008", "exception", "required", "checker", "Exception scopes cover their references."),
@@ -187,6 +235,9 @@ const ruleEntries = [
   rule("ARCH-PKG-006", "workspace", "required", "checker", "Internal imports use exported package subpaths."),
   rule("ARCH-PKG-007", "workspace", "required", "checker", "Workspace source does not cross package roots directly."),
   rule("ARCH-PKG-008", "workspace", "required", "checker", "Package exports exist and the package graph is acyclic."),
+  rule("ARCH-PKG-009", "workspace", "required", "checker", "Exclusive dependency capabilities use one provider across the workspace."),
+  rule("ARCH-PKG-010", "workspace", "required", "checker", "The package manager, lockfile, install scripts, and CI install mode are pinned."),
+  rule("ARCH-SERVER-001", "dependency", "required", "checker", "Modules that use server capabilities carry an explicit server-only marker."),
   rule("ARCH-SRC-001", "structure", "required", "checker", "Application source roots are restricted."),
   rule("ARCH-STRUCT-001", "structure", "required", "checker", "Context roots contain canonical entries."),
   rule("ARCH-STRUCT-002", "structure", "required", "checker", "Subdomain roots contain bounded contexts only."),

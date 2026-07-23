@@ -42,6 +42,9 @@ function createWorkspaceFixture() {
       name,
       private: true,
       type: "module",
+      ...(policy.kind === "root"
+        ? { packageManager: "pnpm@11.15.1" }
+        : {}),
     };
 
     if (policy.kind !== "root" && policy.kind !== "app") {
@@ -53,6 +56,18 @@ function createWorkspaceFixture() {
 
     writeManifest(rootDir, policy.path, manifest);
   }
+
+  writeFixture(rootDir, "pnpm-lock.yaml", "lockfileVersion: '9.0'\n");
+  writeFixture(
+    rootDir,
+    "pnpm-workspace.yaml",
+    "packages: []\nallowBuilds:\n  sharp: true\n",
+  );
+  writeFixture(
+    rootDir,
+    ".github/workflows/ci.yml",
+    "steps:\n  - run: pnpm install --frozen-lockfile\n",
+  );
 
   return rootDir;
 }

@@ -233,7 +233,7 @@ planned.
 The permission query emits no events. Successful team grant commands record
 their active events in the context-owned outbox; publication failure does not
 roll back the committed grant. Expected query denial is returned as
-`allowed: false`; unexpected dependency failures propagate.
+`isAllowed: false`; unexpected dependency failures propagate.
 
 ## Official sources
 

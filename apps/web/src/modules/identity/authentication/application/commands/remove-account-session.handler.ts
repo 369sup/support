@@ -45,7 +45,7 @@ export class RemoveAccountSessionHandler
       return {
         status: "removed",
         currentSession: null,
-        browserSessionEmpty: true,
+        isBrowserSessionEmpty: true,
       };
     }
 
@@ -65,7 +65,7 @@ export class RemoveAccountSessionHandler
       return {
         status: "removed",
         currentSession: null,
-        browserSessionEmpty: false,
+        isBrowserSessionEmpty: false,
       };
     }
     const account = await this.accountGateway.getAccountReference(
@@ -74,7 +74,7 @@ export class RemoveAccountSessionHandler
     return {
       status: "removed",
       currentSession: account === null ? null : { ...current, account },
-      browserSessionEmpty: false,
+      isBrowserSessionEmpty: false,
     };
   }
 }

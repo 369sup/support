@@ -1,7 +1,7 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function ApplicationsSettingsPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/settings/applications",
     title: "Applications",
     summary: "Review OAuth applications and account authorizations.",
@@ -10,5 +10,6 @@ export default function ApplicationsSettingsPage(): never {
       "integrations/oauth-authorizations",
     ],
     catalogStatus: "planned",
-  });
+  };
+  notFound();
 }

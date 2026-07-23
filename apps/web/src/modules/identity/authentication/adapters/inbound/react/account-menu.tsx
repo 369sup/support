@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@support/shadcn/ui/button";
 
-import type { BrowserAccountSessionView } from "@/modules/identity/authentication/browser-ui";
+import type { BrowserAccountSessionView } from "../../../contracts/authenticated-session-reference";
 
 function readResponseStatus(payload: unknown) {
   if (

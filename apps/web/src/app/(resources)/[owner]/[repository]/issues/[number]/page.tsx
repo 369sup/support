@@ -1,7 +1,7 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function IssuePage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/{owner}/{repository}/issues/{number}",
     title: "Issue",
     summary: "Review one issue, its lifecycle, conversation, labels, and milestone.",
@@ -12,5 +12,6 @@ export default function IssuePage(): never {
       "collaboration/moderation",
     ],
     catalogStatus: "planned",
-  });
+  };
+  notFound();
 }

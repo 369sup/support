@@ -1,3 +1,5 @@
+import "server-only";
+
 import { randomUUID } from "node:crypto";
 
 import type { MediaIdGeneratorPort } from "../../application/ports/outbound/media-id-generator.port";

@@ -42,7 +42,7 @@ export class GetDashboardRepositoryViewHandler
           candidate,
           query.actor.account.accountId,
         );
-      if (decision.allowed && decision.permission !== null) {
+      if (decision.isAllowed && decision.permission !== null) {
         repositories.push({
           repositoryId: candidate.repositoryId,
           ownerLogin: candidate.ownerLogin,

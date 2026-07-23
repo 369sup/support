@@ -1,3 +1,5 @@
+import "server-only";
+
 import { randomUUID } from "node:crypto";
 
 import type { SessionRuntimeGatewayPort } from "../../../application/ports/outbound/session-runtime.gateway.port";

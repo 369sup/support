@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import type {
   AvailableDashboardContext,
-} from "@/modules/projections/dashboard/browser-ui";
+} from "../../../contracts/dashboard-context";
 
 function contextKey(context: AvailableDashboardContext) {
   return context.kind === "personal"
@@ -21,7 +21,7 @@ export function DashboardContextSwitcher({
   current: AvailableDashboardContext;
 }>) {
   const router = useRouter();
-  const [pending, setPending] = useState(false);
+  const [isPending, setIsPending] = useState(false);
 
   async function select(value: string) {
     const [kind, id] = value.split(":", 2);
@@ -31,7 +31,7 @@ export function DashboardContextSwitcher({
     ) {
       return;
     }
-    setPending(true);
+    setIsPending(true);
     const response = await fetch("/api/context/selection", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -40,7 +40,7 @@ export function DashboardContextSwitcher({
     if (response.ok) {
       router.refresh();
     } else {
-      setPending(false);
+      setIsPending(false);
     }
   }
 
@@ -50,7 +50,7 @@ export function DashboardContextSwitcher({
       <select
         aria-label="Dashboard context"
         className="h-9 max-w-48 rounded-md border bg-background px-2 font-medium"
-        disabled={pending}
+        disabled={isPending}
         onChange={(event) => void select(event.currentTarget.value)}
         value={contextKey(current)}
       >

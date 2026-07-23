@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 
 import { Separator } from "@support/shadcn/ui/separator";
 
-import { requireCurrentSession } from "@/app/_authentication/current-session";
+import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
 import { authorizeEnterpriseAdministration } from "@/modules/enterprises/enterprise-roles/server-api";
 import {
   getEnterpriseBySlug,

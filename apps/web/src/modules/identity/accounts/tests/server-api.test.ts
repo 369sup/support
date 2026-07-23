@@ -7,7 +7,7 @@ describe("accounts server API", () => {
     await expect(
       getPersonalAccountByUsername("octocat"),
     ).resolves.toEqual({
-      ok: true,
+      isSuccessful: true,
       account: {
         accountId: "account_octocat",
         username: "octocat",
@@ -19,7 +19,7 @@ describe("accounts server API", () => {
     await expect(
       getPersonalAccountByUsername("missing"),
     ).resolves.toEqual({
-      ok: false,
+      isSuccessful: false,
       error: "account-not-found",
     });
   });
@@ -28,7 +28,7 @@ describe("accounts server API", () => {
     await expect(
       getPersonalAccountByUsername("   "),
     ).resolves.toEqual({
-      ok: false,
+      isSuccessful: false,
       error: "invalid-username",
     });
   });
@@ -40,6 +40,6 @@ describe("accounts server API", () => {
     ]);
 
     expect(first).toEqual(second);
-    expect(first.ok).toBe(true);
+    expect(first.isSuccessful).toBe(true);
   });
 });

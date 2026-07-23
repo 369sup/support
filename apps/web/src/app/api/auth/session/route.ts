@@ -3,10 +3,10 @@ import { NextResponse } from "next/server";
 import {
   isInMemoryRuntimeEnabled,
   readBrowserSessionToken,
-} from "@/app/_authentication/browser-session-cookie";
+} from "@/modules/identity/authentication/server-api";
 import { getCurrentAuthenticatedSession } from "@/modules/identity/authentication/server-api";
 
-export async function GET() {
+export async function GET(): Promise<Response> {
   if (!isInMemoryRuntimeEnabled()) {
     return new NextResponse(null, { status: 404 });
   }

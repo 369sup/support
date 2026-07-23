@@ -9,7 +9,7 @@ import type {
   OrganizationRoleAssignmentReference,
   PredefinedOrganizationRoleDefinition,
   PredefinedOrganizationRoleKey,
-} from "@/modules/organizations/organization-roles/browser-ui";
+} from "../../../contracts/organization-role-reference";
 
 export function OrganizationRolesManager({
   assignments,
@@ -30,12 +30,14 @@ export function OrganizationRolesManager({
   );
   const [subjectIdentifier, setSubjectIdentifier] = useState("");
   const [message, setMessage] = useState<string>();
-  const [pending, setPending] = useState(false);
+  const [isPending, setIsPending] = useState(false);
   const assignmentsUrl = `/api/organizations/${organizationLogin}/roles/assignments`;
 
-  async function assign(event: React.FormEvent<HTMLFormElement>) {
+  async function handleAssign(
+    event: React.SyntheticEvent<HTMLFormElement, SubmitEvent>,
+  ) {
     event.preventDefault();
-    setPending(true);
+    setIsPending(true);
     const response = await fetch(assignmentsUrl, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -43,7 +45,7 @@ export function OrganizationRolesManager({
     });
     const payload: unknown = await response.json().catch(() => null);
     setMessage(readStatus(payload));
-    setPending(false);
+    setIsPending(false);
     if (response.ok) {
       setSubjectIdentifier("");
       router.refresh();
@@ -51,13 +53,13 @@ export function OrganizationRolesManager({
   }
 
   async function revoke(assignmentId: string) {
-    setPending(true);
+    setIsPending(true);
     const response = await fetch(`${assignmentsUrl}/${assignmentId}`, {
       method: "DELETE",
     });
     const payload: unknown = await response.json().catch(() => null);
     setMessage(readStatus(payload));
-    setPending(false);
+    setIsPending(false);
     if (response.ok) {
       router.refresh();
     }
@@ -86,14 +88,14 @@ export function OrganizationRolesManager({
         <form
           className="grid gap-3 rounded-xl border p-5 sm:grid-cols-4"
           onSubmit={(event) => {
-            void assign(event);
+          void handleAssign(event);
           }}
         >
           <label className="grid gap-1 text-sm">
             Role
             <select
               className="h-10 rounded-md border bg-background px-2"
-              disabled={pending}
+              disabled={isPending}
               onChange={(event) => {
                 const value = event.currentTarget.value;
                 if (isPredefinedRoleKey(value)) {
@@ -113,7 +115,7 @@ export function OrganizationRolesManager({
             Subject type
             <select
               className="h-10 rounded-md border bg-background px-2"
-              disabled={pending}
+              disabled={isPending}
               onChange={(event) => {
                 const value = event.currentTarget.value;
                 if (isRoleSubjectKind(value)) {
@@ -130,7 +132,7 @@ export function OrganizationRolesManager({
             Account ID or team slug
             <input
               className="h-10 rounded-md border bg-background px-3"
-              disabled={pending}
+              disabled={isPending}
               onChange={(event) => {
                 setSubjectIdentifier(event.currentTarget.value);
               }}
@@ -138,7 +140,7 @@ export function OrganizationRolesManager({
               value={subjectIdentifier}
             />
           </label>
-          <Button className="self-end" disabled={pending} type="submit">
+          <Button className="self-end" disabled={isPending} type="submit">
             Assign role
           </Button>
         </form>
@@ -171,7 +173,7 @@ export function OrganizationRolesManager({
                 </span>
                 {canManage ? (
                   <Button
-                    disabled={pending}
+                    disabled={isPending}
                     onClick={() => {
                       void revoke(assignment.assignmentId);
                     }}

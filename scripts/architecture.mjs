@@ -39,6 +39,7 @@ import {
   buildSourceGraph,
   validateClientGraphs,
   validateDeclaredContextDependencies,
+  validateServerOnlyMarkers,
   validateSourceCycles,
 } from "./architecture/source.mjs";
 import { validateWorkspacePackages } from "./architecture/workspace.mjs";
@@ -276,9 +277,13 @@ function validateSourceRoot(rootDir, errors) {
   }
 
   for (const entry of readdirSync(sourceRoot, { withFileTypes: true })) {
-    if (!entry.isDirectory() || (entry.name !== "app" && entry.name !== "modules")) {
+    const isCanonicalDirectory =
+      entry.isDirectory() && (entry.name === "app" || entry.name === "modules");
+    const isInstructionFile = entry.isFile() && entry.name === "AGENTS.md";
+
+    if (!isCanonicalDirectory && !isInstructionFile) {
       errors.push(
-        `[ARCH-SRC-001] src may contain only the app and modules directories; found src/${entry.name}.`,
+        `[ARCH-SRC-001] src may contain only the app and modules directories plus AGENTS.md; found src/${entry.name}.`,
       );
     }
   }
@@ -1663,6 +1668,7 @@ export function runArchitectureChecks({
 
   const { graph, metadata } = buildSourceGraph(applicationRoot, sourceFiles);
   validateSourceCycles(applicationRoot, graph, requiredErrors);
+  validateServerOnlyMarkers(applicationRoot, metadata, requiredErrors);
   validateClientGraphs(applicationRoot, graph, metadata, requiredErrors);
   validateDeclaredContextDependencies(
     applicationRoot,

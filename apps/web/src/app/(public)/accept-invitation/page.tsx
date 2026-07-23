@@ -1,7 +1,7 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function AcceptInvitationPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/accept-invitation",
     title: "Accept invitation",
     summary: "Review and accept an organization or enterprise membership invitation.",
@@ -10,5 +10,6 @@ export default function AcceptInvitationPage(): never {
       "organizations/organization-memberships",
     ],
     catalogStatus: "active",
-  });
+  };
+  notFound();
 }

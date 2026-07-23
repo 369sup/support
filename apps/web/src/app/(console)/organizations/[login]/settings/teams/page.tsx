@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 
 import { Separator } from "@support/shadcn/ui/separator";
 
-import { requireCurrentSession } from "@/app/_authentication/current-session";
-import { OrganizationTeamsManager } from "@/app/organization-teams-manager";
+import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
+import { OrganizationTeamsManager } from "@/modules/organizations/organization-teams/browser-ui";
 import { getAccountReferenceById } from "@/modules/identity/accounts/server-api";
 import { checkOrganizationContextEligibility } from "@/modules/organizations/organization-memberships/server-api";
 import {

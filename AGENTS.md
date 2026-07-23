@@ -13,9 +13,9 @@ This file owns repository-wide workflow only. A nested `AGENTS.md` adds rules
 for its subtree; anything it does not mention remains inherited. When
 repository instructions differ, the file closest to the target wins.
 
-- Give every rule one authoritative definition. Nested files link to that
-  definition and contain only local responsibilities, workflow, validation, or
-  explicit differences.
+- Give every rule one authoritative definition. Nested files may translate that
+  definition into a concise subtree-local checklist, but they must link to the
+  authority and must not create a competing meaning or broader exception.
 - Add a nested file only for a real ownership, dependency, terminology,
   workflow, validation, or exception boundary.
 - Do not add empty instruction files or permanent `AGENTS.override.md` files.
@@ -29,11 +29,17 @@ Official discovery and precedence behavior is documented at
 | Concern | Authoritative location |
 | --- | --- |
 | Architecture rules, naming, module shape, TypeScript clarity, context catalog, and exceptions | [`docs/architecture/AGENTS.md`](docs/architecture/AGENTS.md) |
-| Deployable application policy | [`apps/AGENTS.md`](apps/AGENTS.md) |
-| Next.js application package workflow | [`apps/web/AGENTS.md`](apps/web/AGENTS.md) |
-| App Router delivery workflow | [`apps/web/src/app/AGENTS.md`](apps/web/src/app/AGENTS.md) |
-| Bounded-context development workflow | [`apps/web/src/modules/AGENTS.md`](apps/web/src/modules/AGENTS.md) |
+| Deployable runtime boundaries, composition, process state, and background work | [`apps/AGENTS.md`](apps/AGENTS.md) |
+| Next.js package configuration, environment, instrumentation, build, and release | [`apps/web/AGENTS.md`](apps/web/AGENTS.md) |
+| Web source placement, TypeScript, React, interaction, async, and source-test baseline | [`apps/web/src/AGENTS.md`](apps/web/src/AGENTS.md) |
+| App Router files, transport boundaries, caching, navigation, metadata, and route states | [`apps/web/src/app/AGENTS.md`](apps/web/src/app/AGENTS.md) |
+| Domain modeling, use cases, Ports and Adapters, persistence, events, authorization, and tenant safety | [`apps/web/src/modules/AGENTS.md`](apps/web/src/modules/AGENTS.md) |
 | Workspace package policy | [`packages/AGENTS.md`](packages/AGENTS.md) |
+| Framework-neutral wire schemas | [`packages/contracts/AGENTS.md`](packages/contracts/AGENTS.md) |
+| Lint and TypeScript mechanical enforcement | [`packages/eslint-config/AGENTS.md`](packages/eslint-config/AGENTS.md), [`packages/typescript-config/AGENTS.md`](packages/typescript-config/AGENTS.md), and [`packages/tooling/AGENTS.md`](packages/tooling/AGENTS.md) |
+| Reusable UI and accessibility workflow | [`packages/shadcn/AGENTS.md`](packages/shadcn/AGENTS.md) |
+| Logging, tracing, metrics, and redaction | [`packages/observability/AGENTS.md`](packages/observability/AGENTS.md) |
+| Shared test-runner configuration | [`packages/testing-config/AGENTS.md`](packages/testing-config/AGENTS.md) |
 | Documentation workflow | [`docs/AGENTS.md`](docs/AGENTS.md) |
 | Shared repository scripts | [`scripts/AGENTS.md`](scripts/AGENTS.md) |
 
@@ -63,6 +69,42 @@ Agent and automation assets use this single placement map:
 Do not invent product rules. When tenant boundaries, roles, repository scopes,
 token lifetime, notification behavior, or data ownership are unclear, surface
 the ambiguity before encoding behavior.
+
+## Repository-wide engineering baseline
+
+- Keep every change local, explicit, and traceable. Do not combine a feature or
+  fix with unrelated refactoring, formatting, dependency upgrades, or
+  speculative architecture.
+- Give each rule, configuration value, public contract, and data shape one
+  owner. Reuse that authority instead of copying it into a second source of
+  truth.
+- Prefer the simplest implementation that preserves the required boundary.
+  Add an abstraction, factory, strategy, extension point, or shared module only
+  after multiple real consumers demonstrate the same semantics, change reason,
+  and lifecycle.
+- Prefer composition and small explicit functions over inheritance. Use a
+  class only when it protects state, invariants, or genuine polymorphic
+  behavior.
+- Keep public APIs minimal. Before changing or deleting one, identify every
+  consumer, dynamic load path, compatibility obligation, and migration need.
+  Breaking contracts require an explicit version or migration decision.
+- Add a dependency only when platform capabilities and existing dependencies
+  cannot reasonably satisfy the need. Confirm its owner, purpose, maintenance,
+  security posture, bundle or runtime cost, and lockfile effect; do not add
+  overlapping providers.
+- Await, return, compose, or deliberately track every Promise. Bound
+  concurrency over collections; do not start unbounded database or network
+  work, and do not let background work depend on an HTTP request remaining
+  alive.
+- Keep configuration as data with one source of truth. Environment differences
+  must not fork business code. Every feature flag has an owner, purpose, removal
+  condition, and a bounded lifetime.
+- Comments explain a non-obvious reason, constraint, invariant, or tradeoff.
+  Delete dead code instead of commenting it out. A TODO must include a
+  traceable owner or work item and the reason it cannot be completed now.
+- Tests assert behavior and contracts rather than private implementation.
+  Every bug fix adds a regression that fails before the fix; every important
+  invariant and failure branch has a proportionate test.
 
 ## Cross-platform automation
 

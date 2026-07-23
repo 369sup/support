@@ -1,11 +1,12 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function OrganizationRepositoriesPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/orgs/{organization}/repositories",
     title: "Organization repositories",
     summary: "List repositories owned by an organization and visible to the actor.",
     contexts: ["organizations/organizations", "repositories/repositories"],
     catalogStatus: "active",
-  });
+  };
+  notFound();
 }

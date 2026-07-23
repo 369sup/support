@@ -15,7 +15,7 @@ export type RepositoryPermissionSource =
       grantId: string;
       teamId: string;
       matchedTeamId: string;
-      inherited: boolean;
+      isInherited: boolean;
     }>
   | Readonly<{
       kind: "organization-role";
@@ -27,7 +27,7 @@ export type RepositoryPermissionSource =
     }>;
 
 export type EffectiveRepositoryPermissionDecision = Readonly<{
-  allowed: boolean;
+  isAllowed: boolean;
   permission: RepositoryPermission | null;
   sources: readonly RepositoryPermissionSource[];
 }>;

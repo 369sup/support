@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 
-import { getOptionalCurrentSession } from "@/app/_authentication/current-session";
-import { isInMemoryRuntimeEnabled } from "@/app/_authentication/browser-session-cookie";
+import { getOptionalCurrentSession } from "@/modules/identity/authentication/server-api";
+import { isInMemoryRuntimeEnabled } from "@/modules/identity/authentication/server-api";
 import { restoreLastValidDashboardContext } from "@/modules/projections/dashboard/server-api";
 
-export async function GET() {
+export async function GET(): Promise<Response> {
   if (!isInMemoryRuntimeEnabled()) {
     return new NextResponse(null, { status: 404 });
   }

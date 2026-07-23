@@ -1,7 +1,7 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function DeveloperSettingsPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/settings/developers",
     title: "Developer settings",
     summary: "Open the account-level integration registration settings entry point.",
@@ -10,5 +10,6 @@ export default function DeveloperSettingsPage(): never {
       "integrations/oauth-app-registrations",
     ],
     catalogStatus: "planned",
-  });
+  };
+  notFound();
 }

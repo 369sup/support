@@ -45,7 +45,7 @@ describe("effective repository permission", () => {
     });
 
     expect(decision).toEqual({
-      allowed: true,
+      isAllowed: true,
       permission: "admin",
       sources: [
         { kind: "public-read" },
@@ -114,7 +114,7 @@ describe("effective repository permission", () => {
         accountId: "account",
       }),
     ).resolves.toEqual({
-      allowed: true,
+      isAllowed: true,
       permission: "write",
       sources: [
         {
@@ -122,7 +122,7 @@ describe("effective repository permission", () => {
           grantId: "team_grant",
           teamId: "parent",
           matchedTeamId: "child",
-          inherited: true,
+          isInherited: true,
         },
         {
           kind: "organization-role",

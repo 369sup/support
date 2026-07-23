@@ -1,11 +1,12 @@
-import { unavailableRoute } from "@/app/_route-scaffold/unavailable-route";
+import { notFound } from "next/navigation";
 
 export default function StargazersPage(): never {
-  return unavailableRoute({
+  void {
     urlPattern: "/{owner}/{repository}/stargazers",
     title: "Stargazers",
     summary: "List accounts that starred a repository when visibility permits.",
     contexts: ["engagement/stars"],
     catalogStatus: "planned",
-  });
+  };
+  notFound();
 }

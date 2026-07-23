@@ -14,11 +14,11 @@ export function createGetPersonalAccountByUsernameAdapter(
     const result = await useCase.getPersonalAccountByUsername({ username });
 
     if (result.status !== "found") {
-      return { ok: false, error: result.status };
+      return { isSuccessful: false, error: result.status };
     }
 
     return {
-      ok: true,
+      isSuccessful: true,
       account: {
         accountId: result.account.accountId,
         username: result.account.username,

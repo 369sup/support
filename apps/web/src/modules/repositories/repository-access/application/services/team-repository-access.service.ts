@@ -142,12 +142,12 @@ export class TeamRepositoryAccessService {
       organizationId,
       teamId: command.teamId,
     });
-    const inherited = (
+    const isInherited = (
       await this.grantRepository.findActiveByRepository(
         command.repository.repositoryId,
       )
     ).some((candidate) => ancestorTeamIds.includes(candidate.teamId));
-    return inherited
+    return isInherited
       ? { status: "inherited-access-cannot-be-removed" }
       : { status: "team-grant-not-found" };
   }

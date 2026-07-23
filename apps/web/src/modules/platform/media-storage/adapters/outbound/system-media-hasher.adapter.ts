@@ -1,3 +1,5 @@
+import "server-only";
+
 import { createHash } from "node:crypto";
 
 import type { MediaHasherPort } from "../../application/ports/outbound/media-hasher.port";

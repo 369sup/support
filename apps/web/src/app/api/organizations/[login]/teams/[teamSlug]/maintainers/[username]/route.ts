@@ -1,20 +1,49 @@
 import { NextResponse } from "next/server";
 
-import { isInMemoryRuntimeEnabled } from "@/app/_authentication/browser-session-cookie";
-import { hasSameOrigin } from "@/app/_authentication/same-origin";
-import { resolveTeamRouteContext } from "@/app/_organization-administration/team-route-context";
+import { isInMemoryRuntimeEnabled } from "@/modules/identity/authentication/server-api";
+import { hasSameOrigin } from "@/modules/identity/authentication/server-api";
+import { getOptionalCurrentSession } from "@/modules/identity/authentication/server-api";
 import {
   getAccountReferenceById,
   getPersonalAccountByUsername,
 } from "@/modules/identity/accounts/server-api";
+import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
 import {
   assignTeamMaintainer,
+  getOrganizationTeam,
   revokeTeamMaintainer,
 } from "@/modules/organizations/organization-teams/server-api";
 
 type RouteContext = {
   params: Promise<{ login: string; teamSlug: string; username: string }>;
 };
+
+async function resolveTeamRouteContext(
+  login: string,
+  teamSlug: string,
+) {
+  const session = await getOptionalCurrentSession();
+  if (session === null) {
+    return { status: "authentication-required" as const };
+  }
+  const organization = await getOrganizationByLogin(login);
+  if (organization.status !== "found") {
+    return { status: "organization-not-found" as const };
+  }
+  const team = await getOrganizationTeam({
+    actorAccountId: session.account.accountId,
+    organizationId: organization.organization.organizationId,
+    teamSlug,
+  });
+  return team.status === "found"
+    ? {
+        status: "resolved" as const,
+        session,
+        organization: organization.organization,
+        team: team.team,
+      }
+    : { status: "team-not-found" as const };
+}
 
 async function resolveInput(context: RouteContext) {
   const params = await context.params;
@@ -37,7 +66,7 @@ async function resolveInput(context: RouteContext) {
 
 async function resolveAccount(identifier: string) {
   const personalAccount = await getPersonalAccountByUsername(identifier);
-  if (personalAccount.ok) {
+  if (personalAccount.isSuccessful) {
     return personalAccount.account;
   }
   const account = await getAccountReferenceById(identifier);
@@ -51,7 +80,10 @@ function unresolved(status: string) {
   );
 }
 
-export async function PUT(request: Request, context: RouteContext) {
+export async function PUT(
+  request: Request,
+  context: RouteContext,
+): Promise<Response> {
   if (!isInMemoryRuntimeEnabled()) {
     return new NextResponse(null, { status: 404 });
   }
@@ -78,7 +110,10 @@ export async function PUT(request: Request, context: RouteContext) {
   return NextResponse.json(result, { status });
 }
 
-export async function DELETE(request: Request, context: RouteContext) {
+export async function DELETE(
+  request: Request,
+  context: RouteContext,
+): Promise<Response> {
   if (!isInMemoryRuntimeEnabled()) {
     return new NextResponse(null, { status: 404 });
   }

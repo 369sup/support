@@ -8,7 +8,7 @@ export type RemoveAccountSessionResult =
   | Readonly<{
       status: "removed";
       currentSession: ResolvedAccountSessionSnapshot | null;
-      browserSessionEmpty: boolean;
+      isBrowserSessionEmpty: boolean;
     }>
   | Readonly<{
       status: "browser-session-not-found" | "session-not-found";

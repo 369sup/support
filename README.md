@@ -30,6 +30,9 @@ Architecture, naming, module-map, and exception rules are documented under
 
 ## Development
 
+Read [`CONTRIBUTING.md`](CONTRIBUTING.md) before changing code. It defines the
+review, verification, documentation, dependency, and commit workflow.
+
 ```text
 pnpm install
 pnpm dev
