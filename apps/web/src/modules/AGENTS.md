@@ -7,10 +7,9 @@ dependency rules are not defined here.
 
 Use these canonical sources before adding or moving module code:
 
-- [`docs/architecture/rules.md`](../../../../docs/architecture/rules.md) for
-  dependency direction, boundary behavior, and test invariants;
-- [`docs/architecture/naming-conventions.md`](../../../../docs/architecture/naming-conventions.md)
-  for roles, filenames, imports, and public entrypoints;
+- [`docs/architecture/architecture.md`](../../../../docs/architecture/architecture.md)
+  for dependency direction, runtime boundaries, roles, filenames, imports,
+  public entrypoints, and test invariants;
 - [`docs/architecture/module-template.md`](../../../../docs/architecture/module-template.md)
   for bounded-context shape;
 - [`docs/architecture/module-map.json`](../../../../docs/architecture/module-map.json)

@@ -19,4 +19,18 @@ describe("repositories server API", () => {
       lifecycleState: "active",
     });
   });
+
+  it("reuses the composed facade without runtime configuration", async () => {
+    const owner = {
+      accountId: "account_octocat",
+      username: "octocat",
+    };
+    const [first, second] = await Promise.all([
+      listActivePublicRepositoriesForPersonalOwner(owner),
+      listActivePublicRepositoriesForPersonalOwner(owner),
+    ]);
+
+    expect(first).toEqual(second);
+    expect(first).toHaveLength(1);
+  });
 });

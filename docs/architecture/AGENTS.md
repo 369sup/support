@@ -5,10 +5,11 @@ repository's architecture contract.
 
 ## Authority map
 
-- `rules.md` owns human-readable invariants and stable `ARCH-*` identifiers.
-- `naming-conventions.md` owns canonical names, suffixes, and import paths.
-- `typescript-clarity.md` owns TypeScript readability and exception policy.
-- `module-template.md` owns the permitted bounded-context shape.
+- `architecture.md` owns human-readable invariants, stable `ARCH-*`
+  identifiers, names, runtime boundaries, and the ADR trigger policy.
+- `module-template.md` owns the bounded-context README schema and activation
+  workflow.
+- `decisions/README.md` owns the ADR lifecycle, index, and template.
 - `module-map.json` is the machine-readable context catalog.
 - `module-map.md` is generated from `module-map.json`; never edit it directly.
 - `apps/web/src/modules/<subdomain>/<bounded-context>/README.md` is the
@@ -16,9 +17,10 @@ repository's architecture contract.
 - `exceptions/registry.json` is the only architecture exception registry.
 
 `AGENTS.md` files may explain workflow and local ownership, but they must not
-redefine these contracts. Update the canonical document, the mechanical check,
-and its positive and negative fixtures together when an enforceable rule
-changes.
+redefine these contracts. ESLint and TypeScript configuration own code-style
+enforcement that does not protect an architecture boundary. Update the
+canonical document, the mechanical check, and its positive and negative
+fixtures together when an enforceable architecture rule changes.
 
 ## Catalog and exception changes
 

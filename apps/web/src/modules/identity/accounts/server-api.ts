@@ -1,9 +1,8 @@
-import { initializeAccountsComposition } from "./composition/accounts.composition";
-
-initializeAccountsComposition();
+import { accountsServerFacade } from "./composition/accounts.composition";
 
 export type {
   PersonalAccountLookupResult,
   UserOwnerReference,
 } from "./contracts/user-owner-reference";
-export { getPersonalAccountByUsername } from "./adapters/inbound/server/get-personal-account-by-username.adapter";
+export const getPersonalAccountByUsername =
+  accountsServerFacade.getPersonalAccountByUsername;

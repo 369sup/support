@@ -7,11 +7,10 @@ It does not redefine repository architecture.
 
 Before changing code placement, imports, or boundaries, follow:
 
-- [`docs/architecture/rules.md`](../../../../docs/architecture/rules.md),
+- [`docs/architecture/architecture.md`](../../../../docs/architecture/architecture.md),
   especially `ARCH-SRC-001`, `ARCH-DEP-001`, `ARCH-DEP-007`,
-  `ARCH-DEP-008`, and `ARCH-CLIENT-001`;
-- [`docs/architecture/naming-conventions.md`](../../../../docs/architecture/naming-conventions.md)
-  for module public entrypoints and package imports; and
+  `ARCH-DEP-008`, `ARCH-CLIENT-001`, module public entrypoints, and package
+  imports; and
 - [`src/modules/AGENTS.md`](../modules/AGENTS.md) when a route consumes a
   bounded context.
 

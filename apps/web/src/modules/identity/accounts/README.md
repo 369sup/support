@@ -79,6 +79,8 @@ does not own credentials, sessions, profiles, or repository permissions.
 
 The query returns a discriminated `account-not-found` or `invalid-username`
 result instead of throwing for expected absence.
+`server-api.ts` delegates through a process-reused facade created by the
+private composition root; consumers do not configure or select its adapter.
 
 ## Dependencies and consistency
 

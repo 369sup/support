@@ -3,13 +3,40 @@
 # Codex loads this layer only when the repository is trusted. Keep personal
 # preferences and credentials in ~/.codex.
 
+# This must remain a top-level key. Placing it below [agents] makes TOML parse
+# it as an agent role instead of an instruction-file setting.
+model_instructions_file = "instructions/model-instructions.md"
+
 [features]
 hooks = true
 
 [agents]
-max_threads = 6
-max_depth = 1
+enabled = true
+max_concurrent_threads_per_session = 5
+
+[agents.explorer]
+config_file = "agents/explorer.toml"
+description = "Map symbols, references, tests, ownership boundaries, and likely impact."
+
+[agents.implementer]
+config_file = "agents/implementer.toml"
+description = "Implement a bounded change after its scope and invariants are established."
+
+[agents.reviewer]
+config_file = "agents/reviewer.toml"
+description = "Review changes for correctness, security, architecture, and regression risks."
+
+[agents.verifier]
+config_file = "agents/verifier.toml"
+description = "Run the smallest relevant checks and inspect the final diff."
+
+[agents.docs_researcher]
+config_file = "agents/docs-researcher.toml"
+description = "Verify version-sensitive behavior against current primary documentation."
 
 # Public Context7 endpoint for basic use without OAuth or an API key.
 [mcp_servers.context7]
 url = "https://mcp.context7.com/mcp"
+
+[sandbox_workspace_write]
+network_access = true

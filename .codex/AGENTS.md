@@ -12,10 +12,15 @@ security-sensitive.
 ```text
 .codex/
 ├── AGENTS.md
-├── config.toml                 # project-scoped settings; comments only initially
+├── README.md
+├── config.toml                 # active trusted-project settings
 ├── agents/
 │   ├── README.md
-│   └── <agent-name>.toml       # optional project custom agent
+│   └── <agent-name>.toml       # registered focused custom agent
+├── environments/
+│   └── environment.toml        # Codex Desktop worktree setup and actions
+├── instructions/
+│   └── model-instructions.md   # project model-instruction override
 ├── hooks/
 │   ├── AGENTS.md
 │   ├── README.md
@@ -26,12 +31,11 @@ security-sensitive.
     └── <rule-name>.rules       # optional; experimental command policy
 ```
 
-The repository currently enables the reviewed `repository-guard` through
-`.codex/hooks.json`, the canonical validation-command allowlist through
-`.codex/rules/workspace-validation.rules`, and verified focused development
-commands through `.codex/rules/workspace-development.rules`. Commands with
-source-control or generated-file side effects remain approval-gated. No project
-custom agent is active.
+The repository currently loads its project model instructions, registers five
+focused custom agents, enables the reviewed `repository-guard` through
+`.codex/hooks.json`, and provides focused validation and development command
+rules. Commands with source-control or generated-file side effects remain
+approval-gated.
 
 ## `config.toml` rules
 
@@ -41,8 +45,7 @@ project root toward the current working directory; the nearest layer wins.
 
 Rules:
 
-1. Start with no active settings. Add one setting only for a documented shared
-   repository requirement.
+1. Add a setting only for a documented shared repository requirement.
 2. Do not copy an entire user `~/.codex/config.toml` into the repository.
 3. Do not commit API keys, access tokens, OAuth state, credentials, telemetry
    endpoints containing secrets, or personal absolute paths.
@@ -54,6 +57,8 @@ Rules:
 7. Treat model, reasoning, sandbox, network, MCP, and hook changes as behavioral
    changes requiring explicit review.
 8. Do not weaken sandboxing or approval policy merely to make a command pass.
+9. Keep `model_instructions_file` at the TOML top level before `[agents]`;
+   otherwise TOML interprets it as an agent-role entry.
 
 ## Custom agent contract
 

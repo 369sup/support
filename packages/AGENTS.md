@@ -1,8 +1,8 @@
 # Workspace Package Workflow
 
 This file governs `packages/**` and owns workspace package policy. Repository
-architecture, TypeScript clarity, automation, and verification remain inherited
-from the root and `docs/architecture` authorities.
+architecture, code-quality automation, and verification remain inherited from
+the root and `docs/architecture` authorities.
 
 ## Package boundary
 

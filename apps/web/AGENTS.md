@@ -17,7 +17,9 @@ remain authoritative in
   shared contracts.
 - Root `instrumentation.ts` owns Next.js runtime dispatch. Node-only logging,
   tracing, metrics, and exporter initialization stay in the root Node adapter
-  and must remain lazy and build-safe.
+  and must remain lazy and build-safe. Operational telemetry follows the
+  ownership and identity restrictions in
+  [`docs/architecture/architecture.md`](../../docs/architecture/architecture.md#observability-ownership).
 - Validate environment variables at a server-only boundary. Never expose an
   unprefixed secret through client-reachable code.
 

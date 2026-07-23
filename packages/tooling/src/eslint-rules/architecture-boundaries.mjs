@@ -343,6 +343,49 @@ const noDomainAmbientInfrastructure = {
   },
 };
 
+function compositionImportNames(program) {
+  const names = new Set();
+
+  for (const statement of program.body) {
+    if (
+      statement.type !== "ImportDeclaration" ||
+      !String(statement.source.value).startsWith("./composition/")
+    ) {
+      continue;
+    }
+
+    for (const specifier of statement.specifiers) {
+      names.add(specifier.local.name);
+    }
+  }
+
+  return names;
+}
+
+function isCompositionFacadeProjection(declaration, importedNames) {
+  if (
+    declaration?.type !== "VariableDeclaration" ||
+    declaration.kind !== "const" ||
+    declaration.declarations.length === 0
+  ) {
+    return false;
+  }
+
+  return declaration.declarations.every((item) => {
+    const initializer = item.init;
+
+    return (
+      item.id.type === "Identifier" &&
+      initializer?.type === "MemberExpression" &&
+      !initializer.computed &&
+      initializer.object.type === "Identifier" &&
+      importedNames.has(initializer.object.name) &&
+      initializer.property.type === "Identifier" &&
+      initializer.property.name === item.id.name
+    );
+  });
+}
+
 const publicEntrypointContract = {
   meta: {
     type: "problem",
@@ -378,9 +421,12 @@ const publicEntrypointContract = {
 
     const basename = currentModule.internalPath.replace(/\.(?:[cm]?ts|tsx)$/, "");
     const isPublicEntrypoint = publicEntrypoints.has(basename);
+    let importedCompositionNames = new Set();
 
     return {
       Program(node) {
+        importedCompositionNames = compositionImportNames(node);
+
         if (basename === "browser-ui" && !hasDirective(node, "use client")) {
           context.report({ node, messageId: "missingClientDirective" });
         }
@@ -418,6 +464,16 @@ const publicEntrypointContract = {
         }
 
         if (node.source === null) {
+          if (
+            basename === "server-api" &&
+            isCompositionFacadeProjection(
+              node.declaration,
+              importedCompositionNames,
+            )
+          ) {
+            return;
+          }
+
           context.report({ node, messageId: "invalidPublicExport" });
           return;
         }

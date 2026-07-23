@@ -180,6 +180,11 @@ ruleTester.run(
       },
       {
         filename:
+          "D:/project/src/modules/core-domain/repositories/server-api.ts",
+        code: 'import { repositoriesServerFacade } from "./composition/repositories.composition"; export const listRepositories = repositoriesServerFacade.listRepositories;',
+      },
+      {
+        filename:
           "D:/project/src/modules/core-domain/repositories/integration-contracts.ts",
         code: 'export type { RepositoryRef } from "./contracts/repository-ref";',
       },
@@ -207,6 +212,18 @@ ruleTester.run(
         filename:
           "D:/project/src/modules/core-domain/repositories/server-api.ts",
         code: 'export { Repository } from "./domain/entities/repository.entity";',
+        errors: [{ messageId: "invalidPublicExport" }],
+      },
+      {
+        filename:
+          "D:/project/src/modules/core-domain/repositories/server-api.ts",
+        code: 'import { composeRepositories } from "./composition/repositories.composition"; export const repositories = composeRepositories();',
+        errors: [{ messageId: "invalidPublicExport" }],
+      },
+      {
+        filename:
+          "D:/project/src/modules/core-domain/repositories/server-api.ts",
+        code: 'import { repositoriesServerFacade } from "./composition/repositories.composition"; export const listRepositories = repositoriesServerFacade.createRepository;',
         errors: [{ messageId: "invalidPublicExport" }],
       },
       {

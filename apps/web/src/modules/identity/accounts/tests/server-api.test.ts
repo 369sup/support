@@ -32,4 +32,14 @@ describe("accounts server API", () => {
       error: "invalid-username",
     });
   });
+
+  it("reuses the composed facade without runtime configuration", async () => {
+    const [first, second] = await Promise.all([
+      getPersonalAccountByUsername("octocat"),
+      getPersonalAccountByUsername("octocat"),
+    ]);
+
+    expect(first).toEqual(second);
+    expect(first.ok).toBe(true);
+  });
 });

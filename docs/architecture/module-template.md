@@ -1,25 +1,35 @@
 # Bounded Context Template
 
-Every catalog context owns a human-maintained design README at
-`apps/web/src/modules/<subdomain>/<bounded-context>/README.md`, including
-planned contexts. Use `pnpm architecture:contexts` to scaffold only missing
-READMEs; the command never overwrites an existing semantic model.
+This file owns the human-maintained context README schema and activation
+workflow. Global source, dependency, naming, data, authorization, composition,
+observability, and testing rules live in
+[`architecture.md`](architecture.md).
 
-A planned context directory contains `README.md` only. Add source files,
-layers, and public entrypoints only after its `module-map.json`
-`implementationStatus` changes from `planned` to `active`. At activation,
-declare the implemented use cases in `activationScope` and move only their
-implemented relationships from `plannedRelationships` to `dependencies`.
-Runtime dependencies require active target contexts; planned relationships do
-not authorize imports or event handlers.
+Every catalog context has exactly one design README at
+`apps/web/src/modules/<subdomain>/<bounded-context>/README.md`. Use
+`pnpm architecture:contexts` only to scaffold a missing README; the command
+never overwrites an existing semantic model.
+
+## Lifecycle and source shape
+
+A planned context directory contains `README.md` only. Source files, layers,
+fixtures, local agent instructions, and public entrypoints require:
+
+1. a complete context design;
+2. at least one approved `[active]` designed use case;
+3. matching `activationScope`;
+4. active runtime dependency targets; and
+5. `implementationStatus: "active"` in `module-map.json`.
+
+Create only the layers needed by active use cases:
 
 ```text
 apps/web/src/modules/<subdomain>/<bounded-context>/
 ├─ README.md
-├─ server-api.ts              # optional server public API
-├─ browser-ui.ts              # optional browser-safe public API
-├─ server-actions.ts          # optional Server Actions API
-├─ integration-contracts.ts   # optional framework-free contract API
+├─ server-api.ts              # optional server facade
+├─ browser-ui.ts              # optional browser-safe facade
+├─ server-actions.ts          # optional Server Actions facade
+├─ integration-contracts.ts   # optional framework-free contracts
 ├─ domain/
 ├─ application/
 │  ├─ commands/
@@ -35,30 +45,13 @@ apps/web/src/modules/<subdomain>/<bounded-context>/
 └─ tests/
 ```
 
-At least one public entrypoint must exist and must expose only capabilities
-that have a real consumer. Public entrypoints explicitly name every export.
-
-## Semantic to use-case to function mapping
-
-Each active `activationScope` has one traceable application chain:
-
-```text
-semantic context
-  -> kebab-case activationScope
-  -> PascalCase inbound UseCase port
-  -> camelCase business function
-  -> command/query Handler implementation
-```
-
-For `get-personal-account-by-username`, create
-`GetPersonalAccountByUsernameUseCase.getPersonalAccountByUsername()` and let
-`GetPersonalAccountByUsernameHandler` implement that port. Do not use generic
-handler operations such as `execute`, `handle`, `process`, or `run`.
+At least one public entrypoint must expose a capability with a real consumer.
+Entrypoints explicitly name their exports and follow the boundary contracts in
+`architecture.md`.
 
 ## Required README decisions
 
-Every active context README uses these exact second-level headings so the
-decisions remain discoverable and mechanically verifiable:
+Every context README uses these exact second-level headings:
 
 ```markdown
 ## Purpose
@@ -77,47 +70,29 @@ decisions remain discoverable and mechanically verifiable:
 ## Exceptions
 ```
 
-The context content tree is the human-readable semantic model for the bounded
-context. Organize it from business purpose to capabilities, then trace each
-capability to its use cases, owned concepts, rules and invariants, decisions,
-and published events. Mark every capability as `active` or `planned` and keep
-planned behavior distinct from implemented behavior.
+The context content tree organizes business purpose into capabilities, use
+cases, owned concepts, rules, decisions, events, external relationships, and
+explicit exclusions. Mark each capability `active` or `planned`.
 
-The tree must reference every catalog `activationScope` and owned concept using
-inline code. It must also reference every active published event as
-`EventName@version`. Supporting concepts, external relationships, and explicit
-exclusions belong in the same tree when they clarify the boundary.
+The tree references every catalog `activationScope`, owned concept, and active
+published event as `EventName@version`. Overlapping activation scopes,
+ownership, exclusions, relationships, and events must agree with
+`module-map.json`; the README may add human explanation that does not belong in
+the machine catalog.
 
-```text
-Bounded context purpose
-├─ Capability [active|planned]
-│  ├─ Use cases
-│  ├─ Owned domain concepts
-│  ├─ Business rules and invariants
-│  ├─ Decisions or results
-│  └─ Published events
-├─ Supporting concepts
-├─ External relationships
-└─ Explicit exclusions
-```
+## Designed use cases
 
-`module-map.json` remains the machine-readable catalog and index. The context
-README is the complete human-readable semantic model and may add capability
-hierarchy, rules, invariants, and decisions that do not belong in the catalog.
-Overlapping activation scopes, owned concepts, event versions, relationships,
-and exclusions must agree.
+`## Designed use cases` is the only approved application-boundary contract.
+Drafts remain outside it. Use `[planned]` for an approved design without source
+implementation and `[active]` for an implemented design.
 
-`## Designed use cases` is the only authority for approved application
-boundaries. A use case appears there only after its design is complete; drafts
-remain outside the architecture contract. Use `[planned]` for an approved
-design that has no implementation and `[active]` for an implemented design.
 When no design is approved, use exactly:
 
 ```text
 No approved use cases. Implementation remains blocked.
 ```
 
-Each approved use case uses this exact shape:
+Each approved use case uses this shape:
 
 ```markdown
 ### `<use-case-kebab-case>` [planned|active]
@@ -128,7 +103,7 @@ Each approved use case uses this exact shape:
 - **Input:** <complete input contract>
 - **Success result:** <complete success contract>
 - **Expected rejections:** `none` | `<named-rejection>`, ...
-- **Authorization:** <policy owner and resource scope>
+- **Authorization:** <policy owner and resource scope, or `none` for public data>
 - **Transaction:** <transaction and consistency boundary>
 - **Idempotency:** <idempotency boundary or query rationale>
 - **Dependencies:** `none` | `<context>::<contract>`, ...
@@ -137,55 +112,35 @@ Each approved use case uses this exact shape:
 - **Local policy:** <explicit local decisions or `none`>
 ```
 
-Every field is required and must be non-empty. Product contexts reference only
-their cataloged official source IDs; technical contexts use
-`not-applicable`. Dependencies and events must already exist in the catalog.
-The active designed-use-case set must equal `activationScope`, and source code
-is prohibited for a `[planned]` design.
+Every field is required and non-empty. Product contexts reference cataloged
+official source IDs; technical contexts use `not-applicable`. Dependencies and
+events must already exist in the catalog. The active designed-use-case set
+equals `activationScope`, and source code is prohibited for a `[planned]`
+design.
 
-The sections record owner and out-of-scope concerns, public commands and
-queries, transaction ownership, resource scope, permission ports, sensitive
-data handling, retention and redaction, delivery guarantees, idempotency,
-ordering, retry, official `docs.github.com` evidence, and any active
-`ARCH-EX-###` references.
+Authorization records the actor source, resource or tenant scope, policy owner,
+and denial model when protection is required. Persistence records data and
+migration ownership, transaction scope, cross-context consistency, and
+idempotency. Events record delivery, ordering, retry, outbox, and consumer
+failure behavior where applicable.
+
+## Events and public contracts
 
 Every catalog event declares `implementationStatus` as `planned` or `active`.
-Activate only the events emitted by the implemented `activationScope`; leave
-future events planned without schema or ordering metadata. Query-only scopes may
-have no active events.
+Activate only events emitted by an implemented activation scope. Query-only
+scopes may have no active events.
 
-When a command publishes events, its persistence adapter writes the aggregate
-changes and a context-local outbox envelope in the same transaction. The
-platform publication capability may lease and dispatch committed envelopes,
-but it does not own or write the source context's outbox row. Transport,
-database, and framework wiring remain adapter concerns and are not catalog
-dependencies unless they carry bounded-context semantics.
+An active event is explicitly exported from `integration-contracts.ts`; its
+catalog entry names the exported schema and ordering key. Runtime event
+dependencies select only active events. Planned relationships document future
+semantics but do not authorize handlers or source imports.
 
-An active context must expose each active event type explicitly from
-`integration-contracts.ts`. Its catalog entry uses
-`integration-contracts.ts#ExportedType` and declares the event ordering key.
-Runtime event dependencies may select only active events; planned relationships
-may document future event selections without authorizing handlers.
+Public entrypoints expose only boundary facades:
 
-## Public entrypoints
+- `server-api.ts`: server-side inbound operations;
+- `browser-ui.ts`: browser-safe UI and contracts;
+- `server-actions.ts`: explicit Next.js Server Actions; and
+- `integration-contracts.ts`: framework-free dependency contracts and events.
 
-- `server-api.ts`: exposes explicit server-side inbound facades from
-  `adapters/inbound/server`; composition remains private.
-- `browser-ui.ts`: begins with `"use client"` and exposes browser-safe UI from
-  `adapters/inbound/react` plus browser-safe contracts.
-- `server-actions.ts`: begins with `"use server"` and exports async actions from
-  `adapters/inbound/next/server-actions` only.
-- `integration-contracts.ts`: exposes dependency-free types and events from
-  `contracts` only.
-
-No public entrypoint exports aggregates, entities, handlers, ports, outbound
-adapters, persistence or provider records, or a composition root. A context
-importing another context must declare the synchronous dependency in
-`module-map.json`; an event dependency alone never permits a source import.
-Each active product context also keeps its `semanticClaims` aligned with the
-exact owned semantics and versioned events supported by official source IDs.
-
-Business-free UI primitives are not a technical bounded context. They live in
-`packages/shadcn/src/ui`, while product-agnostic compositions live in
-`packages/shadcn/src/custom`. Product-aware components remain in the owning
-bounded context's inbound adapter.
+Composition roots, domain objects, handlers, ports, outbound adapters, ORM
+records, provider types, and internal persistence records remain private.

@@ -17,10 +17,11 @@
     "test": "pnpm run test:architecture && turbo run test",
     "test:architecture": "vitest run --config vitest.config.ts",
     "test:e2e": "turbo run test:e2e --filter=@support/web",
-    "check": "pnpm run architecture && pnpm run test:architecture && turbo run lint typecheck test",
-    "check:full": "pnpm run architecture && pnpm run test:architecture && turbo run lint typecheck test build test:e2e",
-    "check:affected": "pnpm run architecture && pnpm run test:architecture && turbo run lint typecheck test --affected",
-    "check:full:affected": "pnpm run architecture && pnpm run test:architecture && turbo run lint typecheck test build test:e2e --affected",
+    "check:architecture": "pnpm run architecture && pnpm run test:architecture",
+    "check": "pnpm run check:architecture && turbo run lint typecheck test",
+    "check:full": "pnpm run check:architecture && turbo run lint typecheck test build test:e2e",
+    "check:affected": "pnpm run check:architecture && turbo run lint typecheck test --affected",
+    "check:full:affected": "pnpm run check:architecture && turbo run lint typecheck test build test:e2e --affected",
     "turbo:dry-run": "turbo run lint typecheck test build test:e2e --dry-run"
   },
   "devDependencies": {

@@ -197,7 +197,11 @@ function createValidFixture() {
   );
   writeCatalog(rootDir, catalog);
   writeFixture(rootDir, "package.json", `${JSON.stringify({ scripts: { architecture: "node scripts/check-architecture.mjs" } }, null, 2)}\n`);
-  writeFixture(rootDir, "docs/architecture/rules.md", "# Architecture Rules\n");
+  writeFixture(
+    rootDir,
+    "docs/architecture/architecture.md",
+    "# Architecture Contract\n",
+  );
   writeFixture(rootDir, ".gitignore", ".serena/memories/local/\n");
   writeFixture(
     rootDir,

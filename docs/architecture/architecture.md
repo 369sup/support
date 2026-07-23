@@ -1,8 +1,12 @@
-# Architecture Rules
+# Architecture Contract
 
 This file is the canonical human-readable architecture contract. Mechanical
 checks emit the stable rule IDs listed here. `AGENTS.md` files explain workflow
 and ownership but must not redefine these rules.
+
+Code-level TypeScript style is enforced by the repository ESLint and TypeScript
+configuration. This document records only rules that protect architecture,
+runtime boundaries, data ownership, authorization, or operational safety.
 
 ## Source roots
 
@@ -61,6 +65,53 @@ and ownership but must not redefine these rules.
   UI, actions, or integration contracts. They never expose aggregates,
   entities, handlers, ports, outbound adapters, ORM records, provider types,
   or composition roots.
+
+## Names and public interfaces
+
+- Directories and source filenames use lowercase kebab-case.
+- Classes and types use PascalCase; functions and variables use camelCase.
+- Boolean names start with a predicate such as `is`, `has`, `can`, `should`,
+  `was`, or `did`.
+- Bare role names such as `utils`, `helpers`, `common`, `shared`, `service`,
+  `manager`, `processor`, `types`, `models`, `interfaces`, `handlers`, and
+  `constants` are prohibited.
+
+| Role | Suffix | Required location |
+| --- | --- | --- |
+| Aggregate | `.aggregate.ts` | `domain/aggregates` |
+| Entity | `.entity.ts` | `domain/entities` |
+| Value object | `.value-object.ts` | `domain/value-objects` |
+| Domain service | `.domain-service.ts` | `domain/services` |
+| Policy | `.policy.ts` | `domain/policies` |
+| Domain event | `.domain-event.ts` | `domain/events` |
+| Domain error | `.domain-error.ts` | `domain/errors` |
+| Inbound port | `.use-case.ts` | `application/ports/inbound` |
+| Repository or gateway port | `.repository.port.ts`, `.gateway.port.ts` | `application/ports/outbound` |
+| Adapter | `.adapter.ts` | `adapters` |
+| Mapper | `.mapper.ts` | a boundary-local `mappers` directory |
+| Command/query handler | `.handler.ts` | `application/commands` or `application/queries` |
+| Next route handler | `.handler.ts` | `adapters/inbound/next/route-handlers` |
+
+Every active application capability follows this naming chain:
+
+```text
+<subdomain>/<bounded-context>
+  -> activationScope: <use-case-name>
+  -> <UseCaseName>UseCase
+  -> <useCaseName>()
+  -> <use-case-name>.handler.ts
+```
+
+The only context-root entrypoints are `server-api.ts`, `browser-ui.ts`,
+`server-actions.ts`, and `integration-contracts.ts`. Create only entrypoints
+with a real consumer. `index.ts`, `client.ts`, `actions.ts`, `public.ts`,
+`action.ts`, and `*.action.ts` are prohibited.
+
+App-to-module and cross-context imports use the canonical
+`@/modules/<subdomain>/<bounded-context>/<entrypoint>` path. Imports inside one
+context use relative paths. Workspace packages use explicit package subpath
+exports. Project code uses named exports, preserves exported names, and does
+not use wildcard or multi-level barrel re-exports.
 
 ## Product catalog
 
@@ -155,7 +206,108 @@ and ownership but must not redefine these rules.
   query storage, or cause side effects.
 - Composition selects concrete adapters and contains no business rules.
 
-## Consistency rules
+## Architecture decision lifecycle
+
+Use an architecture decision record only when a change:
+
+- moves or introduces a bounded-context boundary;
+- introduces cross-context transaction coordination or shared persistence;
+- creates a workspace package for a new runtime capability;
+- changes synchronous versus event-driven integration; or
+- adopts or replaces major infrastructure that constrains application design.
+
+Decision records live under `docs/architecture/decisions` and follow the
+lifecycle and template defined in that directory. Routine implementation
+choices, naming already covered here, and temporary task notes do not require
+an ADR.
+
+## Data ownership and transactions
+
+- Each bounded context owns its persistence records, storage namespace,
+  migrations, persistence adapters, and data lifecycle.
+- A context never reads or writes another context's tables through its own
+  repository. Cross-context foreign keys and product-code joins across
+  context-owned storage are prohibited.
+- Cross-context reads use a declared public synchronous contract or a
+  projection-owned read model. A projection owns its denormalized storage and
+  rebuild process; it does not become the write owner of source data.
+- One command and one bounded context define the transaction boundary by
+  default. Distributed transactions across contexts are prohibited.
+- A source context writes its persistence changes and context-local outbox
+  envelope in the same transaction. Publication, leasing, retry, redelivery,
+  and dead-letter handling occur after commit and do not own the source outbox
+  row.
+- An event consumer commits its side effect and idempotency receipt in the same
+  local transaction. Idempotency keys are scoped to the owning command or
+  consumer and are not a global shared store by default.
+- Database clients, transaction managers, migration tools, and message
+  transports are adapter concerns. They do not become catalog dependencies
+  unless the dependency carries bounded-context semantics.
+
+## Authorization boundary
+
+- A public use case that exposes only public data declares
+  `Authorization: none` and does not create a placeholder authorization port.
+- A protected use case receives a verified actor reference from its delivery
+  boundary and asks a context-owned authorization policy port before protected
+  data access or mutation. UI state, route parameters, and mock sessions are
+  not authorization authorities.
+- Tenant and resource scope come from an owning context or verified policy
+  provider. Caller-supplied identifiers may select a resource but never prove
+  membership, ownership, or permission.
+- Authorization produces a context-specific discriminated decision:
+  `{ allowed: true }` or `{ allowed: false, reason: <named denial> }`. Expected
+  denial is an application result, not an exception.
+- Domain rules remain independent of the current actor. Inbound adapters map
+  authorization results to transport behavior without inventing permission
+  policy.
+- Do not create a shared authorization package or activate authentication
+  merely to satisfy this contract. Add the concrete actor, action, resource,
+  denial type, and policy port with the first real protected use case.
+
+## Runtime composition
+
+- Each context keeps its composition root private under `composition/`.
+  Composition creates handlers, selects concrete adapters, injects runtime
+  capabilities, and returns a boundary-specific facade.
+- App Router code imports only a public context entrypoint. It cannot import a
+  composition root, choose a concrete adapter, or configure module internals.
+- Public entrypoints normally re-export an inbound adapter. A server entrypoint
+  may instead project a same-named function member from an explicitly imported
+  private composition facade. It never exports the facade, calls a composition
+  factory, or adds wrapper logic. Mutable `configure()/get()` registries,
+  service locators, and import-time registration side effects are prohibited.
+- Pure local dependencies may be composed once and reused for the process.
+  Environment parsing, network clients, database connections, exporters, and
+  other side-effectful resources initialize lazily at an application-owned
+  runtime boundary and remain build-safe.
+- Dependencies cross application and adapter boundaries as explicit
+  constructor, function, or factory inputs. Domain and application code never
+  read framework globals or dependency containers.
+
+## Observability ownership
+
+- `@support/observability` owns vendor-neutral logging, tracing, and metrics
+  APIs. The consuming application owns SDK registration, exporters,
+  environment configuration, and unhandled request telemetry.
+- Each context owns its stable operation name, outcome, and error code.
+  Telemetry is attached in inbound adapters, outbound adapters, or composition
+  wrappers; domain and application code do not import telemetry SDKs.
+- Operational logs and traces include service, environment, active
+  `traceId`/`spanId`, bounded context, use case, outcome, and a controlled error
+  code when applicable. Metrics use only low-cardinality context, use case,
+  outcome, and controlled error-code attributes.
+- Operational telemetry never records actor IDs, tenant IDs, usernames, email
+  addresses, credentials, tokens, request or response bodies, or unreviewed
+  provider payloads. These fields are redacted defensively if supplied.
+- Audit events and operational telemetry are separate contracts. Actor,
+  tenant, resource, and authorization evidence belong to the owning audit
+  capability, not operational logs, traces, or metrics.
+- `traceId` and `spanId` are the default request correlation mechanism. A
+  separate external request ID is accepted only from a trusted boundary and
+  must be validated before recording.
+
+## Consistency and errors
 
 - Expected business rejection uses a named discriminated result such as
   `{ ok: true, value } | { ok: false, error }`. Exceptions represent unexpected
@@ -163,11 +315,6 @@ and ownership but must not redefine these rules.
 - Repository absence is represented consistently by an explicit result or
   documented nullable return; do not interchange `null`, `undefined`, and
   exceptions for the same operation.
-- Keep one transaction inside one bounded context and one command by default.
-  Cross-context consistency is explicit and normally event-driven.
-- A source context writes its persistence changes and local outbox envelope in
-  the same transaction. Event dispatch, leasing, retry, redelivery, and
-  dead-letter handling occur after commit and do not own the source outbox row.
 - Catalog dependencies describe product or bounded-context semantics. Database,
   message transport, framework wiring, and other adapter-only relationships do
   not become synchronous catalog dependencies.

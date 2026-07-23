@@ -69,16 +69,40 @@ describe("createLogger", () => {
     const logger = createLogger({ destination: createDestination(lines) });
 
     logger.info("sensitive", {
+      accessToken: "access-token-value",
+      actorId: "actor-123",
+      apiKey: "api-key-value",
+      email: "octocat@example.com",
       headers: { authorization: "Bearer secret", cookie: "session=secret" },
+      identity: {
+        actorId: "nested-actor-123",
+        tenantId: "nested-tenant-123",
+        username: "nested-octocat",
+      },
       password: "password-value",
+      refreshToken: "refresh-token-value",
+      session: "session-value",
+      tenantId: "tenant-123",
       token: "token-value",
+      username: "octocat",
     });
 
     const line = requireLine(lines, 0);
+    expect(line).not.toContain("access-token-value");
+    expect(line).not.toContain("actor-123");
+    expect(line).not.toContain("api-key-value");
     expect(line).not.toContain("Bearer secret");
+    expect(line).not.toContain("octocat@example.com");
     expect(line).not.toContain("session=secret");
+    expect(line).not.toContain("nested-actor-123");
+    expect(line).not.toContain("nested-tenant-123");
+    expect(line).not.toContain("nested-octocat");
     expect(line).not.toContain("password-value");
+    expect(line).not.toContain("refresh-token-value");
+    expect(line).not.toContain("session-value");
+    expect(line).not.toContain("tenant-123");
     expect(line).not.toContain("token-value");
+    expect(line).not.toContain('"username":"octocat"');
     expect(line).toContain("[REDACTED]");
   });
 

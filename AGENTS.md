@@ -37,6 +37,19 @@ Official discovery and precedence behavior is documented at
 | Documentation workflow | [`docs/AGENTS.md`](docs/AGENTS.md) |
 | Shared repository scripts | [`scripts/AGENTS.md`](scripts/AGENTS.md) |
 
+## Workspace ownership
+
+- [`apps/`](apps/AGENTS.md) contains deployable applications and their
+  application-owned runtime composition. Each application keeps framework
+  delivery separate from product bounded contexts according to its nearest
+  instructions.
+- [`packages/`](packages/AGENTS.md) contains reusable, business-free technical
+  capabilities and configuration contracts. Product bounded contexts,
+  authorization policy, tenant rules, and application-specific composition do
+  not move into workspace packages.
+- Dependencies point from applications to packages. A package never imports an
+  application or becomes an alternate home for product domain behavior.
+
 Agent and automation assets use this single placement map:
 
 | Artifact | Owner |

@@ -40,7 +40,7 @@ export const generatedMemoryPaths = [
 const canonicalSourcePaths = [
   ...agentGuidanceSourcePaths,
   "docs/architecture/module-map.json",
-  "docs/architecture/rules.md",
+  "docs/architecture/architecture.md",
   "package.json",
 ];
 
@@ -103,7 +103,7 @@ export function renderSerenaMemories(sources) {
   );
   generated.set(
     "shared/architecture.md",
-    `${prefix}# Architecture Summary\n\n${catalog.product.goal}\n\n## Excluded capabilities\n\n${catalog.excludedCapabilities.map((item) => `- ${item.name}: ${item.reason}`).join("\n")}\n\n## Deferred capabilities\n\n${catalog.deferredCapabilities.map((item) => `- ${item.name}: ${item.requires}`).join("\n")}\n\n## Authorities\n\n- \`docs/architecture/module-map.json\`: product scope and context catalog.\n- \`docs/architecture/rules.md\`: stable architecture invariants.\n- \`apps/web/src/modules/AGENTS.md\`: context activation workflow.\n`,
+    `${prefix}# Architecture Summary\n\n${catalog.product.goal}\n\n## Excluded capabilities\n\n${catalog.excludedCapabilities.map((item) => `- ${item.name}: ${item.reason}`).join("\n")}\n\n## Deferred capabilities\n\n${catalog.deferredCapabilities.map((item) => `- ${item.name}: ${item.requires}`).join("\n")}\n\n## Authorities\n\n- \`docs/architecture/module-map.json\`: product scope and context catalog.\n- \`docs/architecture/architecture.md\`: stable architecture invariants.\n- \`apps/web/src/modules/AGENTS.md\`: context activation workflow.\n`,
   );
   generated.set(
     "shared/module-catalog.md",

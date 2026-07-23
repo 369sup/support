@@ -1,22 +1,28 @@
+import type { GetPersonalAccountByUsernameUseCase } from "../../../application/ports/inbound/get-personal-account-by-username.use-case";
 import type { PersonalAccountLookupResult } from "../../../contracts/user-owner-reference";
-import { personalAccountQueryRuntime } from "./personal-account-query-runtime.adapter";
 
-export async function getPersonalAccountByUsername(
+export type GetPersonalAccountByUsernameAdapter = (
   username: string,
-): Promise<PersonalAccountLookupResult> {
-  const result = await personalAccountQueryRuntime
-    .getPersonalAccountByUsernameUseCase()
-    .getPersonalAccountByUsername({ username });
+) => Promise<PersonalAccountLookupResult>;
 
-  if (result.status !== "found") {
-    return { ok: false, error: result.status };
-  }
+export function createGetPersonalAccountByUsernameAdapter(
+  useCase: GetPersonalAccountByUsernameUseCase,
+): GetPersonalAccountByUsernameAdapter {
+  return async function getPersonalAccountByUsername(
+    username: string,
+  ): Promise<PersonalAccountLookupResult> {
+    const result = await useCase.getPersonalAccountByUsername({ username });
 
-  return {
-    ok: true,
-    account: {
-      accountId: result.account.accountId,
-      username: result.account.username,
-    },
+    if (result.status !== "found") {
+      return { ok: false, error: result.status };
+    }
+
+    return {
+      ok: true,
+      account: {
+        accountId: result.account.accountId,
+        username: result.account.username,
+      },
+    };
   };
 }

@@ -95,7 +95,9 @@ Git objects, grants, issues, stars, and subscriptions remain excluded.
   is the application boundary implemented by
   `ListActivePublicRepositoriesForPersonalOwnerHandler`.
 
-The result contains public Repository summaries only.
+The result contains public Repository summaries only. `server-api.ts` delegates
+through a process-reused facade created by the private composition root;
+consumers do not configure or select its adapter.
 
 ## Dependencies and consistency
 
