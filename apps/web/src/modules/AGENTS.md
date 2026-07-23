@@ -26,9 +26,12 @@ update the canonical contract, enforcement, and fixtures together.
 
 ## Context activation workflow
 
-Do not create a source directory for a planned context. To activate one:
+Every catalog context has a README-owned design directory. A planned context
+directory contains only `README.md`; it must not contain source files, layers,
+entrypoints, fixtures, or local agent instructions. To activate one:
 
-1. Confirm the capability is not excluded or deferred in `module-map.json`.
+1. Review and refine its context README, then confirm the capability is not
+   excluded or deferred in `module-map.json`.
 2. Define its responsibility, owner, ubiquitous language, upstream and
    downstream relationships, data ownership, exclusions, and transaction
    boundary.

@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 import {
+  existsSync,
   mkdtempSync,
   mkdirSync,
   readFileSync,
@@ -11,6 +12,7 @@ import { join } from "node:path";
 import { test } from "vitest";
 
 import {
+  renderContextReadme,
   renderModuleMap,
   runArchitectureChecks,
 } from "./architecture-checker.mjs";
@@ -104,6 +106,13 @@ function writeCatalog(rootDir, catalog) {
     "docs/architecture/module-map.md",
     renderModuleMap(catalog),
   );
+  for (const context of catalog.contexts) {
+    const readmePath =
+      `src/modules/${context.subdomain}/${context.name}/README.md`;
+    if (!existsSync(join(rootDir, ...readmePath.split("/")))) {
+      writeFixture(rootDir, readmePath, renderContextReadme(context));
+    }
+  }
 }
 
 function createValidFixture() {
@@ -117,6 +126,14 @@ function createValidFixture() {
     `# Repositories
 
 ## Purpose
+## Context content tree
+
+- Repository management
+  - Repository creation [active]
+    - Use case: \`create-repository\`
+    - Owned concepts: \`Repository\`
+    - Published events: \`RepositoryCreated@1\`
+
 ## Ubiquitous language
 ## Ownership and invariants
 ## Public capabilities
@@ -408,11 +425,46 @@ test("requires validated ownership and events to have semantic claims", () => {
   }
 });
 
-test("requires canonical decision headings in active context READMEs", () => {
+test("requires canonical decision headings in context READMEs", () => {
   const rootDir = createValidFixture();
 
   try {
     writeFixture(rootDir, "src/modules/core-domain/repositories/README.md", "# Repositories\n");
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("requires catalog references in active context content trees", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    const readmePath = join(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+    );
+    const readme = readFileSync(readmePath, "utf8");
+
+    writeFixture(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+      readme.replace("    - Use case: `create-repository`\n", ""),
+    );
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
+
+    writeFixture(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+      readme.replace("    - Owned concepts: `Repository`\n", ""),
+    );
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
+
+    writeFixture(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+      readme.replace("    - Published events: `RepositoryCreated@1`\n", ""),
+    );
     assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
@@ -1121,6 +1173,63 @@ test("rejects a stale generated module map", () => {
   try {
     writeFixture(rootDir, "docs/architecture/module-map.md", "# stale\n");
     assert.equal(includesRule(check(rootDir), "ARCH-MAP-012"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("requires a README-owned directory for every planned context", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    const catalog = validCatalog();
+    catalog.contexts[0].implementationStatus = "planned";
+    catalog.contexts[0].activationScope = [];
+    writeCatalog(rootDir, catalog);
+    rmSync(
+      join(rootDir, "src", "modules", "core-domain", "repositories"),
+      { recursive: true, force: true },
+    );
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-027"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("allows only README.md in planned context directories", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    const catalog = validCatalog();
+    catalog.contexts.push({
+      subdomain: "platform",
+      name: "event-publication",
+      kind: "technical",
+      classification: "generic",
+      maturity: "stable",
+      implementationStatus: "planned",
+      semanticStatus: "not-applicable",
+      responsibility: "Publish integration events.",
+      owns: ["EventPublication"],
+      excludes: ["ProductPolicy"],
+      activationScope: [],
+      dependencies: [],
+      plannedRelationships: [],
+      semanticClaims: [],
+      officialSources: [],
+      publishedEvents: [],
+      eventRationale: "Technical infrastructure does not publish product events.",
+    });
+    writeCatalog(rootDir, catalog);
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-006"), false);
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-027"), false);
+
+    writeFixture(
+      rootDir,
+      "src/modules/platform/event-publication/server-api.ts",
+      "export {};\n",
+    );
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-006"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }

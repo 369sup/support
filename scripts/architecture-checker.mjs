@@ -66,6 +66,7 @@ const contextLayers = new Set([
 ]);
 const requiredContextReadmeHeadings = [
   "Purpose",
+  "Context content tree",
   "Ubiquitous language",
   "Ownership and invariants",
   "Public capabilities",
@@ -581,41 +582,93 @@ function validateCatalog(rootDir, catalog, now, errors) {
 
     const contextRoot = contextRootFor(rootDir, context);
 
-    if (context.implementationStatus === "planned" && existsSync(contextRoot)) {
+    if (!existsSync(contextRoot)) {
       errors.push(
-        `[ARCH-MAP-006] Planned context ${contextPath} must not have a source directory. Mark it active when implementation begins.`,
+        `[ARCH-MAP-027] Context ${contextPath} requires its own README-only design directory.`,
+      );
+      continue;
+    }
+
+    const contextEntries = readdirSync(contextRoot, { withFileTypes: true });
+    if (
+      context.implementationStatus === "planned" &&
+      contextEntries.some((entry) => entry.name !== "README.md")
+    ) {
+      errors.push(
+        `[ARCH-MAP-006] Planned context ${contextPath} may contain README.md only; activate it before adding source files or layers.`,
       );
     }
 
-    if (context.implementationStatus === "active") {
-      if (!existsSync(contextRoot)) {
-        errors.push(`[ARCH-MAP-007] Active context ${contextPath} is missing.`);
-        continue;
+    const readmePath = join(contextRoot, "README.md");
+    const activeEvents = publishedEvents.filter((event) => {
+      return event.implementationStatus === "active";
+    });
+
+    if (!existsSync(readmePath)) {
+      errors.push(`[ARCH-MAP-027] Context ${contextPath} requires README.md.`);
+    } else {
+      const readme = readFileSync(readmePath, "utf8").replaceAll("\r\n", "\n");
+      const readmeLines = readme.split("\n");
+      const headings = new Set(
+        readmeLines
+          .filter((line) => line.startsWith("## "))
+          .map((line) => line.slice(3).trim()),
+      );
+      const missingHeadings = requiredContextReadmeHeadings.filter(
+        (heading) => !headings.has(heading),
+      );
+
+      if (missingHeadings.length > 0) {
+        errors.push(
+          `[ARCH-MAP-019] Context ${contextPath} README.md is missing required headings: ${missingHeadings.join(", ")}.`,
+        );
       }
 
-      const readmePath = join(contextRoot, "README.md");
+      const contentTreeHeadingIndex = readmeLines.findIndex((line) => {
+        return line.startsWith("## ") &&
+          line.slice(3).trim() === "Context content tree";
+      });
 
-      if (!existsSync(readmePath)) {
-        errors.push(`[ARCH-MAP-008] Active context ${contextPath} requires README.md.`);
-      } else {
-        const readme = readFileSync(readmePath, "utf8").replaceAll("\r\n", "\n");
-        const headings = new Set(
-          readme
-            .split("\n")
-            .filter((line) => line.startsWith("## "))
-            .map((line) => line.slice(3).trim()),
+      if (contentTreeHeadingIndex >= 0) {
+        const nextHeadingOffset = readmeLines
+          .slice(contentTreeHeadingIndex + 1)
+          .findIndex((line) => line.startsWith("## "));
+        const contentTreeEnd = nextHeadingOffset >= 0
+          ? contentTreeHeadingIndex + 1 + nextHeadingOffset
+          : readmeLines.length;
+        const contentTree = readmeLines
+          .slice(contentTreeHeadingIndex + 1, contentTreeEnd)
+          .join("\n");
+        const references = new Set(
+          [...contentTree.matchAll(/`([^`\n]+)`/g)].map((match) => match[1]),
         );
-        const missingHeadings = requiredContextReadmeHeadings.filter(
-          (heading) => !headings.has(heading),
+        const requiredReferences = [
+          ...context.activationScope,
+          ...context.owns,
+          ...publishedEvents.map((event) => `${event.name}@${event.version}`),
+        ];
+        const missingReferences = requiredReferences.filter(
+          (reference) => !references.has(reference),
         );
 
-        if (missingHeadings.length > 0) {
+        if (missingReferences.length > 0) {
           errors.push(
-            `[ARCH-MAP-019] Active context ${contextPath} README.md is missing required headings: ${missingHeadings.join(", ")}.`,
+            `[ARCH-MAP-019] Context ${contextPath} content tree is missing catalog references: ${missingReferences.join(", ")}.`,
+          );
+        }
+
+        if (
+          context.implementationStatus === "planned" &&
+          contentTree.includes("[active]")
+        ) {
+          errors.push(
+            `[ARCH-MAP-019] Planned context ${contextPath} content tree must not describe an active capability.`,
           );
         }
       }
+    }
 
+    if (context.implementationStatus === "active") {
       const hasEntrypoint = [...publicEntrypoints].some((entrypoint) => {
         return existsSync(join(contextRoot, entrypoint));
       });
@@ -625,10 +678,6 @@ function validateCatalog(rootDir, catalog, now, errors) {
           `[ARCH-MAP-009] Active context ${contextPath} requires at least one public root entrypoint.`,
         );
       }
-
-      const activeEvents = publishedEvents.filter((event) => {
-        return event.implementationStatus === "active";
-      });
 
       if (activeEvents.length > 0) {
         const contractsPath = join(contextRoot, "integration-contracts.ts");
@@ -776,9 +825,9 @@ function validateCatalog(rootDir, catalog, now, errors) {
       const contextPath = `${subdomainEntry.name}/${contextEntry.name}`;
       const catalogContext = contextsByPath.get(contextPath);
 
-      if (catalogContext?.implementationStatus !== "active") {
+      if (catalogContext === undefined) {
         errors.push(
-          `[ARCH-MAP-010] Source context ${contextPath} must be declared active in module-map.json.`,
+          `[ARCH-MAP-010] Context directory ${contextPath} must be declared in module-map.json.`,
         );
       }
 
@@ -1455,6 +1504,256 @@ function validateExceptions(rootDir, registry, sourceFiles, now, errors) {
   }
 }
 
+function renderContextRelationship(relationship) {
+  const events = relationship.events?.length > 0
+    ? `; events ${relationship.events
+        .map((event) => `\`${event.name}@${event.version}\``)
+        .join(", ")}`
+    : "";
+
+  return `\`${relationship.context}::${relationship.contract}\` (${relationship.mode}${events})`;
+}
+
+export function renderContextReadme(context) {
+  const contextPath = `${context.subdomain}/${context.name}`;
+  const title = context.name
+    .split("-")
+    .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
+    .join(" ");
+  const classification = context.classification ?? "not-applicable";
+  const lines = [
+    `# ${title} Bounded Context`,
+    "",
+    `- **Catalog path:** \`${contextPath}\``,
+    `- **Kind:** \`${context.kind}\``,
+    `- **Classification:** \`${classification}\``,
+    `- **Maturity:** \`${context.maturity}\``,
+    `- **Implementation:** \`${context.implementationStatus}\``,
+    `- **Semantic status:** \`${context.semanticStatus}\``,
+    "",
+    "## Purpose",
+    "",
+    context.responsibility,
+    "",
+    "## Context content tree",
+    "",
+    `- \`${contextPath}\` [${context.implementationStatus}]`,
+    `  - Purpose: ${context.responsibility}`,
+    "  - Capabilities",
+  ];
+
+  if (context.activationScope.length === 0) {
+    lines.push("    - No active use cases; activation scope remains empty.");
+  } else {
+    for (const scope of context.activationScope) {
+      lines.push(`    - \`${scope}\` [active]`);
+    }
+  }
+
+  lines.push("  - Owned domain concepts");
+  for (const concept of context.owns) {
+    lines.push(`    - \`${concept}\``);
+  }
+
+  lines.push("  - Business rules and invariants");
+  if (context.semanticClaims.length === 0) {
+    lines.push(
+      context.semanticStatus === "not-applicable"
+        ? "    - Product-semantic claims are not applicable to this technical context."
+        : "    - Pending official-source validation before activation.",
+    );
+  } else {
+    for (const claim of context.semanticClaims) {
+      lines.push(`    - \`${claim.id}\`: ${claim.statement}`);
+    }
+  }
+
+  lines.push("  - Published events");
+  if (context.publishedEvents.length === 0) {
+    lines.push(`    - None. ${context.eventRationale}`);
+  } else {
+    for (const event of context.publishedEvents) {
+      lines.push(
+        `    - \`${event.name}@${event.version}\` [${event.implementationStatus}]: ${event.meaning}`,
+      );
+    }
+  }
+
+  lines.push("- External relationships");
+  if (context.dependencies.length === 0) {
+    lines.push("  - Runtime dependencies: none.");
+  } else {
+    lines.push("  - Runtime dependencies");
+    for (const relationship of context.dependencies) {
+      lines.push(`    - ${renderContextRelationship(relationship)}`);
+    }
+  }
+  if (context.plannedRelationships.length === 0) {
+    lines.push("  - Planned relationships: none.");
+  } else {
+    lines.push("  - Planned relationships");
+    for (const relationship of context.plannedRelationships) {
+      lines.push(`    - ${renderContextRelationship(relationship)}`);
+    }
+  }
+
+  lines.push("- Explicit exclusions");
+  for (const exclusion of context.excludes) {
+    lines.push(`  - \`${exclusion}\``);
+  }
+
+  lines.push(
+    "",
+    "## Ubiquitous language",
+    "",
+    "The catalog reserves these terms for this context:",
+    "",
+  );
+  for (const concept of context.owns) {
+    lines.push(`- \`${concept}\``);
+  }
+  lines.push(
+    "",
+    context.implementationStatus === "active"
+      ? "Implemented definitions and use-case terminology are refined in this README."
+      : context.semanticStatus === "not-applicable"
+        ? "Precise definitions must be refined against technical contracts before activation."
+        : "Precise definitions must be refined against the official sources before activation.",
+    "",
+    "## Ownership and invariants",
+    "",
+    `This context owns ${context.owns.map((item) => `\`${item}\``).join(", ")}.`,
+    `It excludes ${context.excludes.map((item) => `\`${item}\``).join(", ")}.`,
+    "",
+  );
+  if (context.semanticClaims.length === 0) {
+    lines.push(
+      context.semanticStatus === "not-applicable"
+        ? "Product-semantic claims are not applicable to this technical context."
+        : "No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.",
+      "",
+    );
+  } else {
+    for (const claim of context.semanticClaims) {
+      lines.push(
+        `- \`${claim.id}\`: ${claim.statement}`,
+        `  - Ownership: ${claim.ownership.length === 0 ? "none" : claim.ownership.map((item) => `\`${item}\``).join(", ")}`,
+        `  - Events: ${claim.events.length === 0 ? "none" : claim.events.map((item) => `\`${item}\``).join(", ")}`,
+        `  - Sources: ${claim.sourceIds.map((item) => `\`${item}\``).join(", ")}`,
+      );
+    }
+    lines.push("");
+  }
+
+  lines.push("## Public capabilities", "");
+  if (context.activationScope.length === 0) {
+    lines.push(
+      "None while planned. Activation requires at least one real use case and public consumer.",
+      "",
+    );
+  } else {
+    for (const scope of context.activationScope) {
+      lines.push(`- \`${scope}\``);
+    }
+    lines.push(
+      "",
+      "Implementation details and use-case rules are maintained in this README.",
+      "",
+    );
+  }
+
+  lines.push("## Dependencies and consistency", "");
+  if (
+    context.dependencies.length === 0 &&
+    context.plannedRelationships.length === 0
+  ) {
+    lines.push("No runtime dependency or planned relationship is cataloged.", "");
+  } else {
+    lines.push("### Runtime dependencies", "");
+    if (context.dependencies.length === 0) {
+      lines.push("None.", "");
+    } else {
+      for (const relationship of context.dependencies) {
+        lines.push(`- ${renderContextRelationship(relationship)}`);
+      }
+      lines.push("");
+    }
+    lines.push("### Planned relationships", "");
+    if (context.plannedRelationships.length === 0) {
+      lines.push("None.", "");
+    } else {
+      for (const relationship of context.plannedRelationships) {
+        lines.push(`- ${renderContextRelationship(relationship)}`);
+      }
+      lines.push("");
+    }
+  }
+
+  const pendingDecision = (decision) => {
+    return context.implementationStatus === "active"
+      ? `${decision} must be recorded in this README.`
+      : `${decision} are not defined while this context is planned. They must be decided and reviewed before activation.`;
+  };
+
+  lines.push(
+    "## Authorization",
+    "",
+    pendingDecision("Authorization policy ownership and resource-scope rules"),
+    "",
+    "## Persistence and transactions",
+    "",
+    pendingDecision("Persistence ownership and transaction boundaries"),
+    "",
+    "## Data classification",
+    "",
+    pendingDecision("Sensitive-data classification and redaction rules"),
+    "",
+    "## Retention and erasure",
+    "",
+    pendingDecision("Retention, erasure, and tombstone rules"),
+    "",
+    "## Events and failure behavior",
+    "",
+  );
+  if (context.publishedEvents.length === 0) {
+    lines.push(`- None. ${context.eventRationale}`);
+  } else {
+    for (const event of context.publishedEvents) {
+      const contract = event.schema === undefined
+        ? "contract and ordering pending activation"
+        : `schema \`${event.schema}\`; ordering key \`${event.orderingKey}\``;
+      lines.push(
+        `- \`${event.name}@${event.version}\` (${event.kind}, ${event.implementationStatus}): ${event.meaning} ${contract}.`,
+      );
+    }
+  }
+
+  lines.push("", "## Official sources", "");
+  if (context.officialSources.length === 0) {
+    lines.push("Not applicable to this technical context.");
+  } else {
+    for (const source of context.officialSources) {
+      const verification = source.verifiedOn === null
+        ? "not yet verified"
+        : `verified ${source.verifiedOn}`;
+      lines.push(
+        `- \`${source.id}\`: [${source.supports.join(", ")}](${source.url}) (${verification})`,
+      );
+    }
+  }
+
+  lines.push(
+    "",
+    "## Exceptions",
+    "",
+    "No context-specific exception is declared by the catalog. The central",
+    "[exception registry](../../../../../../docs/architecture/exceptions/registry.json) remains authoritative.",
+    "",
+  );
+
+  return lines.join("\n");
+}
+
 export function renderModuleMap(catalog) {
   const lines = [
     "<!-- Generated from module-map.json. Do not edit directly. -->",
@@ -1496,7 +1795,7 @@ export function renderModuleMap(catalog) {
 
   for (const context of catalog.contexts) {
     lines.push(
-      `| ${context.subdomain} | ${context.name} | ${context.kind} | ${context.classification ?? "—"} | ${context.maturity} | ${context.implementationStatus} | ${sourceFreshnessFor(context)} | ${context.semanticStatus} | ${context.responsibility} |`,
+      `| ${context.subdomain} | [${context.name}](../../apps/web/src/modules/${context.subdomain}/${context.name}/README.md) | ${context.kind} | ${context.classification ?? "—"} | ${context.maturity} | ${context.implementationStatus} | ${sourceFreshnessFor(context)} | ${context.semanticStatus} | ${context.responsibility} |`,
     );
   }
 
@@ -1560,7 +1859,7 @@ export function renderModuleMap(catalog) {
           .join("; ");
 
     lines.push(
-      `### ${contextPath}`,
+      `### [${contextPath}](../../apps/web/src/modules/${contextPath}/README.md)`,
       "",
       `- **Owns:** ${context.owns.join(", ")}.`,
       `- **Excludes:** ${context.excludes.join(", ")}.`,
@@ -1576,7 +1875,7 @@ export function renderModuleMap(catalog) {
 
   lines.push(
     "All product semantics are justified by HTTPS sources under docs.github.com/en/.",
-    "Planned contexts do not receive source directories, activation scope, or runtime dependencies until implementation begins.",
+    "Planned context directories contain README.md only and have no activation scope, runtime dependencies, or source code until implementation begins.",
     "",
   );
 

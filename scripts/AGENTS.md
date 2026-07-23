@@ -21,6 +21,8 @@ the root `AGENTS.md`.
 - `check-architecture.mjs` is the repository CLI wrapper.
 - `generate-module-map.mjs` writes only
   `docs/architecture/module-map.md` from the JSON catalog.
+- `scaffold-context-readmes.mjs` creates missing bounded-context READMEs from
+  catalog metadata and never overwrites existing semantic models.
 - `generate-serena-memories.mjs` writes only the reviewed shared-memory files
   under `.serena/memories` from its explicit authority allowlist.
 - Architecture behavior retains stable `ARCH-*` identifiers and focused

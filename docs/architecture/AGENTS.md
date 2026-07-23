@@ -11,6 +11,8 @@ repository's architecture contract.
 - `module-template.md` owns the permitted bounded-context shape.
 - `module-map.json` is the machine-readable context catalog.
 - `module-map.md` is generated from `module-map.json`; never edit it directly.
+- `apps/web/src/modules/<subdomain>/<bounded-context>/README.md` is the
+  human-maintained semantic model for each catalog context.
 - `exceptions/registry.json` is the only architecture exception registry.
 
 `AGENTS.md` files may explain workflow and local ownership, but they must not
@@ -33,12 +35,14 @@ changes.
   empty-catalog rationale. Event dependencies name exact event versions owned
   by the target context; a transport capability never becomes the semantic
   owner of a product event.
-- Do not create source directories for a context whose `implementationStatus`
-  is `planned`.
+- A context whose `implementationStatus` is `planned` has a README-only design
+  directory. Do not add source files, layers, or entrypoints before activation.
 - Give each exception one stable ID, the narrowest scope, a concrete reason,
   an owner, and a removal condition. An exception is not a reusable example.
 - Regenerate the Markdown catalog with `pnpm architecture:docs` after changing
-  `module-map.json`, then inspect the generated diff.
+  `module-map.json`, then inspect the generated diff. Run
+  `pnpm architecture:contexts` only to scaffold missing context READMEs; refine
+  their semantic content manually.
 
 ## Validation
 

@@ -1,11 +1,17 @@
 # Bounded Context Template
 
-Create a context only after its `module-map.json` `implementationStatus`
-changes from `planned` to `active`. Do not create empty optional directories.
-At activation, declare the implemented use cases in `activationScope` and move
-only their implemented relationships from `plannedRelationships` to
-`dependencies`. Runtime dependencies require active target contexts; planned
-relationships do not authorize imports or event handlers.
+Every catalog context owns a human-maintained design README at
+`apps/web/src/modules/<subdomain>/<bounded-context>/README.md`, including
+planned contexts. Use `pnpm architecture:contexts` to scaffold only missing
+READMEs; the command never overwrites an existing semantic model.
+
+A planned context directory contains `README.md` only. Add source files,
+layers, and public entrypoints only after its `module-map.json`
+`implementationStatus` changes from `planned` to `active`. At activation,
+declare the implemented use cases in `activationScope` and move only their
+implemented relationships from `plannedRelationships` to `dependencies`.
+Runtime dependencies require active target contexts; planned relationships do
+not authorize imports or event handlers.
 
 ```text
 apps/web/src/modules/<subdomain>/<bounded-context>/
@@ -56,6 +62,7 @@ decisions remain discoverable and mechanically verifiable:
 
 ```markdown
 ## Purpose
+## Context content tree
 ## Ubiquitous language
 ## Ownership and invariants
 ## Public capabilities
@@ -68,6 +75,36 @@ decisions remain discoverable and mechanically verifiable:
 ## Official sources
 ## Exceptions
 ```
+
+The context content tree is the human-readable semantic model for the bounded
+context. Organize it from business purpose to capabilities, then trace each
+capability to its use cases, owned concepts, rules and invariants, decisions,
+and published events. Mark every capability as `active` or `planned` and keep
+planned behavior distinct from implemented behavior.
+
+The tree must reference every catalog `activationScope` and owned concept using
+inline code. It must also reference every active published event as
+`EventName@version`. Supporting concepts, external relationships, and explicit
+exclusions belong in the same tree when they clarify the boundary.
+
+```text
+Bounded context purpose
+├─ Capability [active|planned]
+│  ├─ Use cases
+│  ├─ Owned domain concepts
+│  ├─ Business rules and invariants
+│  ├─ Decisions or results
+│  └─ Published events
+├─ Supporting concepts
+├─ External relationships
+└─ Explicit exclusions
+```
+
+`module-map.json` remains the machine-readable catalog and index. The context
+README is the complete human-readable semantic model and may add capability
+hierarchy, rules, invariants, and decisions that do not belong in the catalog.
+Overlapping activation scopes, owned concepts, event versions, relationships,
+and exclusions must agree.
 
 The sections record owner and out-of-scope concerns, public commands and
 queries, transaction ownership, resource scope, permission ports, sensitive

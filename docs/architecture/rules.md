@@ -86,9 +86,10 @@ and ownership but must not redefine these rules.
 - **ARCH-MAP-018:** Every context declares versioned published events or an
   empty-catalog rationale. Event dependencies name events and versions owned by
   their target context.
-- **ARCH-MAP-019:** Every active context README contains the canonical decision
-  headings from `module-template.md`; planned contexts do not receive source
-  directories or placeholder READMEs.
+- **ARCH-MAP-019:** Every context README contains the canonical decision
+  headings from `module-template.md`. Its context content tree references every
+  catalog activation scope, owned concept, and published event. A planned tree
+  never describes a capability as active.
 - **ARCH-MAP-020:** Every active event names an exported
   `integration-contracts.ts` schema and a non-empty ordering key. Planned events
   omit contract metadata until activation.
@@ -109,6 +110,10 @@ and ownership but must not redefine these rules.
   active contexts may mix planned and active events or publish none for a
   query-only activation scope. Planned events never declare schema or ordering
   metadata.
+- **ARCH-MAP-027:** Every catalog context has exactly one human-maintained
+  README under `apps/web/src/modules/<subdomain>/<bounded-context>/`. A planned
+  context directory contains only that README; source files and architecture
+  layers require activation.
 - **ARCH-DEP-014:** Runtime event dependencies consume only active events from
   active contexts. Planned relationships may reference planned or active events
   without authorizing runtime handling.

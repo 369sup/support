@@ -6,6 +6,53 @@ Own GitHub-like Repository identity, owner, visibility, profile, and lifecycle
 semantics. The first active slice lists active public repositories for a
 personal owner.
 
+## Context content tree
+
+- Repository management
+  - Public personal-owner repository listing [active]
+    - Use case: `list-active-public-repositories-for-personal-owner`
+    - Application boundary:
+      `ListActivePublicRepositoriesForPersonalOwnerUseCase.listActivePublicRepositoriesForPersonalOwner()`
+    - Owned concepts: `Repository`, `RepositoryDescription`,
+      `RepositoryLifecycleState`
+    - Rules and invariants:
+      - The owner must be a personal account reference.
+      - Only public repositories in the active lifecycle state are returned.
+      - The context returns summaries without Git content or authorization
+        grants.
+    - Decisions: return a collection, including an empty collection when no
+      repository matches.
+    - Published events: none for this query-only active slice.
+  - Repository identity and profile [planned]
+    - Owned concept: `RepositoryHomepage`
+    - Planned events: `RepositoryCreated@1`, `RepositoryProfileUpdated@1`
+  - Repository rename and redirects [planned]
+    - Owned concept: `RepositoryRedirect`
+    - Planned event: `RepositoryRenamed@1`
+  - Repository visibility [planned]
+    - Planned event: `RepositoryVisibilityChanged@1`
+  - Repository transfer [planned]
+    - Owned concept: `RepositoryTransfer`
+    - Planned events: `RepositoryTransferRequested@1`,
+      `RepositoryTransferred@1`, `RepositoryTransferExpired@1`
+  - Repository lifecycle [planned]
+    - Owned concepts: `RepositoryTombstone`, `RepositoryRestoreWindow`
+    - Planned events: `RepositoryArchived@1`, `RepositoryUnarchived@1`,
+      `RepositoryDeleted@1`, `RepositoryRestored@1`
+- External relationships
+  - Active synchronous dependency:
+    `identity/accounts::UserOwnerReference`
+  - Planned synchronous relationships:
+    `organizations/organizations::OrganizationOwnerReference`,
+    `organizations/organization-policies::RepositoryPolicyConstraints`, and
+    `commerce/entitlements::RepositoryEntitlement`
+- Explicit exclusions
+  - `GitObject`
+  - `RepositoryGrant`
+  - `Issue`
+  - `Star`
+  - `Subscription`
+
 ## Ubiquitous language
 
 - **Repository**: the core GitHub product resource.

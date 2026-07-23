@@ -5,6 +5,40 @@
 Own GitHub-like personal account identity and username semantics. The first
 active slice resolves a public personal-account reference by username.
 
+## Context content tree
+
+- Personal account identity
+  - Account discovery [active]
+    - Use case: `get-personal-account-by-username`
+    - Application boundary:
+      `GetPersonalAccountByUsernameUseCase.getPersonalAccountByUsername()`
+    - Owned concepts: `Account`, `Username`
+    - Rules and invariants:
+      - Only personal accounts are returned.
+      - Only active accounts are discoverable.
+      - Username input must remain non-empty after trimming.
+    - Decisions:
+      - Return a `UserOwnerReference`.
+      - Return `account-not-found` when no active personal account matches.
+      - Return `invalid-username` when the input is invalid.
+    - Published events: none for this query-only active slice.
+  - Account lifecycle [planned]
+    - Owned concepts: `AccountLifecycle`, `GhostAttribution`
+    - Planned behaviors:
+      - Account creation
+      - Username change
+      - Account deletion
+      - Ghost attribution
+    - Planned events: `AccountCreated@1`, `UsernameChanged@1`,
+      `AccountDeleted@1`
+- External relationships
+  - Active runtime dependencies: none.
+- Explicit exclusions
+  - `Credential`
+  - `Session`
+  - `Profile`
+  - `EnterpriseMembership`
+
 ## Ubiquitous language
 
 - **Account**: the identity used to access GitHub product resources.
