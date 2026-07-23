@@ -14,7 +14,7 @@ function isRecord(value) {
 }
 
 function normalizeRepositoryPath(candidate) {
-  const trimmed = candidate.trim();
+  const trimmed = candidate.trim().replaceAll("\\", sep);
   const absolutePath = isAbsolute(trimmed)
     ? resolve(trimmed)
     : resolve(repositoryRoot, trimmed);
