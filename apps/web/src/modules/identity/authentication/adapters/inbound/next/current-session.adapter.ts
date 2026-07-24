@@ -33,7 +33,7 @@ export function createCurrentSessionAdapter({
   async function requireCurrentSession(): Promise<AuthenticatedSessionReference> {
     const session = await getOptionalCurrentSession();
     if (session === null) {
-      redirect("/sign-in");
+      redirect("/login");
     }
     return session;
   }

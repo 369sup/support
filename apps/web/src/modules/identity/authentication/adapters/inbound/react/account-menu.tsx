@@ -75,7 +75,7 @@ export function AccountMenu({
   async function signOutAll() {
     setPendingSessionId("all");
     await fetch("/api/auth/account-sessions", { method: "DELETE" });
-    router.push("/sign-in");
+    router.push("/login");
     router.refresh();
   }
 
@@ -134,7 +134,7 @@ export function AccountMenu({
           </p>
         )}
         <div className="mt-3 grid gap-2 border-t pt-3">
-          <Link className="text-sm font-medium" href="/sign-in?add=1">
+          <Link className="text-sm font-medium" href="/login?add=1">
             Add account
           </Link>
           <Link className="text-sm font-medium" href="/account">

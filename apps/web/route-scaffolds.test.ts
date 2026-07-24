@@ -9,7 +9,6 @@ const appRoot = fileURLToPath(new URL("./src/app", import.meta.url));
 const expectedUrlPatterns = [
   "/accept-invitation",
   "/forgot-password",
-  "/login",
   "/logout",
   "/reset-password",
   "/search",

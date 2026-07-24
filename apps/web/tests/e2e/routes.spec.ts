@@ -1,11 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const publicRoutes = [
-  { path: "/", heading: "Your workspace is ready." },
+  { path: "/", heading: "Where teams build trust together." },
   { path: "/accessibility", heading: "Accessibility" },
   { path: "/docs", heading: "Documentation" },
   { path: "/privacy", heading: "Privacy" },
-  { path: "/sign-in", heading: "Sign in" },
+  { path: "/login", heading: "Sign in to Support" },
   { path: "/terms", heading: "Terms" },
 ];
 
@@ -30,7 +30,6 @@ const consoleRoutes = [
 const unavailableScaffoldRoutes = [
   "/accept-invitation",
   "/forgot-password",
-  "/login",
   "/logout",
   "/reset-password",
   "/search",
@@ -129,13 +128,13 @@ const unavailableScaffoldRoutes = [
 ] as const;
 
 async function signIn(page: Page) {
-  await page.goto("/sign-in");
+  await page.goto("/login");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
 }
 
 async function signInAs(page: Page, username: string) {
-  await page.goto("/sign-in");
+  await page.goto("/login");
   await page.getByLabel("Username").fill(username);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
@@ -151,6 +150,45 @@ for (const route of publicRoutes) {
     ).toBeVisible();
   });
 }
+
+test("home call to action reaches the canonical login page", async ({ page }) => {
+  await page.goto("/");
+  await page
+    .getByRole("link", { name: "Sign in to Support", exact: true })
+    .first()
+    .click();
+
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Sign in to Support" }),
+  ).toBeVisible();
+});
+
+test("legacy sign-in URLs permanently redirect to canonical login URLs", async ({
+  request,
+}) => {
+  const response = await request.get("/sign-in", { maxRedirects: 0 });
+  expect(response.status()).toBe(308);
+  expect(response.headers()["location"]).toBe("/login");
+
+  const addAccountResponse = await request.get("/sign-in?add=1", {
+    maxRedirects: 0,
+  });
+  expect(addAccountResponse.status()).toBe(308);
+  expect(addAccountResponse.headers()["location"]).toBe("/login?add=1");
+});
+
+test("login add-account mode keeps its dedicated presentation", async ({ page }) => {
+  await page.goto("/login?add=1");
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Add account to Support" }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Username")).toHaveValue("carol_ACME");
+  await expect(
+    page.getByRole("button", { name: "Add account", exact: true }),
+  ).toBeVisible();
+});
 
 for (const route of consoleRoutes) {
   test(`${route.path} renders after authentication`, async ({ page }) => {
@@ -175,22 +213,24 @@ test("unavailable route scaffolds consistently render not found", async ({
   }
 });
 
-test("unauthenticated console navigation redirects to sign-in", async ({ page }) => {
+test("unauthenticated console navigation redirects to login", async ({ page }) => {
   await page.goto("/dashboard");
 
-  await expect(page).toHaveURL(/\/sign-in$/);
-  await expect(page.getByRole("heading", { level: 1, name: "Sign in" })).toBeVisible();
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Sign in to Support" }),
+  ).toBeVisible();
 });
 
-test("invalid development credentials remain on sign-in", async ({ page }) => {
-  await page.goto("/sign-in");
+test("invalid development credentials remain on login", async ({ page }) => {
+  await page.goto("/login");
   await page.getByLabel("Password").fill("incorrect");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
   await expect(page.locator("form").getByRole("alert")).toHaveText(
     "Incorrect development username or password.",
   );
-  await expect(page).toHaveURL(/\/sign-in$/);
+  await expect(page).toHaveURL(/\/login$/);
 });
 
 test("organization administration APIs require authentication and same origin", async ({
@@ -218,7 +258,7 @@ test("organization administration APIs require authentication and same origin", 
   expect(crossOrigin.status()).toBe(403);
 });
 
-test("sign-in uses an HttpOnly cookie and sign-out-all completes the flow", async ({
+test("login uses an HttpOnly cookie and sign-out-all completes the flow", async ({
   context,
   page,
 }) => {
@@ -234,14 +274,14 @@ test("sign-in uses an HttpOnly cookie and sign-out-all completes the flow", asyn
   await page.getByLabel("Account menu for @octocat").click();
   await page.getByRole("button", { name: "Sign out all" }).click();
 
-  await expect(page).toHaveURL(/\/sign-in$/);
+  await expect(page).toHaveURL(/\/login$/);
 });
 
-test("public navigation reaches documentation and sign-in", async ({ page }) => {
+test("public navigation reaches documentation and login", async ({ page }) => {
   await page.goto("/docs");
   await page.getByRole("link", { name: "Sign in" }).click();
 
-  await expect(page).toHaveURL(/\/sign-in$/);
+  await expect(page).toHaveURL(/\/login$/);
 });
 
 test("console navigation reaches repositories", async ({ page }) => {
@@ -332,7 +372,7 @@ test("account, Dashboard context, enterprise role, and repository access integra
 test("pending membership is not a selectable Dashboard context", async ({
   page,
 }) => {
-  await page.goto("/sign-in");
+  await page.goto("/login");
   await page.getByLabel("Username").fill("bob");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
@@ -476,7 +516,7 @@ test("an account session can be removed without exposing its account", async ({
   ).toHaveCount(0);
 });
 
-test("a process-invalidated opaque cookie safely redirects to sign-in", async ({
+test("a process-invalidated opaque cookie safely redirects to login", async ({
   context,
   page,
 }) => {
@@ -489,7 +529,7 @@ test("a process-invalidated opaque cookie safely redirects to sign-in", async ({
   ]);
 
   await page.goto("/dashboard");
-  await expect(page).toHaveURL(/\/sign-in$/);
+  await expect(page).toHaveURL(/\/login$/);
 });
 
 test("expired managed session requires reauthentication and keeps active account", async ({
@@ -538,9 +578,9 @@ test("expired managed session requires reauthentication and keeps active account
     );
   }, carolSessionId);
   await page.goto("/dashboard");
-  await expect(page).toHaveURL(/\/sign-in$/);
+  await expect(page).toHaveURL(/\/login$/);
 
-  await page.goto("/sign-in");
+  await page.goto("/login");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await page.getByLabel("Account menu for @octocat").click();
   const expiredManagedSession = page.getByRole("button", {
