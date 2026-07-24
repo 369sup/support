@@ -25,6 +25,11 @@ List commands actually run and their observed results.
 
 List checks not run and the remaining risk.
 
+## Performance and visual evidence
+
+Provide measured performance or client-bundle evidence and screenshots when
+applicable. Write `None` when the change does not affect them.
+
 ## Dependencies and supply chain
 
 Describe manifest, lockfile, action, external service, or client-bundle impact.
