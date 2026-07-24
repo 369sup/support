@@ -67,8 +67,8 @@ Cross-context coordination uses public synchronous contracts and no distributed
 transaction. Process restart safely invalidates cookies, and production or
 ordinary Preview deployments have no in-memory sign-in runtime.
 
-Team access, organization base permission, custom roles, enterprise policies,
-real IdP/SSO, durable storage, and cross-instance consistency remain planned.
+Organization base permission, custom roles, enterprise policies, real IdP/SSO,
+durable storage, and cross-instance consistency remain planned.
 
 ## Migration and rollback
 
@@ -81,5 +81,5 @@ development and E2E only. No production data migration is currently required.
 ## Follow-up work
 
 Implement durable storage, real IdP/SSO integration, cross-instance session
-consistency, organization base permissions, team access, custom roles, and
-enterprise policies as separately owned capabilities.
+consistency, organization base permissions, custom roles, and enterprise
+policies as separately owned capabilities.
