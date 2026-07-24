@@ -1,0 +1,43 @@
+﻿# Current task
+
+## Objective
+以 `apps/web/src/modules/AGENTS.md` 為主，使用 repomix 對齊 AGENTS 規範並修正與現有程式架構衝突的文件條款。
+
+## Scope
+- `apps/web/src/modules/AGENTS.md`
+- 全域 AGENTS 檢核（`mcp__repomix.pack_codebase`）
+- `apps/web/src/modules` 目錄結構一致性查核
+- 變更驗證：`pnpm architecture`
+
+## Verified facts
+- repomix 打包目前共 25 個 AGENTS 檔案。
+- 既有 `application/services` 目錄存在於三個 active context：
+  - `organizations/organization-roles`
+  - `organizations/organization-teams`
+  - `repositories/repository-access`
+- 既有 `application/mappers` 目錄存在於 `platform/media-storage`。
+- `pnpm architecture` 通過。
+
+## Decisions
+- 不移除既有 legacy `application/services` 與 `application/mappers` 目錄。
+- 將規則改為：新架構不新增此類目錄；既有 legacy 目錄保留並限制功能新增。
+- 未對程式邏輯做重構，只做文件一致性調整。
+
+## Completed
+- 將 `apps/web/src/modules/AGENTS.md` 的 application 層規則更新為：
+  - 禁止新建 `application/services` 作為新架構慣例；既有 legacy 可保留但不新增新 service 實作，後續逐步遷移。
+  - 對既有 `application/mappers` 明確標註為 legacy 使用，不新增新 mapper 功能。
+- 重跑 repomix 比對與 `pnpm architecture` 驗證。
+
+## Current state
+- 任務完成，僅有文檔變更在 `apps/web/src/modules/AGENTS.md`。
+
+## Remaining
+- 無
+
+## Validation
+- `mcp__repomix.pack_codebase`
+- `pnpm.cmd architecture`
+
+## Risks
+- 未將 legacy `application/services` / `application/mappers` 進一步程式遷移；若長期保留將來自動化規則仍可能需補充正式例外治理。

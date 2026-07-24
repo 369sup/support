@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   EnterpriseMembershipQueryRepositoryPort,
   EnterpriseMembershipQuerySnapshot,
 } from "../../../application/ports/outbound/enterprise-membership-query.repository.port";
