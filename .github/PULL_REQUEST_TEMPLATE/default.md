@@ -1,28 +1,44 @@
-## Purpose
+## Outcome
 
-<!-- State one concrete, reversible outcome. -->
+Describe one concrete outcome, the affected ownership boundaries, and behavior
+that must remain unchanged.
 
-## Boundary and risk
+## Behavior and architecture impact
 
-<!-- Name affected modules, external inputs, authorization, data, and side effects. -->
+Describe public behavior, architecture boundaries, generated artifacts, and
+compatibility or migration effects.
 
-## Evidence
+## Trust and operational boundaries
 
-<!-- Follow CONTRIBUTING.md and the canonical architecture contract. -->
+Describe affected authentication, authorization, tenant, data, privacy,
+security, billing, migration, and operational boundaries. Write `None` when
+not applicable.
 
-- Commands run and observed results:
-- Checks not run and remaining risk:
-- Test, documentation, generated-output, dependency, and supply-chain impact:
-- Performance or client-bundle evidence, when applicable:
-- Migration or compatibility period, when applicable:
+## Verification
 
-## Rollback or forward fix
+List commands actually run and their observed results.
 
-<!-- Required for high-risk changes; otherwise write "Not applicable". -->
+```text
+# command
+# observed result
+```
 
-## Review readiness
+List checks not run and the remaining risk.
 
-- [ ] I followed [`CONTRIBUTING.md`](../../CONTRIBUTING.md).
-- [ ] I verified the affected rules in the
-      [architecture contract](../../docs/architecture/architecture.md).
-- [ ] Each commit has one clear, reversible purpose.
+## Dependencies and supply chain
+
+Describe manifest, lockfile, action, external service, or client-bundle impact.
+Write `None` when not applicable.
+
+## Migration, rollback, or forward fix
+
+For high-risk changes, describe migration and rollback or forward-fix steps.
+Write `None` when not applicable.
+
+## Review checklist
+
+- [ ] The change has one clear and reversible purpose.
+- [ ] Documentation and generated projections are updated with their source.
+- [ ] Required type, lint, architecture, and behavior checks were not skipped.
+- [ ] New warnings, blanket suppressions, and permanent warning baselines were not introduced.
+- [ ] Unexecuted checks and remaining risks are stated above.

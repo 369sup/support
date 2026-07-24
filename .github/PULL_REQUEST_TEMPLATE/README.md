@@ -1,5 +1,9 @@
 # Pull request templates
 
-No pull request template is active in this scaffold. Add a template only when
-the repository's review checklist is agreed. Follow
-[../AGENTS.md](../AGENTS.md).
+[`default.md`](default.md) is the active pull request template. It collects the
+evidence required by [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md) without
+redefining the repository's review or merge rules.
+
+Change the checklist only when the authoritative pull request evidence contract
+changes. Follow [`../AGENTS.md`](../AGENTS.md) for GitHub automation and
+template ownership.

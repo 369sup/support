@@ -40,14 +40,33 @@ four-digit number. Add each record to the table below.
 
 ## Context
 
-Describe the forces, constraints, and concrete problem.
+Describe the forces and concrete problem.
+
+## Constraints
+
+Record the conditions the decision must preserve.
+
+## Alternatives considered
+
+List materially different options and why they were rejected.
 
 ## Decision
 
 State the chosen architecture and its boundary.
 
+## Tradeoffs
+
+Record the capability gained and the cost or complexity accepted.
+
 ## Consequences
 
-Record benefits, costs, operational effects, migration needs, and follow-up
-work.
+Record operational and architectural effects.
+
+## Migration and rollback
+
+Describe compatibility, migration, rollback, or state that none is required.
+
+## Follow-up work
+
+List owned remaining work, or state `None`.
 ```

@@ -7,9 +7,10 @@ notifications, permissions, governance, commerce, and integrations.
 
 Git storage and repository content, commits, branches, tags, diffs, merge,
 pull requests and code review, Actions, and other code products are outside the
-product boundary. See the generated
-[`docs/architecture/module-map.md`](docs/architecture/module-map.md) for the
-authoritative context catalog and deferred capabilities.
+product boundary. The authoritative machine-readable context catalog is
+[`docs/architecture/module-map.json`](docs/architecture/module-map.json). Its
+generated human-readable projection is
+[`docs/architecture/module-map.md`](docs/architecture/module-map.md).
 
 The product application lives in `apps/web`. Its source has two roots only:
 
@@ -27,6 +28,24 @@ application and are not workspace packages.
 
 Architecture, naming, module-map, and exception rules are documented under
 `docs/architecture` and enforced by `pnpm architecture`.
+
+## Prerequisites
+
+Use the repository-pinned toolchain:
+
+- Node.js `24.18.0`, declared in [`.node-version`](.node-version).
+- pnpm `11.15.1`, declared by the root `packageManager` field.
+
+Verify the active versions before installation:
+
+```text
+node --version
+pnpm --version
+```
+
+Use a cross-platform Node version manager that understands `.node-version` and
+Corepack or another package-manager shim that respects the committed
+`packageManager` value. Do not rely on unrelated globally installed versions.
 
 ## Development
 
@@ -81,7 +100,7 @@ must not be treated as durable storage or external provider integrations.
 - `pnpm lint` - run ESLint and immediate architecture boundary rules.
 - `pnpm typecheck` - run TypeScript without emitting files.
 - `pnpm architecture` - validate structure, graph, module map, and exceptions.
-- `pnpm test` - run ESLint-rule and architecture automation tests with Vitest.
+- `pnpm test` - run repository architecture tests and all workspace unit or integration test tasks.
 - `pnpm test:e2e` - run Playwright Chromium against the production server.
 - `pnpm check` - run the browser-free local gate.
 - `pnpm check:full` - add production build and E2E verification.
