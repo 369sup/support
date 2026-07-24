@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
-
-import { Separator } from "@support/shadcn/ui/separator";
+import { KeyRound } from "lucide-react";
 
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
 import { RepositoryTeamAccessManager } from "@/modules/repositories/repository-access/browser-ui";
@@ -68,7 +67,7 @@ export default async function RepositoryTeamAccessPage({
   }
   const directlyGrantedTeamIds = new Set(
     permission.sources.flatMap((source) =>
-                    source.kind === "team-grant" && !source.isInherited
+      source.kind === "team-grant" && !source.isInherited
         ? [source.teamId]
         : [],
     ),
@@ -85,25 +84,37 @@ export default async function RepositoryTeamAccessPage({
   }
 
   return (
-    <main className="flex flex-1 px-5 py-16 sm:px-8">
-      <section className="mx-auto w-full max-w-5xl">
-        <p className="text-sm font-medium text-muted-foreground">
-          {organization.organization.login}/{repository.repository.name}
+    <main className="flex flex-1 px-4 py-10 sm:px-8 lg:px-10">
+      <section className="mx-auto w-full max-w-6xl">
+        <p className="font-mono text-xs font-semibold tracking-[0.16em] text-emerald-400 uppercase">
+          Repository settings · {organization.organization.login}/
+          {repository.repository.name}
         </p>
-        <h1 className="mt-2 text-4xl font-semibold tracking-[-0.035em]">
-          Repository team access
-        </h1>
-        <p className="mt-4 max-w-3xl text-muted-foreground">
-          Grant, change, or revoke direct team access. Inherited access must be
-          changed at the granting parent team.
-        </p>
-        <Separator className="my-10" />
-        <RepositoryTeamAccessManager
-          canManageAll={canManageAll}
-          organizationLogin={organization.organization.login}
-          repositoryName={repository.repository.name}
-          teams={manageableTeams}
-        />
+        <div className="mt-3 flex items-start gap-4">
+          <span
+            aria-hidden="true"
+            className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-lg border border-emerald-400/30 bg-emerald-400/10 text-emerald-400"
+          >
+            <KeyRound className="size-5" />
+          </span>
+          <div>
+            <h1 className="text-4xl font-semibold tracking-[-0.04em] text-white">
+              Repository team access
+            </h1>
+            <p className="mt-4 max-w-3xl leading-7 text-slate-400">
+              Grant, change, or revoke direct team access. Inherited access must
+              be changed at the granting parent team.
+            </p>
+          </div>
+        </div>
+        <div className="mt-9">
+          <RepositoryTeamAccessManager
+            canManageAll={canManageAll}
+            organizationLogin={organization.organization.login}
+            repositoryName={repository.repository.name}
+            teams={manageableTeams}
+          />
+        </div>
       </section>
     </main>
   );

@@ -294,6 +294,27 @@ test("console navigation reaches repositories", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("redesigned console surfaces fit a mobile viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await signIn(page);
+  await page.getByLabel("Dashboard context").selectOption({
+    label: "Community Lab",
+  });
+
+  for (const route of consoleRoutes.slice(1)) {
+    await page.goto(route.path);
+    await expect(
+      page.getByRole("heading", { level: 1, name: route.heading }),
+    ).toBeVisible();
+
+    const viewport = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }));
+    expect(viewport.scrollWidth).toBeLessThanOrEqual(viewport.clientWidth);
+  }
+});
+
 test("unknown routes render the application not-found page", async ({ page }) => {
   const response = await page.goto("/does-not-exist");
 

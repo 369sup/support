@@ -3,9 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import type {
-  AvailableDashboardContext,
-} from "../../../contracts/dashboard-context";
+import type { AvailableDashboardContext } from "../../../contracts/dashboard-context";
 
 function contextKey(context: AvailableDashboardContext) {
   return context.kind === "personal"
@@ -45,11 +43,11 @@ export function DashboardContextSwitcher({
   }
 
   return (
-    <label className="flex items-center gap-2 text-sm">
+    <label className="flex min-w-0 items-center gap-2 text-sm">
       <span className="sr-only">Dashboard context</span>
       <select
         aria-label="Dashboard context"
-        className="h-9 max-w-48 rounded-md border bg-background px-2 font-medium"
+        className="h-9 max-w-44 rounded-md border border-slate-600 bg-[#0a1624] px-2 text-sm font-medium text-slate-200 outline-none hover:border-slate-500 focus-visible:border-emerald-400 focus-visible:ring-2 focus-visible:ring-emerald-400/30 sm:max-w-56"
         disabled={isPending}
         onChange={(event) => void select(event.currentTarget.value)}
         value={contextKey(current)}
