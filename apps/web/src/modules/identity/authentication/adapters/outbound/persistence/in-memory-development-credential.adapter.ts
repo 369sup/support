@@ -1,6 +1,7 @@
 import type { DevelopmentCredentialRepositoryPort } from "../../../application/ports/outbound/development-credential.repository.port";
 
 const credentials = [
+  { accountId: "account_mock", username: "mock", password: "123456" },
   { accountId: "account_octocat", username: "octocat", password: "github" },
   { accountId: "account_hubot", username: "hubot", password: "github" },
   {

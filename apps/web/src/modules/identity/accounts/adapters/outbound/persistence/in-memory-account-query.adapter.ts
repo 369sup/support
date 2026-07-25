@@ -5,6 +5,14 @@ import type {
 
 const developmentAccounts: readonly AccountQuerySnapshot[] = [
   {
+    accountId: "account_mock",
+    username: "mock",
+    displayName: "Mock User",
+    accountType: "personal",
+    usage: "human",
+    lifecycleState: "active",
+  },
+  {
     accountId: "account_octocat",
     username: "octocat",
     displayName: "The Octocat",
