@@ -1,0 +1,66 @@
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "output": {
+    "filePath": "repomix-output.md",
+    "style": "markdown",
+    "filePathStyle": "target-relative",
+    "parsableStyle": false,
+    "compress": false,
+    "showLineNumbers": true,
+    "fileSummary": true,
+    "directoryStructure": true,
+    "files": true,
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "truncateBase64": true,
+    "copyToClipboard": false,
+    "includeEmptyDirectories": false,
+    "topFilesLength": 15,
+    "headerText": "## Repomix Bundle for Codex-friendly review\n\nGenerated for implementation review and navigation.",
+    "git": {
+      "sortByChanges": false,
+      "sortByChangesMaxCommits": 100,
+      "includeDiffs": false,
+      "includeLogs": false
+    }
+  },
+  "include": [
+    "apps/web/src/**/*.{ts,tsx,js,jsx,css,scss}",
+    "packages/**/*.{ts,tsx,js,jsx}",
+    "**/tsconfig*.json",
+    "**/package.json",
+    "apps/web/.eslintrc.cjs",
+    "pnpm-workspace.yaml",
+    "turbo.json"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      ".npm-cache/**",
+      "repomix-cache/**",
+      "repomix-output*.{md,xml}",
+      "repomix-output.md",
+      ".turbo/**",
+      ".next/**",
+      "coverage/**",
+      "playwright-report/**",
+      "test-results/**",
+      "dist/**",
+      "build/**",
+      "out/**",
+      "tmp/**",
+      "*.log",
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/*.spec.ts",
+      "**/*.spec.tsx"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
+}

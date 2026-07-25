@@ -30,7 +30,6 @@ const consoleRoutes = [
 const unavailableScaffoldRoutes = [
   "/accept-invitation",
   "/forgot-password",
-  "/logout",
   "/reset-password",
   "/search",
   "/sign-up",
@@ -68,14 +67,6 @@ const unavailableScaffoldRoutes = [
   "/organizations/community-lab/settings/hooks",
   "/organizations/community-lab/settings/billing",
   "/organizations/community-lab/settings/audit-log",
-  "/enterprises/acme-enterprise/organizations",
-  "/enterprises/acme-enterprise/people",
-  "/enterprises/acme-enterprise/teams",
-  "/enterprises/acme-enterprise/enterprise_roles",
-  "/enterprises/acme-enterprise/settings",
-  "/enterprises/acme-enterprise/settings/apps",
-  "/enterprises/acme-enterprise/settings/billing",
-  "/enterprises/acme-enterprise/settings/audit-log",
   "/community-lab/docs",
   "/community-lab/docs/settings",
   "/community-lab/docs/settings/access",
@@ -164,6 +155,76 @@ test("home call to action reaches the canonical login page", async ({ page }) =>
   ).toBeVisible();
 });
 
+test("home layout is responsive and keyboard actions are supported", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const homeOverflow = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+  }));
+  expect(homeOverflow.scrollWidth).toBeLessThanOrEqual(
+    homeOverflow.clientWidth,
+  );
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/");
+  const signInLink = page.getByRole("link", { name: "Sign in", exact: true });
+  await signInLink.focus();
+  await expect(signInLink).toBeFocused();
+  await page.keyboard.press("Enter");
+
+  await expect(page).toHaveURL(/\/login$/);
+});
+
+test("home page exposes core sections and section navigation", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(
+    page.getByText("Organizations", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText("Governance", { exact: true })).toBeVisible();
+  await expect(
+    page
+      .locator("#collaboration")
+      .getByRole("heading", { level: 2, name: "Stay aligned as work moves." }),
+  ).toBeVisible();
+
+  await page.getByRole("link", { name: "Explore the platform", exact: true }).click();
+  await expect(page).toHaveURL(/#product$/);
+
+  await page.goto("/");
+  await page.getByRole("link", { name: "Product", exact: true }).click();
+  await expect(page).toHaveURL(/#product$/);
+});
+
+test("/login exposes username/password fields and keyboard submit", async ({
+  page,
+}) => {
+  await page.goto("/login");
+
+  await expect(page.getByRole("heading", { name: "Sign in to Support" })).toBeVisible();
+  await expect(page.getByLabel("Username")).toBeVisible();
+  await expect(page.getByLabel("Password")).toBeVisible();
+  const signInButton = page.getByRole("button", {
+    name: "Sign in",
+    exact: true,
+  });
+  await expect(signInButton).toBeVisible();
+
+  await page.getByLabel("Username").focus();
+  await expect(page.getByLabel("Username")).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.getByLabel("Password")).toBeFocused();
+
+  await page.getByLabel("Username").fill("octocat");
+  await page.getByLabel("Password").fill("incorrect");
+  await page.getByLabel("Password").press("Enter");
+
+  const alert = page.locator("p[role='alert']");
+  await expect(alert).toHaveText("Incorrect development username or password.");
+});
+
 test("legacy sign-in URLs permanently redirect to canonical login URLs", async ({
   request,
 }) => {
@@ -190,6 +251,39 @@ test("login add-account mode keeps its dedicated presentation", async ({ page })
   ).toBeVisible();
 });
 
+test("logout route signs out and routes to login", async ({ page, context }) => {
+  await page.goto("/login");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  const signInCookie = await page.context().cookies();
+  expect(
+    signInCookie.some((cookie) => cookie.name === "support.browser-session"),
+    "browser session cookie exists after sign-in",
+  ).toBe(true);
+
+  await page.goto("/logout");
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Sign in to Support" }),
+  ).toBeVisible();
+
+  const cookiesAfterLogout = await page.context().cookies();
+  const sessionCookieAfterLogout = cookiesAfterLogout.find(
+    (cookie) => cookie.name === "support.browser-session",
+  );
+  expect(sessionCookieAfterLogout).toBeUndefined();
+
+  const dashboardResponse = await context.request.get("/dashboard", {
+    maxRedirects: 0,
+  });
+  expect(
+    [301, 302, 307, 308].includes(dashboardResponse.status()),
+    "/dashboard redirects to login when signed out",
+  ).toBe(true);
+  await expect(page).toHaveURL(/\/login$/);
+});
+
 for (const route of consoleRoutes) {
   test(`${route.path} renders after authentication`, async ({ page }) => {
     await signIn(page);
@@ -208,7 +302,10 @@ test("unavailable route scaffolds consistently render not found", async ({
   await signIn(page);
 
   for (const route of unavailableScaffoldRoutes) {
-    const response = await context.request.get(route);
+    const response = await context.request.get(route, {
+      maxRedirects: 0,
+      timeout: 5000,
+    });
     expect(response.status(), route).toBe(404);
   }
 });

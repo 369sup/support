@@ -1,43 +1,94 @@
 ﻿# Current task
 
 ## Objective
-以 `apps/web/src/modules/AGENTS.md` 為主，使用 repomix 對齊 AGENTS 規範並修正與現有程式架構衝突的文件條款。
+
+實作 GitHub 式首頁與登入流程：
+- 將 `/login` 作為正式入口並維持現有 DevelopmentSignInForm 互動行為；
+- 將 `/sign-in` 以 308 導向到 `/login`，保留 `add=1` 參數；
+- 將 `/logout` 改為 Route Handler；
+- 將高完成度公共頁面從 `RoutePlaceholder` 替換為實作頁面；
+- 同步更新 robots、路由測試與 scaffold 清單；
+- 安裝/設定 repomix 並納入忽略規則。
 
 ## Scope
-- `apps/web/src/modules/AGENTS.md`
-- 全域 AGENTS 檢核（`mcp__repomix.pack_codebase`）
-- `apps/web/src/modules` 目錄結構一致性查核
-- 變更驗證：`pnpm architecture`
+
+- `apps/web/src/app/page.tsx`
+- `apps/web/src/app/login/page.tsx`
+- `apps/web/src/app/(public)/sign-in/page.tsx`
+- `apps/web/src/app/(public)/logout/page.tsx`
+- `apps/web/src/app/(public)/logout/route.ts`
+- `apps/web/src/app/robots.ts`
+- `apps/web/src/app/(public)/docs/page.tsx`
+- `apps/web/src/app/(public)/accessibility/page.tsx`
+- `apps/web/src/app/(public)/privacy/page.tsx`
+- `apps/web/src/app/(public)/terms/page.tsx`
+- `apps/web/route-scaffolds.test.ts`
+- `apps/web/tests/e2e/routes.spec.ts`
+- `repomix.config.json`
+- `.gitignore`
 
 ## Verified facts
-- repomix 打包目前共 25 個 AGENTS 檔案。
-- 既有 `application/services` 目錄存在於三個 active context：
-  - `organizations/organization-roles`
-  - `organizations/organization-teams`
-  - `repositories/repository-access`
-- 既有 `application/mappers` 目錄存在於 `platform/media-storage`。
-- `pnpm architecture` 通過。
+
+- `/sign-in` 以 `permanentRedirect` 導向 `/login`，保留 `add=1`。
+- `login` 仍使用既有 `DevelopmentSignInForm`，`isInMemoryRuntimeEnabled` 與 `add=1` 行為未改。
+- `/logout` 已改為 GET `Route Handler`，在取得瀏覽器 session 後清除 session 與 cookie。
+- `docs`、`accessibility`、`privacy`、`terms` 已由 `RoutePlaceholder` 替換為實際內容頁。
+- `route-scaffolds.test.ts` 與 `routes.spec.ts` 已更新以反映 `/logout` 與 enterprise 已實作路線。
+- `repomix.config.json` 已新增，且 `repomix` 可生成 `repomix-output.md`；`
+  相關輸出已被列入 `.gitignore`。
+
+## Assumptions
+
+- 「其他完成度較高 BC 頁面」在本循環內以已列出的公共頁面與路由一致性為主，不新增未規劃功能。
+- 產生的 repomix 上下文摘要不需提交。
 
 ## Decisions
-- 不移除既有 legacy `application/services` 與 `application/mappers` 目錄。
-- 將規則改為：新架構不新增此類目錄；既有 legacy 目錄保留並限制功能新增。
-- 未對程式邏輯做重構，只做文件一致性調整。
+
+- 採最小變更：維持既有交互邏輯與登入流程，專注路由、頁面實作與可見可驗證測試。
+- 遵循既有版面風格與主題，避免新增概念圖或未授權能力。
 
 ## Completed
-- 將 `apps/web/src/modules/AGENTS.md` 的 application 層規則更新為：
-  - 禁止新建 `application/services` 作為新架構慣例；既有 legacy 可保留但不新增新 service 實作，後續逐步遷移。
-  - 對既有 `application/mappers` 明確標註為 legacy 使用，不新增新 mapper 功能。
-- 重跑 repomix 比對與 `pnpm architecture` 驗證。
+
+- `apps/web/src/app/(public)/logout/route.ts` 已取代 `/logout` Page（符合 Next 路由限制）。
+- `apps/web/src/app/(public)/sign-in/page.tsx` 已以 308 canonical redirect 導向 `/login`。
+- `docs`、`accessibility`、`privacy`、`terms` 已完成深色主題實作頁。
+- `apps/web/route-scaffolds.test.ts` 與 `apps/web/tests/e2e/routes.spec.ts` 已更新：
+  - `/logout` 從未實作 scaffold 清單移除；
+  - 已實作 enterprise 路由從清單移除；
+  - 新增首頁/登入/登出/可用性相關驗證。
+- `repomix.config.json` 與 `.gitignore` 已同步，保證上下文輸出不進入版控。
 
 ## Current state
-- 任務完成，僅有文檔變更在 `apps/web/src/modules/AGENTS.md`。
+
+- 開發與驗證已完成；阻塞於提交/推送流程（工作目錄 .git 受讀取權限限制，且目前 GitHub 認證尚未可用）。
 
 ## Remaining
-- 無
+
+- 解決 `.git` 權限與 GitHub 認證問題後重新同步推送：
+  - 取得可用憑證後 `git commit` / `git push origin main`。
+- 如仍需進一步一致化，可將其他高完成度 BC 公共頁面延續相同深色樣式實作（目前不列為本循環必要項目）。
 
 ## Validation
-- `mcp__repomix.pack_codebase`
-- `pnpm.cmd architecture`
+
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm architecture`
+- `pnpm build`
+- `pnpm check`（目前失敗：`ARCH-MEM-001` generated Serena memory stale）
+- `pnpm --filter @support/web test:e2e -- routes.spec.ts`
+- `git diff --check`
+- `git status --short --branch`
+
+## Validation (latest)
+
+- `pnpm --filter @support/web test:e2e -- routes.spec.ts` pass（39/39）
+- `pnpm typecheck` pass
+- `pnpm lint` pass
+- `pnpm architecture` pass
+- `pnpm build` pass
+- `pnpm check` fail（`ARCH-MEM-001`：generated Serena memory is stale: `shared/ownership.md`）
 
 ## Risks
-- 未將 legacy `application/services` / `application/mappers` 進一步程式遷移；若長期保留將來自動化規則仍可能需補充正式例外治理。
+
+- `npx repomix` 在此環境曾出現 npm cache 權限限制；建議維持可寫入快取路徑。
+- 目前未變更高階 BC 未完頁面，若使用情境擴大需再行一致化。
