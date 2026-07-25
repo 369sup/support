@@ -1,5 +1,7 @@
 # Support Repository Guidance
 
+For Codex 5.3 startup, read this AGENTS.md first for this scope. Then read only the nearest README here when behavior context is needed.
+
 This repository is a Next.js implementation of a GitHub-like non-code product
 platform. It models users, enterprises, organizations, teams, repositories,
 collaboration, notifications, governance, commerce, and integrations while
@@ -23,6 +25,32 @@ repository instructions differ, the file closest to the target wins.
 
 Official discovery and precedence behavior is documented at
 <https://learn.chatgpt.com/docs/agent-configuration/agents-md>.
+
+## Codex 5.3 Spark Quick Start Index
+
+- Startup sequence for Codex tasks:
+  1. Read this file to load repository-wide authority and exceptions.
+  2. Read [README.md](README.md) for architecture and runtime context.
+  3. Read only the nearest `AGENTS.md` in the target subtree, then the subtree `README.md` when needed.
+- Skip instruction discovery in `node_modules/**`, `.next/**`, caches, and third-party package trees.
+- Tracked guidance manifest (non-vendor): use `git ls-files | rg '(^|/)AGENTS\.md$|(^|/)README\.md$'`.
+
+### Path routing for AGENTS / README
+
+| Target path | AGENTS chain (from top to bottom) | Context README |
+| --- | --- | --- |
+| `apps/web/src/app/...` | `AGENTS.md` -> `apps/AGENTS.md` -> `apps/web/AGENTS.md` -> `apps/web/src/AGENTS.md` -> `apps/web/src/app/AGENTS.md` | `apps/web/src/app/.../README.md` if present |
+| `apps/web/src/modules/...` | `AGENTS.md` -> `apps/AGENTS.md` -> `apps/web/AGENTS.md` -> `apps/web/src/AGENTS.md` -> `apps/web/src/modules/AGENTS.md` | `apps/web/src/modules/<subdomain>/<context>/README.md` |
+| `packages/...` | `AGENTS.md` -> `packages/AGENTS.md` -> package `AGENTS.md` | Package README when it contains domain design |
+| `docs/...` | `AGENTS.md` -> `docs/AGENTS.md` -> `docs/architecture/AGENTS.md` if in architecture scope | `docs/**/README.md` as needed |
+| `plugins/...` | `AGENTS.md` -> `plugins/AGENTS.md` -> `plugins/plugin-template/AGENTS.md` when using the template | `plugins/.../README.md` as needed |
+
+### AGENTS + README cross-reference rules
+
+- `AGENTS.md` controls policy and authorization boundaries; `README.md` contains intent, examples, and operating details.
+- Do not expand scope by reading many sibling docs at startup. Resolve to the authority path first.
+- In conflicts, use the nearest `AGENTS.md`; do not let a README override instruction scope.
+
 
 ## Authority map
 
@@ -69,6 +97,9 @@ Agent and automation assets use this single placement map:
 Do not invent product rules. When tenant boundaries, roles, repository scopes,
 token lifetime, notification behavior, or data ownership are unclear, surface
 the ambiguity before encoding behavior.
+
+For high-level repository context, architecture decisions, runtime capabilities,
+and quick-start commands, also read [`README.md`](README.md).
 
 ## Repository-wide engineering baseline
 

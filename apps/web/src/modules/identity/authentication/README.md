@@ -1,5 +1,7 @@
 # Authentication
 
+For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
+
 ## Purpose
 
 Own development credentials, browser session sets, account-session lifecycle,

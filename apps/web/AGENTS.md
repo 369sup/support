@@ -1,5 +1,7 @@
 # Next.js Web Application Contract
 
+For Codex 5.3 startup, read this AGENTS.md first for this scope. Then read only the nearest README here when behavior context is needed.
+
 This file governs `apps/web/**` and inherits `apps/AGENTS.md`. Source code
 inherits [`src/AGENTS.md`](src/AGENTS.md); `src/app` and `src/modules` then add
 their own delivery and bounded-context rules.

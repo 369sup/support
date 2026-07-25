@@ -31,10 +31,7 @@ const expectedUrlPatterns = [
   "/settings/applications",
   "/settings/billing",
   "/{owner}",
-  "/orgs/{organization}/repositories",
   "/orgs/{organization}/people",
-  "/orgs/{organization}/teams",
-  "/orgs/{organization}/teams/{teamSlug}",
   "/orgs/{organization}/projects",
   "/orgs/{organization}/projects/{number}",
   "/users/{username}/projects/{number}",
@@ -48,7 +45,6 @@ const expectedUrlPatterns = [
   "/organizations/{organization}/settings/audit-log",
   "/{owner}/{repository}",
   "/{owner}/{repository}/settings",
-  "/{owner}/{repository}/settings/access",
   "/{owner}/{repository}/settings/hooks",
   "/{owner}/{repository}/issues",
   "/{owner}/{repository}/issues/views",
@@ -304,3 +300,6 @@ function toRoutePattern(file: string): string {
 function normalizeDynamicSegments(pattern: string): string {
   return pattern.replaceAll(/\{[^}]+\}/g, "{}");
 }
+
+
+

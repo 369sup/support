@@ -1,5 +1,7 @@
 # Architecture Documentation Workflow
 
+For Codex 5.3 startup, read this AGENTS.md first for this scope. Then read only the nearest README here when behavior context is needed.
+
 This file governs `docs/architecture/**` and adds change-control rules for the
 repository's architecture contract.
 

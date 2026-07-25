@@ -16,6 +16,9 @@
 - Active context 必須至少具有一個被實際 consumer 使用的公開入口。
 - 只建立 active use case 實際需要的目錄，不得建立空層或預留目錄。
 
+For Codex 5.3 startup in `apps/web/src/modules`, read this AGENTS file first.
+After policy decisions are loaded, read the target context `README.md` only when needed for behavior details.
+
 ## Context Root
 
 Context root 只允許包含：

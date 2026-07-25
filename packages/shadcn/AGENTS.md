@@ -1,5 +1,7 @@
 # Shadcn Source Package Workflow
 
+For Codex 5.3 startup, read this AGENTS.md first for this scope. Then read only the nearest README here when behavior context is needed.
+
 This file governs `packages/shadcn/**` and owns shadcn generation and local UI
 maintenance workflow. UI placement, dependency direction, naming, and consumer
 imports remain authoritative in

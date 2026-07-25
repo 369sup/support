@@ -1,5 +1,7 @@
 # GitHub Actions workflows
 
+For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
+
 `ci.yml` runs architecture/generated validation, quality checks, and build in
 parallel. End-to-end tests depend on all three jobs, so Chromium is installed
 only after the faster gates pass. Pull requests use Turbo affected execution;

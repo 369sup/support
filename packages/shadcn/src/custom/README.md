@@ -1,5 +1,7 @@
 # Custom UI compositions
 
+For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
+
 This directory contains reusable, product-agnostic compositions built from
 official primitives in `../ui` or narrow browser behavior in `../hooks`.
 

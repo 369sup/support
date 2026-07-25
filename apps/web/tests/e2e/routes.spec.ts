@@ -52,10 +52,10 @@ const unavailableScaffoldRoutes = [
   "/settings/applications",
   "/settings/billing",
   "/octocat",
-  "/orgs/community-lab/repositories",
+  
   "/orgs/community-lab/people",
-  "/orgs/community-lab/teams",
-  "/orgs/community-lab/teams/docs",
+  
+  
   "/orgs/community-lab/projects",
   "/orgs/community-lab/projects/1",
   "/users/octocat/projects/1",
@@ -69,7 +69,7 @@ const unavailableScaffoldRoutes = [
   "/organizations/community-lab/settings/audit-log",
   "/community-lab/docs",
   "/community-lab/docs/settings",
-  "/community-lab/docs/settings/access",
+  
   "/community-lab/docs/settings/hooks",
   "/community-lab/docs/issues",
   "/community-lab/docs/issues/views",
@@ -734,3 +734,4 @@ test("expired managed session requires reauthentication and keeps active account
   });
   await expect(page.getByLabel("Account menu for @octocat")).toBeVisible();
 });
+

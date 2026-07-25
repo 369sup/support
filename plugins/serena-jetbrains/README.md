@@ -1,5 +1,7 @@
 # Serena JetBrains for Codex
 
+For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
+
 This plugin teaches Codex how to use a separately configured Serena MCP server
 with Serena's JetBrains language backend. It does not install Serena, bundle an
 MCP server, or replace the Serena plugin inside the JetBrains IDE.

@@ -5,6 +5,9 @@ Architecture definitions remain authoritative in
 [`docs/architecture/architecture.md`](../../../docs/architecture/architecture.md);
 this file turns the source-root rules into placement and review steps.
 
+For Codex 5.3 startup, read this file first for `apps/web/src` ownership
+before the next boundary (`app` or `modules`) and any target README.
+
 ## Fixed source shape
 
 `apps/web/src` contains only:

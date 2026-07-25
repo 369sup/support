@@ -1,5 +1,7 @@
 # Repository Tooling Workflow
 
+For Codex 5.3 startup, read this AGENTS.md first for this scope. Then read only the nearest README here when behavior context is needed.
+
 This file governs `packages/tooling/**` and owns reusable repository tooling
 that other configuration packages compose.
 

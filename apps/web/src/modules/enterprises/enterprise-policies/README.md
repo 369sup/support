@@ -1,5 +1,7 @@
 # Enterprise Policies Bounded Context
 
+For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
+
 - **Catalog path:** `enterprises/enterprise-policies`
 - **Kind:** `domain`
 - **Classification:** `core`

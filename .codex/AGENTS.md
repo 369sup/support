@@ -1,11 +1,15 @@
 # Project Codex Configuration Contract
 
+For Codex 5.3 startup, read this AGENTS.md first for this scope. Then read only the nearest README here when behavior context is needed.
+
 This file governs `.codex/` and everything below it.
 
 Artifact placement is defined once in the repository-root
 [`AGENTS.md`](../AGENTS.md). Project configuration loads only when Codex trusts
 the repository, so every active change here is behavioral and
 security-sensitive.
+
+Operational usage examples and current project hooks are summarized in [`README.md`](README.md); read it after the rules in this file when you need quick startup context.
 
 ## Canonical structure
 

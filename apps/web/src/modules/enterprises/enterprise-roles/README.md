@@ -1,5 +1,7 @@
 # Enterprise Roles
 
+For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
+
 ## Purpose
 
 Own predefined/custom enterprise roles, assignments, permissions, and

@@ -44,6 +44,8 @@ Repository watch preferences, conversation participation and manual subscription
 
 ## Designed use cases
 
+For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
+
 No approved use cases. Implementation remains blocked.
 
 ## Ubiquitous language

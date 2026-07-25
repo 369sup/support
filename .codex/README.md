@@ -1,5 +1,7 @@
 # Support Codex configuration
 
+For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
+
 This directory contains trusted-project Codex behavior for the Support
 pnpm/Turborepo workspace. It is repository configuration, not a reusable
 configuration pack.

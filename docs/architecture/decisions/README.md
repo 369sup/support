@@ -1,5 +1,7 @@
 # Architecture Decision Records
 
+For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
+
 This directory records the small set of decisions that materially constrain
 the repository architecture. The canonical trigger list is in
 [`../architecture.md`](../architecture.md).

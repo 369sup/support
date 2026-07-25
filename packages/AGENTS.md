@@ -1,5 +1,7 @@
 # Workspace Package Workflow
 
+For Codex 5.3 startup, read this AGENTS.md first for this scope. Then read only the nearest README here when behavior context is needed.
+
 This file governs `packages/**` and owns workspace package policy. Repository
 architecture, code-quality automation, and verification remain inherited from
 the root and `docs/architecture` authorities.

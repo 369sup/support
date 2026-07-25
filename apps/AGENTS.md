@@ -1,5 +1,7 @@
 # Deployable Applications Contract
 
+For Codex 5.3 startup, read this AGENTS.md first for this scope. Then read only the nearest README here when behavior context is needed.
+
 This file governs `apps/**` and inherits the repository-root instructions.
 Each descendant `AGENTS.md` adds only rules unique to its directory; it must not
 copy or silently contradict an inherited rule.

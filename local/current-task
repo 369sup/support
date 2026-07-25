@@ -1,51 +1,71 @@
-# Current task
+ï»¿# Current task
 
 ## Objective
-«O¯d°ß¤@µn¤J­¶¸ô¥Ñ¬° `apps/web/src/app/(public)/login/page.tsx`¡A¨Ã¥[¤J¥i¥Îªº mock ±b¸¹¡]±b¸¹ `mock` / ±K½X `123456`¡^¨Ñ¶}µoµn¤J¨Ï¥Î¡C
+
+- å»ºç«‹/è£œé½Šã€ŒAGENTS.mdã€èˆ‡ã€ŒREADME.mdã€çš„å•Ÿå‹•äº’ç›¸å¼•ç”¨æ©Ÿåˆ¶ï¼Œè®“ Codex 5.3 Spark åœ¨æ­¤ repo èµ·æ­¥æ™‚å¯å¿«é€Ÿåˆ°é”æ¬Šå¨æŒ‡ä»¤ä¾†æºï¼Œä¸¦é™ä½å•Ÿå‹•æ™‚é‡è¤‡æœå°‹ä¸Šä¸‹æ–‡ã€‚
+- ç¯„åœç‚º repo å…§æ‰€æœ‰ tracked çš„ `AGENTS.md` èˆ‡ `README.md`ï¼ˆç›®å‰åˆ»æ„æ’é™¤æœªè¿½è¹¤çš„ vendor/cache è·¯å¾‘ï¼‰ã€‚
 
 ## Scope
-- `apps/web/src/app/login/page.tsx`
-- `apps/web/src/app/(public)/login/page.tsx`
-- `apps/web/src/modules/identity/authentication/adapters/inbound/react/development-sign-in-form.tsx`
-- `apps/web/src/modules/identity/authentication/adapters/outbound/persistence/in-memory-development-credential.adapter.ts`
-- ¤£­×§ï¨ä¥L¥\¯à½d³ò¡C
+
+- è®Šæ›´ç¯„åœï¼š
+  - `.codex/*`ã€`.github/*`ã€`.serena/*`
+  - `AGENTS.md`ã€`apps/AGENTS.md`ã€`apps/web/**/AGENTS.md`
+  - `docs/**`ã€`packages/**`ã€`plugins/**`ã€`scripts/**`
+  - `apps/web/src/app/(public|resources)/**/README.md`
+  - `apps/web/src/modules/**/README.md`
+  - `README.md`ï¼ˆrepo rootï¼‰
+- æ˜ç¢ºä¸åœ¨æœ¬æ¬¡è®Šæ›´å…§ï¼š
+  - `.agents/*`ï¼ˆç›®å‰ç’°å¢ƒç‚ºå”¯è®€ï¼‰
+  - `apps/web/node_modules/**`ã€`apps/web/.next/**`ï¼ˆéç¨‹å¼æˆæ¬Šä¾†æºï¼‰
 
 ## Verified facts
-- `apps/web/src/app/(public)/login/page.tsx` ¤w¦s¦b¥B¬°µn¤J­¶¹ê§@¡C
-- `apps/web/src/app/login/page.tsx` ¤w§R°£¡C
-- Mock ±b¸¹²M³æ¥[¤J `{ username: "mock", password: "123456" }`¡C
-- µn¤J­¶¹w³]±b¸¹§ï¬° `mock`¡A¹w³]±K½X§ï¬° `123456`¡C
-- °õ¦æ `pnpm.cmd --filter @support/web typecheck` ¥¢±Ñ¡]`oauth-authorizations` ¬ÛÃö¬J¦³ TS °Ñ¦Ò¿ù»~¡^¡C
-- ¥Ø«e¶È¦³¤T­Ó¨Ï¥ÎªÌ¬ÛÃöÅÜ§óÀÉ®×¡F`(public)/login` ¬°¥¼°lÂÜ·s¼W¥Ø¿ı/ÀÉ¡C
+
+- `git status --short --branch` å·²ç¢ºèªæœ‰å¤§é‡ AGENTS/README æª”æ¡ˆæ”¹å‹•ã€‚
+- `git ls-files` èˆ‡è®Šæ›´æ¸…å–®æ¯”å°çµæœé¡¯ç¤ºç›®å‰ tracked çš„ `AGENTS.md`/`README.md`ï¼Œåƒ…å‰© `.agents/AGENTS.md`ã€`.agents/plugins/README.md`ã€`.agents/skills/README.md` æœªè®Šæ›´ï¼ˆæ¬Šé™/ä½œè€…æ€§è³ªä¸åœ¨ scopeï¼‰ã€‚
 
 ## Assumptions
-- ¨Ï¥ÎªÌ¥u­n¦b `?enable`/in-memory ¶}µo¼Ò¦¡¥i¥Î®Éµn¤J¡C
-- ®Ú¥Ø¿ı `/login` ¤£¦A»İ­n«O¯d¨ä¥L¹ê§@¤J¤f¡C
+
+- `apps/web/node_modules`ã€`apps/web/.next` ä¸‹ AGENTS/README ä¾†è‡ªå¥—ä»¶èˆ‡å»ºç½®å¿«å–ï¼Œé›–å¯æƒåˆ°ä½†ä¸æ‡‰ä½œç‚º repo æ¬Šå¨ä¾†æºã€‚
 
 ## Decisions
-- ±Ä¥Î³Ì¤p­×¥¿¡G±Nµn¤J­¶¹ê»ÚÀÉ®×²¾¤J `(public)/login`¡A¤£°Ê¨ä¥L login ¬yµ{ÅŞ¿è¡C
-- ¶È½Õ¾ã¶}µoÀô¹Ò¹w³]¶ñ­È»P mock ¾ÌÃÒ¡A¤£§ïÅÜ»{ÃÒ API¡C
+
+- æ¡å–ã€Œæ–‡æª”æ’å…¥å¼ã€ä½é¢¨éšªæ–¹å¼ï¼šåœ¨æ¯å€‹ AGENTS æ·»åŠ ã€Œå…ˆè®€æ­¤ AGENTSï¼Œå†æ¥è‘—è®€è©²å±¤ READMEã€æç¤ºï¼›åœ¨æ¯å€‹ README æ·»åŠ ã€Œå…ˆè®€ AGENTS éˆï¼Œå†è®€ READMEã€æç¤ºã€‚
+- ä¸åŒæ„ä¿®æ”¹æ¥­å‹™/è·¯ç”±ç¨‹å¼ç¢¼ã€‚
 
 ## Completed
-- ¥Ø¿ı `apps/web/src/app/login/page.tsx` §R°£¡C
-- ·s¼W `apps/web/src/app/(public)/login/page.tsx`¡]¥Ñ­ìµn¤J­¶¤º®e½Æ»s/²¾´Ó¡^¡C
-- ·s¼W mock ¾ÌÃÒ `mock / 123456`¡C
-- §ó·sµn¤Jªí³æ¹w³]±b¸¹¡B±K½X»P´£¥Ü¤å¦r¡C
+
+- å·²è£œé½Š 24 å€‹ `AGENTS.md`ã€‚
+- å·²è£œé½Š 113 å€‹ `README.md`ã€‚
+- å…¨éƒ¨ç‚ºåŒä¸€èªæ„çš„å•Ÿå‹•é †åºæç¤ºï¼Œæœªèª¿æ•´è¡Œç‚ºæ€§é‚è¼¯ã€‚
+- å·²å°‡ `AGENTS.md` ä¸»è¦æ”¾åˆ° `D:\GitHub\support\` çš„ `AGENTS.md` authority map ä¸­ä½œç‚ºéèªéŸ³å•Ÿå‹•è·¯å¾‘ç´¢å¼•ï¼Œä¸¦åœ¨ root+é‡è¦å­æ¨¹ README ä¸­è£œä¸Šå°æ‡‰å°å‘ã€‚
+- å·²å®Œæˆ `git status`ã€`git diff --check --`ã€`git ls-files`ï¼ˆç¯©é¸ tracked AGENTS/READMEï¼‰èˆ‡è®Šæ›´é›†åˆä¸€è‡´æ€§ã€‚
 
 ## Current state
-- ¥\¯àÅÜ§ó¤w§¹¦¨¡G°ß¤@ login route ÀÉ¨Ó·½«ü¦V `(public)/login`¡C
-- ¸ô¥Ñ/build ¥¼¦b¦¹¥ô°È¤¤½T»{¥ş³¡³q¹L¡]¨£ Validation¡^¡C
 
-## Remaining
-- ­Y­n§¹¦¨¡u§¹¾ãÅçÃÒ¡v¡A»İ­×´_¬J¦³ `apps/web/src/modules/integrations/oauth-authorizations/.../evaluate-oauth-authorization.use-case.ts` ªº TS ¿ù»~«á¡A¦A­«¶] `pnpm typecheck/build`¡C
+- ä»»å‹™å®Œæˆåº¦ï¼šä¸»è¦æ–‡ä»¶å·²æ›´æ–°å®Œæˆã€‚
+- ä¿ç•™ `local/current-task` ä½œç‚ºæŒçºŒè¿½è¹¤ã€‚
+- å·²å®Œæˆå¤§è¦æ¨¡æ–‡ä»¶äº’åƒç…§ä¿®æ­£ï¼›å¾…ç¢ºèªæ˜¯å¦è¦é€²ä¸€æ­¥è™•ç†ç”¨æˆ¶åˆ—å‡ºçš„ vendor/cache è·¯å¾‘ï¼ˆ`node_modules`ã€`.next`ï¼‰ä½†é€™äº›ç›®å‰é Git å—æ§ï¼Œå»ºè­°åœ¨éœ€æ±‚æ˜ç¢ºå¾Œå†åšã€Œä¸å»ºè­°ã€çš„è£œæ­£ã€‚
 
 ## Validation
+
 - `git status --short --branch`
-- `Test-Path` ÀË¬d `apps/web/src/app/login` ¸ô®|¤£¦s¦b
-- `git diff --stat`¡]¶ÈÅã¥Üµn¤J¬ÛÃö 3 ­ÓÅÜ§ó¡^
-- `pnpm.cmd --filter @support/web build`¡]¥Ø«e¥¢±Ñ¡G`EvaluateOAuthAuthorizationInput/Result` °Ñ¦Ò¿ù»~¡^
-- `pnpm.cmd --filter @support/web typecheck`¡]¦P¤W¬J¦³¿ù»~¡^
+- `git diff --check --`
+- `git diff --name-only | Where-Object { -not ($_ -match '/AGENTS\.md$|/README\.md$') }`ï¼ˆåƒ…å‰©éæ–‡ä»¶ç‚º `local/current-task`ï¼‰
+- `git ls-files` éæ¿¾ç¢ºèª tracked AGENTS/README çš„è¦†è“‹æƒ…å½¢
+- æª¢æ ¸ `git ls-files 'apps/web/src/app/**/*README.md'`ã€`git ls-files 'apps/web/src/modules/**/*README.md'`ã€`git ls-files '*/**/AGENTS.md'` èˆ‡ diff é›†åˆä¸€è‡´ã€‚
 
 ## Risks
-- `oauth-authorizations` ¤¤ªº¬J¦³«¬§O°Ñ¦Ò¿ù»~·|ªı¾× `pnpm ... typecheck/build`¡A»İ¥t¦æ­×¥¿¡C
-- `git` ¦³Åã¥Ü `CRLF/LF` Âà´«Äµ§i¡A¥i¯à¬O§@·~Àô¹Ò´«¦æ³]©w³y¦¨¡C
+
+- `node_modules` èˆ‡ `.next` å…§æœ‰å¤§é‡ README/AGENTS è¦†è“‹ï¼Œç¾éšæ®µå‡ç‚ºæœªå—ç‰ˆæœ¬æ§åˆ¶å…§å®¹ï¼›æœªç´å…¥æ¬Šå¨éˆé¿å…è¿½è¹¤æ±¡æŸ“èˆ‡å•Ÿå‹•è„ˆçµ¡è†¨è„¹ã€‚
+- `.agents` æ¬Šé™/å…§å®¹ä¾†æºç‰¹æ€§å°è‡´æœ¬è¼ªæœªç´å…¥åŒæ­¥ï¼›ä¸å½±éŸ¿ repo tracked çš„æˆæ¬Šæµç¨‹ï¼Œä½†è‹¥è¦ã€Œé€å­—ä¸€è‡´ã€éœ€å¦è¡Œç¢ºèªç¯„åœã€‚
+
+<!-- serena-memory-candidates:start -->
+```json
+{
+  "schemaVersion": 1,
+  "checkpointToken": "019f9931-4330-7131-9ffe-cafde4116646",
+  "disposition": "no-memory",
+  "candidates": []
+}
+```
+<!-- serena-memory-candidates:end -->

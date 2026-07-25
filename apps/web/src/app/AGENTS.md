@@ -4,6 +4,8 @@ This file governs `apps/web/src/app/**` and inherits the source architecture
 contract. It narrows the framework's optional colocation model: this repository
 uses `app` as a routing manifest, not as a general source directory.
 
+For Codex 5.3 startup, read this file before any route README in `app/`. This AGENTS file defines the only routing-level policy boundary for route work.
+
 ## Allowed contents
 
 - Documentation files named `AGENTS.md` or `README.md` are allowed because they
