@@ -138,11 +138,7 @@ export function DevelopmentSignInForm({
           <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-slate-500" />
           <p>
             {isEnabled
-<<<<<<< Updated upstream
               ? 'Development access: use username "mock" with password "123456", or any other configured account.'
-=======
-              ? 'Development access uses the configured local account and fixture password "123456".'
->>>>>>> Stashed changes
               : "In-memory authentication is disabled for this deployment."}
           </p>
         </div>
