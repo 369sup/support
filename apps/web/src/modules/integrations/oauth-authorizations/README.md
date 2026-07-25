@@ -19,10 +19,11 @@ User authorization of registered OAuth Apps, scopes, approval, and revocation.
     - No active use cases; activation scope remains empty.
   - Owned domain concepts
     - `OAuthAuthorization`
+    - `OAuthPolicyConstraints`
     - `AuthorizationScope`
     - `AuthorizationRevocation`
   - Business rules and invariants
-    - Pending official-source validation before activation.
+    - `OAuthPolicyConstraints` controls OAuth authorization eligibility for organization-owned flows, including outside-collaborator restrictions and optional scope allow-lists before consent.
   - Published events
     - `OAuthAuthorizationGranted@1` [planned]: oauth authorization granted.
     - `OAuthAuthorizationRevoked@1` [planned]: oauth authorization revoked.
@@ -47,6 +48,7 @@ No approved use cases. Implementation remains blocked.
 The catalog reserves these terms for this context:
 
 - `OAuthAuthorization`
+- `OAuthPolicyConstraints`
 - `AuthorizationScope`
 - `AuthorizationRevocation`
 
@@ -54,7 +56,7 @@ Precise definitions must be refined against the official sources before activati
 
 ## Ownership and invariants
 
-This context owns `OAuthAuthorization`, `AuthorizationScope`, `AuthorizationRevocation`.
+This context owns `OAuthAuthorization`, `OAuthPolicyConstraints`, `AuthorizationScope`, `AuthorizationRevocation`.
 It excludes `GitHubAppInstallation`, `InteractiveSession`, `TokenStorageAdapter`.
 
 No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.

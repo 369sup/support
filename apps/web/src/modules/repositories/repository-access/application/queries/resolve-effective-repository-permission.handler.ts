@@ -146,14 +146,30 @@ export class ResolveEffectiveRepositoryPermissionHandler
       );
     }
 
-    const strongest = contributions.toSorted(
+    const sortedContributions = contributions.toSorted(
       (left, right) =>
         compareRepositoryPermission(right.permission, left.permission),
-    )[0];
+    );
+    const capabilityDecisions = sortedContributions.map((contribution) => ({
+      permission: contribution.permission,
+      source: contribution.source,
+    }));
+    const strongest = sortedContributions[0];
+    const effectiveBaseRole = strongest?.permission ?? null;
+    const additionalPermissions = Array.from(
+      new Set(
+        capabilityDecisions
+          .filter((decision) => decision.permission !== effectiveBaseRole)
+          .map((decision) => decision.permission),
+      ),
+    );
 
     return {
       isAllowed: strongest !== undefined,
       permission: strongest?.permission ?? null,
+      effectiveBaseRole,
+      additionalPermissions,
+      capabilityDecisions,
       sources: contributions.map((contribution) => contribution.source),
     };
   }

@@ -27,6 +27,7 @@ GitHub App installation targets, selected repositories, granted permissions, sus
     - `github-app-installation-permission-approval`: A registration can request additional permissions, but an installation permission grant changes only after its owner approves; without approval the installation retains its current permissions.
     - `github-app-installation-suspension`: GitHub App installations can be suspended and unsuspended by authorized actors.
     - `github-app-installation-selection-and-removal`: Installation repository selection can change and installations can be removed.
+    - `organizations/organization-policies::GitHubAppInstallationPolicy`: when present, outside collaborators can be denied and owner-approval requirements are applied before additional permission grant changes.
   - Published events
     - `GitHubAppInstalled@1` [planned]: app installed.
     - `GitHubAppInstallationSuspended@1` [planned]: app suspended.
@@ -40,13 +41,15 @@ GitHub App installation targets, selected repositories, granted permissions, sus
     - `integrations/github-app-registrations::GitHubAppRegistrationReference` (synchronous)
     - `integrations/github-app-registrations::GitHubAppRegistrationLifecycleEvents` (event; events `GitHubAppDeleted@1`)
     - `identity/accounts::UserInstallationTarget` (synchronous)
+    - `organizations/organization-policies::GitHubAppInstallationPolicy` (synchronous)
     - `organizations/organizations::OrganizationInstallationTarget` (synchronous)
     - `repositories/repositories::InstallationRepositoryReference` (synchronous)
     - `repositories/repository-access::InstallationPermission` (synchronous)
 - Explicit exclusions
-  - `AppRegistration`
-  - `OAuthAuthorization`
-  - `RepositoryGrant`
+- `AppRegistration`
+- `OAuthAuthorization`
+- `RepositoryGrant`
+- `GitHubAppInstallationPolicy`
 
 ## Designed use cases
 

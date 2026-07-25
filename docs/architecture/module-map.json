@@ -2176,7 +2176,11 @@
         "OutsideCollaboratorPolicy",
         "ProjectPolicy",
         "DiscussionPolicy",
-        "BaseRepositoryPermission"
+        "BaseRepositoryPermission",
+        "OAuthPolicyConstraints",
+        "OAuthAppAccessRestriction",
+        "GitHubAppInstallationPolicy",
+        "AppAccessRequestPolicy"
       ],
       "excludes": [
         "EnterprisePolicy",
@@ -2213,6 +2217,26 @@
           "kind": "domain",
           "implementationStatus": "planned",
           "meaning": "base repository permission changed.",
+          "sourceIds": [
+            "organizations-organization-policies-source-01"
+          ]
+        },
+        {
+          "name": "OAuthPolicyConstraintsChanged",
+          "version": 1,
+          "kind": "domain",
+          "implementationStatus": "planned",
+          "meaning": "oauth policy constraints changed.",
+          "sourceIds": [
+            "organizations-organization-policies-source-01"
+          ]
+        },
+        {
+          "name": "GitHubAppInstallationPolicyChanged",
+          "version": 1,
+          "kind": "domain",
+          "implementationStatus": "planned",
+          "meaning": "github app installation policy changed.",
           "sourceIds": [
             "organizations-organization-policies-source-01"
           ]
@@ -5756,6 +5780,11 @@
       ],
       "activationScope": [],
       "plannedRelationships": [
+        {
+          "context": "organizations/organization-policies",
+          "contract": "GitHubAppInstallationPolicy",
+          "mode": "synchronous"
+        },
         {
           "context": "integrations/github-app-registrations",
           "contract": "GitHubAppRegistrationReference",

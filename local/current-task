@@ -1,94 +1,307 @@
 ﻿# Current task
 
 ## Objective
-
-實作 GitHub 式首頁與登入流程：
-- 將 `/login` 作為正式入口並維持現有 DevelopmentSignInForm 互動行為；
-- 將 `/sign-in` 以 308 導向到 `/login`，保留 `add=1` 參數；
-- 將 `/logout` 改為 Route Handler；
-- 將高完成度公共頁面從 `RoutePlaceholder` 替換為實作頁面；
-- 同步更新 robots、路由測試與 scaffold 清單；
-- 安裝/設定 repomix 並納入忽略規則。
+- 依據 `docs/architecture/gap-analysis/2026-07-25-enterprise-org-user-repo-gap.md`，把「12 項偏離 GitHub 官方設計」轉為可落地的執行清單。
+- 目前只更新 `local/current-task`，不改 app 路由、session API、既有 runtime 契約。
+- 先以最小變更實施順序進行（優先 P0），每一項採用 **Codex Spark 5.3** 五步流程。
 
 ## Scope
+- 參考文件：
+  - `docs/architecture/gap-analysis/2026-07-25-enterprise-org-user-repo-gap.md`
+  - 用戶最近補充的 12 項偏離清單（P0/P1/P2）
+- 涵蓋目標模組：
+  - `apps/web/src/modules/{collaboration,commerce,engagement,enterprises,governance,identity,integrations,organizations,platform,projections,repositories}`
+- 不影響：
+  - `apps/web/src/app` 的 route 契約與流程
+  - 身分/登入 session 核心 API
+  - 外部持久化基礎設施（保留 in-memory 作為暫存前提）
 
-- `apps/web/src/app/page.tsx`
-- `apps/web/src/app/login/page.tsx`
-- `apps/web/src/app/(public)/sign-in/page.tsx`
-- `apps/web/src/app/(public)/logout/page.tsx`
-- `apps/web/src/app/(public)/logout/route.ts`
-- `apps/web/src/app/robots.ts`
-- `apps/web/src/app/(public)/docs/page.tsx`
-- `apps/web/src/app/(public)/accessibility/page.tsx`
-- `apps/web/src/app/(public)/privacy/page.tsx`
-- `apps/web/src/app/(public)/terms/page.tsx`
-- `apps/web/route-scaffolds.test.ts`
-- `apps/web/tests/e2e/routes.spec.ts`
-- `repomix.config.json`
-- `.gitignore`
+## Execution standard: Codex Spark 5.3
+每個 Story 必須完整通過五步：
+1. **S-Align（對齊）**：定位偏離來源、目標模組、依賴與資料邊界。
+2. **S-Spec（規格）**：定義 domain 觀念、use case、I/O、事件與例外。
+3. **S-Seed（建模）**：補齊最小語義骨架（model/handler/adapter/test stub 或對應文件），保持最小實作面積。
+4. **S-Ship（落地）**：更新 module-map、README、context files、測試，必要時產生補充檔。
+5. **S-Signoff（驗收）**：驗證指標（文件、架構掃描、最小測試）與風險確認。
 
-## Verified facts
+---
 
-- `/sign-in` 以 `permanentRedirect` 導向 `/login`，保留 `add=1`。
-- `login` 仍使用既有 `DevelopmentSignInForm`，`isInMemoryRuntimeEnabled` 與 `add=1` 行為未改。
-- `/logout` 已改為 GET `Route Handler`，在取得瀏覽器 session 後清除 session 與 cookie。
-- `docs`、`accessibility`、`privacy`、`terms` 已由 `RoutePlaceholder` 替換為實際內容頁。
-- `route-scaffolds.test.ts` 與 `routes.spec.ts` 已更新以反映 `/logout` 與 enterprise 已實作路線。
-- `repomix.config.json` 已新增，且 `repomix` 可生成 `repomix-output.md`；`
-  相關輸出已被列入 `.gitignore`。
+## P0 - 優先處理
 
-## Assumptions
+### S01. 2026-07-25-01 / Repository authorization 被壓縮成單一最高權限
+- 涉及模組：`repositories/repository-access`, `organizations`
 
-- 「其他完成度較高 BC 頁面」在本循環內以已列出的公共頁面與路由一致性為主，不新增未規劃功能。
-- 產生的 repomix 上下文摘要不需提交。
+#### Spark 5.3 步驟
+1. **S-Align**
+   - 確認 `repositories/repository-access` 現況：`EffectiveRepositoryPermissionDecision` 是否僅保留 max role。
+   - 對照 `organizations`/`repositories` 對 repository 權限聚合的現有 dependency。
+   - 將缺口對齊到 issue：base role 與額外能力集合需分離。
+2. **S-Spec**
+   - 規格化 `EffectiveRepositoryAuthorization`：`effectiveBaseRole` + `additionalPermissions` + `capabilityDecisions` + `sourceAttributions`。
+   - 明確定義 conflict/precedence 規則與缺省回退。
+   - 補齊缺口影響的事件輸出需求（不改既有 API 形狀）。
+3. **S-Seed**
+   - 建最小模型草案（identity/ownership、權限來源紀錄格式）。
+   - 調整授權 resolver 介面為「可回傳權限組」而非單值。
+   - 更新最小測試 scenario：同一 subject 同時有 base + 附加權限。
+4. **S-Ship**
+   - 更新 `module-map.json`：activation/dependency/publishedEvents。
+   - 更新 `repositories/repository-access/README.md`（或同級 context README）中的權限語義。
+   - 更新 `docs/architecture/gap-analysis/2026-07-25-...md` 的「第一輪完成項」欄位。
+5. **S-Signoff**
+   - 驗證：最小 resolver 測試 pass；不改既有 public entrypoint。
+   - 檢查：新規格未引入 circular dependency。
+   - 記錄未覆蓋風險：既有 custom repository role 行為。
 
-## Decisions
+### S02. 2026-07-25-02 / OAuth/GitHub App 組織政策缺 owner
+- 涉及模組：`organizations/organization-policies`, `integrations`
 
-- 採最小變更：維持既有交互邏輯與登入流程，專注路由、頁面實作與可見可驗證測試。
-- 遵循既有版面風格與主題，避免新增概念圖或未授權能力。
+#### Spark 5.3 步驟
+1. **S-Align**
+   - 盤點 `oauth-authorizations`, `github-app-installations` 對 policy 的依賴訴求。
+   - 在 `organization-policies` 建立 policy owner 權責邊界。
+   - 列出需要新增的決策輸入/輸出。
+2. **S-Spec**
+   - 建立 policy concepts：`OAuthAppAccessRestriction`, `GitHubAppInstallationPolicy`, `AppAccessRequestPolicy`。
+   - 定義 decision contract：哪些情境禁止安裝/請求，outside collaborator 條件。
+   - 指定事件關聯（需要可被其他 context 消費）。
+3. **S-Seed**
+   - 先補最小規格檔（decision type + 範本 handler）。
+   - 以 in-memory adapter 作為暫存實作。
+   - 加入 1~2 個正向/反向 policy 測試。
+4. **S-Ship**
+   - 更新 `organization-policies` / `integrations/*/README.md`。
+   - module-map 增補 dependencies、published events。
+   - 更新 gap-report 狀態欄。
+5. **S-Signoff**
+   - 驗證 OAuth/App 安裝相關流程不會交叉依賴於 `organizations` 內不存在權限。
+   - 形成「owner 明確」證據（文檔+handler）。
 
-## Completed
+### S03. 2026-07-25-03 / GitHub App user authorization 無 owner
+- 涉及模組：`integrations`, `identity`
 
-- `apps/web/src/app/(public)/logout/route.ts` 已取代 `/logout` Page（符合 Next 路由限制）。
-- `apps/web/src/app/(public)/sign-in/page.tsx` 已以 308 canonical redirect 導向 `/login`。
-- `docs`、`accessibility`、`privacy`、`terms` 已完成深色主題實作頁。
-- `apps/web/route-scaffolds.test.ts` 與 `apps/web/tests/e2e/routes.spec.ts` 已更新：
-  - `/logout` 從未實作 scaffold 清單移除；
-  - 已實作 enterprise 路由從清單移除；
-  - 新增首頁/登入/登出/可用性相關驗證。
-- `repomix.config.json` 與 `.gitignore` 已同步，保證上下文輸出不進入版控。
+#### Spark 5.3 步驟
+1. **S-Align**
+   - 明確分離「App Installation」與「User Authorization」
+   - 確認 `identity/accounts` 的責任界線與 account capability。
+   - 列出 user token 需要的 permission/eligibility decision。
+2. **S-Spec**
+   - 設計 context：`github-app-user-authorizations`（建議）或等效新增 ownership context。
+   - 規格：authorize、revoke、permission approval、state、revocation。
+   - 定義與 `integrations/github-app-installations` 的邊界輸入。
+3. **S-Seed**
+   - 增最小 entity / command / query / public entry point。
+   - in-memory repository 供測試。
+   - 規格測試：install-only、authorize-only、revoke-only 三種不一致流程。
+4. **S-Ship**
+   - 更新 README 與 module-map。
+   - 補充 gap-report 狀態為「進入實施」或「已落地」。
+5. **S-Signoff**
+   - 確認 `identity` 不承擔 GitHub App 權限策略。
+   - 驗證 decision 能被 `integrations` 僅透過其 contract 消費。
 
-## Current state
+### S04. 2026-07-25-04 / ConversationCapabilities 缺權威來源
+- 涉及模組：`collaboration`, `repositories`
 
-- 開發與驗證已完成；阻塞於提交/推送流程（工作目錄 .git 受讀取權限限制，且目前 GitHub 認證尚未可用）。
+#### Spark 5.3 步驟
+1. **S-Align**
+   - 梳理目前 `conversations` 的 capabilities 來源。
+   - 確認 `moderation`, `repository-access`, subject state 的引用缺口。
+   - 標註各操作（lock、reply、reaction）對應 decision。
+2. **S-Spec**
+   - 增定義：`ConversationPermissionDecision`、`InteractionEligibilityDecision`。
+   - 將 conversation 能力轉為「由權威 decision 組合」而非自推。
+   - 定義 missing/insufficient decision 時回應。
+3. **S-Seed**
+   - 補上最小組合決策 adapter（暫時 in-memory）。
+   - 測試 lock + reply/reaction 的互斥/授權情境。
+4. **S-Ship**
+   - 更新模組關係與 events（如果有）。
+   - 更新 README + module-map。
+   - 更新 gap-report 追蹤欄位。
+5. **S-Signoff**
+   - 驗證 capabilities 行為能被授權錯誤（無權、鎖定）覆蓋。
+   - 不變更外部 API。
 
-## Remaining
+### S05. 2026-07-25-05 / Conversation participation 自動訂閱鏈中斷
+- 涉及模組：`engagement`, `collaboration`
 
-- 解決 `.git` 權限與 GitHub 認證問題後重新同步推送：
-  - 取得可用憑證後 `git commit` / `git push origin main`。
-- 如仍需進一步一致化，可將其他高完成度 BC 公共頁面延續相同深色樣式實作（目前不列為本循環必要項目）。
+#### Spark 5.3 步驟
+1. **S-Align**
+   - 確認目前 `ConversationParticipation` 僅由 manual source 驅動的範圍。
+   - 對齊 `issues`, `conversations` 的 event 供應者。
+   - 列出需要補齊的自動化事件（issue create/assign, comment, mention）。
+2. **S-Spec**
+   - 定義 participation 事件入口與 dedupe 規則。
+   - 定義 manual / auto 來源合併邏輯。
+   - 定義失敗與 retry 影響。
+3. **S-Seed**
+   - 補最小事件映射與 handler。
+   - 加入 in-memory subscription state，寫入 deterministic 測試。
+4. **S-Ship**
+   - 更新 `engagement/subscriptions` 與 `collaboration` 相關文件。
+   - module-map 增補事件依賴。
+   - 更新 gap-report。
+5. **S-Signoff**
+   - 測試：issue 建立/指定/被 mention 後自動參與。
+   - 檢查不破壞 manual subscribe。
 
-## Validation
+### S06. 2026-07-25-06 / Audit event matrix 漏接已發布事件
+- 涉及模組：`governance`, `repositories`, `collaboration`, `integrations`
 
-- `pnpm typecheck`
-- `pnpm lint`
-- `pnpm architecture`
-- `pnpm build`
-- `pnpm check`（目前失敗：`ARCH-MEM-001` generated Serena memory stale）
-- `pnpm --filter @support/web test:e2e -- routes.spec.ts`
-- `git diff --check`
-- `git status --short --branch`
+#### Spark 5.3 步驟
+1. **S-Align**
+   - 匯總已有 events 與 `governance/audit-logs` 接收矩陣比對。
+   - 特別核對：`ParentTeamChanged`, `TeamVisibilityChanged`, `TeamRepositoryAccessGranted/Revoked`, `GitHubAppInstallationRepositorySelectionChanged`。
+   - 判定是否可以安全增補（不改既有 domain semantics）。
+2. **S-Spec**
+   - 補齊 audit fact contract；明確 event -> audit fact 對應。
+   - 避免以 generic Updated 代替專責事件。
+3. **S-Seed**
+   - 建 minimal mapping list + tests（1~2 個每類）。
+   - 先以 fixture/in-memory 驗證。
+4. **S-Ship**
+   - 更新 `governance` module-map 與 audit log projection 設定。
+   - 更新相關 context README。
+   - 更新 gap-report。
+5. **S-Signoff**
+   - 取得「已接事件清單」與「未接事件清單」比對結果。
+   - 標記為 P0 完成條件。
 
-## Validation (latest)
+## P1 - 次優先
 
-- `pnpm --filter @support/web test:e2e -- routes.spec.ts` pass（39/39）
-- `pnpm typecheck` pass
-- `pnpm lint` pass
-- `pnpm architecture` pass
-- `pnpm build` pass
-- `pnpm check` fail（`ARCH-MEM-001`：generated Serena memory is stale: `shared/ownership.md`）
+### S07. 2026-07-25-07 / Issue 生命週期缺官方核心語意
+- 涉及模組：`collaboration/issues`
 
-## Risks
+#### Spark 5.3 步驟
+1. **S-Align**
+   - 檢查 current issue lifecycle/assignment/transfer 是否覆蓋官方必需能力。
+   - 對齊 GitHub semantics：pin、close reason、duplicate、clone、delete。
+2. **S-Spec**
+   - 定義新概念與 command/event：`PinnedIssuePosition`, `IssueStateReason`, `IssueCloneSpecification`, `IssueDeleted` 等。
+   - 明確 repo-level pin 的 collection invariants。
+3. **S-Seed**
+   - 最小功能模型 + tests（pin 3 上限、close reason 變更）。
+4. **S-Ship**
+   - 更新 README / module-map / gap-report。
+5. **S-Signoff**
+   - 驗證不與現有 issue state machine 衝突。
 
-- `npx repomix` 在此環境曾出現 npm cache 權限限制；建議維持可寫入快取路徑。
-- 目前未變更高階 BC 未完頁面，若使用情境擴大需再行一致化。
+### S08. 2026-07-25-08 / Notification invitation reason 與 retention
+- 涉及模組：`engagement/notifications`
+
+#### Spark 5.3 步驟
+1. **S-Align**
+   - 對齊目前 reason 分類只含 repo 邀請的偏差。
+   - 補齊 organization/team invitation reason 與 retention class。
+2. **S-Spec**
+   - 規格化 `NotificationReason` 新項與 retention class（done/saved）。
+3. **S-Seed**
+   - 補最小事件來源 mapping（organization invite/team invite）。
+4. **S-Ship**
+   - 更新 notifications README、module-map。
+   - 更新 gap-report。
+5. **S-Signoff**
+   - 測試：team/organization 邀請產生 reason；saved 超時策略不影響 done。
+
+### S09. 2026-07-25-09 / Search projection 無法支援宣稱條件
+- 涉及模組：`projections/search`, `repositories`, `collaboration`
+
+#### Spark 5.3 步驟
+1. **S-Align**
+   - 對齊宣告搜尋欄位與實際 ingest field 不一致。
+   - 確認 repositories metadata、labels、milestones、issue schema 的事件來源。
+2. **S-Spec**
+   - 定義 projection schema 的 searchable fields。
+   - 定義事件到 projection doc 的 mapping。
+3. **S-Seed**
+   - 建最小 payload projector（in-memory）與 2~3 個事件測試。
+4. **S-Ship**
+   - 更新 projection README、module-map dependencies。
+   - 更新 gap-report。
+5. **S-Signoff**
+   - 驗證至少涵蓋 topics / labels / milestones / issue type 三類條件。
+
+### S10. 2026-07-25-10 / Repository Insights 命名與能力偏離
+- 涉及模組：`projections/repository-insights`, `integrations`
+
+#### Spark 5.3 步驟
+1. **S-Align**
+   - 檢查目前內容是否與 GitHub 「Insights」口徑一致。
+   - 判斷是「縮小為產品延伸」或「加入名稱對齊」。
+2. **S-Spec**
+   - 選擇方案 A（建議）：明確把 webhook health 從 insights 分離。
+   - 選擇方案 B：保持但改名 + 產品邊界聲明。
+   - 定義更新對應 README。
+3. **S-Seed**
+   - 依方案產生最小修改清單與測試要點（文檔驗證）。
+4. **S-Ship**
+   - module-map 標註實作邊界（deferred/excluded/corrected）。
+   - gap-report 增註決策結果與移轉路徑。
+5. **S-Signoff**
+   - 形成明確 decision log，避免命名誤導。
+
+### S11. 2026-07-25-11 / GitHub Marketplace 缺席
+- 涉及模組：`integrations`, `commerce`
+
+#### Spark 5.3 步驟
+1. **S-Align**
+   - 判斷是否作為本產品邊界（建議）或明確 excluded/deferred。
+2. **S-Spec**
+   - 若作為邊界：定義 marketplace listing/subscription ownership。
+   - 若排除：定義 `excludedCapabilities`/`deferredCapabilities` 條目與原因。
+3. **S-Seed**
+   - 先補文件：產品邊界與責任分割。
+4. **S-Ship**
+   - 更新 module-map 與對應 context README。
+   - 更新 gap-report。
+5. **S-Signoff**
+   - 確認與 `integrations`/`commerce` 既有範圍不矛盾。
+
+## P2 - 低優先
+
+### S12. 2026-07-25-12 / Webhook delivery retention/viewer policy 未建模
+- 涉及模組：`integrations/webhooks`
+
+#### Spark 5.3 步驟
+1. **S-Align**
+   - 確認目前缺少 retention/window + viewer decision。
+   - 對齊 repository/org/app 目標類型。
+2. **S-Spec**
+   - 規格：`WebhookDeliveryRetentionWindow`, `WebhookDeliveryViewerDecision`, `WebhookDeliveryPayloadVisibility`。
+   - 定義預設拒絕與最小可見策略。
+3. **S-Seed**
+   - 最小 decision model + 測試。
+4. **S-Ship**
+   - 更新 module-map、README。
+   - 更新 gap-report。
+5. **S-Signoff**
+   - 驗證 viewer policy 與 retention policy 可獨立擴充。
+
+---
+
+## Current-state / Validation checklist
+
+### 本輪完成目標
+1. `local/current-task` 先完成上述 12 項 Spark 5.3 實施卡片。
+2. 各卡片都保留：模組、步驟、完成條件。
+3. 不直接修改 runtime App/API 或 session 合約。
+
+### 實施進度（2026-07-25）
+
+- ✅ S01（repository access 權限壓縮修正）—已落地：`EffectiveRepositoryPermissionDecision` 新增
+  `effectiveBaseRole`、`additionalPermissions`、`capabilityDecisions`，並補齊 resolver/unit tests。
+- ⏳ S02–S12：未開始（待本輪下一個衝刺接續）。
+
+### 建議執行順序（只文件）
+- P0：S01 → S02 → S03 → S04 → S05 → S06
+- P1：S07 → S08 → S09 → S10 → S11
+- P2：S12
+
+### 風險
+- 部分條目牽涉多模組事件協調，若不做邊界封頂，實作時可能造成跨模組依賴循環。
+- 自定義 repository role/notification retention 會放大測試矩陣。
+- 若未先固定 API ownership，後續程式變更可能反覆回退。
+
+### 下一步
+- 在實施第一張卡片前，先同步一次 `gap-analysis` 文件中「in-memory 暫存」邊界，避免與「已阻斷」條件混用。

@@ -88,6 +88,9 @@ function createHarness(
       Promise.resolve({
         isAllowed: input?.isAdmin ?? true,
         permission: input?.isAdmin === false ? "read" : "admin",
+        effectiveBaseRole: input?.isAdmin === false ? "read" : "admin",
+        additionalPermissions: [],
+        capabilityDecisions: [],
         sources: [],
       }),
   };
