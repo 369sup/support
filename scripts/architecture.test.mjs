@@ -770,6 +770,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "organizations/organization-memberships",
       "organizations/organization-teams",
       "organizations/organization-roles",
+      "organizations/organization-policies",
       "repositories/repositories",
       "repositories/repository-access",
       "projections/dashboard",
@@ -781,7 +782,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
   );
   assert.equal(
     catalog.contexts.filter((item) => item.implementationStatus === "planned").length,
-    33,
+    32,
   );
   assert.deepEqual(
     byPath.get("identity/accounts").activationScope,

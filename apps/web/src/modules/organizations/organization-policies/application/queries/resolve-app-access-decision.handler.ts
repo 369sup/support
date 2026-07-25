@@ -1,15 +1,11 @@
 import type {
-  AppAccessPolicyDecision,
   AppAccessRequest,
   AppAccessRequestPolicy,
   ActorMembershipScope,
+  ResolveAppAccessDecisionResult,
 } from "../ports/inbound/resolve-app-access-decision.use-case";
 import type { ResolveAppAccessDecisionUseCase } from "../ports/inbound/resolve-app-access-decision.use-case";
 import type { OrganizationAppAccessPolicyQueryRepositoryPort } from "../ports/outbound/organization-app-access-policy-query.repository.port";
-import {
-  buildDefaultGitHubAppInstallationPolicy,
-  buildDefaultOAuthAppAccessRestriction,
-} from "../../domain/organization-app-access-policy";
 
 const isOutsideCollaborationBlocked = (
   actorMembership: ActorMembershipScope,
@@ -40,10 +36,16 @@ const isScopeRestricted = (
 
 const createFallbackPolicy = (organizationId: string): AppAccessRequestPolicy => ({
   organizationId,
-  oauthAppAccess: buildDefaultOAuthAppAccessRestriction(organizationId),
-  githubAppInstallation: buildDefaultGitHubAppInstallationPolicy(
+  oauthAppAccess: {
     organizationId,
-  ),
+    isOutsideCollaboratorAllowed: true,
+    allowedScopes: [],
+  },
+  githubAppInstallation: {
+    organizationId,
+    isOutsideCollaboratorAllowed: true,
+    hasOwnerApprovalRequiredForAdditionalPermissions: false,
+  },
 });
 
 export class ResolveAppAccessDecisionHandler
@@ -57,7 +59,7 @@ export class ResolveAppAccessDecisionHandler
 
   async resolveAppAccessDecision(
     query: AppAccessRequest,
-  ): Promise<AppAccessPolicyDecision> {
+  ): Promise<ResolveAppAccessDecisionResult> {
     const fallback = createFallbackPolicy(query.organizationId);
 
     if (query.kind === "oauth-authorization") {

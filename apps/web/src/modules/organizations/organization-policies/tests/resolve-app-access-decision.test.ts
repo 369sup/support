@@ -5,18 +5,17 @@ import {
   InMemoryOrganizationAppAccessPolicyQueryAdapter,
   type InMemoryOrganizationAppAccessPolicyRecord,
 } from "../adapters/outbound/persistence/in-memory-organization-app-access-policy-query.adapter";
-import { buildDefaultGitHubAppInstallationPolicy, buildDefaultOAuthAppAccessRestriction } from "../domain/organization-app-access-policy";
 
 describe("resolve-app-access decision", () => {
   const policyFixture = (): InMemoryOrganizationAppAccessPolicyRecord => ({
     organizationId: "organization_test",
-      oauthAppAccess: {
-      ...buildDefaultOAuthAppAccessRestriction("organization_test"),
+    oauthAppAccess: {
+      organizationId: "organization_test",
       isOutsideCollaboratorAllowed: false,
       allowedScopes: ["repo", "read:org"],
     },
     githubAppInstallation: {
-      ...buildDefaultGitHubAppInstallationPolicy("organization_test"),
+      organizationId: "organization_test",
       isOutsideCollaboratorAllowed: false,
       hasOwnerApprovalRequiredForAdditionalPermissions: true,
     },

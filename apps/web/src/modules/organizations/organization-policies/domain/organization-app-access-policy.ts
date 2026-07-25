@@ -19,19 +19,3 @@ export type AppAccessRequestPolicy = Readonly<{
 }>;
 
 export type ActorMembershipScope = "member" | "outside-collaborator";
-
-export const buildDefaultOAuthAppAccessRestriction = (
-  organizationId: string,
-): OAuthAppAccessRestriction => ({
-  organizationId,
-  isOutsideCollaboratorAllowed: true,
-  allowedScopes: [],
-});
-
-export const buildDefaultGitHubAppInstallationPolicy = (
-  organizationId: string,
-): GitHubAppInstallationPolicy => ({
-  organizationId,
-  isOutsideCollaboratorAllowed: true,
-  hasOwnerApprovalRequiredForAdditionalPermissions: false,
-});

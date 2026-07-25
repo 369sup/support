@@ -81,7 +81,6 @@ Repository invitations, direct and inherited grants, outside collaborators, role
 - **Published events:** `none`
 - **Official evidence:** `repositories-repository-access-source-01`
 - **Local policy:** Active sources are public read, personal owner, organization owner, direct grant, direct or inherited team grant, and predefined organization role; general membership is not a base permission.
-- **Decision surface:** Result includes `effectiveBaseRole` (strongest base permission), `additionalPermissions` (other contributed permissions), and `capabilityDecisions` (source-attached capability records). `permission` remains the backward-compatible aggregate for existing consumers.
 
 ### `grant-team-repository-access` [active]
 

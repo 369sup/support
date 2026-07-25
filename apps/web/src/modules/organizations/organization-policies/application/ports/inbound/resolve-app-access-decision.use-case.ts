@@ -39,7 +39,7 @@ export type AppAccessRequestPolicy = Readonly<{
   githubAppInstallation: GitHubAppInstallationPolicy;
 }>;
 
-export type AppAccessDecisionStatus =
+export type ResolveAppAccessDecisionResult =
   | Readonly<{
       status: "allowed";
       policy: AppAccessRequestPolicy;
@@ -56,7 +56,7 @@ export type AppAccessDecisionStatus =
       }>;
     }>;
 
-export type AppAccessPolicyDecision = AppAccessDecisionStatus;
+export type AppAccessPolicyDecision = ResolveAppAccessDecisionResult;
 
 export type AppAccessPolicyInput = Readonly<{
   organizationId: string;
@@ -67,5 +67,5 @@ export type AppAccessPolicyInput = Readonly<{
 export interface ResolveAppAccessDecisionUseCase {
   resolveAppAccessDecision(
     query: AppAccessRequest,
-  ): Promise<AppAccessPolicyDecision>;
+  ): Promise<ResolveAppAccessDecisionResult>;
 }

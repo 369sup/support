@@ -24,7 +24,7 @@
 - organization-memberships: domain, active
 - organization-teams: domain, active
 - organization-roles: domain, active
-- organization-policies: domain, planned
+- organization-policies: domain, active
 - custom-properties: domain, planned
 
 ## repositories

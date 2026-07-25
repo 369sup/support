@@ -4,8 +4,8 @@
 - **Kind:** `domain`
 - **Classification:** `core`
 - **Maturity:** `stable`
-- **Implementation:** `planned`
-- **Semantic status:** `candidate`
+- **Implementation:** `active`
+- **Semantic status:** `validated`
 
 ## Purpose
 
@@ -13,10 +13,10 @@ Owner-level policy constraints for repository and application-access behavior in
 
 ## Context content tree
 
-- `organizations/organization-policies` [planned]
+- `organizations/organization-policies` [active]
   - Purpose: Repository and app-access policy constraints for organizations.
   - Capabilities
-    - `resolve-app-access-decision` [planned]
+    - `resolve-app-access-decision` [active]
     - `repository-permission-contribution` [planned]
   - Owned domain concepts
     - `BaseRepositoryPermission`
@@ -46,14 +46,21 @@ Owner-level policy constraints for repository and application-access behavior in
 
 ## Designed use cases
 
-### `resolve-app-access-decision` [planned]
+### `resolve-app-access-decision` [active]
 
 - **Type:** `query`
 - **Application boundary:** `ResolveAppAccessDecisionUseCase.resolveAppAccessDecision()`
+- **Public entrypoint:** `server-api.ts#resolveAppAccessDecision`
 - **Input:** `AppAccessRequest` (OAuth authorization or GitHub App installation request context)
 - **Success result:** `AppAccessPolicyDecision`
-- **Rejections:** `outside-collaborator-blocked`, `scope-restricted`, `owner-approval-required`
+- **Expected rejections:** `outside-collaborator-blocked`, `scope-restricted`, `owner-approval-required`
+- **Authorization:** This context owns organization-level app-access policy decisions.
+- **Transaction:** Read-only policy lookup.
+- **Idempotency:** Query.
+- **Dependencies:** `none`
 - **Published events:** `none` (active policy lifecycle deferred)
+- **Official evidence:** `organizations-organization-policies-source-01`
+- **Local policy:** Missing policies default to permissive decisions; outside collaborators are blocked when policy disallows them.
 
 ## Ubiquitous language
 
@@ -68,7 +75,7 @@ It excludes `EnterprisePolicy`, `RepositoryGrant`, and `CodeRuleset`.
 
 ## Public capabilities
 
-No active public capability while planned. Activation requires an approved use case and runtime consumer.
+`resolveAppAccessDecision` is exposed through `server-api.ts` and resolves `AppAccessPolicyDecision` using organization policy records.
 
 ## Dependencies and consistency
 
@@ -87,7 +94,7 @@ Outside-collaborator and sensitive-permission gates are evaluated as policy deci
 
 ## Persistence and transactions
 
-Persistent policy state is not implemented while planned. In-memory adapters are used in policy-seed tests.
+Persistent policy state is not implemented in this phase. In-memory adapters are used in policy-seed tests and defaults are applied when policy records are absent.
 
 ## Data classification
 

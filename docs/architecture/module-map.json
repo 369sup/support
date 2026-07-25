@@ -2167,9 +2167,9 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Organization policies for repositories, collaborators, projects, discussions, and member privileges.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "RepositoryCreationPolicy",
         "RepositoryVisibilityPolicy",
@@ -2242,7 +2242,9 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "resolve-app-access-decision"
+      ],
       "plannedRelationships": [
         {
           "context": "organizations/organizations",
@@ -2255,7 +2257,33 @@
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "organization-app-access-policy-semantics",
+          "statement": "Organizations own app-access policy constraints for repositories, collaborators, projects, discussions, base permissions, and request-time decisions for OAuth and GitHub App install flows.",
+          "ownership": [
+            "RepositoryCreationPolicy",
+            "RepositoryVisibilityPolicy",
+            "OutsideCollaboratorPolicy",
+            "ProjectPolicy",
+            "DiscussionPolicy",
+            "BaseRepositoryPermission",
+            "OAuthPolicyConstraints",
+            "OAuthAppAccessRestriction",
+            "GitHubAppInstallationPolicy",
+            "AppAccessRequestPolicy"
+          ],
+          "events": [
+            "OrganizationPolicyChanged@1",
+            "BaseRepositoryPermissionChanged@1",
+            "OAuthPolicyConstraintsChanged@1",
+            "GitHubAppInstallationPolicyChanged@1"
+          ],
+          "sourceIds": [
+            "organizations-organization-policies-source-01"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "organizations",
