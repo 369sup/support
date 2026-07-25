@@ -70,7 +70,7 @@ export function DevelopmentSignInForm({
   }
 
   return (
-    <main className="flex min-h-dvh flex-col bg-[#0d1117] px-5 text-slate-100">
+    <main className="flex flex-1 flex-col bg-[#0d1117] px-5 text-slate-100">
       <section className="mx-auto flex w-full max-w-[360px] flex-1 flex-col justify-center py-12">
         <Link
           aria-label="Support home"
@@ -94,7 +94,7 @@ export function DevelopmentSignInForm({
               autoComplete="username"
               autoFocus
               className="mt-2 h-11 w-full rounded-md border border-slate-600 bg-[#0a1624] px-3 text-sm text-white outline-none transition-colors placeholder:text-slate-600 hover:border-slate-500 focus-visible:border-emerald-400 focus-visible:ring-2 focus-visible:ring-emerald-400/30 disabled:cursor-not-allowed disabled:opacity-60"
-              defaultValue={isAddingAccount ? "carol_ACME" : "octocat"}
+              defaultValue={isAddingAccount ? "carol_ACME" : "mock"}
               disabled={!isEnabled}
               id="username"
               name="username"
@@ -106,7 +106,7 @@ export function DevelopmentSignInForm({
             <input
               autoComplete="current-password"
               className="mt-2 h-11 w-full rounded-md border border-slate-600 bg-[#0a1624] px-3 text-sm text-white outline-none transition-colors placeholder:text-slate-600 hover:border-slate-500 focus-visible:border-emerald-400 focus-visible:ring-2 focus-visible:ring-emerald-400/30 disabled:cursor-not-allowed disabled:opacity-60"
-              defaultValue="github"
+              defaultValue="123456"
               disabled={!isEnabled}
               id="password"
               name="password"
@@ -138,7 +138,7 @@ export function DevelopmentSignInForm({
           <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-slate-500" />
           <p>
             {isEnabled
-              ? 'Development access uses the configured local account and fixture password "github".'
+              ? 'Development access: use username "mock" with password "123456", or any other configured account.'
               : "In-memory authentication is disabled for this deployment."}
           </p>
         </div>
