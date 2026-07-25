@@ -41,6 +41,7 @@ const developmentMemberships: readonly OrganizationMembershipQuerySnapshot[] = [
 type MembershipStore = Readonly<{
   byAccountId: Map<string, readonly OrganizationMembershipQuerySnapshot[]>;
   byAccountAndOrganization: Map<string, OrganizationMembershipQuerySnapshot>;
+  byOrganizationId: Map<string, readonly OrganizationMembershipQuerySnapshot[]>;
 }>;
 
 declare global {
@@ -62,6 +63,10 @@ function createStore(
     string,
     OrganizationMembershipQuerySnapshot
   >();
+  const byOrganizationId = new Map<
+    string,
+    readonly OrganizationMembershipQuerySnapshot[]
+  >();
 
   for (const membership of memberships) {
     byAccountId.set(membership.accountId, [
@@ -72,9 +77,20 @@ function createStore(
       membershipKey(membership.accountId, membership.organizationId),
       membership,
     );
+    byOrganizationId.set(
+      membership.organizationId,
+      [
+        ...(byOrganizationId.get(membership.organizationId) ?? []),
+        membership,
+      ],
+    );
   }
 
-  return { byAccountId, byAccountAndOrganization };
+  return {
+    byAccountId,
+    byAccountAndOrganization,
+    byOrganizationId,
+  };
 }
 
 function getProcessStore(): MembershipStore {
@@ -109,5 +125,11 @@ export class InMemoryOrganizationMembershipQueryAdapter
         membershipKey(accountId, organizationId),
       ) ?? null,
     );
+  }
+
+  findByOrganizationId(
+    organizationId: string,
+  ): Promise<readonly OrganizationMembershipQuerySnapshot[]> {
+    return Promise.resolve(this.store.byOrganizationId.get(organizationId) ?? []);
   }
 }

@@ -15,4 +15,7 @@ export interface OrganizationMembershipQueryRepositoryPort {
     accountId: string,
     organizationId: string,
   ): Promise<OrganizationMembershipQuerySnapshot | null>;
+  findByOrganizationId(
+    organizationId: string,
+  ): Promise<readonly OrganizationMembershipQuerySnapshot[]>;
 }

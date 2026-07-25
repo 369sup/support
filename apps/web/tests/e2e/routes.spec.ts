@@ -13,6 +13,8 @@ const consoleRoutes = [
   { path: "/account", heading: "Account" },
   { path: "/dashboard", heading: "Dashboard" },
   { path: "/repositories", heading: "Repositories" },
+  { path: "/settings", heading: "Settings" },
+  { path: "/settings/sessions", heading: "Account sessions" },
   {
     path: "/organizations/community-lab/settings/teams",
     heading: "Organization teams",
@@ -24,6 +26,14 @@ const consoleRoutes = [
   {
     path: "/organizations/community-lab/settings/repository-access/private-handbook",
     heading: "Repository team access",
+  },
+  {
+    path: "/organizations/community-lab/settings/member_privileges",
+    heading: "Organization member privileges",
+  },
+  {
+    path: "/organizations/community-lab/settings/audit-log",
+    heading: "Organization audit log",
   },
 ];
 
@@ -44,32 +54,23 @@ const unavailableScaffoldRoutes = [
   "/new",
   "/notifications",
   "/projects",
-  "/settings",
-  "/settings/sessions",
   "/settings/apps",
   "/settings/installations",
   "/settings/developers",
   "/settings/applications",
   "/settings/billing",
-  "/octocat",
-  
-  "/orgs/community-lab/people",
   
   
   "/orgs/community-lab/projects",
   "/orgs/community-lab/projects/1",
   "/users/octocat/projects/1",
-  "/organizations/community-lab/settings/member_privileges",
   "/organizations/community-lab/settings/custom_properties",
   "/organizations/community-lab/settings/apps",
   "/organizations/community-lab/settings/installations",
   "/organizations/community-lab/settings/installations/1",
   "/organizations/community-lab/settings/hooks",
   "/organizations/community-lab/settings/billing",
-  "/organizations/community-lab/settings/audit-log",
-  "/community-lab/docs",
-  "/community-lab/docs/settings",
-  
+
   "/community-lab/docs/settings/hooks",
   "/community-lab/docs/issues",
   "/community-lab/docs/issues/views",
@@ -152,6 +153,34 @@ test("home call to action reaches the canonical login page", async ({ page }) =>
   await expect(page).toHaveURL(/\/login$/);
   await expect(
     page.getByRole("heading", { level: 1, name: "Sign in to Support" }),
+  ).toBeVisible();
+});
+
+test("implemented owner pages render profile headings", async ({ page }) => {
+  await signIn(page);
+
+  await page.goto("/community-lab");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Community Lab" }),
+  ).toBeVisible();
+
+  await page.goto("/octocat");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "The Octocat" }),
+  ).toBeVisible();
+});
+
+test("implemented repository pages render their implemented surface", async ({ page }) => {
+  await signIn(page);
+
+  await page.goto("/community-lab/docs");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "community-lab/docs" }),
+  ).toBeVisible();
+
+  await page.goto("/community-lab/docs/settings");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Repository settings" }),
   ).toBeVisible();
 });
 
@@ -734,4 +763,5 @@ test("expired managed session requires reauthentication and keeps active account
   });
   await expect(page.getByLabel("Account menu for @octocat")).toBeVisible();
 });
+
 

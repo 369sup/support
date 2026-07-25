@@ -9,3 +9,5 @@ export const checkOrganizationContextEligibility =
   organizationMembershipsServerFacade.checkOrganizationContextEligibility;
 export const listActiveOrganizationMembershipsForAccount =
   organizationMembershipsServerFacade.listActiveOrganizationMembershipsForAccount;
+export const listActiveOrganizationMembershipsForOrganization =
+  organizationMembershipsServerFacade.listActiveOrganizationMembershipsForOrganization;
