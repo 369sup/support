@@ -10,7 +10,6 @@ const credentials = [
     password: "github",
   },
   { accountId: "account_bob", username: "bob", password: "github" },
-  { accountId: "account_mock", username: "mock", password: "123456" },
 ] as const;
 
 export class InMemoryDevelopmentCredentialAdapter
