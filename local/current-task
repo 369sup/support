@@ -1,60 +1,51 @@
 # Current task
 
 ## Objective
-å®Œæˆ S02ï¼ˆ`organizations/organization-policies`ï¼‰ï¼šä½¿ OAuth / GitHub App çµ„ç¹”æ”¿ç­–æ±ºç­–å¯è½åœ°ç‚º active contextï¼Œä¸¦ä¿®æ­£ç›¸é—œæ¶æ§‹èˆ‡å‹åˆ¥ä¸€è‡´æ€§ï¼Œç¶­æŒæœ€å°è®Šæ›´ã€‚
+«O¯d°ß¤@µn¤J­¶¸ô¥Ñ¬° `apps/web/src/app/(public)/login/page.tsx`¡A¨Ã¥[¤J¥i¥Îªº mock ±b¸¹¡]±b¸¹ `mock` / ±K½X `123456`¡^¨Ñ¶}µoµn¤J¨Ï¥Î¡C
 
 ## Scope
-æœ¬è¼ªåƒ…ä¿®æ”¹ï¼š
-- `apps/web/src/modules/organizations/organization-policies`
-- `apps/web/src/modules/repositories/repository-access/README.md`
-- `docs/architecture/module-map.json`ã€`docs/architecture/module-map.md`
-- `scripts/architecture.test.mjs`
-- `.serena/memories/shared/*.md`ï¼ˆå·²ç”±å·²æˆæ¬Šæ¶æ§‹æ›´æ–°æµç¨‹åŒæ­¥ï¼‰
-
-æ’é™¤ï¼š
-- `apps/web/src/app` è·¯ç”±èˆ‡ API å¥‘ç´„
-- å¤–éƒ¨ OAuth/GitHub App ä»¥å¤–çš„æ•´é«”æ•´åˆæµç¨‹
+- `apps/web/src/app/login/page.tsx`
+- `apps/web/src/app/(public)/login/page.tsx`
+- `apps/web/src/modules/identity/authentication/adapters/inbound/react/development-sign-in-form.tsx`
+- `apps/web/src/modules/identity/authentication/adapters/outbound/persistence/in-memory-development-credential.adapter.ts`
+- ¤£­×§ï¨ä¥L¥\¯à½d³ò¡C
 
 ## Verified facts
-- `pnpm.cmd check` å·²åœ¨å®Œæ•´æµç¨‹ä¸­é€šéï¼ˆarchitecture required/generatedã€test:architectureã€test:memoryã€lint/typecheck/testï¼‰ã€‚
-- `organization-policies` ç¾å·²åœ¨ `docs/architecture/module-map.json` èˆ‡ `module-map.md` æ¨™ç¤ºç‚º `implementationStatus: "active"`ã€`semanticStatus: "validated"`ï¼Œä¸¦æ–°å¢ `activationScope`/`semanticClaims`ã€‚
-- `apps/web/src/modules/organizations/organization-policies` çš„æ ¸å¿ƒå‹åˆ¥èˆ‡ handler å·²æ”¹ç‚ºç›´æ¥ä½¿ç”¨ `ResolveAppAccessDecisionResult`ï¼ˆé¿å… `AppAccessPolicyDecision` å…·ååˆ¥åæ¨æ–·ä¸ä¸€è‡´ï¼‰ã€‚
-- ç‚ºç¬¦åˆ `ARCH-API-005` å…¬å…±å…¥å£é»è¦å‰‡ï¼Œ`server-api.ts` ç¾æ”¹ä»¥ `composition` facade æ–¹å¼å°å‡º `resolveAppAccessDecision`ã€‚
+- `apps/web/src/app/(public)/login/page.tsx` ¤w¦s¦b¥B¬°µn¤J­¶¹ê§@¡C
+- `apps/web/src/app/login/page.tsx` ¤w§R°£¡C
+- Mock ±b¸¹²M³æ¥[¤J `{ username: "mock", password: "123456" }`¡C
+- µn¤J­¶¹w³]±b¸¹§ï¬° `mock`¡A¹w³]±K½X§ï¬° `123456`¡C
+- °õ¦æ `pnpm.cmd --filter @support/web typecheck` ¥¢±Ñ¡]`oauth-authorizations` ¬ÛÃö¬J¦³ TS °Ñ¦Ò¿ù»~¡^¡C
+- ¥Ø«e¶È¦³¤T­Ó¨Ï¥ÎªÌ¬ÛÃöÅÜ§óÀÉ®×¡F`(public)/login` ¬°¥¼°lÂÜ·s¼W¥Ø¿ı/ÀÉ¡C
 
 ## Assumptions
-- é¸æ“‡ä¸æ“´å¼µåˆ°å…¨åŸŸ `integrations/github-app-installations` æµç¨‹ï¼›åƒ…å®Œæˆç¼ºå£å¡ç‰‡æœ€å°è½åœ°é‚Šç•Œã€‚
-- `organization-policies` ç›®å‰ä»¥ in-memory seed ä¾†æºç‚ºå‰æï¼Œç„¡éœ€å¼•å…¥æ–°æŒä¹…åŒ–åŸºç¤è¨­æ–½ã€‚
+- ¨Ï¥ÎªÌ¥u­n¦b `?enable`/in-memory ¶}µo¼Ò¦¡¥i¥Î®Éµn¤J¡C
+- ®Ú¥Ø¿ı `/login` ¤£¦A»İ­n«O¯d¨ä¥L¹ê§@¤J¤f¡C
 
 ## Decisions
-- ç§»é™¤ domain å±¤çš„é è¨­ builder å‡½å¼ï¼Œæ”¹åœ¨ handler å…§éƒ¨ç›´æ¥å›å‚³ inline fallback policy ç‰©ä»¶ä»¥ä¿ç•™æœ€å°å¯¦ä½œã€‚
-- é€é `composition/organization-policies.composition.ts` å°è£ facadeï¼Œè®“ `server-api.ts` å›å‚³ `organizationPoliciesServerFacade.resolveAppAccessDecision`ï¼ˆç¬¦åˆå…¬å…±å…¥å£é»åˆè¦ï¼‰ã€‚
-- å°‡ `AppAccessPolicyDecision` å‹åˆ¥å¾ `server-api.ts`/handler èµ° `./contracts/app-access-policy-decision` åŒ¯å‡ºè·¯å¾‘ï¼Œä¸¦ä¿ç•™ `integration-contracts.ts` å…§æ—¢æœ‰æ•´åˆåˆç´„è½‰æ¥ã€‚
+- ±Ä¥Î³Ì¤p­×¥¿¡G±Nµn¤J­¶¹ê»ÚÀÉ®×²¾¤J `(public)/login`¡A¤£°Ê¨ä¥L login ¬yµ{ÅŞ¿è¡C
+- ¶È½Õ¾ã¶}µoÀô¹Ò¹w³]¶ñ­È»P mock ¾ÌÃÒ¡A¤£§ïÅÜ»{ÃÒ API¡C
 
 ## Completed
-- `apps/web/src/modules/organizations/organization-policies/application/ports/inbound/resolve-app-access-decision.use-case.ts`
-- `apps/web/src/modules/organizations/organization-policies/application/queries/resolve-app-access-decision.handler.ts`
-- `apps/web/src/modules/organizations/organization-policies/domain/organization-app-access-policy.ts`
-- `apps/web/src/modules/organizations/organization-policies/tests/resolve-app-access-decision.test.ts`
-- `apps/web/src/modules/organizations/organization-policies/server-api.ts`
-- `apps/web/src/modules/organizations/organization-policies/composition/organization-policies.composition.ts`ï¼ˆæ–°å¢ï¼‰
-- `apps/web/src/modules/organizations/organization-policies/README.md`
-- `apps/web/src/modules/repositories/repository-access/README.md`ï¼ˆç§»é™¤ä¸ç¬¦ schema æ¬„ä½ï¼‰
-- `docs/architecture/module-map.json`
-- `docs/architecture/module-map.md`
-- `scripts/architecture.test.mjs`
+- ¥Ø¿ı `apps/web/src/app/login/page.tsx` §R°£¡C
+- ·s¼W `apps/web/src/app/(public)/login/page.tsx`¡]¥Ñ­ìµn¤J­¶¤º®e½Æ»s/²¾´Ó¡^¡C
+- ·s¼W mock ¾ÌÃÒ `mock / 123456`¡C
+- §ó·sµn¤Jªí³æ¹w³]±b¸¹¡B±K½X»P´£¥Ü¤å¦r¡C
 
 ## Current state
-- S02 å·²å®Œæˆæœ¬è¼ªé æœŸäº¤ä»˜ï¼Œç›¸é—œæ¶æ§‹èˆ‡ lint/typecheck/test å·²é€šéã€‚
-- ä»å¾…ä½ æ±ºå®šæ˜¯å¦è¦æ¥è‘—èµ·ä¸‹ä¸€å¼µå¡ S03ï¼Œæˆ–å…ˆæ•´ç†æäº¤/ææ¡ˆã€‚
+- ¥\¯àÅÜ§ó¤w§¹¦¨¡G°ß¤@ login route ÀÉ¨Ó·½«ü¦V `(public)/login`¡C
+- ¸ô¥Ñ/build ¥¼¦b¦¹¥ô°È¤¤½T»{¥ş³¡³q¹L¡]¨£ Validation¡^¡C
 
 ## Remaining
-- ï¼ˆæœ¬è¼ªï¼‰ç„¡æœªå®Œæˆ blocking é …ï¼›ä¸‹ä¸€æ­¥å¦‚è¦å¯ç›´æ¥é€²è¡Œ S03ï¼ˆ`github-app-user-authorization`ï¼‰ã€‚
+- ­Y­n§¹¦¨¡u§¹¾ãÅçÃÒ¡v¡A»İ­×´_¬J¦³ `apps/web/src/modules/integrations/oauth-authorizations/.../evaluate-oauth-authorization.use-case.ts` ªº TS ¿ù»~«á¡A¦A­«¶] `pnpm typecheck/build`¡C
 
 ## Validation
-- `git -C D:\GitHub\support status --short --branch`
-- `pnpm.cmd check`ï¼ˆå®Œæ•´é€šéï¼‰
-- `git -C D:\GitHub\support diff --check`ï¼ˆç„¡ whitespace éŒ¯èª¤ï¼‰
+- `git status --short --branch`
+- `Test-Path` ÀË¬d `apps/web/src/app/login` ¸ô®|¤£¦s¦b
+- `git diff --stat`¡]¶ÈÅã¥Üµn¤J¬ÛÃö 3 ­ÓÅÜ§ó¡^
+- `pnpm.cmd --filter @support/web build`¡]¥Ø«e¥¢±Ñ¡G`EvaluateOAuthAuthorizationInput/Result` °Ñ¦Ò¿ù»~¡^
+- `pnpm.cmd --filter @support/web typecheck`¡]¦P¤W¬J¦³¿ù»~¡^
 
 ## Risks
-- `.serena/memories/shared/module-catalog.md` èˆ‡ `ownership.md` ä»æœ‰ auto-sync è®Šæ›´ï¼Œéœ€åœ¨æäº¤æ™‚ä¸€ä½µè©•ä¼°æ˜¯å¦æ¡ç”¨ã€‚
-- `server-api.ts` å·²èª¿æ•´ç‚º composition å…¥å£æ¨¡å¼ï¼›è‹¥æœªä¾†éœ€ç°¡åŒ– DIï¼Œå¯ä»¥å†æ”¶æ–‚ç‚ºå…±ç”¨æ¨¡å¼ä½†ä¸å½±éŸ¿ç¾æ³ã€‚
+- `oauth-authorizations` ¤¤ªº¬J¦³«¬§O°Ñ¦Ò¿ù»~·|ªı¾× `pnpm ... typecheck/build`¡A»İ¥t¦æ­×¥¿¡C
+- `git` ¦³Åã¥Ü `CRLF/LF` Âà´«Äµ§i¡A¥i¯à¬O§@·~Àô¹Ò´«¦æ³]©w³y¦¨¡C
