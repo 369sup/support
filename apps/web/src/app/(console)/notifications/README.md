@@ -8,14 +8,14 @@
 - **Support path:** `/notifications`
 - **GitHub canonical patterns:** No official pattern is asserted.
 - **Delivery:** `page`
-- **Status:** `planned`
-- **Materialization:** `scaffolded`
+- **Status:** `active`
+- **Materialization:** `active`
 
 ## Functional intent
 
-Review subscription-driven product notifications and delivery state.
+Lists recipient-scoped notifications and marks individual inbox items read.
 
-The filesystem route is reserved and currently returns the canonical unavailable response.
+The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
 ## Delivery functions
 
@@ -23,9 +23,8 @@ The filesystem route is reserved and currently returns the canonical unavailable
 
 ## Module contracts
 
-- - **owner:** `engagement/notifications` — use cases: no route-level use-case reference; functions: no runtime function reference
-- - **collaborator:** `engagement/subscriptions` — use cases: no route-level use-case reference; functions: no runtime function reference
-- - **collaborator:** `platform/notification-channels` — use cases: no route-level use-case reference; functions: no runtime function reference
+- - **owner:** `engagement/notifications` — use cases: `list-notifications`, `mark-notification-read`; functions: `listNotifications`, `markNotificationRead`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

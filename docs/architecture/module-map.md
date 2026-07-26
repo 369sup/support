@@ -32,8 +32,8 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | identity | [accounts](../../apps/web/src/modules/identity/accounts/README.md) | domain | core | stable | active | fresh | validated | User account identity, personal or managed account type, human or machine usage, username, lifecycle, and ghost attribution. |
 | identity | [authentication](../../apps/web/src/modules/identity/authentication/README.md) | domain | core | stable | active | fresh | validated | Credentials, browser session sets, active account-session selection, two-factor authentication, recovery, and external login binding. |
-| identity | [profiles](../../apps/web/src/modules/identity/profiles/README.md) | domain | supporting | stable | planned | fresh | candidate | Public and private personal profiles, profile status, and pinned-item presentation. |
-| identity | [social-graph](../../apps/web/src/modules/identity/social-graph/README.md) | domain | supporting | stable | planned | fresh | candidate | Following relationships between users and organizations. |
+| identity | [profiles](../../apps/web/src/modules/identity/profiles/README.md) | domain | supporting | stable | active | fresh | validated | Public and private personal profiles, profile status, and pinned-item presentation. |
+| identity | [social-graph](../../apps/web/src/modules/identity/social-graph/README.md) | domain | supporting | stable | active | fresh | validated | Following relationships between users and organizations. |
 | enterprises | [enterprises](../../apps/web/src/modules/enterprises/enterprises/README.md) | domain | core | stable | active | fresh | validated | Enterprise identity, profile, account mode, lifecycle, and authoritative organization ownership links. |
 | enterprises | [enterprise-memberships](../../apps/web/src/modules/enterprises/enterprise-memberships/README.md) | domain | core | stable | active | fresh | validated | Enterprise membership, invitations, affiliation, guest collaborators, and unaffiliated users. |
 | enterprises | [enterprise-teams](../../apps/web/src/modules/enterprises/enterprise-teams/README.md) | domain | supporting | preview | planned | fresh | candidate | Enterprise-wide teams used for centralized role, organization, and license assignment. |
@@ -51,16 +51,16 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 | repositories | [repository-access](../../apps/web/src/modules/repositories/repository-access/README.md) | domain | core | stable | active | fresh | validated | Repository invitations, direct and inherited grants, outside collaborators, role assignments, and source-attributed effective permission resolution. |
 | repositories | [repository-features](../../apps/web/src/modules/repositories/repository-features/README.md) | domain | supporting | stable | planned | fresh | validated | Repository Issues, Discussions, Projects, and Wiki enablement with feature-specific configuration. |
 | repositories | [repository-metadata](../../apps/web/src/modules/repositories/repository-metadata/README.md) | domain | supporting | stable | planned | fresh | validated | Repository topics and social-media preview configuration. |
-| collaboration | [issues](../../apps/web/src/modules/collaboration/issues/README.md) | domain | core | stable | planned | fresh | candidate | Issue lifecycle, assignment, hierarchy, dependency, transfer, and work tracking. |
+| collaboration | [issues](../../apps/web/src/modules/collaboration/issues/README.md) | domain | core | stable | active | fresh | validated | Issue lifecycle, assignment, hierarchy, dependency, transfer, and work tracking. |
 | collaboration | [issue-schema](../../apps/web/src/modules/collaboration/issue-schema/README.md) | domain | supporting | stable | planned | fresh | candidate | Organization-level issue type and field definitions, visibility, pinning, and type-field associations. |
 | collaboration | [labels-and-milestones](../../apps/web/src/modules/collaboration/labels-and-milestones/README.md) | domain | supporting | stable | planned | fresh | candidate | Repository-scoped labels, milestones, and work classification. |
-| collaboration | [conversations](../../apps/web/src/modules/collaboration/conversations/README.md) | domain | supporting | stable | planned | fresh | candidate | Capability-constrained comments, discussion replies, reactions, mentions, revisions, and locks for a closed set of subjects. |
-| collaboration | [discussions](../../apps/web/src/modules/collaboration/discussions/README.md) | domain | core | stable | planned | fresh | validated | Repository discussion forums and organization discussion spaces, source-repository binding, categories, sections, polls, answers, pins, and lifecycle. |
-| collaboration | [moderation](../../apps/web/src/modules/collaboration/moderation/README.md) | domain | supporting | stable | planned | fresh | candidate | Content reports, moderation cases, blocks, interaction limits, and visibility decisions. |
-| collaboration | [projects](../../apps/web/src/modules/collaboration/projects/README.md) | domain | core | stable | planned | fresh | candidate | User- or organization-owned projects, items, draft issues, views, fields, workflows, charts, templates, and status updates. |
-| engagement | [stars](../../apps/web/src/modules/engagement/stars/README.md) | domain | supporting | stable | planned | fresh | candidate | Repository starring and user-defined star lists for discovery and collection. |
-| engagement | [subscriptions](../../apps/web/src/modules/engagement/subscriptions/README.md) | domain | supporting | stable | planned | fresh | candidate | Repository watch preferences, conversation participation and manual subscriptions, ignore preferences, and notification-interest decisions. |
-| engagement | [notifications](../../apps/web/src/modules/engagement/notifications/README.md) | domain | supporting | stable | planned | fresh | candidate | User notification records, inboxes, reasons, filters, and read, saved, or done state. |
+| collaboration | [conversations](../../apps/web/src/modules/collaboration/conversations/README.md) | domain | supporting | stable | active | fresh | validated | Capability-constrained comments, discussion replies, reactions, mentions, revisions, and locks for a closed set of subjects. |
+| collaboration | [discussions](../../apps/web/src/modules/collaboration/discussions/README.md) | domain | core | stable | active | fresh | validated | Repository discussion forums and organization discussion spaces, source-repository binding, categories, sections, polls, answers, pins, and lifecycle. |
+| collaboration | [moderation](../../apps/web/src/modules/collaboration/moderation/README.md) | domain | supporting | stable | active | fresh | validated | Content reports, moderation cases, blocks, interaction limits, and visibility decisions. |
+| collaboration | [projects](../../apps/web/src/modules/collaboration/projects/README.md) | domain | core | stable | active | fresh | validated | User- or organization-owned projects, items, draft issues, views, fields, workflows, charts, templates, and status updates. |
+| engagement | [stars](../../apps/web/src/modules/engagement/stars/README.md) | domain | supporting | stable | active | fresh | validated | Repository starring and user-defined star lists for discovery and collection. |
+| engagement | [subscriptions](../../apps/web/src/modules/engagement/subscriptions/README.md) | domain | supporting | stable | active | fresh | validated | Repository watch preferences, conversation participation and manual subscriptions, ignore preferences, and notification-interest decisions. |
+| engagement | [notifications](../../apps/web/src/modules/engagement/notifications/README.md) | domain | supporting | stable | active | fresh | validated | User notification records, inboxes, reasons, filters, and read, saved, or done state. |
 | integrations | [github-app-registrations](../../apps/web/src/modules/integrations/github-app-registrations/README.md) | domain | supporting | stable | planned | fresh | validated | GitHub App registration, ownership and ownership transfer, requested permissions, webhook preference, requested webhook events, and visibility. |
 | integrations | [github-app-installations](../../apps/web/src/modules/integrations/github-app-installations/README.md) | domain | supporting | stable | planned | fresh | validated | GitHub App installation targets, selected repositories, granted permissions, suspension, and uninstall lifecycle. |
 | integrations | [oauth-app-registrations](../../apps/web/src/modules/integrations/oauth-app-registrations/README.md) | domain | supporting | stable | planned | fresh | candidate | OAuth App registration, ownership, callback configuration, and client lifecycle. |
@@ -70,9 +70,9 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 | commerce | [billing](../../apps/web/src/modules/commerce/billing/README.md) | domain | supporting | stable | planned | fresh | candidate | Billing accounts, payment profiles, usage, budgets, cost centers, invoices, and spending allocation. |
 | commerce | [entitlements](../../apps/web/src/modules/commerce/entitlements/README.md) | domain | supporting | stable | planned | fresh | candidate | Plans, feature entitlements, licenses, assignments, and usage limits. |
 | governance | [audit-logs](../../apps/web/src/modules/governance/audit-logs/README.md) | domain | supporting | stable | planned | fresh | candidate | Organization and enterprise audit events, scopes, actors, targets, search, export, streaming, and retention policy. |
-| projections | [search](../../apps/web/src/modules/projections/search/README.md) | projection | — | stable | planned | fresh | candidate | Permission-filtered search projections across users, organizations, repositories, issues, discussions, and projects. |
+| projections | [search](../../apps/web/src/modules/projections/search/README.md) | projection | — | stable | active | fresh | validated | Permission-filtered search projections across users, organizations, repositories, issues, discussions, and projects. |
 | projections | [dashboard](../../apps/web/src/modules/projections/dashboard/README.md) | projection | — | stable | active | fresh | validated | Available and selected personal or organization Dashboard contexts plus permission-filtered repository views. |
-| projections | [activity-feed](../../apps/web/src/modules/projections/activity-feed/README.md) | projection | — | stable | planned | fresh | candidate | User-visible dashboard and resource activity projections. |
+| projections | [activity-feed](../../apps/web/src/modules/projections/activity-feed/README.md) | projection | — | stable | active | fresh | validated | User-visible dashboard and resource activity projections. |
 | projections | [repository-insights](../../apps/web/src/modules/projections/repository-insights/README.md) | projection | — | stable | planned | fresh | candidate | Non-code repository engagement trends and integration-health projections. |
 | platform | [event-publication](../../apps/web/src/modules/platform/event-publication/README.md) | technical | — | stable | active | not-applicable | not-applicable | Dispatch, leasing, retry, operational idempotency, redelivery, and dead-letter handling for context-owned event envelopes. |
 | platform | [search-index](../../apps/web/src/modules/platform/search-index/README.md) | technical | — | stable | active | not-applicable | not-applicable | Search document indexing, querying, and index lifecycle adapters. |
@@ -80,7 +80,7 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 | platform | [notification-channels](../../apps/web/src/modules/platform/notification-channels/README.md) | technical | — | stable | planned | not-applicable | not-applicable | External email or push delivery adapters for accepted notification delivery requests. |
 | platform | [audit-storage](../../apps/web/src/modules/platform/audit-storage/README.md) | technical | — | stable | active | not-applicable | not-applicable | Storage, export, and retention enforcement for audit records. |
 | platform | [site-content](../../apps/web/src/modules/platform/site-content/README.md) | domain | supporting | stable | planned | fresh | candidate | Stable public product, documentation, accessibility, policy, and informational page content. |
-| projections | [discovery](../../apps/web/src/modules/projections/discovery/README.md) | projection | — | stable | planned | fresh | candidate | Public discovery projections for explore feeds, curated collections, topics, and trending repositories. |
+| projections | [discovery](../../apps/web/src/modules/projections/discovery/README.md) | projection | — | stable | active | fresh | validated | Public discovery projections for explore feeds, curated collections, topics, and trending repositories. |
 | integrations | [marketplace-catalog](../../apps/web/src/modules/integrations/marketplace-catalog/README.md) | domain | supporting | stable | planned | fresh | candidate | Marketplace listing metadata, categories, publication state, and public discovery. |
 | platform | [actions-route-compatibility](../../apps/web/src/modules/platform/actions-route-compatibility/README.md) | technical | — | stable | planned | not-applicable | not-applicable | Canonical unavailable or redirect decisions for GitHub-style Actions URLs. |
 | platform | [repository-content-route-compatibility](../../apps/web/src/modules/platform/repository-content-route-compatibility/README.md) | technical | — | stable | planned | not-applicable | not-applicable | Canonical unavailable or redirect decisions for tree, blob, raw, and source-archive URLs. |
@@ -101,7 +101,7 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 - **Owns:** Account, Username, AccountLifecycle, GhostAttribution.
 - **Excludes:** Credential, Session, Profile, EnterpriseMembership.
-- **Activation scope:** get-account-reference-by-id, get-personal-account-by-username
+- **Activation scope:** delete-personal-account, get-account-reference-by-id, get-personal-account-by-username
 - **Runtime dependencies:** None.
 - **Planned relationships:** None.
 - **Published events:** AccountCreated@1 (domain; planned; contract pending), UsernameChanged@1 (domain; planned; contract pending), AccountDeleted@1 (domain; planned; contract pending)
@@ -121,24 +121,24 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 ### [identity/profiles](../../apps/web/src/modules/identity/profiles/README.md)
 
-- **Owns:** UserProfile, ProfileVisibility, ProfileStatus, PinnedItemSet.
+- **Owns:** UserProfile, ProfileVisibility, ProfileStatus, PinnedItemSet, ProfileAchievementSet.
 - **Excludes:** AccountLifecycle, RepositoryStar, Project.
-- **Activation scope:** None while planned.
+- **Activation scope:** get-user-profile, update-user-profile
 - **Runtime dependencies:** None.
 - **Planned relationships:** identity/accounts via AccountReference (synchronous)
 - **Published events:** ProfileUpdated@1 (domain; planned; contract pending), ProfileVisibilityChanged@1 (domain; planned; contract pending), ProfileStatusChanged@1 (domain; planned; contract pending), PinnedItemsChanged@1 (domain; planned; contract pending)
-- **Semantic claims:** None while product semantics remain candidate.
-- **Official sources:** identity-profiles-source-01 ([profile, profile visibility, pinned items](https://docs.github.com/en/account-and-profile/concepts/personal-profile), checked 2026-07-23)
+- **Semantic claims:** personal-profile-presentation (owns UserProfile, ProfileVisibility, ProfileStatus, PinnedItemSet; events ProfileUpdated@1, ProfileVisibilityChanged@1, ProfileStatusChanged@1, PinnedItemsChanged@1; sources identity-profiles-source-01); profile-achievement-presentation (owns ProfileAchievementSet; no events; sources identity-profiles-source-02)
+- **Official sources:** identity-profiles-source-01 ([profile, profile visibility, profile status, pinned items](https://docs.github.com/en/account-and-profile/concepts/personal-profile), checked 2026-07-26); identity-profiles-source-02 ([profile achievement badges, achievement visibility, permission-filtered contributing event links](https://docs.github.com/en/account-and-profile/reference/profile-reference), checked 2026-07-26)
 
 ### [identity/social-graph](../../apps/web/src/modules/identity/social-graph/README.md)
 
 - **Owns:** UserFollow, OrganizationFollow.
 - **Excludes:** RepositoryStar, RepositorySubscription, ActivityFeed.
-- **Activation scope:** None while planned.
+- **Activation scope:** toggle-user-follow
 - **Runtime dependencies:** None.
 - **Planned relationships:** identity/accounts via AccountReference (synchronous); organizations/organizations via OrganizationReference (synchronous)
 - **Published events:** UserFollowed@1 (domain; planned; contract pending), UserUnfollowed@1 (domain; planned; contract pending), OrganizationFollowed@1 (domain; planned; contract pending), OrganizationUnfollowed@1 (domain; planned; contract pending)
-- **Semantic claims:** None while product semantics remain candidate.
+- **Semantic claims:** user-follow-relationship (owns UserFollow; events UserFollowed@1, UserUnfollowed@1; sources identity-social-graph-source-01); organization-follow-relationship (owns OrganizationFollow; events OrganizationFollowed@1, OrganizationUnfollowed@1; sources identity-social-graph-source-02)
 - **Official sources:** identity-social-graph-source-01 ([following people](https://docs.github.com/en/get-started/exploring-projects-on-github/following-people), checked 2026-07-23); identity-social-graph-source-02 ([following organizations](https://docs.github.com/en/enterprise-cloud@latest/get-started/exploring-projects-on-github/following-organizations), checked 2026-07-23)
 
 ### [enterprises/enterprises](../../apps/web/src/modules/enterprises/enterprises/README.md)
@@ -332,11 +332,11 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 - **Owns:** Issue, SubIssueRelation, IssueDependency, IssueTransfer, IssueTypeSelection, IssueFieldValueSet.
 - **Excludes:** Comment, LabelDefinition, Project, PullRequest.
-- **Activation scope:** None while planned.
+- **Activation scope:** create-issue, get-repository-issue, list-repository-issues
 - **Runtime dependencies:** None.
 - **Planned relationships:** repositories/repositories via RepositoryLifecycleState (synchronous); repositories/repository-access via RepositoryPermission (synchronous); repositories/repository-features via IssueFeatureState (synchronous); collaboration/issue-schema via IssueSchemaReference (synchronous); collaboration/labels-and-milestones via TaxonomyReference (synchronous); collaboration/conversations via IssueConversation (synchronous); repositories/repositories via RepositoryTransferEvents (event) [RepositoryTransferred@1]
 - **Published events:** IssueCreated@1 (domain; planned; contract pending), IssueUpdated@1 (domain; planned; contract pending), IssueClosed@1 (domain; planned; contract pending), IssueReopened@1 (domain; planned; contract pending), IssueAssigned@1 (domain; planned; contract pending), IssueUnassigned@1 (domain; planned; contract pending), SubIssueAdded@1 (domain; planned; contract pending), SubIssueRemoved@1 (domain; planned; contract pending), IssueDependencyAdded@1 (domain; planned; contract pending), IssueDependencyRemoved@1 (domain; planned; contract pending), IssueTransferred@1 (domain; planned; contract pending), IssueFieldValueSet@1 (domain; planned; contract pending), IssueFieldValueCleared@1 (domain; planned; contract pending)
-- **Semantic claims:** None while product semantics remain candidate.
+- **Semantic claims:** issue-work-tracking (owns Issue, SubIssueRelation, IssueDependency, IssueTypeSelection, IssueFieldValueSet; events IssueCreated@1, IssueUpdated@1, IssueClosed@1, IssueReopened@1, IssueAssigned@1, IssueUnassigned@1, SubIssueAdded@1, SubIssueRemoved@1, IssueDependencyAdded@1, IssueDependencyRemoved@1, IssueFieldValueSet@1, IssueFieldValueCleared@1; sources collaboration-issues-source-01, collaboration-issues-source-02); issue-transfer-reconciliation (owns IssueTransfer; events IssueTransferred@1; sources collaboration-issues-source-03)
 - **Official sources:** collaboration-issues-source-01 ([issues, sub-issues, issue dependencies, issue metadata](https://docs.github.com/en/issues/tracking-your-work-with-issues/learning-about-issues/about-issues), checked 2026-07-22); collaboration-issues-source-02 ([issue field values, issue field value permissions](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/adding-and-managing-issue-fields), checked 2026-07-22); collaboration-issues-source-03 ([assignee reconciliation, issue type reconciliation](https://docs.github.com/en/repositories/creating-and-managing-repositories/transferring-a-repository), checked 2026-07-22)
 
 ### [collaboration/issue-schema](../../apps/web/src/modules/collaboration/issue-schema/README.md)
@@ -365,18 +365,18 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 - **Owns:** Conversation, Comment, Reply, Reaction, Mention, CommentRevision, ConversationSubjectKind, ConversationCapabilities.
 - **Excludes:** IssueState, DiscussionCategory, ModerationCase, ArbitrarySubjectType.
-- **Activation scope:** None while planned.
+- **Activation scope:** add-comment, add-reaction, list-conversation-comments
 - **Runtime dependencies:** None.
 - **Planned relationships:** identity/accounts via ActorReference (synchronous); repositories/repositories via RepositoryLifecycleState (synchronous)
 - **Published events:** ConversationCreated@1 (domain; planned; contract pending), ConversationLocked@1 (domain; planned; contract pending), ConversationUnlocked@1 (domain; planned; contract pending), CommentAdded@1 (domain; planned; contract pending), CommentEdited@1 (domain; planned; contract pending), CommentDeleted@1 (domain; planned; contract pending), ReplyAdded@1 (domain; planned; contract pending), ReactionAdded@1 (domain; planned; contract pending), ReactionRemoved@1 (domain; planned; contract pending), MentionDetected@1 (domain; planned; contract pending)
-- **Semantic claims:** None while product semantics remain candidate.
+- **Semantic claims:** capability-constrained-conversation (owns Conversation, Comment, Reply, Reaction, Mention, CommentRevision, ConversationSubjectKind, ConversationCapabilities; events ConversationCreated@1, ConversationLocked@1, ConversationUnlocked@1, CommentAdded@1, CommentEdited@1, CommentDeleted@1, ReplyAdded@1, ReactionAdded@1, ReactionRemoved@1, MentionDetected@1; sources collaboration-conversations-source-01, collaboration-conversations-source-02, collaboration-conversations-source-03)
 - **Official sources:** collaboration-conversations-source-01 ([comments, mentions, reactions](https://docs.github.com/en/get-started/using-github/communicating-on-github), checked 2026-07-22); collaboration-conversations-source-02 ([discussion comment threads, threaded replies](https://docs.github.com/en/discussions/collaborating-with-your-community-using-discussions/participating-in-a-discussion), checked 2026-07-22); collaboration-conversations-source-03 ([issue conversation locks, locked-conversation behavior](https://docs.github.com/en/communities/moderating-comments-and-conversations/locking-conversations), checked 2026-07-22)
 
 ### [collaboration/discussions](../../apps/web/src/modules/collaboration/discussions/README.md)
 
 - **Owns:** RepositoryDiscussionForum, OrganizationDiscussionSpace, Discussion, DiscussionCategory, DiscussionSection, DiscussionPoll, AcceptedAnswer, PinnedDiscussion.
 - **Excludes:** Comment, LabelDefinition, Issue, TeamDiscussion.
-- **Activation scope:** None while planned.
+- **Activation scope:** create-discussion, get-repository-discussion, list-repository-discussions
 - **Runtime dependencies:** None.
 - **Planned relationships:** repositories/repositories via RepositoryLifecycleAndOwnership (synchronous); organizations/organizations via OrganizationReference (synchronous); repositories/repository-access via DiscussionPermission (synchronous); repositories/repository-features via RepositoryDiscussionFeatureState (synchronous); repositories/repository-features via RepositoryDiscussionFeatureEvents (event) [RepositoryDiscussionsEnabled@1, RepositoryDiscussionsDisabled@1]; collaboration/labels-and-milestones via LabelReference (synchronous); collaboration/conversations via DiscussionConversation (synchronous); organizations/organization-memberships via OrganizationDiscussionAdministration (synchronous); organizations/organization-policies via DiscussionCreationPolicy (synchronous)
 - **Published events:** DiscussionCreated@1 (domain; planned; contract pending), DiscussionUpdated@1 (domain; planned; contract pending), DiscussionClosed@1 (domain; planned; contract pending), DiscussionReopened@1 (domain; planned; contract pending), DiscussionDeleted@1 (domain; planned; contract pending), DiscussionTransferred@1 (domain; planned; contract pending), DiscussionCategoryCreated@1 (domain; planned; contract pending), DiscussionCategoryUpdated@1 (domain; planned; contract pending), DiscussionCategoryDeleted@1 (domain; planned; contract pending), DiscussionSectionCreated@1 (domain; planned; contract pending), DiscussionSectionUpdated@1 (domain; planned; contract pending), DiscussionSectionDeleted@1 (domain; planned; contract pending), DiscussionAnswerMarked@1 (domain; planned; contract pending), DiscussionAnswerUnmarked@1 (domain; planned; contract pending), DiscussionPinned@1 (domain; planned; contract pending), DiscussionUnpinned@1 (domain; planned; contract pending), OrganizationDiscussionSpaceEnabled@1 (domain; planned; contract pending), OrganizationDiscussionSpaceDisabled@1 (domain; planned; contract pending), OrganizationDiscussionSourceChanged@1 (domain; planned; contract pending)
@@ -387,55 +387,55 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 - **Owns:** ContentReport, ModerationCase, InteractionLimit, OrganizationBlock, ContentVisibilityDecision.
 - **Excludes:** CommentBody, IssueState, DiscussionState.
-- **Activation scope:** None while planned.
+- **Activation scope:** report-content
 - **Runtime dependencies:** None.
 - **Planned relationships:** organizations/organizations via OrganizationReference (synchronous); repositories/repository-access via ModerationPermission (synchronous); collaboration/issues via IssueModerationTarget (synchronous); collaboration/conversations via ConversationModerationTarget (synchronous); collaboration/discussions via DiscussionModerationTarget (synchronous)
 - **Published events:** ContentReported@1 (domain; planned; contract pending), ContentReportResolved@1 (domain; planned; contract pending), ContentReportReopened@1 (domain; planned; contract pending), InteractionLimitSet@1 (domain; planned; contract pending), InteractionLimitLifted@1 (domain; planned; contract pending), OrganizationBlocked@1 (domain; planned; contract pending), OrganizationUnblocked@1 (domain; planned; contract pending), ContentHidden@1 (domain; planned; contract pending), ContentUnhidden@1 (domain; planned; contract pending)
-- **Semantic claims:** None while product semantics remain candidate.
+- **Semantic claims:** community-content-moderation (owns ContentReport, ModerationCase, InteractionLimit, OrganizationBlock, ContentVisibilityDecision; events ContentReported@1, ContentReportResolved@1, ContentReportReopened@1, InteractionLimitSet@1, InteractionLimitLifted@1, OrganizationBlocked@1, OrganizationUnblocked@1, ContentHidden@1, ContentUnhidden@1; sources collaboration-moderation-source-01)
 - **Official sources:** collaboration-moderation-source-01 ([content moderation, interaction limits, blocking, conversation locking](https://docs.github.com/en/communities/moderating-comments-and-conversations), checked 2026-07-23)
 
 ### [collaboration/projects](../../apps/web/src/modules/collaboration/projects/README.md)
 
 - **Owns:** Project, ProjectItem, DraftIssue, ProjectView, ProjectField, ProjectWorkflow, ProjectChart, ProjectTemplate, ProjectStatusUpdate.
 - **Excludes:** RepositoryOwnership, Issue, IssueFieldDefinition.
-- **Activation scope:** None while planned.
+- **Activation scope:** list-account-projects, list-repository-projects, update-project-item-status
 - **Runtime dependencies:** None.
 - **Planned relationships:** identity/accounts via UserProjectOwner (synchronous); organizations/organizations via OrganizationProjectOwner (synchronous); organizations/organization-policies via ProjectPolicy (synchronous); collaboration/issues via IssueProjectItem (synchronous); commerce/entitlements via ProjectEntitlement (synchronous)
 - **Published events:** ProjectCreated@1 (domain; planned; contract pending), ProjectUpdated@1 (domain; planned; contract pending), ProjectClosed@1 (domain; planned; contract pending), ProjectReopened@1 (domain; planned; contract pending), ProjectDeleted@1 (domain; planned; contract pending), ProjectItemAdded@1 (domain; planned; contract pending), ProjectItemUpdated@1 (domain; planned; contract pending), ProjectItemRemoved@1 (domain; planned; contract pending), ProjectViewChanged@1 (domain; planned; contract pending), ProjectFieldChanged@1 (domain; planned; contract pending), ProjectWorkflowChanged@1 (domain; planned; contract pending), ProjectStatusUpdated@1 (domain; planned; contract pending)
-- **Semantic claims:** None while product semantics remain candidate.
+- **Semantic claims:** projects-items-fields-and-status (owns Project, ProjectItem, DraftIssue, ProjectView, ProjectField, ProjectWorkflow, ProjectChart, ProjectTemplate, ProjectStatusUpdate; events ProjectCreated@1, ProjectUpdated@1, ProjectClosed@1, ProjectReopened@1, ProjectDeleted@1, ProjectItemAdded@1, ProjectItemUpdated@1, ProjectItemRemoved@1, ProjectViewChanged@1, ProjectFieldChanged@1, ProjectWorkflowChanged@1, ProjectStatusUpdated@1; sources collaboration-projects-source-01)
 - **Official sources:** collaboration-projects-source-01 ([projects, views, fields, workflows, charts, templates](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects), checked 2026-07-23)
 
 ### [engagement/stars](../../apps/web/src/modules/engagement/stars/README.md)
 
 - **Owns:** RepositoryStar, StarList, StarListEntry.
 - **Excludes:** RepositorySubscription, Notification, UserFollow.
-- **Activation scope:** None while planned.
+- **Activation scope:** list-repository-stargazers, toggle-repository-star
 - **Runtime dependencies:** None.
 - **Planned relationships:** identity/accounts via AccountReference (synchronous); repositories/repositories via RepositoryStarrableOperationalState (synchronous); repositories/repository-access via RepositoryReadPermission (synchronous); repositories/repositories via RepositoryVisibilityEvents (event) [RepositoryVisibilityChanged@1]
 - **Published events:** RepositoryStarred@1 (domain; planned; contract pending), RepositoryUnstarred@1 (domain; planned; contract pending), StarListCreated@1 (domain; planned; contract pending), StarListUpdated@1 (domain; planned; contract pending), StarListDeleted@1 (domain; planned; contract pending), StarListEntryAdded@1 (domain; planned; contract pending), StarListEntryRemoved@1 (domain; planned; contract pending)
-- **Semantic claims:** None while product semantics remain candidate.
+- **Semantic claims:** repository-stars-and-lists (owns RepositoryStar, StarList, StarListEntry; events RepositoryStarred@1, RepositoryUnstarred@1, StarListCreated@1, StarListUpdated@1, StarListDeleted@1, StarListEntryAdded@1, StarListEntryRemoved@1; sources engagement-stars-source-01, engagement-stars-source-02, engagement-stars-source-03)
 - **Official sources:** engagement-stars-source-01 ([repository stars, star lists, discovery](https://docs.github.com/en/get-started/exploring-projects-on-github/saving-repositories-with-stars), checked 2026-07-22); engagement-stars-source-02 ([stars removed by visibility changes](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility), checked 2026-07-22); engagement-stars-source-03 ([starring archived repositories](https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories), checked 2026-07-22)
 
 ### [engagement/subscriptions](../../apps/web/src/modules/engagement/subscriptions/README.md)
 
 - **Owns:** RepositoryWatchPreference, RepositoryEventPreference, ConversationParticipation, ManualConversationSubscription, IgnorePreference.
 - **Excludes:** Notification, NotificationReason, EmailDelivery, RepositoryStar.
-- **Activation scope:** None while planned.
+- **Activation scope:** list-repository-subscribers, toggle-repository-subscription
 - **Runtime dependencies:** None.
 - **Planned relationships:** identity/accounts via AccountReference (synchronous); repositories/repositories via RepositoryReference (synchronous); repositories/repository-access via RepositoryReadPermission (synchronous); collaboration/conversations via ConversationReference (synchronous); repositories/repositories via RepositoryVisibilityEvents (event) [RepositoryVisibilityChanged@1]
 - **Published events:** RepositorySubscriptionChanged@1 (domain; planned; contract pending), ConversationSubscriptionChanged@1 (domain; planned; contract pending)
-- **Semantic claims:** None while product semantics remain candidate.
+- **Semantic claims:** repository-and-conversation-subscriptions (owns RepositoryWatchPreference, RepositoryEventPreference, ConversationParticipation, ManualConversationSubscription, IgnorePreference; events RepositorySubscriptionChanged@1, ConversationSubscriptionChanged@1; sources engagement-subscriptions-source-01, engagement-subscriptions-source-02, engagement-subscriptions-source-03)
 - **Official sources:** engagement-subscriptions-source-01 ([repository watches, conversation subscriptions, automatic participation](https://docs.github.com/en/subscriptions-and-notifications/concepts/about-notifications), checked 2026-07-22); engagement-subscriptions-source-02 ([custom watch preferences, ignore preference](https://docs.github.com/en/subscriptions-and-notifications/get-started/configuring-notifications), checked 2026-07-22); engagement-subscriptions-source-03 ([watchers removed by visibility changes](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility), checked 2026-07-22)
 
 ### [engagement/notifications](../../apps/web/src/modules/engagement/notifications/README.md)
 
 - **Owns:** Notification, NotificationInbox, NotificationReason, NotificationState, InboxFilter.
 - **Excludes:** SubscriptionPreference, EmailDelivery, PushDelivery.
-- **Activation scope:** None while planned.
+- **Activation scope:** list-notifications, mark-notification-read
 - **Runtime dependencies:** None.
 - **Planned relationships:** identity/accounts via NotificationRecipient (synchronous); engagement/subscriptions via NotificationInterestDecision (synchronous); repositories/repository-access via EffectiveReadPermission (synchronous); collaboration/issues via IssueNotificationEvents (event) [IssueCreated@1, IssueUpdated@1, IssueAssigned@1, IssueUnassigned@1, IssueClosed@1, IssueReopened@1]; collaboration/conversations via ConversationNotificationEvents (event) [CommentAdded@1, ReplyAdded@1, MentionDetected@1]; collaboration/discussions via DiscussionNotificationEvents (event) [DiscussionCreated@1, DiscussionUpdated@1, DiscussionAnswerMarked@1]; repositories/repository-access via RepositoryInvitationEvents (event) [RepositoryInvitationCreated@1]
 - **Published events:** NotificationCreated@1 (domain; planned; contract pending), NotificationRead@1 (domain; planned; contract pending), NotificationUnread@1 (domain; planned; contract pending), NotificationSaved@1 (domain; planned; contract pending), NotificationUnsaved@1 (domain; planned; contract pending), NotificationDone@1 (domain; planned; contract pending), NotificationReopened@1 (domain; planned; contract pending), InboxFilterChanged@1 (domain; planned; contract pending), NotificationDeliveryRequested@1 (integration; planned; contract pending)
-- **Semantic claims:** None while product semantics remain candidate.
+- **Semantic claims:** notification-inbox-triage (owns Notification, NotificationInbox, NotificationReason, NotificationState, InboxFilter; events NotificationCreated@1, NotificationRead@1, NotificationUnread@1, NotificationSaved@1, NotificationUnsaved@1, NotificationDone@1, NotificationReopened@1, InboxFilterChanged@1, NotificationDeliveryRequested@1; sources engagement-notifications-source-01, engagement-notifications-source-02)
 - **Official sources:** engagement-notifications-source-01 ([notifications, recipient interest, notification retention](https://docs.github.com/en/subscriptions-and-notifications/concepts/about-notifications), checked 2026-07-22); engagement-notifications-source-02 ([notification reasons, inbox filters, notification state](https://docs.github.com/en/subscriptions-and-notifications/reference/inbox-filters), checked 2026-07-22)
 
 ### [integrations/github-app-registrations](../../apps/web/src/modules/integrations/github-app-registrations/README.md)
@@ -541,11 +541,11 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 - **Owns:** SearchDocument, SearchResultProjection.
 - **Excludes:** SourceAggregate, AuthorizationSourceOfTruth, CodeSearch.
-- **Activation scope:** None while planned.
-- **Runtime dependencies:** None.
-- **Planned relationships:** identity/accounts via AccountSearchEvents (event) [AccountCreated@1, UsernameChanged@1, AccountDeleted@1]; organizations/organizations via OrganizationSearchEvents (event) [OrganizationCreated@1, OrganizationRenamed@1, OrganizationLifecycleChanged@1]; enterprises/custom-properties via EnterpriseCustomPropertySearchEvents (event) [EnterpriseRepositoryPropertyDefined@1, EnterpriseRepositoryPropertyUpdated@1, EnterpriseRepositoryPropertyDeleted@1, EnterpriseRepositoryPropertyPromoted@1, EnterpriseOrganizationPropertyDefined@1, EnterpriseOrganizationPropertyUpdated@1, EnterpriseOrganizationPropertyDeleted@1, OrganizationPropertyValueSet@1, OrganizationPropertyValueCleared@1]; organizations/custom-properties via RepositoryCustomPropertySearchEvents (event) [OrganizationRepositoryPropertyDefined@1, OrganizationRepositoryPropertyUpdated@1, OrganizationRepositoryPropertyDeleted@1, RepositoryPropertyValueSet@1, RepositoryPropertyValueCleared@1]; repositories/repositories via RepositorySearchEvents (event) [RepositoryCreated@1, RepositoryRenamed@1, RepositoryVisibilityChanged@1, RepositoryArchived@1, RepositoryUnarchived@1, RepositoryDeleted@1, RepositoryRestored@1]; repositories/repository-access via EffectiveReadPermission (synchronous); collaboration/issues via IssueSearchEvents (event) [IssueCreated@1, IssueUpdated@1, IssueClosed@1, IssueReopened@1, IssueTransferred@1]; collaboration/discussions via DiscussionSearchEvents (event) [DiscussionCreated@1, DiscussionUpdated@1, DiscussionClosed@1, DiscussionReopened@1, DiscussionTransferred@1]; collaboration/projects via ProjectSearchEvents (event) [ProjectCreated@1, ProjectUpdated@1, ProjectClosed@1, ProjectReopened@1, ProjectDeleted@1]; platform/search-index via SearchIndexPort (synchronous)
+- **Activation scope:** search-public-resources
+- **Runtime dependencies:** platform/search-index via SearchIndexPort (synchronous)
+- **Planned relationships:** identity/accounts via AccountSearchEvents (event) [AccountCreated@1, UsernameChanged@1, AccountDeleted@1]; organizations/organizations via OrganizationSearchEvents (event) [OrganizationCreated@1, OrganizationRenamed@1, OrganizationLifecycleChanged@1]; enterprises/custom-properties via EnterpriseCustomPropertySearchEvents (event) [EnterpriseRepositoryPropertyDefined@1, EnterpriseRepositoryPropertyUpdated@1, EnterpriseRepositoryPropertyDeleted@1, EnterpriseRepositoryPropertyPromoted@1, EnterpriseOrganizationPropertyDefined@1, EnterpriseOrganizationPropertyUpdated@1, EnterpriseOrganizationPropertyDeleted@1, OrganizationPropertyValueSet@1, OrganizationPropertyValueCleared@1]; organizations/custom-properties via RepositoryCustomPropertySearchEvents (event) [OrganizationRepositoryPropertyDefined@1, OrganizationRepositoryPropertyUpdated@1, OrganizationRepositoryPropertyDeleted@1, RepositoryPropertyValueSet@1, RepositoryPropertyValueCleared@1]; repositories/repositories via RepositorySearchEvents (event) [RepositoryCreated@1, RepositoryRenamed@1, RepositoryVisibilityChanged@1, RepositoryArchived@1, RepositoryUnarchived@1, RepositoryDeleted@1, RepositoryRestored@1]; repositories/repository-access via EffectiveReadPermission (synchronous); collaboration/issues via IssueSearchEvents (event) [IssueCreated@1, IssueUpdated@1, IssueClosed@1, IssueReopened@1, IssueTransferred@1]; collaboration/discussions via DiscussionSearchEvents (event) [DiscussionCreated@1, DiscussionUpdated@1, DiscussionClosed@1, DiscussionReopened@1, DiscussionTransferred@1]; collaboration/projects via ProjectSearchEvents (event) [ProjectCreated@1, ProjectUpdated@1, ProjectClosed@1, ProjectReopened@1, ProjectDeleted@1]
 - **Published events:** None. Read-model context consumes versioned events and does not publish product facts.
-- **Semantic claims:** None while product semantics remain candidate.
+- **Semantic claims:** permission-filtered-resource-search (owns SearchDocument, SearchResultProjection; no events; sources projections-search-source-01)
 - **Official sources:** projections-search-source-01 ([global search, repository search, issue search, permission-filtered results](https://docs.github.com/en/search-github), checked 2026-07-23)
 
 ### [projections/dashboard](../../apps/web/src/modules/projections/dashboard/README.md)
@@ -563,11 +563,11 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 - **Owns:** ActivityItem, PersonalActivityFeed, RepositoryActivityFeed, OrganizationActivityFeed.
 - **Excludes:** AuditEvent, DomainEventSource, CodeActivity.
-- **Activation scope:** None while planned.
+- **Activation scope:** list-repository-activity
 - **Runtime dependencies:** None.
 - **Planned relationships:** identity/social-graph via FollowEvents (event) [UserFollowed@1, UserUnfollowed@1, OrganizationFollowed@1, OrganizationUnfollowed@1]; repositories/repositories via RepositoryActivityEvents (event) [RepositoryCreated@1, RepositoryProfileUpdated@1, RepositoryRenamed@1, RepositoryVisibilityChanged@1, RepositoryArchived@1, RepositoryUnarchived@1, RepositoryDeleted@1, RepositoryRestored@1]; collaboration/issues via IssueActivityEvents (event) [IssueCreated@1, IssueUpdated@1, IssueClosed@1, IssueReopened@1]; collaboration/discussions via DiscussionActivityEvents (event) [DiscussionCreated@1, DiscussionUpdated@1, DiscussionClosed@1, DiscussionReopened@1]; collaboration/projects via ProjectActivityEvents (event) [ProjectCreated@1, ProjectUpdated@1, ProjectClosed@1, ProjectReopened@1, ProjectStatusUpdated@1]; repositories/repository-access via EffectiveReadPermission (synchronous)
 - **Published events:** None. Read-model context consumes versioned events and does not publish product facts.
-- **Semantic claims:** None while product semantics remain candidate.
+- **Semantic claims:** permission-filtered-product-activity (owns ActivityItem, PersonalActivityFeed, RepositoryActivityFeed, OrganizationActivityFeed; no events; sources projections-activity-feed-source-01)
 - **Official sources:** projections-activity-feed-source-01 ([personal dashboard, activity feed, followed activity](https://docs.github.com/en/account-and-profile/reference/personal-dashboard), checked 2026-07-23)
 
 ### [projections/repository-insights](../../apps/web/src/modules/projections/repository-insights/README.md)
@@ -651,11 +651,11 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 - **Owns:** DiscoveryFeed, CuratedCollection, TopicListing, TrendingListing.
 - **Excludes:** RepositorySearch, RankingTelemetryOwnership, RepositoryContent.
-- **Activation scope:** None while planned.
+- **Activation scope:** get-explore-feed
 - **Runtime dependencies:** None.
 - **Planned relationships:** None.
 - **Published events:** None. Discovery is a read-model context and does not publish product facts.
-- **Semantic claims:** None while product semantics remain candidate.
+- **Semantic claims:** public-explore-feed (owns DiscoveryFeed, CuratedCollection, TopicListing, TrendingListing; no events; sources projections-discovery-source-01)
 - **Official sources:** projections-discovery-source-01 ([explore and discovery, topic navigation, trending discovery](https://docs.github.com/en/get-started/exploring-projects-on-github/finding-ways-to-contribute-to-open-source-on-github), checked 2026-07-26)
 
 ### [integrations/marketplace-catalog](../../apps/web/src/modules/integrations/marketplace-catalog/README.md)

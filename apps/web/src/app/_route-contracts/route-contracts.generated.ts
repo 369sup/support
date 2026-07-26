@@ -16,9 +16,9 @@ export type RouteMaterialization =
 
 export type RouteId = "handler-api-auth-account-sessions" | "handler-api-auth-account-sessions-sessionid" | "handler-api-auth-account-sessions-sessionid-activate" | "handler-api-auth-session" | "handler-api-context" | "handler-api-context-selection" | "handler-api-contexts" | "handler-api-dashboard" | "handler-api-development-auth-account-sessions-sessionid-expire" | "handler-api-development-auth-account-sessions-sessionid-reauthenticate" | "handler-api-development-auth-sessions" | "handler-api-enterprises-slug-organizations" | "handler-api-organizations-login-repositories" | "handler-api-organizations-login-repositories-repository-teams-teamslug" | "handler-api-organizations-login-roles" | "handler-api-organizations-login-roles-assignments" | "handler-api-organizations-login-roles-assignments-assignmentid" | "handler-api-organizations-login-teams" | "handler-api-organizations-login-teams-teamslug" | "handler-api-organizations-login-teams-teamslug-maintainers-username" | "handler-api-organizations-login-teams-teamslug-members" | "handler-api-organizations-login-teams-teamslug-members-username" | "handler-api-users-username-repositories" | "handler-logout" | "page-accept-invitation" | "page-accessibility" | "page-account" | "page-collections" | "page-dashboard" | "page-docs" | "page-enterprises-slug" | "page-enterprises-slug-enterprise-roles" | "page-enterprises-slug-organizations" | "page-enterprises-slug-people" | "page-enterprises-slug-settings" | "page-enterprises-slug-settings-apps" | "page-enterprises-slug-settings-audit-log" | "page-enterprises-slug-settings-billing" | "page-enterprises-slug-teams" | "page-explore" | "page-forgot-password" | "page-login" | "page-marketplace" | "page-new" | "page-notifications" | "page-organizations-login-settings-apps" | "page-organizations-login-settings-audit-log" | "page-organizations-login-settings-billing" | "page-organizations-login-settings-custom-properties" | "page-organizations-login-settings-hooks" | "page-organizations-login-settings-installations" | "page-organizations-login-settings-installations-installationid" | "page-organizations-login-settings-member-privileges" | "page-organizations-login-settings-repository-access-repository" | "page-organizations-login-settings-roles" | "page-organizations-login-settings-teams" | "page-orgs-organization-people" | "page-orgs-organization-projects" | "page-orgs-organization-projects-number" | "page-orgs-organization-repositories" | "page-orgs-organization-teams" | "page-orgs-organization-teams-teamslug" | "page-owner" | "page-owner-repository" | "page-owner-repository-actions" | "page-owner-repository-actions-actionpath" | "page-owner-repository-activity" | "page-owner-repository-archive-archivepath" | "page-owner-repository-blame-refandpath" | "page-owner-repository-blob-refandpath" | "page-owner-repository-branches" | "page-owner-repository-branches-view" | "page-owner-repository-commit-sha" | "page-owner-repository-commits-refandpath" | "page-owner-repository-community" | "page-owner-repository-compare" | "page-owner-repository-compare-comparison" | "page-owner-repository-custom-properties" | "page-owner-repository-discussions" | "page-owner-repository-discussions-categories-slug" | "page-owner-repository-discussions-new" | "page-owner-repository-discussions-number" | "page-owner-repository-forks" | "page-owner-repository-graphs-traffic" | "page-owner-repository-issues" | "page-owner-repository-issues-new" | "page-owner-repository-issues-number" | "page-owner-repository-issues-views" | "page-owner-repository-labels" | "page-owner-repository-labels-label" | "page-owner-repository-milestone-number" | "page-owner-repository-milestones" | "page-owner-repository-packages" | "page-owner-repository-pages" | "page-owner-repository-projects" | "page-owner-repository-pull-pullpath" | "page-owner-repository-pulls" | "page-owner-repository-pulse" | "page-owner-repository-raw-refandpath" | "page-owner-repository-releases" | "page-owner-repository-releases-download-assetpath" | "page-owner-repository-releases-latest" | "page-owner-repository-releases-latest-download-assetpath" | "page-owner-repository-releases-tag-tag" | "page-owner-repository-settings" | "page-owner-repository-settings-access" | "page-owner-repository-settings-hooks" | "page-owner-repository-stargazers" | "page-owner-repository-tags" | "page-owner-repository-tree-refandpath" | "page-owner-repository-watchers" | "page-owner-repository-wiki" | "page-owner-repository-wiki-pagename" | "page-privacy" | "page-projects" | "page-repositories" | "page-reset-password" | "page-root" | "page-search" | "page-settings" | "page-settings-applications" | "page-settings-apps" | "page-settings-billing" | "page-settings-developers" | "page-settings-installations" | "page-settings-sessions" | "page-sign-in" | "page-sign-up" | "page-signup" | "page-terms" | "page-topics" | "page-topics-topic" | "page-trending" | "page-users-username-projects-number" | "page-verify-email";
 
-export type NavigableRouteId = "page-accessibility" | "page-account" | "page-dashboard" | "page-docs" | "page-enterprises-slug" | "page-enterprises-slug-enterprise-roles" | "page-enterprises-slug-organizations" | "page-enterprises-slug-people" | "page-enterprises-slug-settings" | "page-enterprises-slug-settings-apps" | "page-enterprises-slug-settings-audit-log" | "page-enterprises-slug-settings-billing" | "page-enterprises-slug-teams" | "page-login" | "page-organizations-login-settings-audit-log" | "page-organizations-login-settings-member-privileges" | "page-organizations-login-settings-repository-access-repository" | "page-organizations-login-settings-roles" | "page-organizations-login-settings-teams" | "page-orgs-organization-people" | "page-orgs-organization-repositories" | "page-orgs-organization-teams" | "page-orgs-organization-teams-teamslug" | "page-owner" | "page-owner-repository" | "page-owner-repository-settings" | "page-owner-repository-settings-access" | "page-privacy" | "page-repositories" | "page-root" | "page-settings" | "page-settings-sessions" | "page-sign-in" | "page-terms";
+export type NavigableRouteId = "page-accessibility" | "page-account" | "page-dashboard" | "page-docs" | "page-enterprises-slug" | "page-enterprises-slug-enterprise-roles" | "page-enterprises-slug-organizations" | "page-enterprises-slug-people" | "page-enterprises-slug-settings" | "page-enterprises-slug-settings-apps" | "page-enterprises-slug-settings-audit-log" | "page-enterprises-slug-settings-billing" | "page-enterprises-slug-teams" | "page-explore" | "page-login" | "page-notifications" | "page-organizations-login-settings-audit-log" | "page-organizations-login-settings-member-privileges" | "page-organizations-login-settings-repository-access-repository" | "page-organizations-login-settings-roles" | "page-organizations-login-settings-teams" | "page-orgs-organization-people" | "page-orgs-organization-repositories" | "page-orgs-organization-teams" | "page-orgs-organization-teams-teamslug" | "page-owner" | "page-owner-repository" | "page-owner-repository-activity" | "page-owner-repository-discussions" | "page-owner-repository-discussions-new" | "page-owner-repository-discussions-number" | "page-owner-repository-issues" | "page-owner-repository-issues-new" | "page-owner-repository-issues-number" | "page-owner-repository-projects" | "page-owner-repository-settings" | "page-owner-repository-settings-access" | "page-owner-repository-stargazers" | "page-owner-repository-watchers" | "page-privacy" | "page-projects" | "page-repositories" | "page-root" | "page-search" | "page-settings" | "page-settings-sessions" | "page-sign-in" | "page-terms";
 
-export type UnavailableRouteId = "page-accept-invitation" | "page-collections" | "page-explore" | "page-forgot-password" | "page-marketplace" | "page-new" | "page-notifications" | "page-organizations-login-settings-apps" | "page-organizations-login-settings-billing" | "page-organizations-login-settings-custom-properties" | "page-organizations-login-settings-hooks" | "page-organizations-login-settings-installations" | "page-organizations-login-settings-installations-installationid" | "page-orgs-organization-projects" | "page-orgs-organization-projects-number" | "page-owner-repository-actions" | "page-owner-repository-actions-actionpath" | "page-owner-repository-activity" | "page-owner-repository-archive-archivepath" | "page-owner-repository-blame-refandpath" | "page-owner-repository-blob-refandpath" | "page-owner-repository-branches" | "page-owner-repository-branches-view" | "page-owner-repository-commit-sha" | "page-owner-repository-commits-refandpath" | "page-owner-repository-community" | "page-owner-repository-compare" | "page-owner-repository-compare-comparison" | "page-owner-repository-custom-properties" | "page-owner-repository-discussions" | "page-owner-repository-discussions-categories-slug" | "page-owner-repository-discussions-new" | "page-owner-repository-discussions-number" | "page-owner-repository-forks" | "page-owner-repository-graphs-traffic" | "page-owner-repository-issues" | "page-owner-repository-issues-new" | "page-owner-repository-issues-number" | "page-owner-repository-issues-views" | "page-owner-repository-labels" | "page-owner-repository-labels-label" | "page-owner-repository-milestone-number" | "page-owner-repository-milestones" | "page-owner-repository-packages" | "page-owner-repository-pages" | "page-owner-repository-projects" | "page-owner-repository-pull-pullpath" | "page-owner-repository-pulls" | "page-owner-repository-pulse" | "page-owner-repository-raw-refandpath" | "page-owner-repository-releases" | "page-owner-repository-releases-download-assetpath" | "page-owner-repository-releases-latest" | "page-owner-repository-releases-latest-download-assetpath" | "page-owner-repository-releases-tag-tag" | "page-owner-repository-settings-hooks" | "page-owner-repository-stargazers" | "page-owner-repository-tags" | "page-owner-repository-tree-refandpath" | "page-owner-repository-watchers" | "page-owner-repository-wiki" | "page-owner-repository-wiki-pagename" | "page-projects" | "page-reset-password" | "page-search" | "page-settings-applications" | "page-settings-apps" | "page-settings-billing" | "page-settings-developers" | "page-settings-installations" | "page-sign-up" | "page-signup" | "page-topics" | "page-topics-topic" | "page-trending" | "page-users-username-projects-number" | "page-verify-email";
+export type UnavailableRouteId = "page-accept-invitation" | "page-collections" | "page-forgot-password" | "page-marketplace" | "page-new" | "page-organizations-login-settings-apps" | "page-organizations-login-settings-billing" | "page-organizations-login-settings-custom-properties" | "page-organizations-login-settings-hooks" | "page-organizations-login-settings-installations" | "page-organizations-login-settings-installations-installationid" | "page-orgs-organization-projects" | "page-orgs-organization-projects-number" | "page-owner-repository-actions" | "page-owner-repository-actions-actionpath" | "page-owner-repository-archive-archivepath" | "page-owner-repository-blame-refandpath" | "page-owner-repository-blob-refandpath" | "page-owner-repository-branches" | "page-owner-repository-branches-view" | "page-owner-repository-commit-sha" | "page-owner-repository-commits-refandpath" | "page-owner-repository-community" | "page-owner-repository-compare" | "page-owner-repository-compare-comparison" | "page-owner-repository-custom-properties" | "page-owner-repository-discussions-categories-slug" | "page-owner-repository-forks" | "page-owner-repository-graphs-traffic" | "page-owner-repository-issues-views" | "page-owner-repository-labels" | "page-owner-repository-labels-label" | "page-owner-repository-milestone-number" | "page-owner-repository-milestones" | "page-owner-repository-packages" | "page-owner-repository-pages" | "page-owner-repository-pull-pullpath" | "page-owner-repository-pulls" | "page-owner-repository-pulse" | "page-owner-repository-raw-refandpath" | "page-owner-repository-releases" | "page-owner-repository-releases-download-assetpath" | "page-owner-repository-releases-latest" | "page-owner-repository-releases-latest-download-assetpath" | "page-owner-repository-releases-tag-tag" | "page-owner-repository-settings-hooks" | "page-owner-repository-tags" | "page-owner-repository-tree-refandpath" | "page-owner-repository-wiki" | "page-owner-repository-wiki-pagename" | "page-reset-password" | "page-settings-applications" | "page-settings-apps" | "page-settings-billing" | "page-settings-developers" | "page-settings-installations" | "page-sign-up" | "page-signup" | "page-topics" | "page-topics-topic" | "page-trending" | "page-users-username-projects-number" | "page-verify-email";
 
 export type RouteParamsById = Readonly<{
   "handler-api-auth-account-sessions": Readonly<Record<never, never>>;
@@ -185,7 +185,7 @@ export type RouteQueryById = Readonly<{
   "handler-logout": Readonly<Record<never, never>>;
   "page-accept-invitation": Readonly<Record<never, never>>;
   "page-accessibility": Readonly<Record<never, never>>;
-  "page-account": Readonly<Record<never, never>>;
+  "page-account": Readonly<{ readonly "profile"?: string; readonly "account"?: string; }>;
   "page-collections": Readonly<Record<never, never>>;
   "page-dashboard": Readonly<Record<never, never>>;
   "page-docs": Readonly<Record<never, never>>;
@@ -221,7 +221,7 @@ export type RouteQueryById = Readonly<{
   "page-orgs-organization-repositories": Readonly<Record<never, never>>;
   "page-orgs-organization-teams": Readonly<Record<never, never>>;
   "page-orgs-organization-teams-teamslug": Readonly<Record<never, never>>;
-  "page-owner": Readonly<Record<never, never>>;
+  "page-owner": Readonly<{ readonly "follow"?: string; }>;
   "page-owner-repository": Readonly<Record<never, never>>;
   "page-owner-repository-actions": Readonly<Record<never, never>>;
   "page-owner-repository-actions-actionpath": Readonly<Record<never, never>>;
@@ -239,13 +239,13 @@ export type RouteQueryById = Readonly<{
   "page-owner-repository-custom-properties": Readonly<Record<never, never>>;
   "page-owner-repository-discussions": Readonly<Record<never, never>>;
   "page-owner-repository-discussions-categories-slug": Readonly<Record<never, never>>;
-  "page-owner-repository-discussions-new": Readonly<Record<never, never>>;
-  "page-owner-repository-discussions-number": Readonly<Record<never, never>>;
+  "page-owner-repository-discussions-new": Readonly<{ readonly "status"?: string; }>;
+  "page-owner-repository-discussions-number": Readonly<{ readonly "comment"?: string; readonly "report"?: string; }>;
   "page-owner-repository-forks": Readonly<Record<never, never>>;
   "page-owner-repository-graphs-traffic": Readonly<Record<never, never>>;
   "page-owner-repository-issues": Readonly<Record<never, never>>;
-  "page-owner-repository-issues-new": Readonly<Record<never, never>>;
-  "page-owner-repository-issues-number": Readonly<Record<never, never>>;
+  "page-owner-repository-issues-new": Readonly<{ readonly "status"?: string; }>;
+  "page-owner-repository-issues-number": Readonly<{ readonly "comment"?: string; readonly "reaction"?: string; readonly "report"?: string; }>;
   "page-owner-repository-issues-views": Readonly<Record<never, never>>;
   "page-owner-repository-labels": Readonly<Record<never, never>>;
   "page-owner-repository-labels-label": Readonly<Record<never, never>>;
@@ -277,7 +277,7 @@ export type RouteQueryById = Readonly<{
   "page-repositories": Readonly<Record<never, never>>;
   "page-reset-password": Readonly<Record<never, never>>;
   "page-root": Readonly<Record<never, never>>;
-  "page-search": Readonly<Record<never, never>>;
+  "page-search": Readonly<{ readonly "q"?: string; }>;
   "page-settings": Readonly<Record<never, never>>;
   "page-settings-applications": Readonly<Record<never, never>>;
   "page-settings-apps": Readonly<Record<never, never>>;
@@ -672,7 +672,18 @@ export const routeDefinitions = {
     "status": "active",
     "materialization": "active",
     "pathParams": [],
-    "queryParams": []
+    "queryParams": [
+      {
+        "name": "profile",
+        "isRequired": false,
+        "isRepeatable": false
+      },
+      {
+        "name": "account",
+        "isRequired": false,
+        "isRepeatable": false
+      }
+    ]
   },
   "page-collections": {
     "id": "page-collections",
@@ -831,8 +842,8 @@ export const routeDefinitions = {
     "id": "page-explore",
     "kind": "page",
     "supportPath": "/explore",
-    "status": "planned",
-    "materialization": "scaffolded",
+    "status": "active",
+    "materialization": "active",
     "pathParams": [],
     "queryParams": []
   },
@@ -882,8 +893,8 @@ export const routeDefinitions = {
     "id": "page-notifications",
     "kind": "page",
     "supportPath": "/notifications",
-    "status": "planned",
-    "materialization": "scaffolded",
+    "status": "active",
+    "materialization": "active",
     "pathParams": [],
     "queryParams": []
   },
@@ -1153,7 +1164,13 @@ export const routeDefinitions = {
         "kind": "scalar"
       }
     ],
-    "queryParams": []
+    "queryParams": [
+      {
+        "name": "follow",
+        "isRequired": false,
+        "isRepeatable": false
+      }
+    ]
   },
   "page-owner-repository": {
     "id": "page-owner-repository",
@@ -1217,8 +1234,8 @@ export const routeDefinitions = {
     "id": "page-owner-repository-activity",
     "kind": "page",
     "supportPath": "/{owner}/{repository}/activity",
-    "status": "planned",
-    "materialization": "scaffolded",
+    "status": "active",
+    "materialization": "active",
     "pathParams": [
       {
         "name": "owner",
@@ -1461,8 +1478,8 @@ export const routeDefinitions = {
     "id": "page-owner-repository-discussions",
     "kind": "page",
     "supportPath": "/{owner}/{repository}/discussions",
-    "status": "planned",
-    "materialization": "scaffolded",
+    "status": "active",
+    "materialization": "active",
     "pathParams": [
       {
         "name": "owner",
@@ -1501,8 +1518,8 @@ export const routeDefinitions = {
     "id": "page-owner-repository-discussions-new",
     "kind": "page",
     "supportPath": "/{owner}/{repository}/discussions/new",
-    "status": "planned",
-    "materialization": "scaffolded",
+    "status": "active",
+    "materialization": "active",
     "pathParams": [
       {
         "name": "owner",
@@ -1513,14 +1530,20 @@ export const routeDefinitions = {
         "kind": "scalar"
       }
     ],
-    "queryParams": []
+    "queryParams": [
+      {
+        "name": "status",
+        "isRequired": false,
+        "isRepeatable": false
+      }
+    ]
   },
   "page-owner-repository-discussions-number": {
     "id": "page-owner-repository-discussions-number",
     "kind": "page",
     "supportPath": "/{owner}/{repository}/discussions/{number}",
-    "status": "planned",
-    "materialization": "scaffolded",
+    "status": "active",
+    "materialization": "active",
     "pathParams": [
       {
         "name": "owner",
@@ -1535,7 +1558,18 @@ export const routeDefinitions = {
         "kind": "scalar"
       }
     ],
-    "queryParams": []
+    "queryParams": [
+      {
+        "name": "comment",
+        "isRequired": false,
+        "isRepeatable": false
+      },
+      {
+        "name": "report",
+        "isRequired": false,
+        "isRepeatable": false
+      }
+    ]
   },
   "page-owner-repository-forks": {
     "id": "page-owner-repository-forks",
@@ -1577,8 +1611,8 @@ export const routeDefinitions = {
     "id": "page-owner-repository-issues",
     "kind": "page",
     "supportPath": "/{owner}/{repository}/issues",
-    "status": "planned",
-    "materialization": "scaffolded",
+    "status": "active",
+    "materialization": "active",
     "pathParams": [
       {
         "name": "owner",
@@ -1595,8 +1629,8 @@ export const routeDefinitions = {
     "id": "page-owner-repository-issues-new",
     "kind": "page",
     "supportPath": "/{owner}/{repository}/issues/new",
-    "status": "planned",
-    "materialization": "scaffolded",
+    "status": "active",
+    "materialization": "active",
     "pathParams": [
       {
         "name": "owner",
@@ -1607,14 +1641,20 @@ export const routeDefinitions = {
         "kind": "scalar"
       }
     ],
-    "queryParams": []
+    "queryParams": [
+      {
+        "name": "status",
+        "isRequired": false,
+        "isRepeatable": false
+      }
+    ]
   },
   "page-owner-repository-issues-number": {
     "id": "page-owner-repository-issues-number",
     "kind": "page",
     "supportPath": "/{owner}/{repository}/issues/{number}",
-    "status": "planned",
-    "materialization": "scaffolded",
+    "status": "active",
+    "materialization": "active",
     "pathParams": [
       {
         "name": "owner",
@@ -1629,7 +1669,23 @@ export const routeDefinitions = {
         "kind": "scalar"
       }
     ],
-    "queryParams": []
+    "queryParams": [
+      {
+        "name": "comment",
+        "isRequired": false,
+        "isRepeatable": false
+      },
+      {
+        "name": "reaction",
+        "isRequired": false,
+        "isRepeatable": false
+      },
+      {
+        "name": "report",
+        "isRequired": false,
+        "isRepeatable": false
+      }
+    ]
   },
   "page-owner-repository-issues-views": {
     "id": "page-owner-repository-issues-views",
@@ -1769,8 +1825,8 @@ export const routeDefinitions = {
     "id": "page-owner-repository-projects",
     "kind": "page",
     "supportPath": "/{owner}/{repository}/projects",
-    "status": "planned",
-    "materialization": "scaffolded",
+    "status": "active",
+    "materialization": "active",
     "pathParams": [
       {
         "name": "owner",
@@ -2023,8 +2079,8 @@ export const routeDefinitions = {
     "id": "page-owner-repository-stargazers",
     "kind": "page",
     "supportPath": "/{owner}/{repository}/stargazers",
-    "status": "planned",
-    "materialization": "scaffolded",
+    "status": "active",
+    "materialization": "active",
     "pathParams": [
       {
         "name": "owner",
@@ -2081,8 +2137,8 @@ export const routeDefinitions = {
     "id": "page-owner-repository-watchers",
     "kind": "page",
     "supportPath": "/{owner}/{repository}/watchers",
-    "status": "planned",
-    "materialization": "scaffolded",
+    "status": "active",
+    "materialization": "active",
     "pathParams": [
       {
         "name": "owner",
@@ -2148,8 +2204,8 @@ export const routeDefinitions = {
     "id": "page-projects",
     "kind": "page",
     "supportPath": "/projects",
-    "status": "planned",
-    "materialization": "scaffolded",
+    "status": "active",
+    "materialization": "active",
     "pathParams": [],
     "queryParams": []
   },
@@ -2184,10 +2240,16 @@ export const routeDefinitions = {
     "id": "page-search",
     "kind": "page",
     "supportPath": "/search",
-    "status": "mixed",
-    "materialization": "scaffolded",
+    "status": "active",
+    "materialization": "active",
     "pathParams": [],
-    "queryParams": []
+    "queryParams": [
+      {
+        "name": "q",
+        "isRequired": false,
+        "isRepeatable": false
+      }
+    ]
   },
   "page-settings": {
     "id": "page-settings",

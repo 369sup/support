@@ -1,5 +1,4 @@
 import { accountsServerFacade } from "./composition/accounts.composition";
-
 export type {
   PersonalAccountLookupResult,
   UserOwnerReference,
@@ -11,5 +10,7 @@ export type {
 } from "./contracts/account-reference";
 export const getAccountReferenceById =
   accountsServerFacade.getAccountReferenceById;
+export const deletePersonalAccount =
+  accountsServerFacade.deletePersonalAccount;
 export const getPersonalAccountByUsername =
   accountsServerFacade.getPersonalAccountByUsername;

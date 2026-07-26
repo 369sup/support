@@ -23,7 +23,7 @@ The filesystem route is reserved and currently returns the canonical unavailable
 
 ## Module contracts
 
-- - **owner:** `projections/discovery` — use cases: `list-topics`; functions: no runtime function reference
+- - **owner:** `projections/discovery` — use cases: no route-level use-case reference; functions: no runtime function reference
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

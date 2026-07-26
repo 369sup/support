@@ -10,7 +10,63 @@ declare global {
 }
 
 function createState(): InMemorySearchIndexState {
-  return { documentsById: new Map() };
+  const fixtures: SearchDocument[] = [
+    {
+      authorizationKeys: ["public"],
+      body: "Support product collaboration, permissions, notifications, issues, and discussions.",
+      documentId: "repository:repository_support",
+      kind: "repository",
+      sourceContext: "repositories/repositories",
+      sourceVersion: 1,
+      title: "octocat/support",
+      version: 1,
+    },
+    {
+      authorizationKeys: ["public"],
+      body: "Design the contributor notification inbox with repository subscriptions.",
+      documentId: "issue:repository_support:1",
+      kind: "issue",
+      sourceContext: "collaboration/issues",
+      sourceVersion: 1,
+      title: "Design the contributor notification inbox",
+      version: 1,
+    },
+    {
+      authorizationKeys: ["public"],
+      body: "Community questions and answers about contributor collaboration.",
+      documentId: "discussion:repository_support:1",
+      kind: "discussion",
+      sourceContext: "collaboration/discussions",
+      sourceVersion: 1,
+      title: "How should contributors receive updates?",
+      version: 1,
+    },
+    {
+      authorizationKeys: ["public"],
+      body: "Plan the Support collaboration MVP across issues, notifications, discussions, and projects.",
+      documentId: "project:project_support_collaboration",
+      kind: "project",
+      sourceContext: "collaboration/projects",
+      sourceVersion: 1,
+      title: "Support collaboration MVP",
+      version: 1,
+    },
+    {
+      authorizationKeys: ["public"],
+      body: "Personal profile for the Support development account.",
+      documentId: "profile:account_mock",
+      kind: "profile",
+      sourceContext: "identity/profiles",
+      sourceVersion: 1,
+      title: "mock",
+      version: 1,
+    },
+  ];
+  return {
+    documentsById: new Map(
+      fixtures.map((document) => [document.documentId, document]),
+    ),
+  };
 }
 
 function getProcessState() {

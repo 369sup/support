@@ -1,88 +1,106 @@
-# Notifications Bounded Context
-
-- **Catalog path:** `engagement/notifications`
-- **Kind:** `domain`
-- **Classification:** `supporting`
-- **Maturity:** `stable`
-- **Implementation:** `planned`
-- **Semantic status:** `candidate`
+# Notifications
 
 ## Purpose
 
-User notification records, inboxes, reasons, filters, and read, saved, or done state.
+Own recipient-specific notification records and inbox triage.
 
 ## Context content tree
 
-- `engagement/notifications` [planned]
-  - Purpose: User notification records, inboxes, reasons, filters, and read, saved, or done state.
-  - Capabilities
-    - No active use cases; activation scope remains empty.
-  - Owned domain concepts
-    - `Notification`
-    - `NotificationInbox`
-    - `NotificationReason`
-    - `NotificationState`
-    - `InboxFilter`
-  - Business rules and invariants
-    - Pending official-source validation before activation.
-  - Published events
-    - `NotificationCreated@1` [planned]: notification created.
-    - `NotificationRead@1` [planned]: notification read.
-    - `NotificationUnread@1` [planned]: notification unread.
-    - `NotificationSaved@1` [planned]: notification saved.
-    - `NotificationUnsaved@1` [planned]: notification unsaved.
-    - `NotificationDone@1` [planned]: notification done.
-    - `NotificationReopened@1` [planned]: notification reopened.
-    - `InboxFilterChanged@1` [planned]: inbox filter changed.
-    - `NotificationDeliveryRequested@1` [planned]: notification delivery requested after recipient and read-access resolution.
-- External relationships
-  - Runtime dependencies: none.
-  - Planned relationships
-    - `identity/accounts::NotificationRecipient` (synchronous)
-    - `engagement/subscriptions::NotificationInterestDecision` (synchronous)
-    - `repositories/repository-access::EffectiveReadPermission` (synchronous)
-    - `collaboration/issues::IssueNotificationEvents` (event; events `IssueCreated@1`, `IssueUpdated@1`, `IssueAssigned@1`, `IssueUnassigned@1`, `IssueClosed@1`, `IssueReopened@1`)
-    - `collaboration/conversations::ConversationNotificationEvents` (event; events `CommentAdded@1`, `ReplyAdded@1`, `MentionDetected@1`)
-    - `collaboration/discussions::DiscussionNotificationEvents` (event; events `DiscussionCreated@1`, `DiscussionUpdated@1`, `DiscussionAnswerMarked@1`)
-    - `repositories/repository-access::RepositoryInvitationEvents` (event; events `RepositoryInvitationCreated@1`)
-- Explicit exclusions
-  - `SubscriptionPreference`
-  - `EmailDelivery`
-  - `PushDelivery`
+- Notification inbox [active]
+  - `list-notifications`
+  - `mark-notification-read`
+  - Owned: `Notification`, `NotificationInbox`, `NotificationReason`,
+    `NotificationState`
+- Inbox customization [planned]
+  - Owned: `InboxFilter`
+- Planned events: `NotificationCreated@1`, `NotificationRead@1`,
+  `NotificationUnread@1`, `NotificationSaved@1`, `NotificationUnsaved@1`,
+  `NotificationDone@1`, `NotificationReopened@1`, `InboxFilterChanged@1`,
+  `NotificationDeliveryRequested@1`
+- Runtime dependencies: none.
+- Excludes: `SubscriptionPreference`, `EmailDelivery`, `PushDelivery`.
 
 ## Designed use cases
 
-No approved use cases. Implementation remains blocked.
+### `list-notifications` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ListNotificationsUseCase.listNotifications()`
+- **Public entrypoint:** `server-api.ts#listNotifications`
+- **Input:** Authenticated recipient account ID.
+- **Success result:** `found` with recipient notifications newest first.
+- **Expected rejections:** `invalid-recipient`
+- **Authorization:** Recipient ID is resolved from the HttpOnly session.
+- **Transaction:** Read-only process-local snapshot.
+- **Idempotency:** Query.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `engagement-notifications-source-01`
+- **Local policy:** Only the recipient can list a notification.
+
+### `mark-notification-read` [active]
+
+- **Type:** `command`
+- **Application boundary:** `MarkNotificationReadUseCase.markNotificationRead()`
+- **Public entrypoint:** `server-api.ts#markNotificationRead`
+- **Input:** Recipient account ID and notification ID.
+- **Success result:** `read`.
+- **Expected rejections:** `notification-not-found`
+- **Authorization:** Recipient ownership is checked in the repository lookup.
+- **Transaction:** Replace one process-local notification.
+- **Idempotency:** Marking an already-read notification remains `read`.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `engagement-notifications-source-01`
+- **Local policy:** Cross-recipient lookup returns not found.
+
+## Ubiquitous language
+
+- **Notification**: recipient-specific update for subscribed activity.
+- **Reason**: why the recipient received the update.
+- **Inbox state**: triage state such as unread or read.
 
 ## Ownership and invariants
 
-This context owns `Notification`, `NotificationInbox`, `NotificationReason`, `NotificationState`, `InboxFilter`.
-It excludes `SubscriptionPreference`, `EmailDelivery`, `PushDelivery`.
+Owns the complete catalog notification model. Every record has exactly one
+recipient.
 
-No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
+## Public capabilities
+
+`listNotifications` and `markNotificationRead`.
 
 ## Dependencies and consistency
 
-### Runtime dependencies
+The active inbox uses fixtures; upstream subscription and event consumption
+remain planned and no synthetic real-time delivery is claimed.
 
-None.
+## Authorization
 
-### Planned relationships
+The authenticated recipient account ID scopes every query and mutation.
 
-- `identity/accounts::NotificationRecipient` (synchronous)
-- `engagement/subscriptions::NotificationInterestDecision` (synchronous)
-- `repositories/repository-access::EffectiveReadPermission` (synchronous)
-- `collaboration/issues::IssueNotificationEvents` (event; events `IssueCreated@1`, `IssueUpdated@1`, `IssueAssigned@1`, `IssueUnassigned@1`, `IssueClosed@1`, `IssueReopened@1`)
-- `collaboration/conversations::ConversationNotificationEvents` (event; events `CommentAdded@1`, `ReplyAdded@1`, `MentionDetected@1`)
-- `collaboration/discussions::DiscussionNotificationEvents` (event; events `DiscussionCreated@1`, `DiscussionUpdated@1`, `DiscussionAnswerMarked@1`)
-- `repositories/repository-access::RepositoryInvitationEvents` (event; events `RepositoryInvitationCreated@1`)
+## Persistence and transactions
+
+Notifications are process-local and non-durable.
+
+## Data classification
+
+Notification subjects and reasons may reveal private repository activity and
+must remain recipient-scoped.
+
+## Retention and erasure
+
+Process lifetime only. Durable implementation must apply the documented
+five-month and saved-notification retention rules.
+
+## Events and failure behavior
+
+Events remain planned until transactional publication exists.
 
 ## Official sources
 
-- `engagement-notifications-source-01`: [notifications, recipient interest, notification retention](https://docs.github.com/en/subscriptions-and-notifications/concepts/about-notifications) (verified 2026-07-22)
-- `engagement-notifications-source-02`: [notification reasons, inbox filters, notification state](https://docs.github.com/en/subscriptions-and-notifications/reference/inbox-filters) (verified 2026-07-22)
+- <https://docs.github.com/en/subscriptions-and-notifications/concepts/about-notifications>
+- <https://docs.github.com/en/subscriptions-and-notifications/reference/inbox-filters>
 
 ## Exceptions
 
-No context-specific exception is declared by the catalog. The central
-[exception registry](../../../../../../docs/architecture/exceptions/registry.json) remains authoritative.
+None.

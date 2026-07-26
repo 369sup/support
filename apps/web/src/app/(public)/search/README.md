@@ -8,14 +8,14 @@
 - **Support path:** `/search`
 - **GitHub canonical patterns:** No official pattern is asserted.
 - **Delivery:** `page`
-- **Status:** `mixed`
-- **Materialization:** `scaffolded`
+- **Status:** `active`
+- **Materialization:** `active`
 
 ## Functional intent
 
-Search permission-filtered product resources through the search projection.
+Searches supported public profiles, repositories, issues, discussions, and projects.
 
-The filesystem route is reserved and currently returns the canonical unavailable response.
+The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
 ## Delivery functions
 
@@ -23,8 +23,7 @@ The filesystem route is reserved and currently returns the canonical unavailable
 
 ## Module contracts
 
-- - **owner:** `projections/search` — use cases: no route-level use-case reference; functions: no runtime function reference
-- - **collaborator:** `platform/search-index` — use cases: no route-level use-case reference; functions: no runtime function reference
+- - **owner:** `projections/search` — use cases: `search-public-resources`; functions: `searchPublicResources`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 
@@ -36,7 +35,7 @@ None.
 
 ### Query
 
-None.
+- - `q`: optional, single
 
 Query keys not declared here are rejected by the typed URL builder.
 

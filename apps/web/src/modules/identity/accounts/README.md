@@ -24,7 +24,16 @@ lifecycle semantics. Active queries resolve public account references.
       - Return `account-not-found` when no active personal account matches.
       - Return `invalid-username` when the input is invalid.
     - Published events: none for this query-only active slice.
-  - Account lifecycle [planned]
+  - Account lifecycle
+    - Personal account deletion [active]
+      - Use case: `delete-personal-account`
+      - Only the active personal account owner can delete the account.
+      - The process-local record transitions to `deleted` and is no longer
+        discoverable.
+      - Delivery signs out the browser session set after deletion.
+      - `AccountDeleted@1` remains planned until transactional publication is
+        available.
+    - Remaining lifecycle [planned]
     - Owned concepts: `AccountLifecycle`, `GhostAttribution`
     - Planned behaviors:
       - Account creation
@@ -42,6 +51,22 @@ lifecycle semantics. Active queries resolve public account references.
   - `EnterpriseMembership`
 
 ## Designed use cases
+
+### `delete-personal-account` [active]
+
+- **Type:** `command`
+- **Application boundary:** `DeletePersonalAccountUseCase.deletePersonalAccount()`
+- **Public entrypoint:** `server-api.ts#deletePersonalAccount`
+- **Input:** Actor account ID and target account ID.
+- **Success result:** `deleted`.
+- **Expected rejections:** `account-not-found`, `forbidden`, `unsupported-account-type`
+- **Authorization:** Owner-only account lifecycle policy in the application handler.
+- **Transaction:** One process-local account record transition to `deleted`.
+- **Idempotency:** Repeating after deletion returns `account-not-found`.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `identity-accounts-source-04`
+- **Local policy:** Managed accounts and machine-use personal accounts cannot use this personal deletion slice.
 
 ### `get-account-reference-by-id` [active]
 
@@ -94,6 +119,7 @@ does not own credentials, sessions, profiles, or repository permissions.
 
 - `getPersonalAccountByUsername(username)` through `server-api.ts`.
 - `getAccountReferenceById(accountId)` through `server-api.ts`.
+- `deletePersonalAccount(command)` through `server-api.ts`.
 - `AccountReference`, `ActorReference`, and `UserOwnerReference` through
   `integration-contracts.ts`.
 - `GetPersonalAccountByUsernameUseCase.getPersonalAccountByUsername()` is the
@@ -118,8 +144,9 @@ excluded. A client-side mock session boundary is not an authorization source.
 
 ## Persistence and transactions
 
-The first slice uses a context-local in-memory query adapter with deterministic
-development fixtures. It performs no writes and owns no transaction.
+The active slice uses a context-local in-memory adapter with deterministic
+development fixtures. Deletion replaces one record inside the process store.
+There is no durable or cross-instance transaction.
 
 ## Data classification
 
@@ -128,14 +155,17 @@ credentials, tokens, and private profile data are not stored or returned.
 
 ## Retention and erasure
 
-The in-memory fixture lives for the process lifetime. Future durable adapters
-must follow the account deletion and ghost-attribution rules before activation.
+The in-memory fixture lives for the process lifetime. A deleted record is
+retained until process restart so lookups can reject it. Durable adapters must
+implement ghost attribution, downstream erasure, and username-release timing
+before production activation.
 
 ## Events and failure behavior
 
-This query-only activation emits no events. All catalog events remain planned.
-Expected invalid input and absence use named results; unexpected adapter
-failures propagate as infrastructure errors.
+Catalog events remain planned because there is no transactional event
+publisher. Expected invalid input, authorization denial, unsupported account
+type, and absence use named results; unexpected adapter failures propagate as
+infrastructure errors.
 
 ## Official sources
 

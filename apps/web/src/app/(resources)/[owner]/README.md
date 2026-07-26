@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Delivers `/{owner}` through `requireCurrentSession`, `getPersonalAccountByUsername`, `getOrganizationByLogin`, `listActiveRepositoriesForOwner`, `resolveEffectiveRepositoryPermission`.
+Delivers `/{owner}` profile, achievements, and visible repositories through `requireCurrentSession`, `getPersonalAccountByUsername`, `getUserProfile`, `getOrganizationByLogin`, `listActiveRepositoriesForOwner`, and `resolveEffectiveRepositoryPermission`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -26,6 +26,8 @@ The filesystem route is active. Its business behavior remains owned by the refer
 - - **owner:** `repositories/repositories` — use cases: `list-active-repositories-for-owner`; functions: `listActiveRepositoriesForOwner`
 - - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
 - - **collaborator:** `identity/accounts` — use cases: `get-personal-account-by-username`; functions: `getPersonalAccountByUsername`
+- - **collaborator:** `identity/profiles` — use cases: `get-user-profile`; functions: `getUserProfile`
+- - **collaborator:** `identity/social-graph` — use cases: `toggle-user-follow`; functions: `toggleUserFollow`
 - - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`
 - - **collaborator:** `repositories/repository-access` — use cases: `resolve-effective-repository-permission`; functions: `resolveEffectiveRepositoryPermission`
 
@@ -39,7 +41,7 @@ The module README remains the semantic authority for each complete thirteen-fiel
 
 ### Query
 
-None.
+- - `follow`: optional, single
 
 Query keys not declared here are rejected by the typed URL builder.
 
