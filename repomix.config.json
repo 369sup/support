@@ -1,8 +1,8 @@
 {
   "$schema": "https://repomix.com/schemas/latest/schema.json",
   "output": {
-    "filePath": "repomix-output.md",
-    "style": "markdown",
+    "filePath": "repomix-output.xml",
+    "style": "xml",
     "filePathStyle": "target-relative",
     "parsableStyle": false,
     "compress": false,
@@ -15,8 +15,10 @@
     "truncateBase64": true,
     "copyToClipboard": false,
     "includeEmptyDirectories": false,
-    "topFilesLength": 15,
-    "headerText": "## Repomix Bundle for Codex-friendly review\n\nGenerated for implementation review and navigation.",
+    "includeFullDirectoryStructure": true,
+    "topFilesLength": 20,
+    "headerText": "Repository-wide context for Codex. Search before reading large ranges, and treat live source plus the nearest AGENTS.md as authoritative.",
+    "instructionFilePath": "AGENTS.md",
     "git": {
       "sortByChanges": false,
       "sortByChangesMaxCommits": 100,
@@ -24,37 +26,14 @@
       "includeLogs": false
     }
   },
-  "include": [
-    "apps/web/src/**/*.{ts,tsx,js,jsx,css,scss}",
-    "packages/**/*.{ts,tsx,js,jsx}",
-    "**/tsconfig*.json",
-    "**/package.json",
-    "apps/web/.eslintrc.cjs",
-    "pnpm-workspace.yaml",
-    "turbo.json"
-  ],
   "ignore": {
     "useGitignore": true,
+    "useDotIgnore": true,
     "useDefaultPatterns": true,
     "customPatterns": [
-      ".npm-cache/**",
-      "repomix-cache/**",
-      "repomix-output*.{md,xml}",
-      "repomix-output.md",
-      ".turbo/**",
-      ".next/**",
-      "coverage/**",
-      "playwright-report/**",
-      "test-results/**",
-      "dist/**",
-      "build/**",
-      "out/**",
+      "repomix-output*.*",
       "tmp/**",
-      "*.log",
-      "**/*.test.ts",
-      "**/*.test.tsx",
-      "**/*.spec.ts",
-      "**/*.spec.tsx"
+      "*.log"
     ]
   },
   "security": {

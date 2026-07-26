@@ -149,9 +149,17 @@ requested and document their scope.
   authorities it names.
 - Prefer exact symbol and reference lookup through Serena when available. Use
   `rg` or `rg --files` for direct text and path discovery.
-- Use Repomix only for repository-wide snapshots, architecture mapping, and
-  cross-file pattern discovery. Do not use it instead of Serena for a known
-  symbol or instead of direct tools for a known file.
+- Use Repomix only for repository-wide snapshots, architecture mapping,
+  unfamiliar large repositories, and cross-file pattern discovery. Do not use
+  it instead of Serena for a known symbol or instead of direct tools for a
+  known file.
+- Start Repomix with narrow `includePatterns`, inspect the summary and directory
+  structure, search the packed output, and then read only the exact ranges that
+  support the conclusion.
+- Keep Repomix security scanning enabled and do not trust remote repository
+  configuration. Leave compression off by default; enable it only when
+  architecture analysis or output size requires it, and disclose that
+  implementation details were omitted.
 - Read focused symbols or sections before whole large files. Ignore generated
   output, dependencies, and unrelated modules.
 - Make the smallest in-scope change and inspect the actual diff.

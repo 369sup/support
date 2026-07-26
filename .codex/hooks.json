@@ -51,7 +51,7 @@
         ]
       },
       {
-        "matcher": "Bash|Edit|Write|apply_patch|mcp__serena_jetbrains__.*_memory",
+        "matcher": "Bash|Edit|Write|apply_patch|mcp__serena__.*_memory",
         "hooks": [
           {
             "type": "command",
