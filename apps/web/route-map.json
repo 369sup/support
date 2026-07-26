@@ -2233,18 +2233,51 @@
       "status": "active",
       "materialization": "active",
       "title": "Enterprise Teams Page",
-      "summary": "Delivers `/enterprises/{slug}/teams` through `requireCurrentSession`, `authorizeEnterpriseAdministration`, `getEnterpriseBySlug`.",
+      "summary": "Lists enterprise teams and supports owner-authorized team lifecycle and direct member management without Git or code capabilities.",
       "pathParams": [
         {
           "name": "slug",
           "kind": "scalar"
         }
       ],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "member",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "team",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
-          "context": "enterprises/enterprises",
+          "context": "enterprises/enterprise-teams",
           "role": "owner",
+          "useCases": [
+            "add-enterprise-team-member",
+            "create-enterprise-team",
+            "delete-enterprise-team",
+            "list-enterprise-team-members",
+            "list-enterprise-teams",
+            "remove-enterprise-team-member",
+            "update-enterprise-team"
+          ],
+          "functions": [
+            "addEnterpriseTeamMember",
+            "createEnterpriseTeam",
+            "deleteEnterpriseTeam",
+            "listEnterpriseTeamMembers",
+            "listEnterpriseTeams",
+            "removeEnterpriseTeamMember",
+            "updateEnterpriseTeam"
+          ]
+        },
+        {
+          "context": "enterprises/enterprises",
+          "role": "collaborator",
           "useCases": [
             "get-enterprise-by-slug"
           ],

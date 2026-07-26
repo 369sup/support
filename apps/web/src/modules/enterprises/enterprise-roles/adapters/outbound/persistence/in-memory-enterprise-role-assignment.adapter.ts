@@ -8,7 +8,7 @@ const developmentAssignments: readonly EnterpriseRoleAssignmentSnapshot[] = [
     assignmentId: "enterprise_role_assignment_carol_acme_admin",
     enterpriseId: "enterprise_acme",
     accountId: "account_carol_acme",
-    roleName: "enterprise-admin",
+    roleName: "enterprise-owner",
     permissions: ["view-enterprise"],
   },
 ];

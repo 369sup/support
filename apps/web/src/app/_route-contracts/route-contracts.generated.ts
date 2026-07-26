@@ -197,7 +197,7 @@ export type RouteQueryById = Readonly<{
   "page-enterprises-slug-settings-apps": Readonly<Record<never, never>>;
   "page-enterprises-slug-settings-audit-log": Readonly<Record<never, never>>;
   "page-enterprises-slug-settings-billing": Readonly<Record<never, never>>;
-  "page-enterprises-slug-teams": Readonly<Record<never, never>>;
+  "page-enterprises-slug-teams": Readonly<{ readonly "member"?: string; readonly "team"?: string; }>;
   "page-explore": Readonly<Record<never, never>>;
   "page-forgot-password": Readonly<Record<never, never>>;
   "page-login": Readonly<{ readonly "add"?: readonly string[]; }>;
@@ -836,7 +836,18 @@ export const routeDefinitions = {
         "kind": "scalar"
       }
     ],
-    "queryParams": []
+    "queryParams": [
+      {
+        "name": "member",
+        "isRequired": false,
+        "isRepeatable": false
+      },
+      {
+        "name": "team",
+        "isRequired": false,
+        "isRepeatable": false
+      }
+    ]
   },
   "page-explore": {
     "id": "page-explore",

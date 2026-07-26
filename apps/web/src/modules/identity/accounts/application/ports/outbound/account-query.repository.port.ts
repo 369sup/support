@@ -8,6 +8,9 @@ export type AccountQuerySnapshot = Readonly<{
 }>;
 
 export interface AccountQueryRepositoryPort {
+  findByUsername(
+    username: string,
+  ): Promise<AccountQuerySnapshot | null>;
   findPersonalByUsername(
     username: string,
   ): Promise<AccountQuerySnapshot | null>;

@@ -62,7 +62,10 @@ function createStore(
   return {
     byId: new Map(accounts.map((account) => [account.accountId, account])),
     accountIdByUsername: new Map(
-      accounts.map((account) => [account.username, account.accountId]),
+      accounts.map((account) => [
+        account.username.toLocaleLowerCase("en-US"),
+        account.accountId,
+      ]),
     ),
   };
 }
@@ -84,13 +87,21 @@ export class InMemoryAccountQueryAdapter
       accounts === undefined ? getProcessStore() : createStore(accounts);
   }
 
-  findPersonalByUsername(
+  findByUsername(
     username: string,
   ): Promise<AccountQuerySnapshot | null> {
-    const accountId = this.store.accountIdByUsername.get(username);
+    const accountId = this.store.accountIdByUsername.get(
+      username.toLocaleLowerCase("en-US"),
+    );
     return Promise.resolve(
       accountId === undefined ? null : (this.store.byId.get(accountId) ?? null),
     );
+  }
+
+  findPersonalByUsername(
+    username: string,
+  ): Promise<AccountQuerySnapshot | null> {
+    return this.findByUsername(username);
   }
 
   findById(accountId: string): Promise<AccountQuerySnapshot | null> {

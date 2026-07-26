@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Delivers `/enterprises/{slug}/teams` through `requireCurrentSession`, `authorizeEnterpriseAdministration`, `getEnterpriseBySlug`.
+Lists enterprise teams and supports owner-authorized team lifecycle and direct member management without Git or code capabilities.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -23,7 +23,8 @@ The filesystem route is active. Its business behavior remains owned by the refer
 
 ## Module contracts
 
-- - **owner:** `enterprises/enterprises` — use cases: `get-enterprise-by-slug`; functions: `getEnterpriseBySlug`
+- - **owner:** `enterprises/enterprise-teams` — use cases: `add-enterprise-team-member`, `create-enterprise-team`, `delete-enterprise-team`, `list-enterprise-team-members`, `list-enterprise-teams`, `remove-enterprise-team-member`, `update-enterprise-team`; functions: `addEnterpriseTeamMember`, `createEnterpriseTeam`, `deleteEnterpriseTeam`, `listEnterpriseTeamMembers`, `listEnterpriseTeams`, `removeEnterpriseTeamMember`, `updateEnterpriseTeam`
+- - **collaborator:** `enterprises/enterprises` — use cases: `get-enterprise-by-slug`; functions: `getEnterpriseBySlug`
 - - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
 - - **collaborator:** `enterprises/enterprise-roles` — use cases: `authorize-enterprise-administration`; functions: `authorizeEnterpriseAdministration`
 
@@ -37,7 +38,8 @@ The module README remains the semantic authority for each complete thirteen-fiel
 
 ### Query
 
-None.
+- - `member`: optional, single
+- - `team`: optional, single
 
 Query keys not declared here are rejected by the typed URL builder.
 

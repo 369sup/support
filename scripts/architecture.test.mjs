@@ -768,6 +768,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "identity/social-graph",
       "enterprises/enterprises",
       "enterprises/enterprise-memberships",
+      "enterprises/enterprise-teams",
       "enterprises/enterprise-roles",
       "organizations/organizations",
       "organizations/organization-memberships",
@@ -796,7 +797,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
   );
   assert.equal(
     catalog.contexts.filter((item) => item.implementationStatus === "planned").length,
-    34,
+    33,
   );
   assert.equal(
     byPath.get("organizations/organization-memberships").activationScope.includes(
@@ -808,8 +809,21 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
     byPath.get("identity/accounts").activationScope,
     [
       "delete-personal-account",
+      "get-account-candidate-by-username",
       "get-account-reference-by-id",
       "get-personal-account-by-username",
+    ],
+  );
+  assert.deepEqual(
+    byPath.get("enterprises/enterprise-teams").activationScope,
+    [
+      "add-enterprise-team-member",
+      "create-enterprise-team",
+      "delete-enterprise-team",
+      "list-enterprise-team-members",
+      "list-enterprise-teams",
+      "remove-enterprise-team-member",
+      "update-enterprise-team",
     ],
   );
   assert.deepEqual(

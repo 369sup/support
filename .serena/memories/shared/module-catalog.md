@@ -12,7 +12,7 @@
 
 - enterprises: domain, active
 - enterprise-memberships: domain, active
-- enterprise-teams: domain, planned
+- enterprise-teams: domain, active
 - enterprise-roles: domain, active
 - enterprise-iam: domain, planned
 - enterprise-policies: domain, planned
