@@ -65,8 +65,7 @@ export function DevelopmentSignInForm({
       setIsPending(false);
       return;
     }
-    router.push("/dashboard");
-    router.refresh();
+    router.replace("/dashboard");
   }
 
   return (
