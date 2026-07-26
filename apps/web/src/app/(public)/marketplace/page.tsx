@@ -1,12 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function MarketplacePage(): never {
-  void {
-    urlPattern: "/marketplace",
-    title: "Marketplace",
-    summary: "Reserve the public marketplace entry point without defining listing or commerce behavior.",
-    contexts: [],
-    catalogStatus: "unowned",
-  };
-  notFound();
+  return renderUnavailableRoute("page-marketplace");
 }

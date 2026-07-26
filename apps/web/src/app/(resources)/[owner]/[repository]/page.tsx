@@ -34,7 +34,7 @@ async function resolveOwnerByLogin(owner: string): Promise<OwnerLookupResult | n
   }
 
   const account = await getPersonalAccountByUsername(owner);
-  if (account.status !== "found") {
+  if (!account.isSuccessful) {
     return null;
   }
 

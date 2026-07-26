@@ -53,7 +53,7 @@ runtime boundaries, data ownership, authorization, or operational safety.
 | Complete applicable AGENTS chain | 3,000 |
 | Complete package AGENTS chain | 2,000 |
 | Root `README.md` | 1,800 |
-| Route README | 120 |
+| Route README | 1,200 |
 | Planned bounded-context README | 3,000 |
 
 Planned context READMEs normally target 700-1,500 estimated tokens. Reviewed
@@ -70,9 +70,9 @@ audits may load the complete file.
   locations and must not recreate forbidden source roots.
 - `apps/web/src/app` owns App Router delivery, route composition, metadata, request
   binding, and route-specific presentation.
-- Route status and common 404 behavior inherit from the nearest ancestor route
-  README. A descendant README exists only for different parsing, status,
-  ownership, authorization, direct-navigation behavior, or an exception.
+- `apps/web/route-map.json` is the single route-contract authority. Generated
+  READMEs are loaded one URL at a time and never replace a module README's
+  complete designed-use-case contract.
 - `apps/web/src/modules/<subdomain>/<bounded-context>` owns product or technical
   capabilities. Both names use lowercase kebab-case.
 - Do not add global `components`, `lib`, `shared`, `common`, or `utils` roots.
@@ -266,6 +266,20 @@ not use wildcard or multi-level barrel re-exports.
   permanent `AGENTS.override.md` files are prohibited.
 - **ARCH-GUIDE-002:** The generated-memory authority allowlist exactly matches
   repository guidance and is checked with generated artifacts.
+- **ARCH-ROUTE-001:** Every public `page.tsx` and `route.ts` delivery file maps
+  to exactly one route-catalog entry. Parallel-slot fallbacks are not public
+  URLs.
+- **ARCH-ROUTE-002..004:** Route IDs, Support patterns, files, README outputs,
+  delivery functions, HTTP methods, and materialization states are unique and
+  agree with the App Router filesystem.
+- **ARCH-ROUTE-005..006:** Every route has one owning catalog context.
+  Collaborators, module imports, public entrypoints, and designed-use-case
+  references agree with module authorities.
+- **ARCH-ROUTE-007:** GitHub product evidence uses official HTTPS GitHub Docs.
+  Internal APIs cite repository contracts rather than inventing a GitHub URL.
+- **ARCH-ROUTE-008:** `pnpm architecture:docs` deterministically projects
+  per-URL READMEs and `_route-contracts/route-contracts.generated.ts`; generated
+  governance rejects manual drift.
 - **ARCH-MEM-001:** Committed Serena shared memories are deterministic,
   read-only generated projections of an explicit authority allowlist. Local
   writable memories are ignored by Git.

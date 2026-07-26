@@ -19,34 +19,34 @@
       "reason": "Diffs, mergeability, merge execution, pull requests, reviews, and code-review state require the excluded code domain."
     },
     {
-      "name": "actions-and-code-products",
-      "reason": "Actions execution, code search and navigation, code security analysis, Dependabot, Packages, Pages, and Codespaces are excluded."
+      "name": "actions-and-source-backed-code-products",
+      "reason": "Actions execution, code search and navigation, code security analysis, Dependabot, source-backed package payloads, source-backed Pages builds, and Codespaces are excluded. Package metadata and app-owned site publication may be modeled without Git behavior."
     }
   ],
   "deferredCapabilities": [
     {
-      "name": "releases",
-      "requires": "A trustworthy tag-reference provider."
+      "name": "release-git-reference-resolution",
+      "requires": "A trustworthy tag-reference provider before release metadata may resolve Git tags or commits."
     },
     {
-      "name": "forks-and-templates",
-      "requires": "Git history and repository-content provisioning providers."
+      "name": "fork-history-and-template-provisioning",
+      "requires": "Git history and repository-content provisioning providers; relationship metadata remains independent."
     },
     {
-      "name": "community-profile",
-      "requires": "A repository-content provider for community files."
+      "name": "community-file-discovery",
+      "requires": "A repository-content provider; structured app-owned community profiles remain independent."
     },
     {
       "name": "code-rulesets",
       "requires": "Branch, tag, push, and code-governance resources."
     },
     {
-      "name": "repository-traffic-metrics",
-      "requires": "A trustworthy product-telemetry ingestion, retention, and aggregation capability."
+      "name": "git-derived-repository-traffic",
+      "requires": "A trustworthy Git telemetry provider; Support web telemetry remains independent."
     },
     {
-      "name": "repository-wiki-content",
-      "requires": "A trustworthy Git-backed wiki content provider."
+      "name": "git-backed-repository-wiki-content",
+      "requires": "A trustworthy Git-backed wiki provider; app-owned wiki content remains independent."
     },
     {
       "name": "repository-migration-locks",
@@ -1717,7 +1717,8 @@
       ],
       "activationScope": [
         "check-organization-context-eligibility",
-        "list-active-organization-memberships-for-account"
+        "list-active-organization-memberships-for-account",
+        "list-active-organization-memberships-for-organization"
       ],
       "plannedRelationships": [
         {
@@ -8462,6 +8463,563 @@
         "query-audit-records"
       ],
       "plannedRelationships": [],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "platform",
+      "name": "site-content",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Stable public product, documentation, accessibility, policy, and informational page content.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "SiteContentPage",
+        "SiteContentSlug",
+        "SitePolicyReference"
+      ],
+      "excludes": [
+        "RepositoryContent",
+        "UserGeneratedContent",
+        "LegalPolicyAuthorship"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "platform-site-content-source-01",
+          "url": "https://docs.github.com/en/site-policy",
+          "supports": [
+            "public policy navigation",
+            "stable site content routes"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Read-only site content does not publish domain events before activation.",
+      "activationScope": [],
+      "plannedRelationships": [],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "projections",
+      "name": "discovery",
+      "kind": "projection",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Public discovery projections for explore feeds, curated collections, topics, and trending repositories.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "DiscoveryFeed",
+        "CuratedCollection",
+        "TopicListing",
+        "TrendingListing"
+      ],
+      "excludes": [
+        "RepositorySearch",
+        "RankingTelemetryOwnership",
+        "RepositoryContent"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "projections-discovery-source-01",
+          "url": "https://docs.github.com/en/get-started/exploring-projects-on-github/finding-ways-to-contribute-to-open-source-on-github",
+          "supports": [
+            "explore and discovery",
+            "topic navigation",
+            "trending discovery"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Discovery is a read-model context and does not publish product facts.",
+      "activationScope": [],
+      "plannedRelationships": [],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "integrations",
+      "name": "marketplace-catalog",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Marketplace listing metadata, categories, publication state, and public discovery.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "MarketplaceListing",
+        "MarketplaceCategory",
+        "ListingPublicationState"
+      ],
+      "excludes": [
+        "EntitlementDecision",
+        "BillingTransaction",
+        "ApplicationInstallation"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "integrations-marketplace-catalog-source-01",
+          "url": "https://docs.github.com/en/apps/github-marketplace/github-marketplace-overview",
+          "supports": [
+            "marketplace listing catalog",
+            "listing discovery"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Catalog queries publish no events before listing administration is activated.",
+      "activationScope": [],
+      "plannedRelationships": [
+        {
+          "context": "commerce/entitlements",
+          "contract": "MarketplaceEntitlementReference",
+          "mode": "synchronous"
+        }
+      ],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "platform",
+      "name": "actions-route-compatibility",
+      "kind": "technical",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Canonical unavailable or redirect decisions for GitHub-style Actions URLs.",
+      "semanticStatus": "not-applicable",
+      "owns": [
+        "ActionsRouteDecision",
+        "CanonicalUnavailableRoute"
+      ],
+      "excludes": [
+        "WorkflowSource",
+        "WorkflowRun",
+        "JobExecution",
+        "GitTrigger"
+      ],
+      "dependencies": [],
+      "officialSources": [],
+      "publishedEvents": [],
+      "eventRationale": "Pure route-compatibility decisions do not publish technical events.",
+      "activationScope": [],
+      "plannedRelationships": [],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "platform",
+      "name": "repository-content-route-compatibility",
+      "kind": "technical",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Canonical unavailable or redirect decisions for tree, blob, raw, and source-archive URLs.",
+      "semanticStatus": "not-applicable",
+      "owns": [
+        "RepositoryContentRouteDecision",
+        "CanonicalUnavailableRoute"
+      ],
+      "excludes": [
+        "GitObject",
+        "RepositoryFile",
+        "RawBlob",
+        "SourceArchive"
+      ],
+      "dependencies": [],
+      "officialSources": [],
+      "publishedEvents": [],
+      "eventRationale": "Pure route-compatibility decisions do not publish technical events.",
+      "activationScope": [],
+      "plannedRelationships": [],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "platform",
+      "name": "repository-history-route-compatibility",
+      "kind": "technical",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Canonical unavailable or redirect decisions for commit, history, blame, compare, and Git-derived graph URLs.",
+      "semanticStatus": "not-applicable",
+      "owns": [
+        "RepositoryHistoryRouteDecision",
+        "CanonicalUnavailableRoute"
+      ],
+      "excludes": [
+        "Commit",
+        "GitHistory",
+        "BlameData",
+        "Diff",
+        "GitActivityMetric"
+      ],
+      "dependencies": [],
+      "officialSources": [],
+      "publishedEvents": [],
+      "eventRationale": "Pure route-compatibility decisions do not publish technical events.",
+      "activationScope": [],
+      "plannedRelationships": [],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "platform",
+      "name": "repository-reference-route-compatibility",
+      "kind": "technical",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Canonical unavailable or redirect decisions for branch and tag URLs.",
+      "semanticStatus": "not-applicable",
+      "owns": [
+        "RepositoryReferenceRouteDecision",
+        "CanonicalUnavailableRoute"
+      ],
+      "excludes": [
+        "GitBranch",
+        "GitTag",
+        "GitReference",
+        "CommitTarget"
+      ],
+      "dependencies": [],
+      "officialSources": [],
+      "publishedEvents": [],
+      "eventRationale": "Pure route-compatibility decisions do not publish technical events.",
+      "activationScope": [],
+      "plannedRelationships": [],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "platform",
+      "name": "pull-request-route-compatibility",
+      "kind": "technical",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Canonical unavailable or redirect decisions for pull-request URLs.",
+      "semanticStatus": "not-applicable",
+      "owns": [
+        "PullRequestRouteDecision",
+        "CanonicalUnavailableRoute"
+      ],
+      "excludes": [
+        "PullRequest",
+        "Diff",
+        "CommitLinkage",
+        "CodeReview"
+      ],
+      "dependencies": [],
+      "officialSources": [],
+      "publishedEvents": [],
+      "eventRationale": "Pure route-compatibility decisions do not publish technical events.",
+      "activationScope": [],
+      "plannedRelationships": [],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "commerce",
+      "name": "package-registry",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Repository-linked package metadata, versions, visibility, and catalog navigation without owning package payloads.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "PackageMetadata",
+        "PackageVersionMetadata",
+        "RepositoryPackageLink"
+      ],
+      "excludes": [
+        "PackagePayload",
+        "BuildArtifact",
+        "GitContent"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "commerce-package-registry-source-01",
+          "url": "https://docs.github.com/en/packages/learn-github-packages/viewing-packages",
+          "supports": [
+            "package metadata",
+            "repository package navigation"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Package metadata queries do not publish events before package administration is designed.",
+      "activationScope": [],
+      "plannedRelationships": [
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryReference",
+          "mode": "synchronous"
+        }
+      ],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "platform",
+      "name": "site-publishing",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "App-owned repository site publication metadata, domains, and publication status without Git-backed builds.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "SitePublication",
+        "PublicationStatus",
+        "PublicationDomain"
+      ],
+      "excludes": [
+        "GitSourceTree",
+        "SourceBuild",
+        "WorkflowJob",
+        "GitHubPagesBuild"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "platform-site-publishing-source-01",
+          "url": "https://docs.github.com/en/pages/getting-started-with-github-pages",
+          "supports": [
+            "repository site publication",
+            "publication status navigation"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Publication status queries do not publish events before publication commands are designed.",
+      "activationScope": [],
+      "plannedRelationships": [
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryReference",
+          "mode": "synchronous"
+        }
+      ],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "repositories",
+      "name": "repository-releases",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Repository release metadata, release tags as opaque labels, and release-asset references without owning Git tags.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "RepositoryRelease",
+        "ReleaseTagLabel",
+        "ReleaseAssetReference"
+      ],
+      "excludes": [
+        "GitTag",
+        "Commit",
+        "BinaryAssetStorage"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "repositories-repository-releases-source-01",
+          "url": "https://docs.github.com/en/repositories/releasing-projects-on-github/linking-to-releases",
+          "supports": [
+            "release list",
+            "latest release",
+            "tagged release",
+            "release asset links"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Release queries publish no events before release lifecycle commands are designed.",
+      "activationScope": [],
+      "plannedRelationships": [
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "platform/media-storage",
+          "contract": "ReleaseAssetStorageReference",
+          "mode": "synchronous"
+        }
+      ],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "repositories",
+      "name": "repository-forks",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Repository fork relationships and visibility metadata without provisioning or owning Git history.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "RepositoryForkRelationship",
+        "ForkNetworkReference",
+        "ForkVisibility"
+      ],
+      "excludes": [
+        "GitHistoryProvisioning",
+        "GitObjectCopy",
+        "TemplateProvisioning"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "repositories-repository-forks-source-01",
+          "url": "https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/about-permissions-and-visibility-of-forks",
+          "supports": [
+            "fork relationships",
+            "fork visibility"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Fork relationship queries publish no events before relationship commands are designed.",
+      "activationScope": [],
+      "plannedRelationships": [
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryReference",
+          "mode": "synchronous"
+        }
+      ],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "collaboration",
+      "name": "community-profiles",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Structured, app-owned repository community profile metadata and contribution-health indicators.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "CommunityProfile",
+        "CommunityHealthIndicator",
+        "ContributionResourceLink"
+      ],
+      "excludes": [
+        "RepositoryFile",
+        "SourceTree",
+        "CommunityFileDiscovery"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "collaboration-community-profiles-source-01",
+          "url": "https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/accessing-a-projects-community-profile",
+          "supports": [
+            "repository community profile",
+            "community health indicators"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Community profile queries publish no events before profile commands are designed.",
+      "activationScope": [],
+      "plannedRelationships": [
+        {
+          "context": "repositories/repository-features",
+          "contract": "RepositoryFeatureReference",
+          "mode": "synchronous"
+        }
+      ],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "collaboration",
+      "name": "wikis",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "App-owned repository wiki pages, names, navigation, and publication state without Git-backed storage.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "RepositoryWiki",
+        "WikiPage",
+        "WikiPageName"
+      ],
+      "excludes": [
+        "GitRepository",
+        "GitCommit",
+        "GitBackedWikiStorage"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "collaboration-wikis-source-01",
+          "url": "https://docs.github.com/en/communities/documenting-your-project-with-wikis/about-wikis",
+          "supports": [
+            "repository wiki navigation",
+            "wiki page semantics"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Wiki queries publish no events before wiki editing commands are designed.",
+      "activationScope": [],
+      "plannedRelationships": [
+        {
+          "context": "repositories/repository-features",
+          "contract": "RepositoryFeatureReference",
+          "mode": "synchronous"
+        }
+      ],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "projections",
+      "name": "repository-traffic",
+      "kind": "projection",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Privacy-bounded repository web traffic summaries derived from Support telemetry, not Git activity.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "RepositoryTrafficSummary",
+        "TrafficViewMetric",
+        "TrafficCloneMetric"
+      ],
+      "excludes": [
+        "GitActivityMetric",
+        "ContributorCodeMetric",
+        "VisitorIdentity"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "projections-repository-traffic-source-01",
+          "url": "https://docs.github.com/en/repositories/viewing-activity-and-data-for-your-repository/viewing-traffic-to-a-repository",
+          "supports": [
+            "repository traffic views",
+            "aggregate view and clone metrics"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Traffic is a read-model context and does not publish product facts.",
+      "activationScope": [],
+      "plannedRelationships": [
+        {
+          "context": "repositories/repository-access",
+          "contract": "EffectiveReadPermission",
+          "mode": "synchronous"
+        }
+      ],
       "semanticClaims": []
     }
   ]

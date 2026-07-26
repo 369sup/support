@@ -1,12 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function ForgotPasswordPage(): never {
-  void {
-    urlPattern: "/forgot-password",
-    title: "Forgot password",
-    summary: "Request a credential recovery flow for an account.",
-    contexts: ["identity/authentication"],
-    catalogStatus: "active",
-  };
-  notFound();
+  return renderUnavailableRoute("page-forgot-password");
 }

@@ -1,13 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function RepositoryForksPage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/forks",
-    title: "Repository forks",
-    summary:
-      "Reserve the GitHub-style forks route while fork behavior remains deferred.",
-    contexts: [],
-    catalogStatus: "deferred",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-forks");
 }

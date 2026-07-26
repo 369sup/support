@@ -33,6 +33,8 @@
 - repository-access: domain, active
 - repository-features: domain, planned
 - repository-metadata: domain, planned
+- repository-releases: domain, planned
+- repository-forks: domain, planned
 
 ## collaboration
 
@@ -43,6 +45,8 @@
 - discussions: domain, planned
 - moderation: domain, planned
 - projects: domain, planned
+- community-profiles: domain, planned
+- wikis: domain, planned
 
 ## engagement
 
@@ -58,11 +62,13 @@
 - oauth-authorizations: domain, planned
 - repository-autolinks: domain, planned
 - webhooks: domain, planned
+- marketplace-catalog: domain, planned
 
 ## commerce
 
 - billing: domain, planned
 - entitlements: domain, planned
+- package-registry: domain, planned
 
 ## governance
 
@@ -74,6 +80,8 @@
 - dashboard: projection, active
 - activity-feed: projection, planned
 - repository-insights: projection, planned
+- discovery: projection, planned
+- repository-traffic: projection, planned
 
 ## platform
 
@@ -82,3 +90,10 @@
 - media-storage: technical, active
 - notification-channels: technical, planned
 - audit-storage: technical, active
+- site-content: domain, planned
+- actions-route-compatibility: technical, planned
+- repository-content-route-compatibility: technical, planned
+- repository-history-route-compatibility: technical, planned
+- repository-reference-route-compatibility: technical, planned
+- pull-request-route-compatibility: technical, planned
+- site-publishing: domain, planned

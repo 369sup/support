@@ -1,12 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function LabelsPage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/labels",
-    title: "Labels",
-    summary: "Manage repository labels used by collaboration resources.",
-    contexts: ["collaboration/labels-and-milestones"],
-    catalogStatus: "planned",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-labels");
 }

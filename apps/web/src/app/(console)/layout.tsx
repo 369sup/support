@@ -17,16 +17,25 @@ import {
   listAvailableDashboardContexts,
   restoreLastValidDashboardContext,
 } from "@/modules/projections/dashboard/server-api";
+import { buildLinkHref } from "../_route-contracts/route-contract";
 
 export const dynamic = "force-dynamic";
 
 const consoleNavigation = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/repositories", label: "Repositories", icon: FolderKanban },
+  {
+    href: buildLinkHref("page-dashboard", {}),
+    label: "Dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    href: buildLinkHref("page-repositories", {}),
+    label: "Repositories",
+    icon: FolderKanban,
+  },
 ] satisfies readonly ConsoleNavigationItem[];
 
 type ConsoleNavigationItem = Readonly<{
-  href: string;
+  href: ReturnType<typeof buildLinkHref>;
   label: string;
   icon: LucideIcon;
 }>;
@@ -60,12 +69,16 @@ export default async function ConsoleLayout({
       ? [
           ...consoleNavigation,
           {
-            href: `/organizations/${selectedContext.context.login}/settings/teams`,
+            href: buildLinkHref("page-organizations-login-settings-teams", {
+              login: selectedContext.context.login,
+            }),
             label: "Teams",
             icon: UsersRound,
           },
           {
-            href: `/organizations/${selectedContext.context.login}/settings/roles`,
+            href: buildLinkHref("page-organizations-login-settings-roles", {
+              login: selectedContext.context.login,
+            }),
             label: "Roles",
             icon: ShieldCheck,
           },
@@ -97,7 +110,9 @@ export default async function ConsoleLayout({
           currentUsername={session.account.username}
           enterpriseHref={
             enterpriseAccess.status === "allowed"
-              ? "/enterprises/acme-enterprise"
+              ? buildLinkHref("page-enterprises-slug", {
+                  slug: "acme-enterprise",
+                })
               : null
           }
           sessions={sessionsResult}

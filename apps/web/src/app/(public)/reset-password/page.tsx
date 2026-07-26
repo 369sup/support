@@ -1,12 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function ResetPasswordPage(): never {
-  void {
-    urlPattern: "/reset-password",
-    title: "Reset password",
-    summary: "Complete an account credential recovery flow.",
-    contexts: ["identity/authentication"],
-    catalogStatus: "active",
-  };
-  notFound();
+  return renderUnavailableRoute("page-reset-password");
 }

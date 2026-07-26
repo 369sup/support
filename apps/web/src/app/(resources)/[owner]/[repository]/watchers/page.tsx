@@ -1,12 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function WatchersPage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/watchers",
-    title: "Watchers",
-    summary: "List visible repository subscription relationships.",
-    contexts: ["engagement/subscriptions"],
-    catalogStatus: "planned",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-watchers");
 }

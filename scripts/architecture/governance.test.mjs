@@ -13,6 +13,7 @@ const repositoryRoot = resolve(import.meta.dirname, "..", "..");
 const enforcementPaths = [
   "scripts/architecture.mjs",
   "scripts/architecture/governance.mjs",
+  "scripts/architecture/routes.mjs",
   "scripts/architecture/source.mjs",
   "scripts/architecture/workspace.mjs",
   "packages/tooling/src/eslint-rules/architecture-boundaries.mjs",

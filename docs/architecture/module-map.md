@@ -11,18 +11,18 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 | --- | --- |
 | git-and-repository-content | Git objects, files, commits, refs, branches, tags, clone, fetch, push, and repository content are outside the product boundary. |
 | diff-merge-and-pull-requests | Diffs, mergeability, merge execution, pull requests, reviews, and code-review state require the excluded code domain. |
-| actions-and-code-products | Actions execution, code search and navigation, code security analysis, Dependabot, Packages, Pages, and Codespaces are excluded. |
+| actions-and-source-backed-code-products | Actions execution, code search and navigation, code security analysis, Dependabot, source-backed package payloads, source-backed Pages builds, and Codespaces are excluded. Package metadata and app-owned site publication may be modeled without Git behavior. |
 
 ### Deferred capabilities
 
 | Capability | Activation prerequisite |
 | --- | --- |
-| releases | A trustworthy tag-reference provider. |
-| forks-and-templates | Git history and repository-content provisioning providers. |
-| community-profile | A repository-content provider for community files. |
+| release-git-reference-resolution | A trustworthy tag-reference provider before release metadata may resolve Git tags or commits. |
+| fork-history-and-template-provisioning | Git history and repository-content provisioning providers; relationship metadata remains independent. |
+| community-file-discovery | A repository-content provider; structured app-owned community profiles remain independent. |
 | code-rulesets | Branch, tag, push, and code-governance resources. |
-| repository-traffic-metrics | A trustworthy product-telemetry ingestion, retention, and aggregation capability. |
-| repository-wiki-content | A trustworthy Git-backed wiki content provider. |
+| git-derived-repository-traffic | A trustworthy Git telemetry provider; Support web telemetry remains independent. |
+| git-backed-repository-wiki-content | A trustworthy Git-backed wiki provider; app-owned wiki content remains independent. |
 | repository-migration-locks | A repository migration orchestration capability with documented lock ownership and recovery. |
 | organization-discussion-source-repository-disruption | Documented GitHub behavior or an accepted product policy for source repository transfer and deletion. |
 
@@ -79,6 +79,21 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 | platform | [media-storage](../../apps/web/src/modules/platform/media-storage/README.md) | technical | — | stable | active | not-applicable | not-applicable | Storage and retrieval of media referenced by product domains. |
 | platform | [notification-channels](../../apps/web/src/modules/platform/notification-channels/README.md) | technical | — | stable | planned | not-applicable | not-applicable | External email or push delivery adapters for accepted notification delivery requests. |
 | platform | [audit-storage](../../apps/web/src/modules/platform/audit-storage/README.md) | technical | — | stable | active | not-applicable | not-applicable | Storage, export, and retention enforcement for audit records. |
+| platform | [site-content](../../apps/web/src/modules/platform/site-content/README.md) | domain | supporting | stable | planned | fresh | candidate | Stable public product, documentation, accessibility, policy, and informational page content. |
+| projections | [discovery](../../apps/web/src/modules/projections/discovery/README.md) | projection | — | stable | planned | fresh | candidate | Public discovery projections for explore feeds, curated collections, topics, and trending repositories. |
+| integrations | [marketplace-catalog](../../apps/web/src/modules/integrations/marketplace-catalog/README.md) | domain | supporting | stable | planned | fresh | candidate | Marketplace listing metadata, categories, publication state, and public discovery. |
+| platform | [actions-route-compatibility](../../apps/web/src/modules/platform/actions-route-compatibility/README.md) | technical | — | stable | planned | not-applicable | not-applicable | Canonical unavailable or redirect decisions for GitHub-style Actions URLs. |
+| platform | [repository-content-route-compatibility](../../apps/web/src/modules/platform/repository-content-route-compatibility/README.md) | technical | — | stable | planned | not-applicable | not-applicable | Canonical unavailable or redirect decisions for tree, blob, raw, and source-archive URLs. |
+| platform | [repository-history-route-compatibility](../../apps/web/src/modules/platform/repository-history-route-compatibility/README.md) | technical | — | stable | planned | not-applicable | not-applicable | Canonical unavailable or redirect decisions for commit, history, blame, compare, and Git-derived graph URLs. |
+| platform | [repository-reference-route-compatibility](../../apps/web/src/modules/platform/repository-reference-route-compatibility/README.md) | technical | — | stable | planned | not-applicable | not-applicable | Canonical unavailable or redirect decisions for branch and tag URLs. |
+| platform | [pull-request-route-compatibility](../../apps/web/src/modules/platform/pull-request-route-compatibility/README.md) | technical | — | stable | planned | not-applicable | not-applicable | Canonical unavailable or redirect decisions for pull-request URLs. |
+| commerce | [package-registry](../../apps/web/src/modules/commerce/package-registry/README.md) | domain | supporting | stable | planned | fresh | candidate | Repository-linked package metadata, versions, visibility, and catalog navigation without owning package payloads. |
+| platform | [site-publishing](../../apps/web/src/modules/platform/site-publishing/README.md) | domain | supporting | stable | planned | fresh | candidate | App-owned repository site publication metadata, domains, and publication status without Git-backed builds. |
+| repositories | [repository-releases](../../apps/web/src/modules/repositories/repository-releases/README.md) | domain | supporting | stable | planned | fresh | candidate | Repository release metadata, release tags as opaque labels, and release-asset references without owning Git tags. |
+| repositories | [repository-forks](../../apps/web/src/modules/repositories/repository-forks/README.md) | domain | supporting | stable | planned | fresh | candidate | Repository fork relationships and visibility metadata without provisioning or owning Git history. |
+| collaboration | [community-profiles](../../apps/web/src/modules/collaboration/community-profiles/README.md) | domain | supporting | stable | planned | fresh | candidate | Structured, app-owned repository community profile metadata and contribution-health indicators. |
+| collaboration | [wikis](../../apps/web/src/modules/collaboration/wikis/README.md) | domain | supporting | stable | planned | fresh | candidate | App-owned repository wiki pages, names, navigation, and publication state without Git-backed storage. |
+| projections | [repository-traffic](../../apps/web/src/modules/projections/repository-traffic/README.md) | projection | — | stable | planned | fresh | candidate | Privacy-bounded repository web traffic summaries derived from Support telemetry, not Git activity. |
 
 ## Ownership and relationships
 
@@ -218,7 +233,7 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 - **Owns:** OrganizationMembership, OrganizationInvitation, MembershipRole, MembershipState.
 - **Excludes:** OutsideCollaborator, RepositoryInvitation, EnterpriseRole.
-- **Activation scope:** check-organization-context-eligibility, list-active-organization-memberships-for-account
+- **Activation scope:** check-organization-context-eligibility, list-active-organization-memberships-for-account, list-active-organization-memberships-for-organization
 - **Runtime dependencies:** organizations/organizations via OrganizationReference (synchronous); identity/accounts via AccountReference (synchronous)
 - **Planned relationships:** enterprises/enterprise-memberships via EnterpriseAffiliation (synchronous)
 - **Published events:** OrganizationInvitationCreated@1 (domain; planned; contract pending), OrganizationInvitationAccepted@1 (domain; planned; contract pending), OrganizationInvitationRevoked@1 (domain; planned; contract pending), OrganizationMemberAdded@1 (domain; planned; contract pending), OrganizationMemberRemoved@1 (domain; planned; contract pending), OrganizationMemberRoleChanged@1 (domain; planned; contract pending)
@@ -620,6 +635,171 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 - **Published events:** AuditRecordStored@1 (technical; planned; contract pending), AuditStorageExportCompleted@1 (technical; planned; contract pending), AuditRetentionApplied@1 (technical; planned; contract pending)
 - **Semantic claims:** Not applicable to technical capabilities.
 - **Official sources:** Not applicable; technical capability.
+
+### [platform/site-content](../../apps/web/src/modules/platform/site-content/README.md)
+
+- **Owns:** SiteContentPage, SiteContentSlug, SitePolicyReference.
+- **Excludes:** RepositoryContent, UserGeneratedContent, LegalPolicyAuthorship.
+- **Activation scope:** None while planned.
+- **Runtime dependencies:** None.
+- **Planned relationships:** None.
+- **Published events:** None. Read-only site content does not publish domain events before activation.
+- **Semantic claims:** None while product semantics remain candidate.
+- **Official sources:** platform-site-content-source-01 ([public policy navigation, stable site content routes](https://docs.github.com/en/site-policy), checked 2026-07-26)
+
+### [projections/discovery](../../apps/web/src/modules/projections/discovery/README.md)
+
+- **Owns:** DiscoveryFeed, CuratedCollection, TopicListing, TrendingListing.
+- **Excludes:** RepositorySearch, RankingTelemetryOwnership, RepositoryContent.
+- **Activation scope:** None while planned.
+- **Runtime dependencies:** None.
+- **Planned relationships:** None.
+- **Published events:** None. Discovery is a read-model context and does not publish product facts.
+- **Semantic claims:** None while product semantics remain candidate.
+- **Official sources:** projections-discovery-source-01 ([explore and discovery, topic navigation, trending discovery](https://docs.github.com/en/get-started/exploring-projects-on-github/finding-ways-to-contribute-to-open-source-on-github), checked 2026-07-26)
+
+### [integrations/marketplace-catalog](../../apps/web/src/modules/integrations/marketplace-catalog/README.md)
+
+- **Owns:** MarketplaceListing, MarketplaceCategory, ListingPublicationState.
+- **Excludes:** EntitlementDecision, BillingTransaction, ApplicationInstallation.
+- **Activation scope:** None while planned.
+- **Runtime dependencies:** None.
+- **Planned relationships:** commerce/entitlements via MarketplaceEntitlementReference (synchronous)
+- **Published events:** None. Catalog queries publish no events before listing administration is activated.
+- **Semantic claims:** None while product semantics remain candidate.
+- **Official sources:** integrations-marketplace-catalog-source-01 ([marketplace listing catalog, listing discovery](https://docs.github.com/en/apps/github-marketplace/github-marketplace-overview), checked 2026-07-26)
+
+### [platform/actions-route-compatibility](../../apps/web/src/modules/platform/actions-route-compatibility/README.md)
+
+- **Owns:** ActionsRouteDecision, CanonicalUnavailableRoute.
+- **Excludes:** WorkflowSource, WorkflowRun, JobExecution, GitTrigger.
+- **Activation scope:** None while planned.
+- **Runtime dependencies:** None.
+- **Planned relationships:** None.
+- **Published events:** None. Pure route-compatibility decisions do not publish technical events.
+- **Semantic claims:** Not applicable to technical capabilities.
+- **Official sources:** Not applicable; technical capability.
+
+### [platform/repository-content-route-compatibility](../../apps/web/src/modules/platform/repository-content-route-compatibility/README.md)
+
+- **Owns:** RepositoryContentRouteDecision, CanonicalUnavailableRoute.
+- **Excludes:** GitObject, RepositoryFile, RawBlob, SourceArchive.
+- **Activation scope:** None while planned.
+- **Runtime dependencies:** None.
+- **Planned relationships:** None.
+- **Published events:** None. Pure route-compatibility decisions do not publish technical events.
+- **Semantic claims:** Not applicable to technical capabilities.
+- **Official sources:** Not applicable; technical capability.
+
+### [platform/repository-history-route-compatibility](../../apps/web/src/modules/platform/repository-history-route-compatibility/README.md)
+
+- **Owns:** RepositoryHistoryRouteDecision, CanonicalUnavailableRoute.
+- **Excludes:** Commit, GitHistory, BlameData, Diff, GitActivityMetric.
+- **Activation scope:** None while planned.
+- **Runtime dependencies:** None.
+- **Planned relationships:** None.
+- **Published events:** None. Pure route-compatibility decisions do not publish technical events.
+- **Semantic claims:** Not applicable to technical capabilities.
+- **Official sources:** Not applicable; technical capability.
+
+### [platform/repository-reference-route-compatibility](../../apps/web/src/modules/platform/repository-reference-route-compatibility/README.md)
+
+- **Owns:** RepositoryReferenceRouteDecision, CanonicalUnavailableRoute.
+- **Excludes:** GitBranch, GitTag, GitReference, CommitTarget.
+- **Activation scope:** None while planned.
+- **Runtime dependencies:** None.
+- **Planned relationships:** None.
+- **Published events:** None. Pure route-compatibility decisions do not publish technical events.
+- **Semantic claims:** Not applicable to technical capabilities.
+- **Official sources:** Not applicable; technical capability.
+
+### [platform/pull-request-route-compatibility](../../apps/web/src/modules/platform/pull-request-route-compatibility/README.md)
+
+- **Owns:** PullRequestRouteDecision, CanonicalUnavailableRoute.
+- **Excludes:** PullRequest, Diff, CommitLinkage, CodeReview.
+- **Activation scope:** None while planned.
+- **Runtime dependencies:** None.
+- **Planned relationships:** None.
+- **Published events:** None. Pure route-compatibility decisions do not publish technical events.
+- **Semantic claims:** Not applicable to technical capabilities.
+- **Official sources:** Not applicable; technical capability.
+
+### [commerce/package-registry](../../apps/web/src/modules/commerce/package-registry/README.md)
+
+- **Owns:** PackageMetadata, PackageVersionMetadata, RepositoryPackageLink.
+- **Excludes:** PackagePayload, BuildArtifact, GitContent.
+- **Activation scope:** None while planned.
+- **Runtime dependencies:** None.
+- **Planned relationships:** repositories/repositories via RepositoryReference (synchronous)
+- **Published events:** None. Package metadata queries do not publish events before package administration is designed.
+- **Semantic claims:** None while product semantics remain candidate.
+- **Official sources:** commerce-package-registry-source-01 ([package metadata, repository package navigation](https://docs.github.com/en/packages/learn-github-packages/viewing-packages), checked 2026-07-26)
+
+### [platform/site-publishing](../../apps/web/src/modules/platform/site-publishing/README.md)
+
+- **Owns:** SitePublication, PublicationStatus, PublicationDomain.
+- **Excludes:** GitSourceTree, SourceBuild, WorkflowJob, GitHubPagesBuild.
+- **Activation scope:** None while planned.
+- **Runtime dependencies:** None.
+- **Planned relationships:** repositories/repositories via RepositoryReference (synchronous)
+- **Published events:** None. Publication status queries do not publish events before publication commands are designed.
+- **Semantic claims:** None while product semantics remain candidate.
+- **Official sources:** platform-site-publishing-source-01 ([repository site publication, publication status navigation](https://docs.github.com/en/pages/getting-started-with-github-pages), checked 2026-07-26)
+
+### [repositories/repository-releases](../../apps/web/src/modules/repositories/repository-releases/README.md)
+
+- **Owns:** RepositoryRelease, ReleaseTagLabel, ReleaseAssetReference.
+- **Excludes:** GitTag, Commit, BinaryAssetStorage.
+- **Activation scope:** None while planned.
+- **Runtime dependencies:** None.
+- **Planned relationships:** repositories/repositories via RepositoryReference (synchronous); platform/media-storage via ReleaseAssetStorageReference (synchronous)
+- **Published events:** None. Release queries publish no events before release lifecycle commands are designed.
+- **Semantic claims:** None while product semantics remain candidate.
+- **Official sources:** repositories-repository-releases-source-01 ([release list, latest release, tagged release, release asset links](https://docs.github.com/en/repositories/releasing-projects-on-github/linking-to-releases), checked 2026-07-26)
+
+### [repositories/repository-forks](../../apps/web/src/modules/repositories/repository-forks/README.md)
+
+- **Owns:** RepositoryForkRelationship, ForkNetworkReference, ForkVisibility.
+- **Excludes:** GitHistoryProvisioning, GitObjectCopy, TemplateProvisioning.
+- **Activation scope:** None while planned.
+- **Runtime dependencies:** None.
+- **Planned relationships:** repositories/repositories via RepositoryReference (synchronous)
+- **Published events:** None. Fork relationship queries publish no events before relationship commands are designed.
+- **Semantic claims:** None while product semantics remain candidate.
+- **Official sources:** repositories-repository-forks-source-01 ([fork relationships, fork visibility](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/about-permissions-and-visibility-of-forks), checked 2026-07-26)
+
+### [collaboration/community-profiles](../../apps/web/src/modules/collaboration/community-profiles/README.md)
+
+- **Owns:** CommunityProfile, CommunityHealthIndicator, ContributionResourceLink.
+- **Excludes:** RepositoryFile, SourceTree, CommunityFileDiscovery.
+- **Activation scope:** None while planned.
+- **Runtime dependencies:** None.
+- **Planned relationships:** repositories/repository-features via RepositoryFeatureReference (synchronous)
+- **Published events:** None. Community profile queries publish no events before profile commands are designed.
+- **Semantic claims:** None while product semantics remain candidate.
+- **Official sources:** collaboration-community-profiles-source-01 ([repository community profile, community health indicators](https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/accessing-a-projects-community-profile), checked 2026-07-26)
+
+### [collaboration/wikis](../../apps/web/src/modules/collaboration/wikis/README.md)
+
+- **Owns:** RepositoryWiki, WikiPage, WikiPageName.
+- **Excludes:** GitRepository, GitCommit, GitBackedWikiStorage.
+- **Activation scope:** None while planned.
+- **Runtime dependencies:** None.
+- **Planned relationships:** repositories/repository-features via RepositoryFeatureReference (synchronous)
+- **Published events:** None. Wiki queries publish no events before wiki editing commands are designed.
+- **Semantic claims:** None while product semantics remain candidate.
+- **Official sources:** collaboration-wikis-source-01 ([repository wiki navigation, wiki page semantics](https://docs.github.com/en/communities/documenting-your-project-with-wikis/about-wikis), checked 2026-07-26)
+
+### [projections/repository-traffic](../../apps/web/src/modules/projections/repository-traffic/README.md)
+
+- **Owns:** RepositoryTrafficSummary, TrafficViewMetric, TrafficCloneMetric.
+- **Excludes:** GitActivityMetric, ContributorCodeMetric, VisitorIdentity.
+- **Activation scope:** None while planned.
+- **Runtime dependencies:** None.
+- **Planned relationships:** repositories/repository-access via EffectiveReadPermission (synchronous)
+- **Published events:** None. Traffic is a read-model context and does not publish product facts.
+- **Semantic claims:** None while product semantics remain candidate.
+- **Official sources:** projections-repository-traffic-source-01 ([repository traffic views, aggregate view and clone metrics](https://docs.github.com/en/repositories/viewing-activity-and-data-for-your-repository/viewing-traffic-to-a-repository), checked 2026-07-26)
 
 All product semantics are justified by HTTPS sources under docs.github.com/en/.
 Planned context directories contain README.md only and have no activation scope, runtime dependencies, or source code until implementation begins.

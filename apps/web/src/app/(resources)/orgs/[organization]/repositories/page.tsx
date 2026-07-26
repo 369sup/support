@@ -1,4 +1,4 @@
-import { FolderKanban, Link as LinkIcon, LockKeyhole } from "lucide-react";
+import { FolderKanban, Link2 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -27,7 +27,8 @@ export default async function OrganizationRepositoriesPage({
   }
 
   const repositories = await listActivePublicRepositoriesForOrganizationOwner({
-    ownerOrganizationId: organization.organization.organizationId,
+    organizationId: organization.organization.organizationId,
+    login: organization.organization.login,
   });
 
   return (
@@ -75,22 +76,15 @@ export default async function OrganizationRepositoriesPage({
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      {repository.visibility === "public" ? (
-                        <LinkIcon
-                          aria-hidden="true"
-                          className="size-4 shrink-0 text-slate-500"
-                        />
-                      ) : (
-                        <LockKeyhole
-                          aria-hidden="true"
-                          className="size-4 shrink-0 text-slate-500"
-                        />
-                      )}
+                      <Link2
+                        aria-hidden="true"
+                        className="size-4 shrink-0 text-slate-500"
+                      />
                       <Link
                         className="truncate font-mono text-sm font-semibold text-slate-100 underline decoration-dashed underline-offset-4 hover:text-white"
                         href={`/${organization.organization.login}/${repository.name}`}
                       >
-                        {repository.owner.username}/{repository.name}
+                        {repository.ownerUsername}/{repository.name}
                       </Link>
                     </div>
                     <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">

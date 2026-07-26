@@ -19,8 +19,8 @@ the root `AGENTS.md`.
 
 - `architecture.mjs` is the library and CLI entrypoint. Its `check` command
   accepts `required`, `generated`, `knowledge`, or `all` profiles; `generate`
-  writes the module-map projection; `scaffold` creates missing context
-  READMEs without overwriting existing models.
+  writes the module-map, route README, and typed route projections; `scaffold`
+  creates missing context READMEs without overwriting existing models.
 - `@support/tooling/architecture/policy` owns shared rule metadata, public
   entrypoints, layer names, and workspace package policy.
 - `scripts/architecture/context.mjs` owns lifecycle-specific README and
@@ -31,6 +31,8 @@ the root `AGENTS.md`.
   and internal package-graph validation.
 - `scripts/architecture/governance.mjs` owns exception, violation selection,
   and deterministic-projection checks.
+- `scripts/architecture/routes.mjs` owns route-catalog discovery, validation,
+  typed-contract rendering, and per-URL README projection.
 - `serena-memories.mjs` writes only the reviewed shared-memory files
   under `.serena/memories` from its explicit authority allowlist.
 - Architecture behavior retains stable `ARCH-*` identifiers and focused

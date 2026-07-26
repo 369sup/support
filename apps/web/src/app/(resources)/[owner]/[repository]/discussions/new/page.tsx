@@ -1,12 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function NewDiscussionPage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/discussions/new",
-    title: "New discussion",
-    summary: "Create a discussion in an enabled repository category.",
-    contexts: ["collaboration/discussions"],
-    catalogStatus: "planned",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-discussions-new");
 }

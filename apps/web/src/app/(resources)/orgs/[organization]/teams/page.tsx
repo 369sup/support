@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Link as LinkIcon, UsersRound } from "lucide-react";
+import { Eye, EyeOff, Link2, UsersRound } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
@@ -120,7 +120,9 @@ export default async function OrganizationTeamsPage({
                     </span>
                   </div>
                   <p className="mt-4 text-sm leading-6 text-slate-300">
-                    {team.description || "No team description provided."}
+                    {team.description !== ""
+                      ? team.description
+                      : "No team description provided."}
                   </p>
                   <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-500">
                     <span className="inline-flex items-center gap-1.5">
@@ -135,7 +137,7 @@ export default async function OrganizationTeamsPage({
                       <span>Top-level team</span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5">
-                        <LinkIcon
+                        <Link2
                           aria-hidden="true"
                           className="size-3.5"
                         />

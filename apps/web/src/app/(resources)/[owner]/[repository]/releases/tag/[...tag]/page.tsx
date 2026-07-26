@@ -1,13 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function TaggedRepositoryReleasePage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/releases/tag/{*tag}",
-    title: "Tagged repository release",
-    summary:
-      "Reserve GitHub-style tagged release routes while release behavior remains deferred.",
-    contexts: [],
-    catalogStatus: "deferred",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-releases-tag-tag");
 }

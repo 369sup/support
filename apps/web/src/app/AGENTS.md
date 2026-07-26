@@ -20,14 +20,14 @@ general source directory.
 - Preserve accessibility, metadata, direct navigation, refresh, and
   back/forward behavior for user-visible routes.
 
-## Route README inheritance
+## Route contract loading
 
-- Route status and 404 behavior inherit from the nearest ancestor route
-  `README.md`.
-- Add a descendant README only when URL parsing, status, owning context,
-  authorization, direct-navigation behavior, or an exception differs.
-- An omitted descendant README means full inheritance; do not copy the parent
-  summary merely to document the folder.
+- `apps/web/route-map.json` owns URL, status, parameter, delivery-function, and
+  module mappings. Do not edit generated route READMEs or generated TypeScript.
+- Load only the README beside the target `page.tsx` or `route.ts`. A
+  documented-only URL has a generated README but no delivery file.
+- Keep full use-case semantics in the owning module README; the route README
+  contains only delivery-facing summaries and references.
 
 ## Verification delta
 

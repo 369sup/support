@@ -2,10 +2,11 @@ import Link from "next/link";
 import { type LucideIcon, CheckCircle2, KeyRound, ShieldCheck, UserRound } from "lucide-react";
 
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
+import { buildLinkHref } from "../../_route-contracts/route-contract";
 
 type SettingsCard = Readonly<{
   description: string;
-  href: string | null;
+  href: ReturnType<typeof buildLinkHref> | null;
   icon: LucideIcon;
   title: string;
 }>;
@@ -15,14 +16,14 @@ const settingsCards = [
     title: "Your account",
     description:
       "Profile identity details, username, and account metadata for your signed-in identity.",
-    href: "/account",
+    href: buildLinkHref("page-account", {}),
     icon: UserRound,
   },
   {
     title: "Sessions",
     description:
       "Review browser sessions, switch active accounts, and sign out from all sessions.",
-    href: "/settings/sessions",
+    href: buildLinkHref("page-settings-sessions", {}),
     icon: KeyRound,
   },
   {
@@ -62,7 +63,6 @@ export default async function SettingsPage() {
             const Icon = item.icon;
             return item.href === null ? (
               <article
-                aria-disabled="true"
                 className="rounded-xl border border-white/10 bg-[#0a1624] p-5 opacity-80"
                 key={item.title}
               >

@@ -1,13 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function RepositoryCommitPage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/commit/{sha}",
-    title: "Repository commit",
-    summary:
-      "Reserve the GitHub-style commit route without introducing Git object behavior.",
-    contexts: [],
-    catalogStatus: "excluded",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-commit-sha");
 }

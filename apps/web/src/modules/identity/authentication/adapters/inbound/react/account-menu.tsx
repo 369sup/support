@@ -1,5 +1,6 @@
 "use client";
 
+import type { Route } from "next";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -36,7 +37,7 @@ export function AccountMenu({
   sessions,
 }: Readonly<{
   currentUsername: string;
-  enterpriseHref: string | null;
+  enterpriseHref: Route | null;
   sessions: readonly BrowserAccountSessionView[];
 }>) {
   const router = useRouter();

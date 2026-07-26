@@ -112,7 +112,9 @@ export default async function OrganizationTeamPage({
             </div>
 
             <p className="mt-4 text-sm text-slate-300">
-              {teamResult.team.description || "No team description."}
+              {teamResult.team.description !== ""
+                ? teamResult.team.description
+                : "No team description."}
             </p>
 
             {teamResult.team.parentTeamId === null ? null : (

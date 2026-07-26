@@ -12,13 +12,6 @@ type OwnerLookupResult =
   | Readonly<{ kind: "organization"; login: string; id: string }>
   | Readonly<{ kind: "account"; login: string; id: string }>;
 
-type PermissionLevel =
-  | "admin"
-  | "maintain"
-  | "write"
-  | "triage"
-  | "read";
-
 async function resolveOwnerByLogin(owner: string): Promise<OwnerLookupResult | null> {
   const organization = await getOrganizationByLogin(owner);
   if (organization.status === "found") {
@@ -30,7 +23,7 @@ async function resolveOwnerByLogin(owner: string): Promise<OwnerLookupResult | n
   }
 
   const account = await getPersonalAccountByUsername(owner);
-  if (account.status !== "found") {
+  if (!account.isSuccessful) {
     return null;
   }
 

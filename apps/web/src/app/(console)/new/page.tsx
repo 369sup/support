@@ -1,12 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function NewRepositoryPage(): never {
-  void {
-    urlPattern: "/new",
-    title: "New repository",
-    summary: "Create a repository for a permitted user or organization owner.",
-    contexts: ["repositories/repositories"],
-    catalogStatus: "active",
-  };
-  notFound();
+  return renderUnavailableRoute("page-new");
 }

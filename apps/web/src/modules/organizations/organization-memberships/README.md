@@ -9,6 +9,7 @@ Own organization membership, invitations, member/owner role, state, and source.
 - Membership eligibility [active]
   - `check-organization-context-eligibility`
   - `list-active-organization-memberships-for-account`
+  - `list-active-organization-memberships-for-organization`
   - Owned: `OrganizationMembership`, `MembershipRole`, `MembershipState`
   - Only active membership is Dashboard-eligible.
 - Invitations [planned]
@@ -57,6 +58,22 @@ Own organization membership, invitations, member/owner role, state, and source.
 - **Published events:** `none`
 - **Official evidence:** `organizations-organization-memberships-source-01`
 - **Local policy:** Membership source does not itself grant repository access.
+
+### `list-active-organization-memberships-for-organization` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ListActiveOrganizationMembershipsForOrganizationUseCase.listActiveOrganizationMembershipsForOrganization()`
+- **Public entrypoint:** `server-api.ts#listActiveOrganizationMembershipsForOrganization`
+- **Input:** Organization ID.
+- **Success result:** Active memberships for the organization, possibly empty.
+- **Expected rejections:** `none`
+- **Authorization:** The caller must already possess an organization-scoped administration decision; this query does not grant access.
+- **Transaction:** Read-only.
+- **Idempotency:** Query.
+- **Dependencies:** `organizations/organizations::OrganizationReference`, `identity/accounts::AccountReference`
+- **Published events:** `none`
+- **Official evidence:** `organizations-organization-memberships-source-01`
+- **Local policy:** Pending, suspended, and removed memberships are excluded; membership state alone does not grant repository access.
 
 ## Ubiquitous language
 

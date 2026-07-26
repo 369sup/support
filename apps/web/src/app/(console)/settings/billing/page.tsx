@@ -1,12 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function BillingSettingsPage(): never {
-  void {
-    urlPattern: "/settings/billing",
-    title: "Billing",
-    summary: "Review account billing and capability entitlements.",
-    contexts: ["commerce/billing", "commerce/entitlements"],
-    catalogStatus: "planned",
-  };
-  notFound();
+  return renderUnavailableRoute("page-settings-billing");
 }

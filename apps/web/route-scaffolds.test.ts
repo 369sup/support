@@ -1,298 +1,74 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-const appRoot = fileURLToPath(new URL("./src/app", import.meta.url));
+import routeMap from "./route-map.json";
+import {
+  deriveSupportPath,
+  discoverAppRoutes,
+} from "../../scripts/architecture/routes.mjs";
 
-const expectedUrlPatterns = [
-  "/accept-invitation",
-  "/forgot-password",
-  "/reset-password",
-  "/search",
-  "/sign-up",
-  "/signup",
-  "/verify-email",
-  "/explore",
-  "/topics",
-  "/topics/{topic}",
-  "/trending",
-  "/collections",
-  "/marketplace",
-  "/new",
-  "/notifications",
-  "/projects",
-  "/settings/apps",
-  "/settings/installations",
-  "/settings/developers",
-  "/settings/applications",
-  "/settings/billing",
-  "/orgs/{organization}/projects",
-  "/orgs/{organization}/projects/{number}",
-  "/users/{username}/projects/{number}",
-  "/organizations/{organization}/settings/custom_properties",
-  "/organizations/{organization}/settings/apps",
-  "/organizations/{organization}/settings/installations",
-  "/organizations/{organization}/settings/installations/{installationId}",
-  "/organizations/{organization}/settings/hooks",
-  "/organizations/{organization}/settings/billing",
-  "/{owner}/{repository}/settings/hooks",
-  "/{owner}/{repository}/issues",
-  "/{owner}/{repository}/issues/views",
-  "/{owner}/{repository}/issues/new",
-  "/{owner}/{repository}/issues/{number}",
-  "/{owner}/{repository}/labels",
-  "/{owner}/{repository}/labels/{label}",
-  "/{owner}/{repository}/milestones",
-  "/{owner}/{repository}/milestone/{number}",
-  "/{owner}/{repository}/discussions",
-  "/{owner}/{repository}/discussions/new",
-  "/{owner}/{repository}/discussions/{number}",
-  "/{owner}/{repository}/discussions/categories/{slug}",
-  "/{owner}/{repository}/projects",
-  "/{owner}/{repository}/stargazers",
-  "/{owner}/{repository}/watchers",
-  "/{owner}/{repository}/activity",
-  "/{owner}/{repository}/pulse",
-  "/{owner}/{repository}/custom-properties",
-  "/{owner}/{repository}/tree/{*refAndPath}",
-  "/{owner}/{repository}/blob/{*refAndPath}",
-  "/{owner}/{repository}/raw/{*refAndPath}",
-  "/{owner}/{repository}/blame/{*refAndPath}",
-  "/{owner}/{repository}/commit/{sha}",
-  "/{owner}/{repository}/commits/{*refAndPath}",
-  "/{owner}/{repository}/branches",
-  "/{owner}/{repository}/branches/{view}",
-  "/{owner}/{repository}/tags",
-  "/{owner}/{repository}/compare",
-  "/{owner}/{repository}/compare/{*comparison}",
-  "/{owner}/{repository}/pull/{*pullPath}",
-  "/{owner}/{repository}/pulls",
-  "/{owner}/{repository}/actions",
-  "/{owner}/{repository}/actions/{*actionPath}",
-  "/{owner}/{repository}/packages",
-  "/{owner}/{repository}/pages",
-  "/{owner}/{repository}/releases",
-  "/{owner}/{repository}/releases/latest",
-  "/{owner}/{repository}/releases/tag/{*tag}",
-  "/{owner}/{repository}/releases/download/{*assetPath}",
-  "/{owner}/{repository}/archive/{*archivePath}",
-  "/{owner}/{repository}/forks",
-  "/{owner}/{repository}/community",
-  "/{owner}/{repository}/wiki",
-  "/{owner}/{repository}/wiki/{*pageName}",
-  "/{owner}/{repository}/graphs/traffic",
-] as const;
+const repositoryRoot = resolve(import.meta.dirname, "..", "..");
 
-const unownedUrlPatterns = [
-  "/explore",
-  "/topics",
-  "/topics/{topic}",
-  "/trending",
-  "/collections",
-  "/marketplace",
-] as const;
+describe("App Router route catalog", () => {
+  it("covers all 134 public delivery files and excludes parallel fallbacks", () => {
+    const files = discoverAppRoutes(repositoryRoot);
+    const catalogFiles = routeMap.routes
+      .flatMap((route) => "file" in route ? [route.file] : [])
+      .sort();
 
-const excludedUrlPatterns = [
-  "/{owner}/{repository}/tree/{*refAndPath}",
-  "/{owner}/{repository}/blob/{*refAndPath}",
-  "/{owner}/{repository}/raw/{*refAndPath}",
-  "/{owner}/{repository}/blame/{*refAndPath}",
-  "/{owner}/{repository}/commit/{sha}",
-  "/{owner}/{repository}/commits/{*refAndPath}",
-  "/{owner}/{repository}/branches",
-  "/{owner}/{repository}/branches/{view}",
-  "/{owner}/{repository}/tags",
-  "/{owner}/{repository}/compare",
-  "/{owner}/{repository}/compare/{*comparison}",
-  "/{owner}/{repository}/pull/{*pullPath}",
-  "/{owner}/{repository}/pulls",
-  "/{owner}/{repository}/actions",
-  "/{owner}/{repository}/actions/{*actionPath}",
-  "/{owner}/{repository}/packages",
-  "/{owner}/{repository}/pages",
-  "/{owner}/{repository}/archive/{*archivePath}",
-] as const;
+    expect(files).toHaveLength(134);
+    expect(catalogFiles).toEqual(files);
+    expect(catalogFiles.some((file) => file.includes("/@"))).toBe(false);
+  });
 
-const deferredUrlPatterns = [
-  "/{owner}/{repository}/releases",
-  "/{owner}/{repository}/releases/latest",
-  "/{owner}/{repository}/releases/tag/{*tag}",
-  "/{owner}/{repository}/releases/download/{*assetPath}",
-  "/{owner}/{repository}/forks",
-  "/{owner}/{repository}/community",
-  "/{owner}/{repository}/wiki",
-  "/{owner}/{repository}/wiki/{*pageName}",
-  "/{owner}/{repository}/graphs/traffic",
-] as const;
+  it("keeps filesystem-derived paths aligned with the catalog", () => {
+    for (const route of routeMap.routes) {
+      if (route.file === undefined) {
+        continue;
+      }
 
-describe("App Router route scaffolds", () => {
-  it("defines every approved URL as a summarized unavailable page", () => {
-    const scaffolds = findScaffoldPages(appRoot);
-    const declaredPatterns = scaffolds.map(({ content }) =>
-      readStringField(content, "urlPattern"),
-    );
-
-    expect(declaredPatterns.sort()).toEqual([...expectedUrlPatterns].sort());
-
-    for (const scaffold of scaffolds) {
-      const urlPattern = readStringField(scaffold.content, "urlPattern");
-      expect(scaffold.content).toContain("summary:");
-      expect(scaffold.content).toContain("contexts:");
-      expect(scaffold.content).toContain("catalogStatus:");
-      expect(normalizeDynamicSegments(toRoutePattern(scaffold.file))).toBe(
-        normalizeDynamicSegments(urlPattern),
-      );
+      expect(deriveSupportPath(route.file), route.id).toBe(route.supportPath);
     }
   });
 
-  it("marks reserved, excluded, and deferred route families explicitly", () => {
-    const scaffolds = new Map(
-      findScaffoldPages(appRoot).map(({ content }) => [
-        readStringField(content, "urlPattern"),
-        content,
-      ]),
+  it("binds every unavailable page to one typed route ID", () => {
+    const scaffolded = routeMap.routes.filter(
+      (route) => route.materialization === "scaffolded",
     );
 
-    for (const urlPattern of unownedUrlPatterns) {
-      expect(scaffolds.get(urlPattern)).toContain(
-        'catalogStatus: "unowned"',
-      );
-    }
-    for (const urlPattern of excludedUrlPatterns) {
-      expect(scaffolds.get(urlPattern)).toContain(
-        'catalogStatus: "excluded"',
-      );
-    }
-    for (const urlPattern of deferredUrlPatterns) {
-      expect(scaffolds.get(urlPattern)).toContain(
-        'catalogStatus: "deferred"',
-      );
-    }
+    expect(scaffolded).toHaveLength(76);
 
-    const insightsPage = readFileSync(
-      resolve(
-        appRoot,
-        "(resources)",
-        "[owner]",
-        "[repository]",
-        "pulse",
-        "page.tsx",
-      ),
-      "utf8",
-    );
-    expect(insightsPage).toContain("without traffic or Git metrics");
-  });
+    for (const route of scaffolded) {
+      if (!("file" in route)) {
+        throw new TypeError(`${route.id} must declare a file.`);
+      }
 
-  it("uses the official not-found API directly in every unavailable page", () => {
-    for (const scaffold of findScaffoldPages(appRoot)) {
-      expect(scaffold.content).toContain(
-        'import { notFound } from "next/navigation"',
-      );
-      expect(scaffold.content).toContain("notFound();");
-      expect(scaffold.content).not.toContain("unavailableRoute");
-    }
-  });
-});
-
-describe("App Router parallel shells", () => {
-  const routeGroups = ["(public)", "(console)", "(resources)"] as const;
-  const slots = ["header", "navigation", "sidebar", "modal"] as const;
-
-  for (const routeGroup of routeGroups) {
-    it(`${routeGroup} defines every slot and hard-navigation fallback`, () => {
-      const layout = readFileSync(
-        resolve(appRoot, routeGroup, "layout.tsx"),
+      const contents = readFileSync(
+        resolve(repositoryRoot, route.file),
         "utf8",
       );
 
-      expect(
-        readFileSync(resolve(appRoot, routeGroup, "default.tsx"), "utf8"),
-      ).toContain(
-        "notFound();",
+      expect(contents, route.id).toContain(
+        `return renderUnavailableRoute("${route.id}");`,
       );
-      for (const slot of slots) {
-        expect(layout).toContain(`${slot}?: React.ReactNode`);
-        expect(
-          existsSync(
-            resolve(appRoot, routeGroup, `@${slot}`, "default.tsx"),
-          ),
-        ).toBe(true);
-      }
-      expect(
-        existsSync(
-          resolve(
-            appRoot,
-            routeGroup,
-            "@modal",
-            "[...catchAll]",
-            "page.tsx",
-          ),
-        ),
-      ).toBe(true);
-    });
-  }
+      expect(contents, route.id).not.toContain("void {");
+      expect(contents, route.id).not.toContain('from "next/navigation"');
+    }
+  });
+
+  it("keeps documented-only URLs free of delivery files", () => {
+    const documentedOnly = routeMap.routes.filter(
+      (route) => route.materialization === "documented-only",
+    );
+
+    expect(documentedOnly).toHaveLength(1);
+
+    for (const route of documentedOnly) {
+      const directory = dirname(resolve(repositoryRoot, route.readme));
+      expect(existsSync(resolve(directory, "page.tsx")), route.id).toBe(false);
+      expect(existsSync(resolve(directory, "route.ts")), route.id).toBe(false);
+    }
+  });
 });
-
-function findScaffoldPages(directory: string): Array<{
-  file: string;
-  content: string;
-}> {
-  const pages: Array<{ file: string; content: string }> = [];
-
-  for (const entry of readdirSync(directory, { withFileTypes: true })) {
-    const path = resolve(directory, entry.name);
-    if (entry.isDirectory()) {
-      pages.push(...findScaffoldPages(path));
-      continue;
-    }
-    if (entry.name !== "page.tsx") {
-      continue;
-    }
-    const content = readFileSync(path, "utf8");
-    if (content.includes("catalogStatus:")) {
-      pages.push({ file: path, content });
-    }
-  }
-
-  return pages;
-}
-
-function readStringField(content: string, field: string): string {
-  const match = content.match(
-    new RegExp(`${field}:\\s*["'](?<value>[^"']+)["']`),
-  );
-  if (match?.groups?.["value"] === undefined) {
-    throw new Error(`Missing ${field} in route scaffold.`);
-  }
-  return match.groups["value"];
-}
-
-function toRoutePattern(file: string): string {
-  const relative = file
-    .slice(appRoot.length)
-    .replaceAll("\\", "/")
-    .replace(/\/page\.tsx$/, "");
-  const segments = relative
-    .split("/")
-    .filter(Boolean)
-    .filter((segment) => !(segment.startsWith("(") && segment.endsWith(")")))
-    .map((segment) => {
-      if (segment.startsWith("[...") && segment.endsWith("]")) {
-        return `{*${segment.slice(4, -1)}}`;
-      }
-      return segment.startsWith("[") && segment.endsWith("]")
-        ? `{${segment.slice(1, -1)}}`
-        : segment;
-    });
-  return `/${segments.join("/")}`;
-}
-
-function normalizeDynamicSegments(pattern: string): string {
-  return pattern.replaceAll(/\{[^}]+\}/g, "{}");
-}
-
-
-
-

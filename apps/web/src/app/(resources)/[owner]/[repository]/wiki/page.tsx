@@ -1,13 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function RepositoryWikiPage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/wiki",
-    title: "Repository wiki",
-    summary:
-      "Reserve the GitHub-style wiki entry route while wiki content remains deferred.",
-    contexts: [],
-    catalogStatus: "deferred",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-wiki");
 }

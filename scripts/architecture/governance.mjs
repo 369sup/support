@@ -294,9 +294,9 @@ export function validateAgentGuidance(
     ) {
       const tokens = estimatedTokens(readFileSync(filePath, "utf8"));
 
-      if (tokens > 120) {
+      if (tokens > 1_200) {
         knowledgeErrors.push(
-          `[ARCH-GUIDE-005] Route README ${relativePath} is estimated at ${tokens} tokens; the ceiling is 120.`,
+          `[ARCH-GUIDE-005] Route README ${relativePath} is estimated at ${tokens} tokens; the ceiling is 1200.`,
         );
       }
     }

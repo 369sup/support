@@ -2,17 +2,14 @@
 import { Clock, FileText, ShieldCheck } from "lucide-react";
 
 import { queryAuditRecords } from "@/modules/platform/audit-storage/server-api";
-import type { AuditStorageRecord } from "@/modules/platform/audit-storage/domain/audit-storage-record";
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
 import { checkOrganizationContextEligibility } from "@/modules/organizations/organization-memberships/server-api";
 import { getAccountReferenceById } from "@/modules/identity/accounts/server-api";
 import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
 
-type AuditRecordView = Readonly<{
-  actorLabel: string;
-  occurredAt: string;
-  record: AuditStorageRecord;
-}>;
+type AuditStorageRecord = Awaited<
+  ReturnType<typeof queryAuditRecords>
+>["records"][number];
 
 function formatAuditTimestamp(isoString: string): string {
   const date = new Date(isoString);
@@ -40,7 +37,7 @@ function renderMetadata(metadata: AuditStorageRecord["metadata"]): string {
   return keys
     .sort()
     .map(
-      (key) => `${key}: ${String((metadata as Record<string, string | number | boolean | null>)[key])}`,
+      (key) => `${key}: ${String(metadata[key])}`,
     )
     .join(", ");
 }
@@ -73,14 +70,15 @@ export default async function OrganizationAuditLogPage({
 
   const rows = await Promise.all(
     recordsResult.records.map(async (record) => {
+      const actorId = record.actorId;
       const actorLabel =
-        record.actorId === null
+        actorId === null
           ? "system"
           : (async () => {
-              const result = await getAccountReferenceById(record.actorId);
+              const result = await getAccountReferenceById(actorId);
               return result.status === "found"
                 ? `@${result.account.username}`
-                : record.actorId;
+                : actorId;
             })();
 
       return {

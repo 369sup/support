@@ -3,8 +3,8 @@ import {
   listBrowserAccountSessions,
   readBrowserSessionToken,
   requireCurrentSession,
+  type BrowserAccountSessionView,
 } from "@/modules/identity/authentication/server-api";
-import type { BrowserAccountSessionView } from "@/modules/identity/authentication/contracts/authenticated-session-reference";
 
 export default async function SessionsSettingsPage() {
   const session = await requireCurrentSession();

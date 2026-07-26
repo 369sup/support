@@ -1,4 +1,4 @@
-import type { OrganizationMembershipReference } from "../../../contracts/organization-membership-reference";
+import type { OrganizationMembershipQuerySnapshot } from "../outbound/organization-membership-query.repository.port";
 
 export type ListActiveOrganizationMembershipsForOrganizationQuery = Readonly<{
   organizationId: string;
@@ -7,5 +7,5 @@ export type ListActiveOrganizationMembershipsForOrganizationQuery = Readonly<{
 export interface ListActiveOrganizationMembershipsForOrganizationUseCase {
   listActiveOrganizationMembershipsForOrganization(
     query: ListActiveOrganizationMembershipsForOrganizationQuery,
-  ): Promise<readonly OrganizationMembershipReference[]>;
+  ): Promise<readonly OrganizationMembershipQuerySnapshot[]>;
 }

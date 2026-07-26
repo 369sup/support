@@ -1,13 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function RepositoryBlamePage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/blame/{*refAndPath}",
-    title: "Repository blame",
-    summary:
-      "Reserve the GitHub-style blame route without introducing Git history behavior.",
-    contexts: [],
-    catalogStatus: "excluded",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-blame-refandpath");
 }

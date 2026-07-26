@@ -8,8 +8,6 @@ import { Button } from "@support/shadcn/ui/button";
 
 import type { BrowserAccountSessionView } from "../../../contracts/authenticated-session-reference";
 
-type ResponseStatus = { status?: string } | null;
-
 function readResponseStatus(payload: unknown): string | null {
   if (
     payload !== null &&
@@ -68,10 +66,7 @@ export function AccountSessionManager({
       `/api/auth/account-sessions/${sessionId}/activate`,
       { method: "POST" },
     );
-    const payload: ResponseStatus = await response
-      .json()
-      .then((value) => value as ResponseStatus)
-      .catch(() => null);
+    const payload: unknown = await response.json().catch(() => null);
     if (!response.ok) {
       setMessage(
         readResponseStatus(payload) === "reauthentication-required"
@@ -131,7 +126,7 @@ export function AccountSessionManager({
         {hasSessions ? (
           <ul className="mt-4 divide-y divide-white/10">
             {sessions.map((session) => {
-              const disableSwitch =
+              const isSwitchDisabled =
                 session.isCurrent ||
                 session.status !== "active" ||
                 isPending;
@@ -158,7 +153,7 @@ export function AccountSessionManager({
                   <div className="flex items-center gap-2">
                     <button
                       className="text-xs text-slate-400 transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                      disabled={disableSwitch}
+                      disabled={isSwitchDisabled}
                       onClick={() => {
                         void activate(session.sessionId);
                       }}

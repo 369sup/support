@@ -1,13 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function RepositoryActionsPage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/actions",
-    title: "Repository Actions",
-    summary:
-      "Reserve the GitHub-style Actions entry route without introducing workflow behavior.",
-    contexts: [],
-    catalogStatus: "excluded",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-actions");
 }

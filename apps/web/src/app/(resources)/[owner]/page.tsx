@@ -5,10 +5,11 @@ import { notFound } from "next/navigation";
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
 import { getPersonalAccountByUsername } from "@/modules/identity/accounts/server-api";
 import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
-import { listActiveRepositoriesForOwner } from "@/modules/repositories/repositories/server-api";
+import {
+  listActiveRepositoriesForOwner,
+  type RepositoryCandidateReference,
+} from "@/modules/repositories/repositories/server-api";
 import { resolveEffectiveRepositoryPermission } from "@/modules/repositories/repository-access/server-api";
-
-import type { RepositoryCandidateReference } from "@/modules/repositories/repositories/contracts/repository-reference";
 
 type OwnerLookupResult =
   | Readonly<{ kind: "organization"; login: string; displayName: string; id: string }>
@@ -29,13 +30,13 @@ function mapRepositoryForPermissionLookup(
       repository.owner.kind === "personal"
         ? {
             kind: "personal" as const,
-            accountId: repository.owner.id,
-            login: repository.owner.username,
+            accountId: repository.owner.accountId,
+            login: repository.owner.login,
           }
         : {
             kind: "organization" as const,
-            organizationId: repository.owner.id,
-            login: repository.owner.username,
+            organizationId: repository.owner.organizationId,
+            login: repository.owner.login,
           },
     name: repository.name,
     description: repository.description,
@@ -59,7 +60,7 @@ async function resolveOwnerByLogin(
   }
 
   const account = await getPersonalAccountByUsername(owner);
-  if (account.status !== "found") {
+  if (!account.isSuccessful) {
     return null;
   }
 
@@ -67,7 +68,7 @@ async function resolveOwnerByLogin(
     kind: "account",
     id: account.account.accountId,
     login: account.account.username,
-    displayName: account.account.displayName,
+    displayName: account.account.username,
   };
 }
 
@@ -164,7 +165,7 @@ export default async function OwnerPage({
                         className="truncate font-mono text-sm font-semibold text-slate-100 underline decoration-dashed underline-offset-4 hover:text-white"
                         href={`/${owner.login}/${repository.name}`}
                       >
-                        {repository.owner.username}/{repository.name}
+                        {repository.owner.login}/{repository.name}
                       </Link>
                     </div>
                     <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">

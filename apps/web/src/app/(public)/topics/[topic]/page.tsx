@@ -1,12 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function TopicPage(): never {
-  void {
-    urlPattern: "/topics/{topic}",
-    title: "Topic",
-    summary: "Reserve a public topic detail URL without defining topic discovery behavior.",
-    contexts: [],
-    catalogStatus: "unowned",
-  };
-  notFound();
+  return renderUnavailableRoute("page-topics-topic");
 }

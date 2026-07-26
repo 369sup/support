@@ -29,6 +29,10 @@ import {
 } from "./architecture/projection.mjs";
 export { renderContextReadme, renderModuleMap };
 import {
+  generateRouteArtifacts,
+  validateRouteCatalog,
+} from "./architecture/routes.mjs";
+import {
   assertArchitectureProfile,
   selectViolations,
   validateAgentGuidance,
@@ -1665,6 +1669,19 @@ export function runArchitectureChecks({
       renderModuleMap(catalog),
       generatedErrors,
     );
+
+    if (
+      resolve(applicationRoot) ===
+        resolve(repositoryRoot, "apps", "web")
+    ) {
+      validateRouteCatalog({
+        repositoryRoot,
+        contextsByPath,
+        designsByContext,
+        errors: requiredErrors,
+        generatedErrors,
+      });
+    }
   }
 
   validateAgentGuidance(
@@ -1747,6 +1764,15 @@ export function generateModuleMap(repositoryRoot = repositoryPaths().repositoryR
   return markdownPath;
 }
 
+export function generateArchitectureDocs(
+  repositoryRoot = repositoryPaths().repositoryRoot,
+) {
+  const moduleMapPath = generateModuleMap(repositoryRoot);
+  const routeArtifacts = generateRouteArtifacts(repositoryRoot);
+
+  return { moduleMapPath, routeArtifacts };
+}
+
 export function scaffoldContextReadmes(
   repositoryRoot = repositoryPaths().repositoryRoot,
 ) {
@@ -1788,8 +1814,10 @@ async function runArchitectureCli() {
   const [command = "check", ...arguments_] = process.argv.slice(2);
 
   if (command === "generate") {
-    generateModuleMap();
-    console.log("Generated docs/architecture/module-map.md.");
+    const result = generateArchitectureDocs();
+    console.log(
+      `Generated docs/architecture/module-map.md and ${result.routeArtifacts.length} route artifacts.`,
+    );
     return;
   }
 

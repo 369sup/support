@@ -1,12 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function RepositoryWebhooksPage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/settings/hooks",
-    title: "Repository webhooks",
-    summary: "Manage repository-scoped webhook registrations and deliveries.",
-    contexts: ["integrations/webhooks"],
-    catalogStatus: "planned",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-settings-hooks");
 }

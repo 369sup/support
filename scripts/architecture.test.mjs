@@ -755,7 +755,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       dependency.events.some((selected) => selected.name === event && selected.version === 1));
 
   assert.equal(catalog.version, 6);
-  assert.equal(catalog.contexts.length, 49);
+  assert.equal(catalog.contexts.length, 64);
   assert.equal(catalog.contexts.every((item) => item.status === undefined), true);
   assert.deepEqual(
     catalog.contexts
@@ -783,7 +783,13 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
   );
   assert.equal(
     catalog.contexts.filter((item) => item.implementationStatus === "planned").length,
-    32,
+    47,
+  );
+  assert.equal(
+    byPath.get("organizations/organization-memberships").activationScope.includes(
+      "list-active-organization-memberships-for-organization",
+    ),
+    true,
   );
   assert.deepEqual(
     byPath.get("identity/accounts").activationScope,
@@ -889,6 +895,37 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
   assert.equal(byPath.has("integrations/oauth-app-registrations"), true);
   assert.equal(byPath.has("integrations/repository-autolinks"), true);
   assert.equal(byPath.get("projections/repository-insights").owns.includes("TrafficMetric"), false);
+  for (const contextPath of [
+    "platform/site-content",
+    "projections/discovery",
+    "integrations/marketplace-catalog",
+    "platform/actions-route-compatibility",
+    "platform/repository-content-route-compatibility",
+    "platform/repository-history-route-compatibility",
+    "platform/repository-reference-route-compatibility",
+    "platform/pull-request-route-compatibility",
+    "commerce/package-registry",
+    "platform/site-publishing",
+    "repositories/repository-releases",
+    "repositories/repository-forks",
+    "collaboration/community-profiles",
+    "collaboration/wikis",
+    "projections/repository-traffic",
+  ]) {
+    assert.equal(byPath.get(contextPath).implementationStatus, "planned");
+  }
+  assert.deepEqual(
+    byPath.get("platform/pull-request-route-compatibility").excludes,
+    ["PullRequest", "Diff", "CommitLinkage", "CodeReview"],
+  );
+  assert.equal(
+    byPath.get("repositories/repository-releases").excludes.includes("GitTag"),
+    true,
+  );
+  assert.equal(
+    byPath.get("collaboration/wikis").excludes.includes("GitBackedWikiStorage"),
+    true,
+  );
   assert.equal(hasEventRelationship("engagement/stars", "repositories/repositories", "RepositoryVisibilityChanged"), true);
   assert.equal(hasEventRelationship("engagement/subscriptions", "repositories/repositories", "RepositoryVisibilityChanged"), true);
   assert.equal(hasEventRelationship("platform/notification-channels", "engagement/notifications", "NotificationDeliveryRequested"), true);
@@ -1054,7 +1091,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
     /retains its current permissions/,
   );
   for (const capability of [
-    "repository-wiki-content",
+    "git-backed-repository-wiki-content",
     "repository-migration-locks",
     "organization-discussion-source-repository-disruption",
   ]) {
@@ -1872,7 +1909,7 @@ test("reports guidance token budget excess as knowledge", () => {
     writeFixture(
       rootDir,
       "apps/web/src/app/example/README.md",
-      `# Route\n\n${"x".repeat(481)}\n`,
+      `# Route\n\n${"x".repeat(4_801)}\n`,
     );
     assert.equal(
       check(rootDir, "knowledge").some((violation) => {
