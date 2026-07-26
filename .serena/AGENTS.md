@@ -1,7 +1,5 @@
 # Serena Project Configuration Workflow
 
-For Codex 5.3 startup, read this AGENTS.md first for this scope. Then read only the nearest README here when behavior context is needed.
-
 This file governs `.serena/**` only. Repository development rules remain in the
 root and source-tree `AGENTS.md` files.
 Operational guidance and quick recovery notes are in [`README.md`](README.md) after reading this file.

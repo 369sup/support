@@ -58,22 +58,7 @@ Issue lifecycle, assignment, hierarchy, dependency, transfer, and work tracking.
 
 ## Designed use cases
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 No approved use cases. Implementation remains blocked.
-
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `Issue`
-- `SubIssueRelation`
-- `IssueDependency`
-- `IssueTransfer`
-- `IssueTypeSelection`
-- `IssueFieldValueSet`
-
-Precise definitions must be refined against the official sources before activation.
 
 ## Ownership and invariants
 
@@ -81,10 +66,6 @@ This context owns `Issue`, `SubIssueRelation`, `IssueDependency`, `IssueTransfer
 It excludes `Comment`, `LabelDefinition`, `Project`, `PullRequest`.
 
 No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
-
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
 
 ## Dependencies and consistency
 
@@ -101,38 +82,6 @@ None.
 - `collaboration/labels-and-milestones::TaxonomyReference` (synchronous)
 - `collaboration/conversations::IssueConversation` (synchronous)
 - `repositories/repositories::RepositoryTransferEvents` (event; events `RepositoryTransferred@1`)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `IssueCreated@1` (domain, planned): issue created. contract and ordering pending activation.
-- `IssueUpdated@1` (domain, planned): issue updated. contract and ordering pending activation.
-- `IssueClosed@1` (domain, planned): issue closed. contract and ordering pending activation.
-- `IssueReopened@1` (domain, planned): issue reopened. contract and ordering pending activation.
-- `IssueAssigned@1` (domain, planned): issue assigned. contract and ordering pending activation.
-- `IssueUnassigned@1` (domain, planned): issue unassigned. contract and ordering pending activation.
-- `SubIssueAdded@1` (domain, planned): sub issue added. contract and ordering pending activation.
-- `SubIssueRemoved@1` (domain, planned): sub issue removed. contract and ordering pending activation.
-- `IssueDependencyAdded@1` (domain, planned): issue dependency added. contract and ordering pending activation.
-- `IssueDependencyRemoved@1` (domain, planned): issue dependency removed. contract and ordering pending activation.
-- `IssueTransferred@1` (domain, planned): issue transferred. contract and ordering pending activation.
-- `IssueFieldValueSet@1` (domain, planned): issue field value set. contract and ordering pending activation.
-- `IssueFieldValueCleared@1` (domain, planned): issue field value cleared. contract and ordering pending activation.
 
 ## Official sources
 

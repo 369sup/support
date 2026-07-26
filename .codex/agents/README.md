@@ -1,7 +1,5 @@
 # Project custom agents
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 Registered project custom agents live here as `<agent-name>.toml`. The active
 roles are `explorer`, `implementer`, `reviewer`, `verifier`, and
 `docs-researcher`; their registrations live in [`../config.toml`](../config.toml).

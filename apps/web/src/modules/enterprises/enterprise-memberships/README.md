@@ -1,7 +1,5 @@
 # Enterprise Memberships
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 ## Purpose
 
 Own enterprise membership, invitation, affiliation, and guest collaborator

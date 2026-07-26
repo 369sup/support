@@ -1,7 +1,5 @@
 # Project command rules
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 Optional experimental command-policy files live here as `<rule-name>.rules`.
 
 `workspace-validation.rules` allows only the repository's canonical `pnpm`

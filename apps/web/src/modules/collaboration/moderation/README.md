@@ -1,7 +1,5 @@
 # Moderation Bounded Context
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 - **Catalog path:** `collaboration/moderation`
 - **Kind:** `domain`
 - **Classification:** `supporting`
@@ -54,28 +52,12 @@ Content reports, moderation cases, blocks, interaction limits, and visibility de
 
 No approved use cases. Implementation remains blocked.
 
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `ContentReport`
-- `ModerationCase`
-- `InteractionLimit`
-- `OrganizationBlock`
-- `ContentVisibilityDecision`
-
-Precise definitions must be refined against the official sources before activation.
-
 ## Ownership and invariants
 
 This context owns `ContentReport`, `ModerationCase`, `InteractionLimit`, `OrganizationBlock`, `ContentVisibilityDecision`.
 It excludes `CommentBody`, `IssueState`, `DiscussionState`.
 
 No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
-
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
 
 ## Dependencies and consistency
 
@@ -90,34 +72,6 @@ None.
 - `collaboration/issues::IssueModerationTarget` (synchronous)
 - `collaboration/conversations::ConversationModerationTarget` (synchronous)
 - `collaboration/discussions::DiscussionModerationTarget` (synchronous)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `ContentReported@1` (domain, planned): content reported. contract and ordering pending activation.
-- `ContentReportResolved@1` (domain, planned): content report resolved. contract and ordering pending activation.
-- `ContentReportReopened@1` (domain, planned): content report reopened. contract and ordering pending activation.
-- `InteractionLimitSet@1` (domain, planned): interaction limit set. contract and ordering pending activation.
-- `InteractionLimitLifted@1` (domain, planned): interaction limit lifted. contract and ordering pending activation.
-- `OrganizationBlocked@1` (domain, planned): organization blocked. contract and ordering pending activation.
-- `OrganizationUnblocked@1` (domain, planned): organization unblocked. contract and ordering pending activation.
-- `ContentHidden@1` (domain, planned): content hidden. contract and ordering pending activation.
-- `ContentUnhidden@1` (domain, planned): content unhidden. contract and ordering pending activation.
 
 ## Official sources
 

@@ -51,21 +51,7 @@ Repository Issues, Discussions, Projects, and Wiki enablement with feature-speci
 
 ## Designed use cases
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 No approved use cases. Implementation remains blocked.
-
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `IssuesFeatureConfiguration`
-- `IssueCreationPolicy`
-- `RepositoryDiscussionsFeatureState`
-- `ProjectsFeatureConfiguration`
-- `RepositoryWikiFeatureState`
-
-Precise definitions must be refined against the official sources before activation.
 
 ## Ownership and invariants
 
@@ -89,10 +75,6 @@ It excludes `Actions`, `Pages`, `Packages`, `SecurityScanning`, `WikiContent`.
   - Events: `RepositoryWikiEnabled@1`, `RepositoryWikiDisabled@1`
   - Sources: `repositories-repository-features-source-05`
 
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
-
 ## Dependencies and consistency
 
 ### Runtime dependencies
@@ -105,31 +87,6 @@ None.
 - `organizations/organization-policies::FeaturePolicyConstraints` (synchronous)
 - `commerce/entitlements::FeatureEntitlement` (synchronous)
 - `repositories/repositories::RepositoryTransferEvents` (event; events `RepositoryTransferred@1`)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `RepositoryIssuesFeatureChanged@1` (domain, planned): repository Issues enablement or creation policy changed. contract and ordering pending activation.
-- `RepositoryDiscussionsEnabled@1` (domain, planned): repository Discussions enabled. contract and ordering pending activation.
-- `RepositoryDiscussionsDisabled@1` (domain, planned): repository Discussions disabled. contract and ordering pending activation.
-- `RepositoryProjectsFeatureChanged@1` (domain, planned): repository Projects feature configuration changed. contract and ordering pending activation.
-- `RepositoryWikiEnabled@1` (domain, planned): repository Wiki enabled. contract and ordering pending activation.
-- `RepositoryWikiDisabled@1` (domain, planned): repository Wiki disabled without erasing its content. contract and ordering pending activation.
 
 ## Official sources
 

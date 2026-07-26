@@ -1,7 +1,5 @@
 # Repository Hook Workflow
 
-For Codex 5.3 startup, read this AGENTS.md first for this scope. Then read only the nearest README here when behavior context is needed.
-
 This file governs `.codex/hooks/**` and adds only the active hooks' local
 workflow. The parent [`AGENTS.md`](../AGENTS.md) owns general hook security.
 [`README.md`](README.md) is authoritative for current behavior and focused

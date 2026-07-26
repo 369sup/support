@@ -1,7 +1,5 @@
 # Project hook scripts
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 The sibling `.codex/hooks.json` runs the reviewed repository guard and
 automatic Serena memory lifecycle.
 

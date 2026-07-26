@@ -1,7 +1,5 @@
 # Labels And Milestones Bounded Context
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 - **Catalog path:** `collaboration/labels-and-milestones`
 - **Kind:** `domain`
 - **Classification:** `supporting`
@@ -47,26 +45,12 @@ Repository-scoped labels, milestones, and work classification.
 
 No approved use cases. Implementation remains blocked.
 
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `LabelCatalog`
-- `Label`
-- `Milestone`
-
-Precise definitions must be refined against the official sources before activation.
-
 ## Ownership and invariants
 
 This context owns `LabelCatalog`, `Label`, `Milestone`.
 It excludes `Issue`, `Discussion`, `OrganizationDefaultLabelPolicy`.
 
 No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
-
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
 
 ## Dependencies and consistency
 
@@ -77,33 +61,6 @@ None.
 ### Planned relationships
 
 - `repositories/repositories::RepositoryLifecycleState` (synchronous)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `LabelCreated@1` (domain, planned): label created. contract and ordering pending activation.
-- `LabelUpdated@1` (domain, planned): label updated. contract and ordering pending activation.
-- `LabelDeleted@1` (domain, planned): label deleted. contract and ordering pending activation.
-- `MilestoneCreated@1` (domain, planned): milestone created. contract and ordering pending activation.
-- `MilestoneUpdated@1` (domain, planned): milestone updated. contract and ordering pending activation.
-- `MilestoneClosed@1` (domain, planned): milestone closed. contract and ordering pending activation.
-- `MilestoneReopened@1` (domain, planned): milestone reopened. contract and ordering pending activation.
-- `MilestoneDeleted@1` (domain, planned): milestone deleted. contract and ordering pending activation.
 
 ## Official sources
 

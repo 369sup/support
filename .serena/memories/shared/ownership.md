@@ -13,7 +13,7 @@ Nearest-file precedence applies. Each file below remains authoritative only for 
 - `apps/web/AGENTS.md`: Next.js Web Application Contract
 - `apps/web/src/AGENTS.md`: Web Source Architecture Contract
 - `apps/web/src/app/AGENTS.md`: App Router Delivery Contract
-- `apps/web/src/modules/AGENTS.md`: Modules 結構規則
+- `apps/web/src/modules/AGENTS.md`: Bounded Context Workflow
 - `docs/AGENTS.md`: Documentation Workflow
 - `docs/architecture/AGENTS.md`: Architecture Documentation Workflow
 - `packages/AGENTS.md`: Workspace Package Workflow

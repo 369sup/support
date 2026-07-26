@@ -72,24 +72,7 @@ Repository discussion forums and organization discussion spaces, source-reposito
 
 ## Designed use cases
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 No approved use cases. Implementation remains blocked.
-
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `RepositoryDiscussionForum`
-- `OrganizationDiscussionSpace`
-- `Discussion`
-- `DiscussionCategory`
-- `DiscussionSection`
-- `DiscussionPoll`
-- `AcceptedAnswer`
-- `PinnedDiscussion`
-
-Precise definitions must be refined against the official sources before activation.
 
 ## Ownership and invariants
 
@@ -117,10 +100,6 @@ It excludes `Comment`, `LabelDefinition`, `Issue`, `TeamDiscussion`.
   - Events: `OrganizationDiscussionSourceChanged@1`
   - Sources: `collaboration-discussions-source-04`
 
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
-
 ## Dependencies and consistency
 
 ### Runtime dependencies
@@ -138,44 +117,6 @@ None.
 - `collaboration/conversations::DiscussionConversation` (synchronous)
 - `organizations/organization-memberships::OrganizationDiscussionAdministration` (synchronous)
 - `organizations/organization-policies::DiscussionCreationPolicy` (synchronous)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `DiscussionCreated@1` (domain, planned): discussion created. contract and ordering pending activation.
-- `DiscussionUpdated@1` (domain, planned): discussion updated. contract and ordering pending activation.
-- `DiscussionClosed@1` (domain, planned): discussion closed. contract and ordering pending activation.
-- `DiscussionReopened@1` (domain, planned): discussion reopened. contract and ordering pending activation.
-- `DiscussionDeleted@1` (domain, planned): discussion and its replies deleted. contract and ordering pending activation.
-- `DiscussionTransferred@1` (domain, planned): discussion transferred. contract and ordering pending activation.
-- `DiscussionCategoryCreated@1` (domain, planned): discussion category created. contract and ordering pending activation.
-- `DiscussionCategoryUpdated@1` (domain, planned): discussion category updated. contract and ordering pending activation.
-- `DiscussionCategoryDeleted@1` (domain, planned): discussion category deleted after its discussions were moved to a selected existing category. contract and ordering pending activation.
-- `DiscussionSectionCreated@1` (domain, planned): discussion section created. contract and ordering pending activation.
-- `DiscussionSectionUpdated@1` (domain, planned): discussion section updated. contract and ordering pending activation.
-- `DiscussionSectionDeleted@1` (domain, planned): discussion section deleted while its categories remained unsectioned. contract and ordering pending activation.
-- `DiscussionAnswerMarked@1` (domain, planned): discussion answer marked. contract and ordering pending activation.
-- `DiscussionAnswerUnmarked@1` (domain, planned): discussion answer unmarked. contract and ordering pending activation.
-- `DiscussionPinned@1` (domain, planned): discussion pinned. contract and ordering pending activation.
-- `DiscussionUnpinned@1` (domain, planned): discussion unpinned. contract and ordering pending activation.
-- `OrganizationDiscussionSpaceEnabled@1` (domain, planned): organization discussion space enabled with a source repository. contract and ordering pending activation.
-- `OrganizationDiscussionSpaceDisabled@1` (domain, planned): organization discussion space disabled. contract and ordering pending activation.
-- `OrganizationDiscussionSourceChanged@1` (domain, planned): organization discussion source repository changed without transferring existing discussions. contract and ordering pending activation.
 
 ## Official sources
 

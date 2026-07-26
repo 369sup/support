@@ -1,7 +1,5 @@
 # Plugin Template Instructions
 
-For Codex 5.3 startup, read this AGENTS.md first for this scope. Then read only the nearest README here when behavior context is needed.
-
 This directory is an uncataloged authoring template. Do not publish or add it
 to `.agents/plugins/marketplace.json` as `plugin-template`.
 

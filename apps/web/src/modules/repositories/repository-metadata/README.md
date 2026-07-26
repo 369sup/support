@@ -41,18 +41,7 @@ Repository topics and social-media preview configuration.
 
 ## Designed use cases
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 No approved use cases. Implementation remains blocked.
-
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `RepositoryTopicSet`
-- `RepositorySocialPreview`
-
-Precise definitions must be refined against the official sources before activation.
 
 ## Ownership and invariants
 
@@ -68,10 +57,6 @@ It excludes `RepositoryDescription`, `RepositoryHomepage`, `CustomPropertyDefini
   - Events: `RepositorySocialPreviewChanged@1`, `RepositorySocialPreviewRemoved@1`
   - Sources: `repositories-repository-metadata-source-02`
 
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
-
 ## Dependencies and consistency
 
 ### Runtime dependencies
@@ -82,28 +67,6 @@ None.
 
 - `repositories/repositories::RepositoryLifecycleState` (synchronous)
 - `platform/media-storage::MediaReference` (synchronous)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `RepositoryTopicsChanged@1` (domain, planned): repository topics changed. contract and ordering pending activation.
-- `RepositorySocialPreviewChanged@1` (domain, planned): repository social preview changed. contract and ordering pending activation.
-- `RepositorySocialPreviewRemoved@1` (domain, planned): repository social preview removed. contract and ordering pending activation.
 
 ## Official sources
 

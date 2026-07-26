@@ -1,7 +1,5 @@
 # ESLint Configuration Workflow
 
-For Codex 5.3 startup, read this AGENTS.md first for this scope. Then read only the nearest README here when behavior context is needed.
-
 This file governs `packages/eslint-config/**` and adds rules for the repository's
 mechanical lint policy.
 

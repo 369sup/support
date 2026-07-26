@@ -1,7 +1,5 @@
 # Oauth Authorizations Bounded Context
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 - **Catalog path:** `integrations/oauth-authorizations`
 - **Kind:** `domain`
 - **Classification:** `supporting`
@@ -45,27 +43,12 @@ User authorization of registered OAuth Apps, scopes, approval, and revocation.
 
 No approved use cases. Implementation remains blocked.
 
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `OAuthAuthorization`
-- `OAuthPolicyConstraints`
-- `AuthorizationScope`
-- `AuthorizationRevocation`
-
-Precise definitions must be refined against the official sources before activation.
-
 ## Ownership and invariants
 
 This context owns `OAuthAuthorization`, `OAuthPolicyConstraints`, `AuthorizationScope`, `AuthorizationRevocation`.
 It excludes `GitHubAppInstallation`, `InteractiveSession`, `TokenStorageAdapter`.
 
 No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
-
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
 
 ## Dependencies and consistency
 
@@ -78,28 +61,6 @@ None.
 - `integrations/oauth-app-registrations::OAuthClientReference` (synchronous)
 - `identity/accounts::AuthorizingUserReference` (synchronous)
 - `organizations/organization-policies::OAuthPolicyConstraints` (synchronous)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `OAuthAuthorizationGranted@1` (domain, planned): oauth authorization granted. contract and ordering pending activation.
-- `OAuthAuthorizationRevoked@1` (domain, planned): oauth authorization revoked. contract and ordering pending activation.
-- `OAuthScopesChanged@1` (domain, planned): oauth scopes changed. contract and ordering pending activation.
 
 ## Official sources
 

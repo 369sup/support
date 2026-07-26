@@ -1,7 +1,5 @@
 # Social Graph Bounded Context
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 - **Catalog path:** `identity/social-graph`
 - **Kind:** `domain`
 - **Classification:** `supporting`
@@ -43,25 +41,12 @@ Following relationships between users and organizations.
 
 No approved use cases. Implementation remains blocked.
 
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `UserFollow`
-- `OrganizationFollow`
-
-Precise definitions must be refined against the official sources before activation.
-
 ## Ownership and invariants
 
 This context owns `UserFollow`, `OrganizationFollow`.
 It excludes `RepositoryStar`, `RepositorySubscription`, `ActivityFeed`.
 
 No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
-
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
 
 ## Dependencies and consistency
 
@@ -73,29 +58,6 @@ None.
 
 - `identity/accounts::AccountReference` (synchronous)
 - `organizations/organizations::OrganizationReference` (synchronous)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `UserFollowed@1` (domain, planned): user followed. contract and ordering pending activation.
-- `UserUnfollowed@1` (domain, planned): user unfollowed. contract and ordering pending activation.
-- `OrganizationFollowed@1` (domain, planned): organization followed. contract and ordering pending activation.
-- `OrganizationUnfollowed@1` (domain, planned): organization unfollowed. contract and ordering pending activation.
 
 ## Official sources
 

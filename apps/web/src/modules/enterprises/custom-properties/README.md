@@ -51,22 +51,7 @@ Enterprise-defined repository and organization custom-property schemas, organiza
 
 ## Designed use cases
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 No approved use cases. Implementation remains blocked.
-
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `EnterpriseRepositoryPropertyDefinition`
-- `EnterpriseOrganizationPropertyDefinition`
-- `EnterprisePropertyDefault`
-- `EnterprisePropertyEditPolicy`
-- `OrganizationPropertyValue`
-- `EnterpriseRepositoryPropertyPromotion`
-
-Precise definitions must be refined against the official sources before activation.
 
 ## Ownership and invariants
 
@@ -82,10 +67,6 @@ It excludes `OrganizationRepositoryPropertyDefinition`, `RepositoryPropertyValue
   - Events: `EnterpriseOrganizationPropertyDefined@1`, `EnterpriseOrganizationPropertyUpdated@1`, `EnterpriseOrganizationPropertyDeleted@1`, `OrganizationPropertyValueSet@1`, `OrganizationPropertyValueCleared@1`
   - Sources: `enterprises-custom-properties-source-02`
 
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
-
 ## Dependencies and consistency
 
 ### Runtime dependencies
@@ -97,34 +78,6 @@ None.
 - `enterprises/enterprises::EnterpriseReference` (synchronous)
 - `organizations/organizations::OrganizationReference` (synchronous)
 - `organizations/custom-properties::OrganizationPropertyPromotionRequests` (event; events `OrganizationRepositoryPropertyPromotionRequested@1`)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `EnterpriseRepositoryPropertyDefined@1` (domain, planned): enterprise repository property defined. contract and ordering pending activation.
-- `EnterpriseRepositoryPropertyUpdated@1` (domain, planned): enterprise repository property updated. contract and ordering pending activation.
-- `EnterpriseRepositoryPropertyDeleted@1` (domain, planned): enterprise repository property deleted. contract and ordering pending activation.
-- `EnterpriseRepositoryPropertyPromoted@1` (domain, planned): organization repository property promoted to enterprise authority. contract and ordering pending activation.
-- `EnterpriseOrganizationPropertyDefined@1` (domain, planned): enterprise organization property defined. contract and ordering pending activation.
-- `EnterpriseOrganizationPropertyUpdated@1` (domain, planned): enterprise organization property updated. contract and ordering pending activation.
-- `EnterpriseOrganizationPropertyDeleted@1` (domain, planned): enterprise organization property deleted. contract and ordering pending activation.
-- `OrganizationPropertyValueSet@1` (domain, planned): organization property value set. contract and ordering pending activation.
-- `OrganizationPropertyValueCleared@1` (domain, planned): organization property value cleared. contract and ordering pending activation.
 
 ## Official sources
 

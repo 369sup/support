@@ -1,7 +1,5 @@
 # Serena Memory Operator Guide
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 This guide explains operation and recovery. It is not policy authority;
 [`AGENTS.md`](AGENTS.md) and the tracked memory engine define the repository
 contract.

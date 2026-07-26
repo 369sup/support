@@ -1,7 +1,5 @@
 # Enterprise Teams Bounded Context
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 - **Catalog path:** `enterprises/enterprise-teams`
 - **Kind:** `domain`
 - **Classification:** `supporting`
@@ -47,26 +45,12 @@ Enterprise-wide teams used for centralized role, organization, and license assig
 
 No approved use cases. Implementation remains blocked.
 
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `EnterpriseTeam`
-- `EnterpriseTeamMembership`
-- `EnterpriseTeamOrganizationGrant`
-
-Precise definitions must be refined against the official sources before activation.
-
 ## Ownership and invariants
 
 This context owns `EnterpriseTeam`, `EnterpriseTeamMembership`, `EnterpriseTeamOrganizationGrant`.
 It excludes `OrganizationTeam`, `RepositoryGrant`, `CostCenter`.
 
 No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
-
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
 
 ## Dependencies and consistency
 
@@ -78,32 +62,6 @@ None.
 
 - `enterprises/enterprises::EnterpriseReference` (synchronous)
 - `enterprises/enterprise-memberships::EnterpriseMemberReference` (synchronous)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `EnterpriseTeamCreated@1` (domain, planned): enterprise team created. contract and ordering pending activation.
-- `EnterpriseTeamUpdated@1` (domain, planned): enterprise team updated. contract and ordering pending activation.
-- `EnterpriseTeamDeleted@1` (domain, planned): enterprise team deleted. contract and ordering pending activation.
-- `EnterpriseTeamMemberAdded@1` (domain, planned): enterprise team member added. contract and ordering pending activation.
-- `EnterpriseTeamMemberRemoved@1` (domain, planned): enterprise team member removed. contract and ordering pending activation.
-- `EnterpriseTeamOrganizationGranted@1` (domain, planned): enterprise team organization granted. contract and ordering pending activation.
-- `EnterpriseTeamOrganizationRevoked@1` (domain, planned): enterprise team organization revoked. contract and ordering pending activation.
 
 ## Official sources
 

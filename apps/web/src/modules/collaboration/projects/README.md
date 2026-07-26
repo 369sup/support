@@ -1,7 +1,5 @@
 # Projects Bounded Context
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 - **Catalog path:** `collaboration/projects`
 - **Kind:** `domain`
 - **Classification:** `core`
@@ -61,32 +59,12 @@ User- or organization-owned projects, items, draft issues, views, fields, workfl
 
 No approved use cases. Implementation remains blocked.
 
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `Project`
-- `ProjectItem`
-- `DraftIssue`
-- `ProjectView`
-- `ProjectField`
-- `ProjectWorkflow`
-- `ProjectChart`
-- `ProjectTemplate`
-- `ProjectStatusUpdate`
-
-Precise definitions must be refined against the official sources before activation.
-
 ## Ownership and invariants
 
 This context owns `Project`, `ProjectItem`, `DraftIssue`, `ProjectView`, `ProjectField`, `ProjectWorkflow`, `ProjectChart`, `ProjectTemplate`, `ProjectStatusUpdate`.
 It excludes `RepositoryOwnership`, `Issue`, `IssueFieldDefinition`.
 
 No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
-
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
 
 ## Dependencies and consistency
 
@@ -101,37 +79,6 @@ None.
 - `organizations/organization-policies::ProjectPolicy` (synchronous)
 - `collaboration/issues::IssueProjectItem` (synchronous)
 - `commerce/entitlements::ProjectEntitlement` (synchronous)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `ProjectCreated@1` (domain, planned): project created. contract and ordering pending activation.
-- `ProjectUpdated@1` (domain, planned): project updated. contract and ordering pending activation.
-- `ProjectClosed@1` (domain, planned): project closed. contract and ordering pending activation.
-- `ProjectReopened@1` (domain, planned): project reopened. contract and ordering pending activation.
-- `ProjectDeleted@1` (domain, planned): project deleted. contract and ordering pending activation.
-- `ProjectItemAdded@1` (domain, planned): project item added. contract and ordering pending activation.
-- `ProjectItemUpdated@1` (domain, planned): project item updated. contract and ordering pending activation.
-- `ProjectItemRemoved@1` (domain, planned): project item removed. contract and ordering pending activation.
-- `ProjectViewChanged@1` (domain, planned): project view changed. contract and ordering pending activation.
-- `ProjectFieldChanged@1` (domain, planned): project field changed. contract and ordering pending activation.
-- `ProjectWorkflowChanged@1` (domain, planned): project workflow changed. contract and ordering pending activation.
-- `ProjectStatusUpdated@1` (domain, planned): project status updated. contract and ordering pending activation.
 
 ## Official sources
 

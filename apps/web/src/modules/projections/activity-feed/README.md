@@ -1,7 +1,5 @@
 # Activity Feed Bounded Context
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 - **Catalog path:** `projections/activity-feed`
 - **Kind:** `projection`
 - **Classification:** `not-applicable`
@@ -46,27 +44,12 @@ User-visible dashboard and resource activity projections.
 
 No approved use cases. Implementation remains blocked.
 
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `ActivityItem`
-- `PersonalActivityFeed`
-- `RepositoryActivityFeed`
-- `OrganizationActivityFeed`
-
-Precise definitions must be refined against the official sources before activation.
-
 ## Ownership and invariants
 
 This context owns `ActivityItem`, `PersonalActivityFeed`, `RepositoryActivityFeed`, `OrganizationActivityFeed`.
 It excludes `AuditEvent`, `DomainEventSource`, `CodeActivity`.
 
 No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
-
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
 
 ## Dependencies and consistency
 
@@ -82,26 +65,6 @@ None.
 - `collaboration/discussions::DiscussionActivityEvents` (event; events `DiscussionCreated@1`, `DiscussionUpdated@1`, `DiscussionClosed@1`, `DiscussionReopened@1`)
 - `collaboration/projects::ProjectActivityEvents` (event; events `ProjectCreated@1`, `ProjectUpdated@1`, `ProjectClosed@1`, `ProjectReopened@1`, `ProjectStatusUpdated@1`)
 - `repositories/repository-access::EffectiveReadPermission` (synchronous)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- None. Read-model context consumes versioned events and does not publish product facts.
 
 ## Official sources
 

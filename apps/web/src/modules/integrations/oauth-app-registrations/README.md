@@ -39,19 +39,7 @@ OAuth App registration, ownership, callback configuration, and client lifecycle.
 
 ## Designed use cases
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 No approved use cases. Implementation remains blocked.
-
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `OAuthClient`
-- `OAuthAppOwnerReference`
-- `OAuthCallbackConfiguration`
-
-Precise definitions must be refined against the official sources before activation.
 
 ## Ownership and invariants
 
@@ -59,10 +47,6 @@ This context owns `OAuthClient`, `OAuthAppOwnerReference`, `OAuthCallbackConfigu
 It excludes `OAuthAuthorization`, `GitHubAppRegistration`, `TokenStorageAdapter`.
 
 No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
-
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
 
 ## Dependencies and consistency
 
@@ -74,28 +58,6 @@ None.
 
 - `identity/accounts::UserOAuthAppOwner` (synchronous)
 - `organizations/organizations::OrganizationOAuthAppOwner` (synchronous)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `OAuthClientRegistered@1` (domain, planned): oauth client registered. contract and ordering pending activation.
-- `OAuthClientUpdated@1` (domain, planned): oauth client updated. contract and ordering pending activation.
-- `OAuthClientDeleted@1` (domain, planned): oauth client deleted. contract and ordering pending activation.
 
 ## Official sources
 

@@ -17,6 +17,7 @@ import {
 } from "@support/tooling/architecture/policy";
 
 import {
+  activeOnlyContextReadmeHeadings,
   activeContextReadmeHeadings,
   blockedUseCaseDesign,
   designedUseCaseFields,
@@ -731,6 +732,18 @@ function validateCatalog(rootDir, catalog, now, errors, knowledgeErrors) {
         errors.push(
           `[ARCH-MAP-019] Context ${contextPath} README.md is missing required headings: ${missingHeadings.join(", ")}.`,
         );
+      }
+
+      if (context.implementationStatus === "planned") {
+        const activeOnlyHeadings = activeOnlyContextReadmeHeadings.filter(
+          (heading) => headings.has(heading),
+        );
+
+        if (activeOnlyHeadings.length > 0) {
+          errors.push(
+            `[ARCH-MAP-019] Planned context ${contextPath} README.md contains active-only headings: ${activeOnlyHeadings.join(", ")}.`,
+          );
+        }
       }
 
       const contentTreeHeadingIndex = readmeLines.findIndex((line) => {
@@ -1654,7 +1667,14 @@ export function runArchitectureChecks({
     );
   }
 
-  validateAgentGuidance(repositoryRoot, requiredErrors, generatedErrors);
+  validateAgentGuidance(
+    repositoryRoot,
+    applicationRoot,
+    contextsByPath,
+    requiredErrors,
+    generatedErrors,
+    knowledgeErrors,
+  );
   validateSerenaMemories(repositoryRoot, generatedErrors);
 
   validateModuleNamesAndRoles(applicationRoot, sourceFiles, requiredErrors);

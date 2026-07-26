@@ -32,6 +32,36 @@ runtime boundaries, data ownership, authorization, or operational safety.
   matching official migration guide, deprecations, and breaking changes; do not
   apply guidance for a different version to the current source.
 
+## Guidance context budgets
+
+- Guidance follows root invariants plus nested deltas. A task loads the
+  applicable `AGENTS.md` chain and only the README sections needed for the
+  behavior under change.
+- **ARCH-GUIDE-003:** AGENTS and README files do not repeat model-version
+  startup boilerplate. Discovery and precedence are defined once at the root.
+- **ARCH-GUIDE-004:** A nested AGENTS file does not copy an exact normalized
+  paragraph of at least 120 characters from an ancestor. Knowledge governance
+  reports such duplication so the child can link to the authority and retain
+  only its local delta.
+- **ARCH-GUIDE-005:** Guidance budgets use
+  `ceil(UTF-8 byte length / 4)` as a stable repository estimate, not as a model
+  tokenizer or billing measurement.
+
+| Context | Enforced estimated-token ceiling |
+| --- | ---: |
+| Root `AGENTS.md` | 1,200 |
+| Complete applicable AGENTS chain | 3,000 |
+| Complete package AGENTS chain | 2,000 |
+| Root `README.md` | 1,800 |
+| Route README | 120 |
+| Planned bounded-context README | 3,000 |
+
+Planned context READMEs normally target 700-1,500 estimated tokens. Reviewed
+semantic claims and official-source evidence may exceed that target up to the
+hard ceiling. Active context READMEs have no whole-file ceiling because their
+decision records are loaded section-by-section; activation and architecture
+audits may load the complete file.
+
 ## Source roots
 
 - **ARCH-SRC-001:** `apps/web/src` contains directories `app` and `modules`
@@ -40,6 +70,9 @@ runtime boundaries, data ownership, authorization, or operational safety.
   locations and must not recreate forbidden source roots.
 - `apps/web/src/app` owns App Router delivery, route composition, metadata, request
   binding, and route-specific presentation.
+- Route status and common 404 behavior inherit from the nearest ancestor route
+  README. A descendant README exists only for different parsing, status,
+  ownership, authorization, direct-navigation behavior, or an exception.
 - `apps/web/src/modules/<subdomain>/<bounded-context>` owns product or technical
   capabilities. Both names use lowercase kebab-case.
 - Do not add global `components`, `lib`, `shared`, `common`, or `utils` roots.

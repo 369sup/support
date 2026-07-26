@@ -52,21 +52,7 @@ User notification records, inboxes, reasons, filters, and read, saved, or done s
 
 ## Designed use cases
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 No approved use cases. Implementation remains blocked.
-
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `Notification`
-- `NotificationInbox`
-- `NotificationReason`
-- `NotificationState`
-- `InboxFilter`
-
-Precise definitions must be refined against the official sources before activation.
 
 ## Ownership and invariants
 
@@ -74,10 +60,6 @@ This context owns `Notification`, `NotificationInbox`, `NotificationReason`, `No
 It excludes `SubscriptionPreference`, `EmailDelivery`, `PushDelivery`.
 
 No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
-
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
 
 ## Dependencies and consistency
 
@@ -94,34 +76,6 @@ None.
 - `collaboration/conversations::ConversationNotificationEvents` (event; events `CommentAdded@1`, `ReplyAdded@1`, `MentionDetected@1`)
 - `collaboration/discussions::DiscussionNotificationEvents` (event; events `DiscussionCreated@1`, `DiscussionUpdated@1`, `DiscussionAnswerMarked@1`)
 - `repositories/repository-access::RepositoryInvitationEvents` (event; events `RepositoryInvitationCreated@1`)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `NotificationCreated@1` (domain, planned): notification created. contract and ordering pending activation.
-- `NotificationRead@1` (domain, planned): notification read. contract and ordering pending activation.
-- `NotificationUnread@1` (domain, planned): notification unread. contract and ordering pending activation.
-- `NotificationSaved@1` (domain, planned): notification saved. contract and ordering pending activation.
-- `NotificationUnsaved@1` (domain, planned): notification unsaved. contract and ordering pending activation.
-- `NotificationDone@1` (domain, planned): notification done. contract and ordering pending activation.
-- `NotificationReopened@1` (domain, planned): notification reopened. contract and ordering pending activation.
-- `InboxFilterChanged@1` (domain, planned): inbox filter changed. contract and ordering pending activation.
-- `NotificationDeliveryRequested@1` (integration, planned): notification delivery requested after recipient and read-access resolution. contract and ordering pending activation.
 
 ## Official sources
 

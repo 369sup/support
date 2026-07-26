@@ -1,7 +1,5 @@
 # Organizations
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 ## Purpose
 
 Own organization identity, login, profile, lifecycle, and verified domains.

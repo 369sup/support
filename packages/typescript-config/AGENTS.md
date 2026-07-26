@@ -1,7 +1,5 @@
 # TypeScript Configuration Workflow
 
-For Codex 5.3 startup, read this AGENTS.md first for this scope. Then read only the nearest README here when behavior context is needed.
-
 This file governs `packages/typescript-config/**`.
 
 ## Preset contract

@@ -1,7 +1,5 @@
 # Serena Memory Engine Workflow
 
-For Codex 5.3 startup, read this AGENTS.md first for this scope. Then read only the nearest README here when behavior context is needed.
-
 This file governs `scripts/memory/**`. The parent
 [`AGENTS.md`](../AGENTS.md) owns the repository script contract.
 

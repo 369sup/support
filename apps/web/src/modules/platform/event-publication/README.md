@@ -1,7 +1,5 @@
 # Event Publication Bounded Context
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 - **Catalog path:** `platform/event-publication`
 - **Kind:** `technical`
 - **Classification:** `not-applicable`

@@ -363,6 +363,7 @@ test("accepts the canonical bounded-context fixture", () => {
 
   try {
     assert.deepEqual(check(rootDir), []);
+    assert.deepEqual(check(rootDir, "knowledge"), []);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1742,7 +1743,13 @@ Not applicable while planned.
 No active events.
 `,
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), false);
+    assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
+
+    writeFixture(
+      rootDir,
+      "src/modules/platform/event-publication/README.md",
+      plannedReadme,
+    );
 
     writeFixture(
       rootDir,
@@ -1763,6 +1770,134 @@ test("rejects broken nested AGENTS links and permanent overrides", () => {
     writeFixture(rootDir, "apps/web/AGENTS.override.md", "# Override\n");
 
     assert.equal(includesRule(check(rootDir), "ARCH-GUIDE-001"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("rejects model-version startup boilerplate in guidance", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    writeFixture(
+      rootDir,
+      "README.md",
+      "# Fixture\n\nFor Codex 5.3 startup, read every guide.\n",
+    );
+
+    assert.equal(includesRule(check(rootDir), "ARCH-GUIDE-003"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("reports inherited AGENTS paragraph duplication as knowledge", () => {
+  const rootDir = createValidFixture();
+  const repeatedParagraph =
+    "This intentionally repeated guidance paragraph is long enough to represent a meaningful inherited rule and should be owned by one ancestor only.";
+
+  try {
+    writeFixture(rootDir, "AGENTS.md", `# Root\n\n${repeatedParagraph}\n`);
+    writeFixture(
+      rootDir,
+      "apps/AGENTS.md",
+      `# Applications\n\n${repeatedParagraph}\n`,
+    );
+
+    assert.equal(
+      includesRule(check(rootDir, "knowledge"), "ARCH-GUIDE-004"),
+      true,
+    );
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("reports guidance token budget excess as knowledge", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    writeFixture(rootDir, "AGENTS.md", `# Root\n\n${"x".repeat(4_801)}\n`);
+
+    assert.equal(
+      check(rootDir, "knowledge").some((violation) => {
+        return violation.ruleId === "ARCH-GUIDE-005" &&
+          violation.message.startsWith("AGENTS.md is estimated");
+      }),
+      true,
+    );
+
+    writeFixture(rootDir, "AGENTS.md", "# Root\n");
+    writeFixture(
+      rootDir,
+      "apps/AGENTS.md",
+      `# Applications\n\n${"x".repeat(12_001)}\n`,
+    );
+    assert.equal(
+      check(rootDir, "knowledge").some((violation) => {
+        return violation.ruleId === "ARCH-GUIDE-005" &&
+          violation.message.startsWith(
+            "AGENTS chain ending at apps/AGENTS.md",
+          );
+      }),
+      true,
+    );
+    writeFixture(rootDir, "apps/AGENTS.md", "# Applications\n");
+
+    writeFixture(
+      rootDir,
+      "packages/AGENTS.md",
+      `# Packages\n\n${"x".repeat(8_001)}\n`,
+    );
+    assert.equal(
+      check(rootDir, "knowledge").some((violation) => {
+        return violation.ruleId === "ARCH-GUIDE-005" &&
+          violation.message.startsWith(
+            "AGENTS chain ending at packages/AGENTS.md",
+          );
+      }),
+      true,
+    );
+    writeFixture(rootDir, "packages/AGENTS.md", "# Packages\n");
+
+    writeFixture(rootDir, "README.md", `# Root\n\n${"x".repeat(7_201)}\n`);
+    assert.equal(
+      check(rootDir, "knowledge").some((violation) => {
+        return violation.ruleId === "ARCH-GUIDE-005" &&
+          violation.message.startsWith("README.md is estimated");
+      }),
+      true,
+    );
+
+    writeFixture(
+      rootDir,
+      "apps/web/src/app/example/README.md",
+      `# Route\n\n${"x".repeat(481)}\n`,
+    );
+    assert.equal(
+      check(rootDir, "knowledge").some((violation) => {
+        return violation.ruleId === "ARCH-GUIDE-005" &&
+          violation.message.startsWith("Route README");
+      }),
+      true,
+    );
+
+    const catalog = validCatalog();
+    catalog.contexts[0].implementationStatus = "planned";
+    catalog.contexts[0].activationScope = [];
+    writeCatalog(rootDir, catalog);
+    writeFixture(
+      rootDir,
+      "src/modules/core-domain/repositories/README.md",
+      `# Planned\n\n${"x".repeat(12_001)}\n`,
+    );
+    assert.equal(
+      check(rootDir, "knowledge").some((violation) => {
+        return violation.ruleId === "ARCH-GUIDE-005" &&
+          violation.message.startsWith("Planned context README");
+      }),
+      true,
+    );
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }

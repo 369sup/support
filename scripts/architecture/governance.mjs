@@ -26,10 +26,13 @@ const guidanceTraversalExclusions = new Set([
   ".git",
   ".next",
   ".pnpm-store",
+  ".turbo",
   "coverage",
   "dist",
   "node_modules",
 ]);
+const startupBoilerplate = "For Codex 5.3 startup";
+const inheritedParagraphMinimumLength = 120;
 
 function normalizePath(value) {
   return value.split(sep).join("/");
@@ -39,7 +42,7 @@ function projectRelative(rootDir, filePath) {
   return normalizePath(relative(rootDir, filePath));
 }
 
-function listGuidanceFiles(directory) {
+function listDocumentationFiles(directory) {
   const files = [];
 
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
@@ -50,16 +53,57 @@ function listGuidanceFiles(directory) {
     const entryPath = join(directory, entry.name);
 
     if (entry.isDirectory()) {
-      files.push(...listGuidanceFiles(entryPath));
+      files.push(...listDocumentationFiles(entryPath));
     } else if (
       entry.isFile() &&
-      (entry.name === "AGENTS.md" || entry.name === "AGENTS.override.md")
+      (entry.name === "AGENTS.md" ||
+        entry.name === "AGENTS.override.md" ||
+        entry.name === "README.md")
     ) {
       files.push(entryPath);
     }
   }
 
   return files;
+}
+
+function estimatedTokens(contents) {
+  return Math.ceil(Buffer.byteLength(contents, "utf8") / 4);
+}
+
+function normalizedParagraphs(contents) {
+  return contents
+    .split(/\r?\n\s*\r?\n/)
+    .map((paragraph) => paragraph.replace(/\s+/g, " ").trim())
+    .filter((paragraph) => paragraph.length >= inheritedParagraphMinimumLength);
+}
+
+function agentChainFor(repositoryRoot, filePath) {
+  const chain = [];
+  let currentDirectory = dirname(filePath);
+  const resolvedRepositoryRoot = resolve(repositoryRoot);
+
+  while (true) {
+    const candidate = join(currentDirectory, "AGENTS.md");
+
+    if (existsSync(candidate)) {
+      chain.unshift(candidate);
+    }
+
+    if (resolve(currentDirectory) === resolvedRepositoryRoot) {
+      break;
+    }
+
+    const parentDirectory = dirname(currentDirectory);
+
+    if (parentDirectory === currentDirectory) {
+      break;
+    }
+
+    currentDirectory = parentDirectory;
+  }
+
+  return chain;
 }
 
 export function validateGeneratedModuleMap(
@@ -90,11 +134,22 @@ export function validateGeneratedModuleMap(
 
 export function validateAgentGuidance(
   repositoryRoot,
+  applicationRoot,
+  contextsByPath,
   errors,
   generatedErrors,
+  knowledgeErrors,
 ) {
-  const guidanceFiles = listGuidanceFiles(repositoryRoot);
-  const actualAgentPaths = guidanceFiles
+  const documentationFiles = listDocumentationFiles(repositoryRoot);
+  const guidanceFiles = documentationFiles.filter((filePath) => {
+    return filePath.endsWith(`${sep}AGENTS.md`) ||
+      filePath.endsWith(`${sep}AGENTS.override.md`) ||
+      filePath === join(repositoryRoot, "AGENTS.md");
+  });
+  const agentFiles = guidanceFiles.filter((filePath) => {
+    return !filePath.endsWith(`${sep}AGENTS.override.md`);
+  });
+  const actualAgentPaths = agentFiles
     .filter((filePath) => {
       return filePath.endsWith(`${sep}AGENTS.md`) ||
         filePath === join(repositoryRoot, "AGENTS.md");
@@ -102,6 +157,16 @@ export function validateAgentGuidance(
     .map((filePath) => projectRelative(repositoryRoot, filePath))
     .sort();
   const expectedAgentPaths = [...agentGuidanceSourcePaths].sort();
+
+  for (const filePath of documentationFiles) {
+    const contents = readFileSync(filePath, "utf8");
+
+    if (contents.includes(startupBoilerplate)) {
+      errors.push(
+        `[ARCH-GUIDE-003] ${projectRelative(repositoryRoot, filePath)} repeats model-version startup boilerplate.`,
+      );
+    }
+  }
 
   for (const filePath of guidanceFiles) {
     const relativePath = projectRelative(repositoryRoot, filePath);
@@ -153,6 +218,113 @@ export function validateAgentGuidance(
           `[ARCH-GUIDE-001] ${relativePath} contains a missing local link: ${target}.`,
         );
       }
+    }
+  }
+
+  const paragraphsByAgent = new Map(
+    agentFiles.map((filePath) => [
+      filePath,
+      new Set(normalizedParagraphs(readFileSync(filePath, "utf8"))),
+    ]),
+  );
+
+  for (const filePath of agentFiles) {
+    const childParagraphs = paragraphsByAgent.get(filePath);
+
+    for (const ancestorPath of agentChainFor(repositoryRoot, filePath)) {
+      if (ancestorPath === filePath) {
+        continue;
+      }
+
+      const ancestorParagraphs = paragraphsByAgent.get(ancestorPath);
+      const hasDuplicate = [...childParagraphs].some((paragraph) => {
+        return ancestorParagraphs?.has(paragraph) === true;
+      });
+
+      if (hasDuplicate) {
+        knowledgeErrors.push(
+          `[ARCH-GUIDE-004] ${projectRelative(repositoryRoot, filePath)} repeats an inherited paragraph from ${projectRelative(repositoryRoot, ancestorPath)}.`,
+        );
+        break;
+      }
+    }
+  }
+
+  const rootAgentPath = join(repositoryRoot, "AGENTS.md");
+  const rootAgentTokens = estimatedTokens(readFileSync(rootAgentPath, "utf8"));
+
+  if (rootAgentTokens > 1_200) {
+    knowledgeErrors.push(
+      `[ARCH-GUIDE-005] AGENTS.md is estimated at ${rootAgentTokens} tokens; the ceiling is 1200.`,
+    );
+  }
+
+  for (const filePath of agentFiles) {
+    const relativePath = projectRelative(repositoryRoot, filePath);
+    const chainTokens = agentChainFor(repositoryRoot, filePath)
+      .map((agentPath) => estimatedTokens(readFileSync(agentPath, "utf8")))
+      .reduce((total, tokens) => total + tokens, 0);
+    const ceiling = relativePath.startsWith("packages/") ? 2_000 : 3_000;
+
+    if (chainTokens > ceiling) {
+      knowledgeErrors.push(
+        `[ARCH-GUIDE-005] AGENTS chain ending at ${relativePath} is estimated at ${chainTokens} tokens; the ceiling is ${ceiling}.`,
+      );
+    }
+  }
+
+  const rootReadmePath = join(repositoryRoot, "README.md");
+
+  if (existsSync(rootReadmePath)) {
+    const tokens = estimatedTokens(readFileSync(rootReadmePath, "utf8"));
+
+    if (tokens > 1_800) {
+      knowledgeErrors.push(
+        `[ARCH-GUIDE-005] README.md is estimated at ${tokens} tokens; the ceiling is 1800.`,
+      );
+    }
+  }
+
+  for (const filePath of documentationFiles) {
+    const relativePath = projectRelative(repositoryRoot, filePath);
+
+    if (
+      relativePath.startsWith("apps/web/src/app/") &&
+      relativePath.endsWith("/README.md")
+    ) {
+      const tokens = estimatedTokens(readFileSync(filePath, "utf8"));
+
+      if (tokens > 120) {
+        knowledgeErrors.push(
+          `[ARCH-GUIDE-005] Route README ${relativePath} is estimated at ${tokens} tokens; the ceiling is 120.`,
+        );
+      }
+    }
+  }
+
+  for (const [contextPath, context] of contextsByPath) {
+    if (context.implementationStatus !== "planned") {
+      continue;
+    }
+
+    const readmePath = join(
+      applicationRoot,
+      "src",
+      "modules",
+      ...contextPath.split("/"),
+      "README.md",
+    );
+
+    if (!existsSync(readmePath)) {
+      continue;
+    }
+
+    const tokens = estimatedTokens(readFileSync(readmePath, "utf8"));
+
+    if (tokens > 3_000) {
+      knowledgeErrors.push(
+        `[ARCH-GUIDE-005] Planned context README ${contextPath} is estimated at ${tokens} tokens; the ceiling is 3000.`,
+      );
     }
   }
 

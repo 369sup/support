@@ -1,7 +1,5 @@
 # Support
 
-For Codex 5.3 startup, read the corresponding AGENTS.md chain first for authority, then this README only for behavior/context details.
-
 A non-code product platform built with Next.js App Router and
 organized as a Turborepo workspace. The product models users, enterprises,
 organizations, teams, repositories, issues, discussions, projects,
@@ -29,33 +27,6 @@ application and are not workspace packages.
 
 Architecture, naming, module-map, and exception rules are documented under
 `docs/architecture` and enforced by `pnpm architecture`.
-
-## Codex 5.3 Spark Quick Start Index
-
-Use this fixed sequence in startup mode:
-1. Read [AGENTS.md](AGENTS.md) first for authority and scope.
-2. Read [README.md](README.md) for practical context and command map.
-3. Read only the nearest target subtree `AGENTS.md`, then its relevant `README.md` if needed.
-
-### Fast routing
-
-| Target | AGENTS chain (top -> down) | Relevant README |
-| --- | --- | --- |
-| `apps/web/src/app/...` | `AGENTS.md` -> `apps/AGENTS.md` -> `apps/web/AGENTS.md` -> `apps/web/src/AGENTS.md` -> `apps/web/src/app/AGENTS.md` | Route folder `README.md` if present |
-| `apps/web/src/modules/...` | `AGENTS.md` -> `apps/AGENTS.md` -> `apps/web/AGENTS.md` -> `apps/web/src/AGENTS.md` -> `apps/web/src/modules/AGENTS.md` | `apps/web/src/modules/<subdomain>/<context>/README.md` |
-| `packages/...` | `AGENTS.md` -> `packages/AGENTS.md` -> package `AGENTS.md` | Package README only when it defines design boundary |
-| `docs/...` | `AGENTS.md` -> `docs/AGENTS.md` -> `docs/architecture/AGENTS.md` when in architecture scope | `docs/**/README.md` as needed |
-
-Default ignore scope for Codex startup: `node_modules/**`, `.next/**`, tool cache paths, and vendor/SDK READMEs.
-
-To avoid missing instructions in a large codebase, the tracked guide manifest is:
-
-```text
-git ls-files | rg '(^|/)AGENTS\.md$|(^|/)README\.md$'
-```
-
-Before modifying repository code, read [AGENTS.md](AGENTS.md) first to load authoritative instruction boundaries.
-
 
 ## Development
 
