@@ -8,14 +8,14 @@
 - **Support path:** `/{owner}/{repository}/issues`
 - **GitHub canonical patterns:** No official pattern is asserted.
 - **Delivery:** `page`
-- **Status:** `planned`
-- **Materialization:** `scaffolded`
+- **Status:** `active`
+- **Materialization:** `active`
 
 ## Functional intent
 
-List and filter repository issues visible to the actor.
+Lists repository issues after authenticated repository read access is established.
 
-The filesystem route is reserved and currently returns the canonical unavailable response.
+The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
 ## Delivery functions
 
@@ -23,9 +23,12 @@ The filesystem route is reserved and currently returns the canonical unavailable
 
 ## Module contracts
 
-- - **owner:** `collaboration/issues` — use cases: no route-level use-case reference; functions: no runtime function reference
-- - **collaborator:** `collaboration/issue-schema` — use cases: no route-level use-case reference; functions: no runtime function reference
-- - **collaborator:** `collaboration/labels-and-milestones` — use cases: no route-level use-case reference; functions: no runtime function reference
+- - **owner:** `collaboration/issues` — use cases: `list-repository-issues`; functions: `listRepositoryIssues`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
+- - **collaborator:** `identity/accounts` — use cases: `get-personal-account-by-username`; functions: `getPersonalAccountByUsername`
+- - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`
+- - **collaborator:** `repositories/repositories` — use cases: `get-repository-by-owner-and-name`; functions: `getRepositoryByOwnerAndName`
+- - **collaborator:** `repositories/repository-access` — use cases: `resolve-effective-repository-permission`; functions: `resolveEffectiveRepositoryPermission`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

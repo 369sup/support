@@ -1,90 +1,122 @@
-# Projects Bounded Context
-
-- **Catalog path:** `collaboration/projects`
-- **Kind:** `domain`
-- **Classification:** `core`
-- **Maturity:** `stable`
-- **Implementation:** `planned`
-- **Semantic status:** `candidate`
+# Projects
 
 ## Purpose
 
-User- or organization-owned projects, items, draft issues, views, fields, workflows, charts, templates, and status updates.
+Own user- and organization-scoped projects, their items, fields, views,
+workflows, charts, templates, and status updates.
 
 ## Context content tree
 
-- `collaboration/projects` [planned]
-  - Purpose: User- or organization-owned projects, items, draft issues, views, fields, workflows, charts, templates, and status updates.
-  - Capabilities
-    - No active use cases; activation scope remains empty.
-  - Owned domain concepts
-    - `Project`
-    - `ProjectItem`
-    - `DraftIssue`
-    - `ProjectView`
-    - `ProjectField`
-    - `ProjectWorkflow`
-    - `ProjectChart`
-    - `ProjectTemplate`
-    - `ProjectStatusUpdate`
-  - Business rules and invariants
-    - Pending official-source validation before activation.
-  - Published events
-    - `ProjectCreated@1` [planned]: project created.
-    - `ProjectUpdated@1` [planned]: project updated.
-    - `ProjectClosed@1` [planned]: project closed.
-    - `ProjectReopened@1` [planned]: project reopened.
-    - `ProjectDeleted@1` [planned]: project deleted.
-    - `ProjectItemAdded@1` [planned]: project item added.
-    - `ProjectItemUpdated@1` [planned]: project item updated.
-    - `ProjectItemRemoved@1` [planned]: project item removed.
-    - `ProjectViewChanged@1` [planned]: project view changed.
-    - `ProjectFieldChanged@1` [planned]: project field changed.
-    - `ProjectWorkflowChanged@1` [planned]: project workflow changed.
-    - `ProjectStatusUpdated@1` [planned]: project status updated.
-- External relationships
-  - Runtime dependencies: none.
-  - Planned relationships
-    - `identity/accounts::UserProjectOwner` (synchronous)
-    - `organizations/organizations::OrganizationProjectOwner` (synchronous)
-    - `organizations/organization-policies::ProjectPolicy` (synchronous)
-    - `collaboration/issues::IssueProjectItem` (synchronous)
-    - `commerce/entitlements::ProjectEntitlement` (synchronous)
-- Explicit exclusions
-  - `RepositoryOwnership`
-  - `Issue`
-  - `IssueFieldDefinition`
+- Project collaboration [active]
+  - `list-account-projects`
+  - `list-repository-projects`
+  - `update-project-item-status`
+  - Owned: `Project`, `ProjectItem`, `ProjectField`, `ProjectStatusUpdate`
+- Draft issues, views, workflows, charts, and templates [planned]
+  - Owned: `DraftIssue`, `ProjectView`, `ProjectWorkflow`, `ProjectChart`,
+    `ProjectTemplate`
+- Planned events: `ProjectCreated@1`, `ProjectUpdated@1`,
+  `ProjectClosed@1`, `ProjectReopened@1`, `ProjectDeleted@1`,
+  `ProjectItemAdded@1`, `ProjectItemUpdated@1`, `ProjectItemRemoved@1`,
+  `ProjectViewChanged@1`, `ProjectFieldChanged@1`,
+  `ProjectWorkflowChanged@1`, `ProjectStatusUpdated@1`
+- Runtime dependencies: none.
+- Excludes: `RepositoryOwnership`, `Issue`, `IssueFieldDefinition`.
 
 ## Designed use cases
 
-No approved use cases. Implementation remains blocked.
+### `list-account-projects` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ListAccountProjectsUseCase.listAccountProjects()`
+- **Public entrypoint:** `server-api.ts#listAccountProjects`
+- **Input:** Authenticated owner account ID.
+- **Success result:** `found` with projects owned by the account.
+- **Expected rejections:** `none`
+- **Authorization:** Delivery supplies the current account only.
+- **Transaction:** Read-only snapshot.
+- **Idempotency:** Query.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `collaboration-projects-source-01`
+- **Local policy:** The active fixture models personal ownership only.
+
+### `list-repository-projects` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ListRepositoryProjectsUseCase.listRepositoryProjects()`
+- **Public entrypoint:** `server-api.ts#listRepositoryProjects`
+- **Input:** Repository ID.
+- **Success result:** `found` with linked projects.
+- **Expected rejections:** `none`
+- **Authorization:** Delivery establishes repository read access.
+- **Transaction:** Read-only snapshot.
+- **Idempotency:** Query.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `collaboration-projects-source-01`
+- **Local policy:** Linking never implies repository ownership of a project.
+
+### `update-project-item-status` [active]
+
+- **Type:** `command`
+- **Application boundary:** `UpdateProjectItemStatusUseCase.updateProjectItemStatus()`
+- **Public entrypoint:** `server-api.ts#updateProjectItemStatus`
+- **Input:** Project, item, authenticated actor, new status, and timestamp.
+- **Success result:** `updated` with the project snapshot.
+- **Expected rejections:** `project-not-found`, `item-not-found`, `forbidden`
+- **Authorization:** The actor must own the project.
+- **Transaction:** Replace one process-local project.
+- **Idempotency:** Setting the same status is state-idempotent.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `collaboration-projects-source-01`
+- **Local policy:** Status values are `backlog`, `in-progress`, and `done`.
+
+## Ubiquitous language
+
+- **Project:** owner-scoped planning workspace.
+- **Project item:** planning row with an active status field.
+- **Linked repository:** reference only, not ownership.
 
 ## Ownership and invariants
 
-This context owns `Project`, `ProjectItem`, `DraftIssue`, `ProjectView`, `ProjectField`, `ProjectWorkflow`, `ProjectChart`, `ProjectTemplate`, `ProjectStatusUpdate`.
-It excludes `RepositoryOwnership`, `Issue`, `IssueFieldDefinition`.
+Projects own their items and planning configuration. Only the project owner may
+mutate the active status field.
 
-No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
+## Public capabilities
+
+Account and repository list queries plus owner-authorized item status updates.
 
 ## Dependencies and consistency
 
-### Runtime dependencies
+The active in-memory slice has no runtime context dependency.
 
-None.
+## Authorization
 
-### Planned relationships
+Delivery scopes account lists and repository visibility; the command enforces
+project ownership.
 
-- `identity/accounts::UserProjectOwner` (synchronous)
-- `organizations/organizations::OrganizationProjectOwner` (synchronous)
-- `organizations/organization-policies::ProjectPolicy` (synchronous)
-- `collaboration/issues::IssueProjectItem` (synchronous)
-- `commerce/entitlements::ProjectEntitlement` (synchronous)
+## Persistence and transactions
+
+Projects are process-local and non-durable.
+
+## Data classification
+
+Project planning metadata may reference repository resources.
+
+## Retention and erasure
+
+Process lifetime only; durable retention and deletion remain planned.
+
+## Events and failure behavior
+
+Project events remain planned until transactional publication exists.
 
 ## Official sources
 
-- `collaboration-projects-source-01`: [projects, views, fields, workflows, charts, templates](https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects) (verified 2026-07-23)
+- <https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects>
 
 ## Exceptions
 
-No context-specific exception is declared by the catalog. The central
-[exception registry](../../../../../../docs/architecture/exceptions/registry.json) remains authoritative.
+None.

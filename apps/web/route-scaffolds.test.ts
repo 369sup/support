@@ -38,7 +38,7 @@ describe("App Router route catalog", () => {
       (route) => route.materialization === "scaffolded",
     );
 
-    expect(scaffolded).toHaveLength(76);
+    expect(scaffolded).toHaveLength(62);
 
     for (const route of scaffolded) {
       if (!("file" in route)) {

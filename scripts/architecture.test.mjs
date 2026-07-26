@@ -764,6 +764,8 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
     [
       "identity/accounts",
       "identity/authentication",
+      "identity/profiles",
+      "identity/social-graph",
       "enterprises/enterprises",
       "enterprises/enterprise-memberships",
       "enterprises/enterprise-roles",
@@ -774,16 +776,27 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "organizations/organization-policies",
       "repositories/repositories",
       "repositories/repository-access",
+      "collaboration/issues",
+      "collaboration/conversations",
+      "collaboration/discussions",
+      "collaboration/moderation",
+      "collaboration/projects",
+      "engagement/stars",
+      "engagement/subscriptions",
+      "engagement/notifications",
+      "projections/search",
       "projections/dashboard",
+      "projections/activity-feed",
       "platform/event-publication",
       "platform/search-index",
       "platform/media-storage",
       "platform/audit-storage",
+      "projections/discovery",
     ],
   );
   assert.equal(
     catalog.contexts.filter((item) => item.implementationStatus === "planned").length,
-    47,
+    34,
   );
   assert.equal(
     byPath.get("organizations/organization-memberships").activationScope.includes(
@@ -793,7 +806,11 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
   );
   assert.deepEqual(
     byPath.get("identity/accounts").activationScope,
-    ["get-account-reference-by-id", "get-personal-account-by-username"],
+    [
+      "delete-personal-account",
+      "get-account-reference-by-id",
+      "get-personal-account-by-username",
+    ],
   );
   assert.deepEqual(
     byPath.get("organizations/organization-teams").activationScope,
@@ -897,7 +914,6 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
   assert.equal(byPath.get("projections/repository-insights").owns.includes("TrafficMetric"), false);
   for (const contextPath of [
     "platform/site-content",
-    "projections/discovery",
     "integrations/marketplace-catalog",
     "platform/actions-route-compatibility",
     "platform/repository-content-route-compatibility",

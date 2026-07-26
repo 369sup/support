@@ -1,7 +1,26 @@
-﻿import { BookOpen, FolderLock, FolderKanban, Settings, ShieldCheck } from "lucide-react";
+﻿import {
+  Bell,
+  BookOpen,
+  FolderKanban,
+  FolderLock,
+  Settings,
+  ShieldCheck,
+  Star,
+} from "lucide-react";
 import Link from "next/link";
+import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 
+import { readFormString } from "@/app/_route-contracts/read-form-string";
+import {
+  listRepositoryStargazers,
+  toggleRepositoryStar,
+} from "@/modules/engagement/stars/server-api";
+import {
+  listRepositorySubscribers,
+  toggleRepositorySubscription,
+} from "@/modules/engagement/subscriptions/server-api";
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
 import { getPersonalAccountByUsername } from "@/modules/identity/accounts/server-api";
 import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
@@ -45,37 +64,92 @@ async function resolveOwnerByLogin(owner: string): Promise<OwnerLookupResult | n
   };
 }
 
+async function resolveRepositoryForActor(ownerLogin: string, repositoryName: string) {
+  const session = await requireCurrentSession();
+  const owner = await resolveOwnerByLogin(ownerLogin);
+  if (owner === null) {
+    return null;
+  }
+  const result = await getRepositoryByOwnerAndName(owner.id, repositoryName);
+  if (result.status !== "found") {
+    return null;
+  }
+  const permission = await resolveEffectiveRepositoryPermission({
+    actor: session.account,
+    repository: result.repository,
+  });
+  return permission.isAllowed
+    ? { permission, repository: result.repository, session }
+    : null;
+}
+
+async function toggleStarAction(formData: FormData): Promise<never> {
+  "use server";
+
+  const owner = readFormString(formData, "owner").trim();
+  const repositoryName = readFormString(formData, "repository").trim();
+  const access = await resolveRepositoryForActor(owner, repositoryName);
+  if (access === null) {
+    notFound();
+  }
+  await toggleRepositoryStar({
+    actorAccountId: access.session.account.accountId,
+    actorUsername: access.session.account.username,
+    changedAt: new Date().toISOString(),
+    repositoryId: access.repository.repositoryId,
+  });
+  revalidatePath(`/${owner}/${repositoryName}`);
+  redirect(`/${owner}/${repositoryName}`);
+}
+
+async function toggleWatchAction(formData: FormData): Promise<never> {
+  "use server";
+
+  const owner = readFormString(formData, "owner").trim();
+  const repositoryName = readFormString(formData, "repository").trim();
+  const access = await resolveRepositoryForActor(owner, repositoryName);
+  if (access === null) {
+    notFound();
+  }
+  await toggleRepositorySubscription({
+    actorAccountId: access.session.account.accountId,
+    actorUsername: access.session.account.username,
+    changedAt: new Date().toISOString(),
+    repositoryId: access.repository.repositoryId,
+  });
+  revalidatePath(`/${owner}/${repositoryName}`);
+  redirect(`/${owner}/${repositoryName}`);
+}
+
 export default async function RepositoryPage({
   params,
 }: Readonly<{
   params: Promise<{ owner: string; repository: string }>;
 }>) {
-  const session = await requireCurrentSession();
   const routeParams = await params;
-  const owner = await resolveOwnerByLogin(routeParams.owner);
-
-  if (owner === null) {
-    notFound();
-  }
-
-  const repositoryResult = await getRepositoryByOwnerAndName(
-    owner.id,
+  const access = await resolveRepositoryForActor(
+    routeParams.owner,
     routeParams.repository,
   );
-  if (repositoryResult.status !== "found") {
+  if (access === null) {
     notFound();
   }
 
-  const permission = await resolveEffectiveRepositoryPermission({
-    actor: session.account,
-    repository: repositoryResult.repository,
-  });
-
-  if (!permission.isAllowed) {
-    notFound();
-  }
-
-  const repository = repositoryResult.repository;
+  const { permission, repository, session } = access;
+  const [stargazerResult, subscriberResult] = await Promise.all([
+    listRepositoryStargazers(repository.repositoryId),
+    listRepositorySubscribers(repository.repositoryId),
+  ]);
+  const stargazers =
+    stargazerResult.status === "found" ? stargazerResult.stargazers : [];
+  const subscribers =
+    subscriberResult.status === "found" ? subscriberResult.subscribers : [];
+  const isStarred = stargazers.some(
+    (stargazer) => stargazer.accountId === session.account.accountId,
+  );
+  const isWatching = subscribers.some(
+    (subscriber) => subscriber.accountId === session.account.accountId,
+  );
   const canManage = isManageable(permission.permission);
 
   return (
@@ -109,6 +183,36 @@ export default async function RepositoryPage({
           <span className="rounded-full border border-slate-600 px-2.5 py-1 text-xs text-slate-400">
             <span className="font-medium text-slate-300">Owner:</span> {repository.owner.kind === "organization" ? "organization" : "account"}
           </span>
+          <form action={toggleStarAction}>
+            <input name="owner" type="hidden" value={routeParams.owner} />
+            <input
+              name="repository"
+              type="hidden"
+              value={routeParams.repository}
+            />
+            <button
+              className="inline-flex items-center gap-2 rounded-lg border border-amber-300/30 px-3 py-1.5 text-xs font-semibold text-amber-100 hover:bg-amber-300/10"
+              type="submit"
+            >
+              <Star aria-hidden="true" className="size-3.5" />
+              {isStarred ? "Unstar" : "Star"} · {stargazers.length}
+            </button>
+          </form>
+          <form action={toggleWatchAction}>
+            <input name="owner" type="hidden" value={routeParams.owner} />
+            <input
+              name="repository"
+              type="hidden"
+              value={routeParams.repository}
+            />
+            <button
+              className="inline-flex items-center gap-2 rounded-lg border border-sky-300/30 px-3 py-1.5 text-xs font-semibold text-sky-100 hover:bg-sky-300/10"
+              type="submit"
+            >
+              <Bell aria-hidden="true" className="size-3.5" />
+              {isWatching ? "Unwatch" : "Watch"} · {subscribers.length}
+            </button>
+          </form>
         </div>
 
         <div className="mt-9 overflow-hidden rounded-xl border border-white/15 bg-[#0a1624]">
@@ -128,15 +232,51 @@ export default async function RepositoryPage({
               <div className="mt-3 grid gap-2 text-sm">
                 <Link
                   className="inline-flex items-center gap-2 text-slate-200 underline decoration-dashed underline-offset-4"
-                  href={`/${owner.login}`}
+                  href={`/${repository.owner.login}`}
                 >
                   <BookOpen className="size-4" aria-hidden="true" />
                   {repository.owner.login} profile
                 </Link>
+                <Link
+                  className="text-slate-200 underline decoration-dashed underline-offset-4"
+                  href={`/${repository.owner.login}/${repository.name}/issues`}
+                >
+                  Issues
+                </Link>
+                <Link
+                  className="text-slate-200 underline decoration-dashed underline-offset-4"
+                  href={`/${repository.owner.login}/${repository.name}/discussions`}
+                >
+                  Discussions
+                </Link>
+                <Link
+                  className="text-slate-200 underline decoration-dashed underline-offset-4"
+                  href={`/${repository.owner.login}/${repository.name}/projects`}
+                >
+                  Projects
+                </Link>
+                <Link
+                  className="text-slate-200 underline decoration-dashed underline-offset-4"
+                  href={`/${repository.owner.login}/${repository.name}/activity`}
+                >
+                  Activity
+                </Link>
+                <Link
+                  className="text-slate-200 underline decoration-dashed underline-offset-4"
+                  href={`/${repository.owner.login}/${repository.name}/stargazers`}
+                >
+                  Stargazers
+                </Link>
+                <Link
+                  className="text-slate-200 underline decoration-dashed underline-offset-4"
+                  href={`/${repository.owner.login}/${repository.name}/watchers`}
+                >
+                  Watchers
+                </Link>
                 {canManage ? (
                   <Link
                     className="inline-flex items-center gap-2 text-slate-200 underline decoration-dashed underline-offset-4"
-                    href={`/${owner.login}/${repository.name}/settings`}
+                    href={`/${repository.owner.login}/${repository.name}/settings`}
                   >
                     <Settings className="size-4" aria-hidden="true" />
                     Repository settings

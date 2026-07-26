@@ -8,14 +8,14 @@
 - **Support path:** `/projects`
 - **GitHub canonical patterns:** No official pattern is asserted.
 - **Delivery:** `page`
-- **Status:** `planned`
-- **Materialization:** `scaffolded`
+- **Status:** `active`
+- **Materialization:** `active`
 
 ## Functional intent
 
-List projects available to the active account across supported owners.
+Lists projects owned by the active account and updates project item status.
 
-The filesystem route is reserved and currently returns the canonical unavailable response.
+The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
 ## Delivery functions
 
@@ -23,7 +23,8 @@ The filesystem route is reserved and currently returns the canonical unavailable
 
 ## Module contracts
 
-- - **owner:** `collaboration/projects` — use cases: no route-level use-case reference; functions: no runtime function reference
+- - **owner:** `collaboration/projects` — use cases: `list-account-projects`, `update-project-item-status`; functions: `listAccountProjects`, `updateProjectItemStatus`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

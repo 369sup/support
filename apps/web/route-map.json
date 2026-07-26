@@ -1645,16 +1645,52 @@
       "status": "active",
       "materialization": "active",
       "title": "Account Page",
-      "summary": "Delivers `/account` through `requireCurrentSession`.",
+      "summary": "Delivers account identity, personal account deletion, and owner-authorized profile editing through authenticated server boundaries.",
       "pathParams": [],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "profile",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "account",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
-          "context": "identity/authentication",
+          "context": "identity/accounts",
           "role": "owner",
+          "useCases": [
+            "delete-personal-account"
+          ],
+          "functions": [
+            "deletePersonalAccount"
+          ]
+        },
+        {
+          "context": "identity/profiles",
+          "role": "collaborator",
+          "useCases": [
+            "get-user-profile",
+            "update-user-profile"
+          ],
+          "functions": [
+            "getUserProfile",
+            "updateUserProfile"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "collaborator",
           "useCases": [],
           "functions": [
-            "requireCurrentSession"
+            "clearBrowserSessionToken",
+            "readBrowserSessionToken",
+            "requireCurrentSession",
+            "signOutAllSessions"
           ]
         }
       ],
@@ -1682,9 +1718,7 @@
         {
           "context": "projections/discovery",
           "role": "owner",
-          "useCases": [
-            "list-curated-collections"
-          ],
+          "useCases": [],
           "functions": []
         }
       ],
@@ -2251,10 +2285,10 @@
       "githubUrls": [
         "https://github.com/explore"
       ],
-      "status": "planned",
-      "materialization": "scaffolded",
+      "status": "active",
+      "materialization": "active",
       "title": "Explore",
-      "summary": "Public discovery is designed by the planned discovery projection; the route stays unavailable until activation.",
+      "summary": "Presents the deterministic public explore feed.",
       "pathParams": [],
       "queryParams": [],
       "modules": [
@@ -2264,7 +2298,9 @@
           "useCases": [
             "get-explore-feed"
           ],
-          "functions": []
+          "functions": [
+            "getExploreFeed"
+          ]
         }
       ],
       "sourceIds": [
@@ -2403,30 +2439,32 @@
       "kind": "page",
       "supportPath": "/notifications",
       "githubUrls": [],
-      "status": "planned",
-      "materialization": "scaffolded",
+      "status": "active",
+      "materialization": "active",
       "title": "Notifications",
-      "summary": "Review subscription-driven product notifications and delivery state.",
+      "summary": "Lists recipient-scoped notifications and marks individual inbox items read.",
       "pathParams": [],
       "queryParams": [],
       "modules": [
         {
           "context": "engagement/notifications",
           "role": "owner",
-          "useCases": [],
-          "functions": []
+          "useCases": [
+            "list-notifications",
+            "mark-notification-read"
+          ],
+          "functions": [
+            "listNotifications",
+            "markNotificationRead"
+          ]
         },
         {
-          "context": "engagement/subscriptions",
+          "context": "identity/authentication",
           "role": "collaborator",
           "useCases": [],
-          "functions": []
-        },
-        {
-          "context": "platform/notification-channels",
-          "role": "collaborator",
-          "useCases": [],
-          "functions": []
+          "functions": [
+            "requireCurrentSession"
+          ]
         }
       ],
       "sourceIds": [
@@ -3345,14 +3383,20 @@
       "status": "active",
       "materialization": "active",
       "title": "Owner Page",
-      "summary": "Delivers `/{owner}` through `requireCurrentSession`, `getPersonalAccountByUsername`, `getOrganizationByLogin`, `listActiveRepositoriesForOwner`, `resolveEffectiveRepositoryPermission`.",
+      "summary": "Delivers `/{owner}` profile, achievements, and visible repositories through `requireCurrentSession`, `getPersonalAccountByUsername`, `getUserProfile`, `getOrganizationByLogin`, `listActiveRepositoriesForOwner`, and `resolveEffectiveRepositoryPermission`.",
       "pathParams": [
         {
           "name": "owner",
           "kind": "scalar"
         }
       ],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "follow",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
           "context": "repositories/repositories",
@@ -3380,6 +3424,26 @@
           ],
           "functions": [
             "getPersonalAccountByUsername"
+          ]
+        },
+        {
+          "context": "identity/profiles",
+          "role": "collaborator",
+          "useCases": [
+            "get-user-profile"
+          ],
+          "functions": [
+            "getUserProfile"
+          ]
+        },
+        {
+          "context": "identity/social-graph",
+          "role": "collaborator",
+          "useCases": [
+            "toggle-user-follow"
+          ],
+          "functions": [
+            "toggleUserFollow"
           ]
         },
         {
@@ -3457,6 +3521,30 @@
           ],
           "functions": [
             "getPersonalAccountByUsername"
+          ]
+        },
+        {
+          "context": "engagement/stars",
+          "role": "collaborator",
+          "useCases": [
+            "list-repository-stargazers",
+            "toggle-repository-star"
+          ],
+          "functions": [
+            "listRepositoryStargazers",
+            "toggleRepositoryStar"
+          ]
+        },
+        {
+          "context": "engagement/subscriptions",
+          "role": "collaborator",
+          "useCases": [
+            "list-repository-subscribers",
+            "toggle-repository-subscription"
+          ],
+          "functions": [
+            "listRepositorySubscribers",
+            "toggleRepositorySubscription"
           ]
         },
         {
@@ -3576,8 +3664,8 @@
       "kind": "page",
       "supportPath": "/{owner}/{repository}/activity",
       "githubUrls": [],
-      "status": "planned",
-      "materialization": "scaffolded",
+      "status": "active",
+      "materialization": "active",
       "title": "Repository activity",
       "summary": "Present a permission-filtered feed of supported non-code repository events.",
       "pathParams": [
@@ -3595,8 +3683,60 @@
         {
           "context": "projections/activity-feed",
           "role": "owner",
+          "useCases": [
+            "list-repository-activity"
+          ],
+          "functions": [
+            "listRepositoryActivity"
+          ]
+        },
+        {
+          "context": "identity/accounts",
+          "role": "collaborator",
+          "useCases": [
+            "get-personal-account-by-username"
+          ],
+          "functions": [
+            "getPersonalAccountByUsername"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "collaborator",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "requireCurrentSession"
+          ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "collaborator",
+          "useCases": [
+            "get-organization-by-login"
+          ],
+          "functions": [
+            "getOrganizationByLogin"
+          ]
+        },
+        {
+          "context": "repositories/repository-access",
+          "role": "collaborator",
+          "useCases": [
+            "resolve-effective-repository-permission"
+          ],
+          "functions": [
+            "resolveEffectiveRepositoryPermission"
+          ]
+        },
+        {
+          "context": "repositories/repositories",
+          "role": "collaborator",
+          "useCases": [
+            "get-repository-by-owner-and-name"
+          ],
+          "functions": [
+            "getRepositoryByOwnerAndName"
+          ]
         }
       ],
       "sourceIds": [
@@ -4080,8 +4220,8 @@
       "kind": "page",
       "supportPath": "/{owner}/{repository}/discussions",
       "githubUrls": [],
-      "status": "planned",
-      "materialization": "scaffolded",
+      "status": "active",
+      "materialization": "active",
       "title": "Discussions",
       "summary": "List repository discussions grouped by supported categories.",
       "pathParams": [
@@ -4099,20 +4239,60 @@
         {
           "context": "collaboration/discussions",
           "role": "owner",
-          "useCases": [],
-          "functions": []
+          "useCases": [
+            "list-repository-discussions"
+          ],
+          "functions": [
+            "listRepositoryDiscussions"
+          ]
         },
         {
-          "context": "collaboration/conversations",
+          "context": "identity/accounts",
           "role": "collaborator",
-          "useCases": [],
-          "functions": []
+          "useCases": [
+            "get-personal-account-by-username"
+          ],
+          "functions": [
+            "getPersonalAccountByUsername"
+          ]
         },
         {
-          "context": "collaboration/moderation",
+          "context": "identity/authentication",
           "role": "collaborator",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "requireCurrentSession"
+          ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "collaborator",
+          "useCases": [
+            "get-organization-by-login"
+          ],
+          "functions": [
+            "getOrganizationByLogin"
+          ]
+        },
+        {
+          "context": "repositories/repository-access",
+          "role": "collaborator",
+          "useCases": [
+            "resolve-effective-repository-permission"
+          ],
+          "functions": [
+            "resolveEffectiveRepositoryPermission"
+          ]
+        },
+        {
+          "context": "repositories/repositories",
+          "role": "collaborator",
+          "useCases": [
+            "get-repository-by-owner-and-name"
+          ],
+          "functions": [
+            "getRepositoryByOwnerAndName"
+          ]
         }
       ],
       "sourceIds": [
@@ -4166,8 +4346,8 @@
       "kind": "page",
       "supportPath": "/{owner}/{repository}/discussions/new",
       "githubUrls": [],
-      "status": "planned",
-      "materialization": "scaffolded",
+      "status": "active",
+      "materialization": "active",
       "title": "New discussion",
       "summary": "Create a discussion in an enabled repository category.",
       "pathParams": [
@@ -4180,13 +4360,71 @@
           "kind": "scalar"
         }
       ],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "status",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
           "context": "collaboration/discussions",
           "role": "owner",
+          "useCases": [
+            "create-discussion"
+          ],
+          "functions": [
+            "createDiscussion"
+          ]
+        },
+        {
+          "context": "identity/accounts",
+          "role": "collaborator",
+          "useCases": [
+            "get-personal-account-by-username"
+          ],
+          "functions": [
+            "getPersonalAccountByUsername"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "collaborator",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "requireCurrentSession"
+          ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "collaborator",
+          "useCases": [
+            "get-organization-by-login"
+          ],
+          "functions": [
+            "getOrganizationByLogin"
+          ]
+        },
+        {
+          "context": "repositories/repository-access",
+          "role": "collaborator",
+          "useCases": [
+            "resolve-effective-repository-permission"
+          ],
+          "functions": [
+            "resolveEffectiveRepositoryPermission"
+          ]
+        },
+        {
+          "context": "repositories/repositories",
+          "role": "collaborator",
+          "useCases": [
+            "get-repository-by-owner-and-name"
+          ],
+          "functions": [
+            "getRepositoryByOwnerAndName"
+          ]
         }
       ],
       "sourceIds": [
@@ -4201,8 +4439,8 @@
       "kind": "page",
       "supportPath": "/{owner}/{repository}/discussions/{number}",
       "githubUrls": [],
-      "status": "planned",
-      "materialization": "scaffolded",
+      "status": "active",
+      "materialization": "active",
       "title": "Discussion",
       "summary": "Review one discussion, its conversation, answer state, and moderation status.",
       "pathParams": [
@@ -4219,25 +4457,98 @@
           "kind": "scalar"
         }
       ],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "comment",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "report",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
           "context": "collaboration/discussions",
           "role": "owner",
-          "useCases": [],
-          "functions": []
+          "useCases": [
+            "get-repository-discussion"
+          ],
+          "functions": [
+            "getRepositoryDiscussion"
+          ]
         },
         {
           "context": "collaboration/conversations",
           "role": "collaborator",
-          "useCases": [],
-          "functions": []
+          "useCases": [
+            "add-comment",
+            "list-conversation-comments"
+          ],
+          "functions": [
+            "addComment",
+            "listConversationComments"
+          ]
         },
         {
           "context": "collaboration/moderation",
           "role": "collaborator",
+          "useCases": [
+            "report-content"
+          ],
+          "functions": [
+            "reportContent"
+          ]
+        },
+        {
+          "context": "identity/accounts",
+          "role": "collaborator",
+          "useCases": [
+            "get-personal-account-by-username"
+          ],
+          "functions": [
+            "getPersonalAccountByUsername"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "collaborator",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "requireCurrentSession"
+          ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "collaborator",
+          "useCases": [
+            "get-organization-by-login"
+          ],
+          "functions": [
+            "getOrganizationByLogin"
+          ]
+        },
+        {
+          "context": "repositories/repository-access",
+          "role": "collaborator",
+          "useCases": [
+            "resolve-effective-repository-permission"
+          ],
+          "functions": [
+            "resolveEffectiveRepositoryPermission"
+          ]
+        },
+        {
+          "context": "repositories/repositories",
+          "role": "collaborator",
+          "useCases": [
+            "get-repository-by-owner-and-name"
+          ],
+          "functions": [
+            "getRepositoryByOwnerAndName"
+          ]
         }
       ],
       "sourceIds": [
@@ -4338,10 +4649,10 @@
       "kind": "page",
       "supportPath": "/{owner}/{repository}/issues",
       "githubUrls": [],
-      "status": "planned",
-      "materialization": "scaffolded",
+      "status": "active",
+      "materialization": "active",
       "title": "Issues",
-      "summary": "List and filter repository issues visible to the actor.",
+      "summary": "Lists repository issues after authenticated repository read access is established.",
       "pathParams": [
         {
           "name": "owner",
@@ -4357,20 +4668,60 @@
         {
           "context": "collaboration/issues",
           "role": "owner",
-          "useCases": [],
-          "functions": []
+          "useCases": [
+            "list-repository-issues"
+          ],
+          "functions": [
+            "listRepositoryIssues"
+          ]
         },
         {
-          "context": "collaboration/issue-schema",
+          "context": "identity/authentication",
           "role": "collaborator",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "requireCurrentSession"
+          ]
         },
         {
-          "context": "collaboration/labels-and-milestones",
+          "context": "identity/accounts",
           "role": "collaborator",
-          "useCases": [],
-          "functions": []
+          "useCases": [
+            "get-personal-account-by-username"
+          ],
+          "functions": [
+            "getPersonalAccountByUsername"
+          ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "collaborator",
+          "useCases": [
+            "get-organization-by-login"
+          ],
+          "functions": [
+            "getOrganizationByLogin"
+          ]
+        },
+        {
+          "context": "repositories/repositories",
+          "role": "collaborator",
+          "useCases": [
+            "get-repository-by-owner-and-name"
+          ],
+          "functions": [
+            "getRepositoryByOwnerAndName"
+          ]
+        },
+        {
+          "context": "repositories/repository-access",
+          "role": "collaborator",
+          "useCases": [
+            "resolve-effective-repository-permission"
+          ],
+          "functions": [
+            "resolveEffectiveRepositoryPermission"
+          ]
         }
       ],
       "sourceIds": [
@@ -4385,10 +4736,10 @@
       "kind": "page",
       "supportPath": "/{owner}/{repository}/issues/new",
       "githubUrls": [],
-      "status": "planned",
-      "materialization": "scaffolded",
+      "status": "active",
+      "materialization": "active",
       "title": "New issue",
-      "summary": "Create an issue using the repository's enabled issue schema.",
+      "summary": "Creates an issue for a signed-in actor with repository read access.",
       "pathParams": [
         {
           "name": "owner",
@@ -4399,19 +4750,71 @@
           "kind": "scalar"
         }
       ],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "status",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
           "context": "collaboration/issues",
           "role": "owner",
-          "useCases": [],
-          "functions": []
+          "useCases": [
+            "create-issue"
+          ],
+          "functions": [
+            "createIssue"
+          ]
         },
         {
-          "context": "collaboration/issue-schema",
+          "context": "identity/authentication",
           "role": "collaborator",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "requireCurrentSession"
+          ]
+        },
+        {
+          "context": "identity/accounts",
+          "role": "collaborator",
+          "useCases": [
+            "get-personal-account-by-username"
+          ],
+          "functions": [
+            "getPersonalAccountByUsername"
+          ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "collaborator",
+          "useCases": [
+            "get-organization-by-login"
+          ],
+          "functions": [
+            "getOrganizationByLogin"
+          ]
+        },
+        {
+          "context": "repositories/repositories",
+          "role": "collaborator",
+          "useCases": [
+            "get-repository-by-owner-and-name"
+          ],
+          "functions": [
+            "getRepositoryByOwnerAndName"
+          ]
+        },
+        {
+          "context": "repositories/repository-access",
+          "role": "collaborator",
+          "useCases": [
+            "resolve-effective-repository-permission"
+          ],
+          "functions": [
+            "resolveEffectiveRepositoryPermission"
+          ]
         }
       ],
       "sourceIds": [
@@ -4426,10 +4829,10 @@
       "kind": "page",
       "supportPath": "/{owner}/{repository}/issues/{number}",
       "githubUrls": [],
-      "status": "planned",
-      "materialization": "scaffolded",
+      "status": "active",
+      "materialization": "active",
       "title": "Issue",
-      "summary": "Review one issue, its lifecycle, conversation, labels, and milestone.",
+      "summary": "Reviews one issue and supports authenticated comments, reactions, and content reporting.",
       "pathParams": [
         {
           "name": "owner",
@@ -4444,31 +4847,105 @@
           "kind": "scalar"
         }
       ],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "comment",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "reaction",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "report",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
           "context": "collaboration/issues",
           "role": "owner",
-          "useCases": [],
-          "functions": []
+          "useCases": [
+            "get-repository-issue"
+          ],
+          "functions": [
+            "getRepositoryIssue"
+          ]
         },
         {
           "context": "collaboration/conversations",
           "role": "collaborator",
-          "useCases": [],
-          "functions": []
-        },
-        {
-          "context": "collaboration/labels-and-milestones",
-          "role": "collaborator",
-          "useCases": [],
-          "functions": []
+          "useCases": [
+            "add-comment",
+            "add-reaction",
+            "list-conversation-comments"
+          ],
+          "functions": [
+            "addComment",
+            "addReaction",
+            "listConversationComments"
+          ]
         },
         {
           "context": "collaboration/moderation",
           "role": "collaborator",
+          "useCases": [
+            "report-content"
+          ],
+          "functions": [
+            "reportContent"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "collaborator",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "requireCurrentSession"
+          ]
+        },
+        {
+          "context": "identity/accounts",
+          "role": "collaborator",
+          "useCases": [
+            "get-personal-account-by-username"
+          ],
+          "functions": [
+            "getPersonalAccountByUsername"
+          ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "collaborator",
+          "useCases": [
+            "get-organization-by-login"
+          ],
+          "functions": [
+            "getOrganizationByLogin"
+          ]
+        },
+        {
+          "context": "repositories/repositories",
+          "role": "collaborator",
+          "useCases": [
+            "get-repository-by-owner-and-name"
+          ],
+          "functions": [
+            "getRepositoryByOwnerAndName"
+          ]
+        },
+        {
+          "context": "repositories/repository-access",
+          "role": "collaborator",
+          "useCases": [
+            "resolve-effective-repository-permission"
+          ],
+          "functions": [
+            "resolveEffectiveRepositoryPermission"
+          ]
         }
       ],
       "sourceIds": [
@@ -4752,8 +5229,8 @@
       "kind": "page",
       "supportPath": "/{owner}/{repository}/projects",
       "githubUrls": [],
-      "status": "planned",
-      "materialization": "scaffolded",
+      "status": "active",
+      "materialization": "active",
       "title": "Repository projects",
       "summary": "List projects linked to a repository without implying repository ownership.",
       "pathParams": [
@@ -4771,14 +5248,60 @@
         {
           "context": "collaboration/projects",
           "role": "owner",
-          "useCases": [],
-          "functions": []
+          "useCases": [
+            "list-repository-projects"
+          ],
+          "functions": [
+            "listRepositoryProjects"
+          ]
         },
         {
-          "context": "repositories/repository-features",
+          "context": "identity/accounts",
+          "role": "collaborator",
+          "useCases": [
+            "get-personal-account-by-username"
+          ],
+          "functions": [
+            "getPersonalAccountByUsername"
+          ]
+        },
+        {
+          "context": "identity/authentication",
           "role": "collaborator",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "requireCurrentSession"
+          ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "collaborator",
+          "useCases": [
+            "get-organization-by-login"
+          ],
+          "functions": [
+            "getOrganizationByLogin"
+          ]
+        },
+        {
+          "context": "repositories/repository-access",
+          "role": "collaborator",
+          "useCases": [
+            "resolve-effective-repository-permission"
+          ],
+          "functions": [
+            "resolveEffectiveRepositoryPermission"
+          ]
+        },
+        {
+          "context": "repositories/repositories",
+          "role": "collaborator",
+          "useCases": [
+            "get-repository-by-owner-and-name"
+          ],
+          "functions": [
+            "getRepositoryByOwnerAndName"
+          ]
         }
       ],
       "sourceIds": [
@@ -5387,8 +5910,8 @@
       "kind": "page",
       "supportPath": "/{owner}/{repository}/stargazers",
       "githubUrls": [],
-      "status": "planned",
-      "materialization": "scaffolded",
+      "status": "active",
+      "materialization": "active",
       "title": "Stargazers",
       "summary": "List accounts that starred a repository when visibility permits.",
       "pathParams": [
@@ -5406,8 +5929,60 @@
         {
           "context": "engagement/stars",
           "role": "owner",
+          "useCases": [
+            "list-repository-stargazers"
+          ],
+          "functions": [
+            "listRepositoryStargazers"
+          ]
+        },
+        {
+          "context": "identity/accounts",
+          "role": "collaborator",
+          "useCases": [
+            "get-personal-account-by-username"
+          ],
+          "functions": [
+            "getPersonalAccountByUsername"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "collaborator",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "requireCurrentSession"
+          ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "collaborator",
+          "useCases": [
+            "get-organization-by-login"
+          ],
+          "functions": [
+            "getOrganizationByLogin"
+          ]
+        },
+        {
+          "context": "repositories/repository-access",
+          "role": "collaborator",
+          "useCases": [
+            "resolve-effective-repository-permission"
+          ],
+          "functions": [
+            "resolveEffectiveRepositoryPermission"
+          ]
+        },
+        {
+          "context": "repositories/repositories",
+          "role": "collaborator",
+          "useCases": [
+            "get-repository-by-owner-and-name"
+          ],
+          "functions": [
+            "getRepositoryByOwnerAndName"
+          ]
         }
       ],
       "sourceIds": [
@@ -5506,8 +6081,8 @@
       "kind": "page",
       "supportPath": "/{owner}/{repository}/watchers",
       "githubUrls": [],
-      "status": "planned",
-      "materialization": "scaffolded",
+      "status": "active",
+      "materialization": "active",
       "title": "Watchers",
       "summary": "List visible repository subscription relationships.",
       "pathParams": [
@@ -5525,8 +6100,60 @@
         {
           "context": "engagement/subscriptions",
           "role": "owner",
+          "useCases": [
+            "list-repository-subscribers"
+          ],
+          "functions": [
+            "listRepositorySubscribers"
+          ]
+        },
+        {
+          "context": "identity/accounts",
+          "role": "collaborator",
+          "useCases": [
+            "get-personal-account-by-username"
+          ],
+          "functions": [
+            "getPersonalAccountByUsername"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "collaborator",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "requireCurrentSession"
+          ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "collaborator",
+          "useCases": [
+            "get-organization-by-login"
+          ],
+          "functions": [
+            "getOrganizationByLogin"
+          ]
+        },
+        {
+          "context": "repositories/repository-access",
+          "role": "collaborator",
+          "useCases": [
+            "resolve-effective-repository-permission"
+          ],
+          "functions": [
+            "resolveEffectiveRepositoryPermission"
+          ]
+        },
+        {
+          "context": "repositories/repositories",
+          "role": "collaborator",
+          "useCases": [
+            "get-repository-by-owner-and-name"
+          ],
+          "functions": [
+            "getRepositoryByOwnerAndName"
+          ]
         }
       ],
       "sourceIds": [
@@ -5666,18 +6293,32 @@
       "kind": "page",
       "supportPath": "/projects",
       "githubUrls": [],
-      "status": "planned",
-      "materialization": "scaffolded",
+      "status": "active",
+      "materialization": "active",
       "title": "Projects",
-      "summary": "List projects available to the active account across supported owners.",
+      "summary": "Lists projects owned by the active account and updates project item status.",
       "pathParams": [],
       "queryParams": [],
       "modules": [
         {
           "context": "collaboration/projects",
           "role": "owner",
+          "useCases": [
+            "list-account-projects",
+            "update-project-item-status"
+          ],
+          "functions": [
+            "listAccountProjects",
+            "updateProjectItemStatus"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "collaborator",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "requireCurrentSession"
+          ]
         }
       ],
       "sourceIds": [
@@ -5782,24 +6423,28 @@
       "kind": "page",
       "supportPath": "/search",
       "githubUrls": [],
-      "status": "mixed",
-      "materialization": "scaffolded",
+      "status": "active",
+      "materialization": "active",
       "title": "Search",
-      "summary": "Search permission-filtered product resources through the search projection.",
+      "summary": "Searches supported public profiles, repositories, issues, discussions, and projects.",
       "pathParams": [],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "q",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
           "context": "projections/search",
           "role": "owner",
-          "useCases": [],
-          "functions": []
-        },
-        {
-          "context": "platform/search-index",
-          "role": "collaborator",
-          "useCases": [],
-          "functions": []
+          "useCases": [
+            "search-public-resources"
+          ],
+          "functions": [
+            "searchPublicResources"
+          ]
         }
       ],
       "sourceIds": [
@@ -6159,9 +6804,7 @@
         {
           "context": "projections/discovery",
           "role": "owner",
-          "useCases": [
-            "list-topics"
-          ],
+          "useCases": [],
           "functions": []
         }
       ],
@@ -6195,9 +6838,7 @@
         {
           "context": "projections/discovery",
           "role": "owner",
-          "useCases": [
-            "get-topic"
-          ],
+          "useCases": [],
           "functions": []
         }
       ],
@@ -6226,9 +6867,7 @@
         {
           "context": "projections/discovery",
           "role": "owner",
-          "useCases": [
-            "list-trending-repositories"
-          ],
+          "useCases": [],
           "functions": []
         }
       ],

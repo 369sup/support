@@ -1,135 +1,131 @@
-# Discussions Bounded Context
-
-- **Catalog path:** `collaboration/discussions`
-- **Kind:** `domain`
-- **Classification:** `core`
-- **Maturity:** `stable`
-- **Implementation:** `planned`
-- **Semantic status:** `validated`
+# Discussions
 
 ## Purpose
 
-Repository discussion forums and organization discussion spaces, source-repository binding, categories, sections, polls, answers, pins, and lifecycle.
+Own repository and organization discussion spaces, categories, lifecycle, and
+advanced discussion affordances.
 
 ## Context content tree
 
-- `collaboration/discussions` [planned]
-  - Purpose: Repository discussion forums and organization discussion spaces, source-repository binding, categories, sections, polls, answers, pins, and lifecycle.
-  - Capabilities
-    - No active use cases; activation scope remains empty.
-  - Owned domain concepts
-    - `RepositoryDiscussionForum`
-    - `OrganizationDiscussionSpace`
-    - `Discussion`
-    - `DiscussionCategory`
-    - `DiscussionSection`
-    - `DiscussionPoll`
-    - `AcceptedAnswer`
-    - `PinnedDiscussion`
-  - Business rules and invariants
-    - `discussion-forums-and-categories`: Repositories and organizations expose discussion forums with up to 25 uniquely named-and-emoji-paired categories; each category can belong to at most one section, category deletion moves discussions to another category, and section deletion leaves categories unsectioned.
-    - `discussion-lifecycle-and-transfer`: Discussions can be closed, reopened, deleted with their replies, or transferred subject to GitHub's repository and announcement restrictions.
-    - `discussion-answers-polls-and-pins`: Answerable discussions support marking eligible non-minimized comments as answers, discussions can be pinned, and poll discussions require at least two options without claiming a separate poll-close operation.
-    - `organization-discussion-source-repository`: Organization Discussions requires an organization-owned source repository and derives permissions from it.
-    - `organization-discussion-source-change`: Changing the Organization Discussions source repository does not transfer existing discussions.
-  - Published events
-    - `DiscussionCreated@1` [planned]: discussion created.
-    - `DiscussionUpdated@1` [planned]: discussion updated.
-    - `DiscussionClosed@1` [planned]: discussion closed.
-    - `DiscussionReopened@1` [planned]: discussion reopened.
-    - `DiscussionDeleted@1` [planned]: discussion and its replies deleted.
-    - `DiscussionTransferred@1` [planned]: discussion transferred.
-    - `DiscussionCategoryCreated@1` [planned]: discussion category created.
-    - `DiscussionCategoryUpdated@1` [planned]: discussion category updated.
-    - `DiscussionCategoryDeleted@1` [planned]: discussion category deleted after its discussions were moved to a selected existing category.
-    - `DiscussionSectionCreated@1` [planned]: discussion section created.
-    - `DiscussionSectionUpdated@1` [planned]: discussion section updated.
-    - `DiscussionSectionDeleted@1` [planned]: discussion section deleted while its categories remained unsectioned.
-    - `DiscussionAnswerMarked@1` [planned]: discussion answer marked.
-    - `DiscussionAnswerUnmarked@1` [planned]: discussion answer unmarked.
-    - `DiscussionPinned@1` [planned]: discussion pinned.
-    - `DiscussionUnpinned@1` [planned]: discussion unpinned.
-    - `OrganizationDiscussionSpaceEnabled@1` [planned]: organization discussion space enabled with a source repository.
-    - `OrganizationDiscussionSpaceDisabled@1` [planned]: organization discussion space disabled.
-    - `OrganizationDiscussionSourceChanged@1` [planned]: organization discussion source repository changed without transferring existing discussions.
-- External relationships
-  - Runtime dependencies: none.
-  - Planned relationships
-    - `repositories/repositories::RepositoryLifecycleAndOwnership` (synchronous)
-    - `organizations/organizations::OrganizationReference` (synchronous)
-    - `repositories/repository-access::DiscussionPermission` (synchronous)
-    - `repositories/repository-features::RepositoryDiscussionFeatureState` (synchronous)
-    - `repositories/repository-features::RepositoryDiscussionFeatureEvents` (event; events `RepositoryDiscussionsEnabled@1`, `RepositoryDiscussionsDisabled@1`)
-    - `collaboration/labels-and-milestones::LabelReference` (synchronous)
-    - `collaboration/conversations::DiscussionConversation` (synchronous)
-    - `organizations/organization-memberships::OrganizationDiscussionAdministration` (synchronous)
-    - `organizations/organization-policies::DiscussionCreationPolicy` (synchronous)
-- Explicit exclusions
-  - `Comment`
-  - `LabelDefinition`
-  - `Issue`
-  - `TeamDiscussion`
+- Repository discussions [active]
+  - `create-discussion`
+  - `get-repository-discussion`
+  - `list-repository-discussions`
+  - Owned: `RepositoryDiscussionForum`, `Discussion`, `DiscussionCategory`
+- Organization spaces, sections, polls, answers, and pins [planned]
+  - Owned: `OrganizationDiscussionSpace`, `DiscussionSection`,
+    `DiscussionPoll`, `AcceptedAnswer`, `PinnedDiscussion`
+- Planned events: `DiscussionCreated@1`, `DiscussionUpdated@1`,
+  `DiscussionClosed@1`, `DiscussionReopened@1`, `DiscussionDeleted@1`,
+  `DiscussionTransferred@1`, `DiscussionCategoryCreated@1`,
+  `DiscussionCategoryUpdated@1`, `DiscussionCategoryDeleted@1`,
+  `DiscussionSectionCreated@1`, `DiscussionSectionUpdated@1`,
+  `DiscussionSectionDeleted@1`, `DiscussionAnswerMarked@1`,
+  `DiscussionAnswerUnmarked@1`, `DiscussionPinned@1`,
+  `DiscussionUnpinned@1`, `OrganizationDiscussionSpaceEnabled@1`,
+  `OrganizationDiscussionSpaceDisabled@1`,
+  `OrganizationDiscussionSourceChanged@1`
+- Runtime dependencies: none.
+- Excludes: `Comment`, `LabelDefinition`, `Issue`, `TeamDiscussion`.
 
 ## Designed use cases
 
-No approved use cases. Implementation remains blocked.
+### `create-discussion` [active]
+
+- **Type:** `command`
+- **Application boundary:** `CreateDiscussionUseCase.createDiscussion()`
+- **Public entrypoint:** `server-api.ts#createDiscussion`
+- **Input:** Repository ID, authenticated author, category, title, body, and timestamp.
+- **Success result:** `created` with the new numbered discussion.
+- **Expected rejections:** `invalid-discussion`
+- **Authorization:** Delivery establishes authenticated repository read access.
+- **Transaction:** Insert one process-local discussion.
+- **Idempotency:** Not idempotent; retries create another discussion.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `collaboration-discussions-source-01`
+- **Local policy:** Active categories are `general`, `q-and-a`, and `announcements`.
+
+### `get-repository-discussion` [active]
+
+- **Type:** `query`
+- **Application boundary:** `GetRepositoryDiscussionUseCase.getRepositoryDiscussion()`
+- **Public entrypoint:** `server-api.ts#getRepositoryDiscussion`
+- **Input:** Repository ID and discussion number.
+- **Success result:** `found` with one discussion.
+- **Expected rejections:** `discussion-not-found`
+- **Authorization:** Delivery establishes repository read access.
+- **Transaction:** Read-only snapshot.
+- **Idempotency:** Query.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `collaboration-discussions-source-01`
+- **Local policy:** Comments are queried separately from `collaboration/conversations`.
+
+### `list-repository-discussions` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ListRepositoryDiscussionsUseCase.listRepositoryDiscussions()`
+- **Public entrypoint:** `server-api.ts#listRepositoryDiscussions`
+- **Input:** Repository ID.
+- **Success result:** `found` with discussions ordered by update time.
+- **Expected rejections:** `none`
+- **Authorization:** Delivery establishes repository read access.
+- **Transaction:** Read-only snapshot.
+- **Idempotency:** Query.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `collaboration-discussions-source-01`
+- **Local policy:** Only repository discussions are active.
+
+## Ubiquitous language
+
+- **Discussion:** repository-scoped community conversation starter.
+- **Category:** one of the enabled discussion purposes.
 
 ## Ownership and invariants
 
-This context owns `RepositoryDiscussionForum`, `OrganizationDiscussionSpace`, `Discussion`, `DiscussionCategory`, `DiscussionSection`, `DiscussionPoll`, `AcceptedAnswer`, `PinnedDiscussion`.
-It excludes `Comment`, `LabelDefinition`, `Issue`, `TeamDiscussion`.
+The context owns discussion spaces, discussions, categories, sections, polls,
+answers, and pins. The active slice requires non-empty title and body and
+assigns a monotonically increasing repository-local number.
 
-- `discussion-forums-and-categories`: Repositories and organizations expose discussion forums with up to 25 uniquely named-and-emoji-paired categories; each category can belong to at most one section, category deletion moves discussions to another category, and section deletion leaves categories unsectioned.
-  - Ownership: `RepositoryDiscussionForum`, `Discussion`, `DiscussionCategory`, `DiscussionSection`
-  - Events: `DiscussionCreated@1`, `DiscussionUpdated@1`, `DiscussionCategoryCreated@1`, `DiscussionCategoryUpdated@1`, `DiscussionCategoryDeleted@1`, `DiscussionSectionCreated@1`, `DiscussionSectionUpdated@1`, `DiscussionSectionDeleted@1`
-  - Sources: `collaboration-discussions-source-01`, `collaboration-discussions-source-05`, `collaboration-discussions-source-08`
-- `discussion-lifecycle-and-transfer`: Discussions can be closed, reopened, deleted with their replies, or transferred subject to GitHub's repository and announcement restrictions.
-  - Ownership: none
-  - Events: `DiscussionClosed@1`, `DiscussionReopened@1`, `DiscussionDeleted@1`, `DiscussionTransferred@1`
-  - Sources: `collaboration-discussions-source-02`, `collaboration-discussions-source-05`, `collaboration-discussions-source-08`
-- `discussion-answers-polls-and-pins`: Answerable discussions support marking eligible non-minimized comments as answers, discussions can be pinned, and poll discussions require at least two options without claiming a separate poll-close operation.
-  - Ownership: `DiscussionPoll`, `AcceptedAnswer`, `PinnedDiscussion`
-  - Events: `DiscussionAnswerMarked@1`, `DiscussionAnswerUnmarked@1`, `DiscussionPinned@1`, `DiscussionUnpinned@1`
-  - Sources: `collaboration-discussions-source-02`, `collaboration-discussions-source-06`, `collaboration-discussions-source-07`, `collaboration-discussions-source-08`
-- `organization-discussion-source-repository`: Organization Discussions requires an organization-owned source repository and derives permissions from it.
-  - Ownership: `OrganizationDiscussionSpace`
-  - Events: `OrganizationDiscussionSpaceEnabled@1`, `OrganizationDiscussionSpaceDisabled@1`
-  - Sources: `collaboration-discussions-source-04`
-- `organization-discussion-source-change`: Changing the Organization Discussions source repository does not transfer existing discussions.
-  - Ownership: none
-  - Events: `OrganizationDiscussionSourceChanged@1`
-  - Sources: `collaboration-discussions-source-04`
+## Public capabilities
+
+`createDiscussion`, `getRepositoryDiscussion`, and
+`listRepositoryDiscussions`.
 
 ## Dependencies and consistency
 
-### Runtime dependencies
+Delivery resolves repository permission. Comments and reports use their own
+public bounded-context entrypoints.
 
-None.
+## Authorization
 
-### Planned relationships
+Authenticated repository readers may use the active slice. Administrative
+category, answer, pin, transfer, and lifecycle operations remain planned.
 
-- `repositories/repositories::RepositoryLifecycleAndOwnership` (synchronous)
-- `organizations/organizations::OrganizationReference` (synchronous)
-- `repositories/repository-access::DiscussionPermission` (synchronous)
-- `repositories/repository-features::RepositoryDiscussionFeatureState` (synchronous)
-- `repositories/repository-features::RepositoryDiscussionFeatureEvents` (event; events `RepositoryDiscussionsEnabled@1`, `RepositoryDiscussionsDisabled@1`)
-- `collaboration/labels-and-milestones::LabelReference` (synchronous)
-- `collaboration/conversations::DiscussionConversation` (synchronous)
-- `organizations/organization-memberships::OrganizationDiscussionAdministration` (synchronous)
-- `organizations/organization-policies::DiscussionCreationPolicy` (synchronous)
+## Persistence and transactions
+
+Discussions are process-local and non-durable; one command writes one record.
+
+## Data classification
+
+Discussion content inherits repository visibility.
+
+## Retention and erasure
+
+Process lifetime only; durable deletion and transfer remain planned.
+
+## Events and failure behavior
+
+Cataloged discussion events remain planned until transactional publication
+exists. Validation and not-found outcomes are explicit.
 
 ## Official sources
 
-- `collaboration-discussions-source-01`: [repository discussions, organization discussions, discussion categories](https://docs.github.com/en/discussions/collaborating-with-your-community-using-discussions/about-discussions) (verified 2026-07-22)
-- `collaboration-discussions-source-02`: [pins, transfer, discussion lifecycle](https://docs.github.com/en/discussions/managing-discussions-for-your-community/managing-discussions) (verified 2026-07-23)
-- `collaboration-discussions-source-03`: [repository discussion availability prerequisite](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/enabling-or-disabling-github-discussions-for-a-repository) (verified 2026-07-22)
-- `collaboration-discussions-source-04`: [organization discussion enablement, source repository, source-repository permissions](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/enabling-or-disabling-github-discussions-for-an-organization) (verified 2026-07-22)
-- `collaboration-discussions-source-05`: [discussion category lifecycle, discussion section lifecycle, category and section invariants, announcement transfer restriction](https://docs.github.com/en/discussions/managing-discussions-for-your-community/managing-categories-for-discussions) (verified 2026-07-23)
-- `collaboration-discussions-source-06`: [accepted answer eligibility, marking and unmarking answers](https://docs.github.com/en/discussions/managing-discussions-for-your-community/moderating-discussions) (verified 2026-07-23)
-- `collaboration-discussions-source-07`: [discussion polls, poll option minimum, answer authority](https://docs.github.com/en/discussions/collaborating-with-your-community-using-discussions/participating-in-a-discussion) (verified 2026-07-23)
-- `collaboration-discussions-source-08`: [discussion create and update, discussion close and reopen, discussion deletion, accepted answer mutations, poll voting without a poll-close mutation](https://docs.github.com/en/graphql/reference/discussions) (verified 2026-07-23)
+- <https://docs.github.com/en/discussions/collaborating-with-your-community-using-discussions/about-discussions>
+- <https://docs.github.com/en/discussions/collaborating-with-your-community-using-discussions/participating-in-a-discussion>
 
 ## Exceptions
 
-No context-specific exception is declared by the catalog. The central
-[exception registry](../../../../../../docs/architecture/exceptions/registry.json) remains authoritative.
+None.

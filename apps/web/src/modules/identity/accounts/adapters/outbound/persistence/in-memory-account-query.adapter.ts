@@ -2,6 +2,7 @@ import type {
   AccountQueryRepositoryPort,
   AccountQuerySnapshot,
 } from "../../../application/ports/outbound/account-query.repository.port";
+import type { AccountLifecycleRepositoryPort } from "../../../application/ports/outbound/account-lifecycle.repository.port";
 
 const developmentAccounts: readonly AccountQuerySnapshot[] = [
   {
@@ -72,7 +73,7 @@ function getProcessStore(): AccountStore {
 }
 
 export class InMemoryAccountQueryAdapter
-  implements AccountQueryRepositoryPort
+  implements AccountQueryRepositoryPort, AccountLifecycleRepositoryPort
 {
   private readonly store: AccountStore;
 
@@ -94,5 +95,16 @@ export class InMemoryAccountQueryAdapter
 
   findById(accountId: string): Promise<AccountQuerySnapshot | null> {
     return Promise.resolve(this.store.byId.get(accountId) ?? null);
+  }
+
+  markDeleted(accountId: string): Promise<void> {
+    const account = this.store.byId.get(accountId);
+    if (account !== undefined) {
+      this.store.byId.set(accountId, {
+        ...account,
+        lifecycleState: "deleted",
+      });
+    }
+    return Promise.resolve();
   }
 }

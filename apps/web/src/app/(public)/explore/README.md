@@ -8,14 +8,14 @@
 - **Support path:** `/explore`
 - **GitHub canonical patterns:** `https://github.com/explore`
 - **Delivery:** `page`
-- **Status:** `planned`
-- **Materialization:** `scaffolded`
+- **Status:** `active`
+- **Materialization:** `active`
 
 ## Functional intent
 
-Public discovery is designed by the planned discovery projection; the route stays unavailable until activation.
+Presents the deterministic public explore feed.
 
-The filesystem route is reserved and currently returns the canonical unavailable response.
+The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
 ## Delivery functions
 
@@ -23,7 +23,7 @@ The filesystem route is reserved and currently returns the canonical unavailable
 
 ## Module contracts
 
-- - **owner:** `projections/discovery` — use cases: `get-explore-feed`; functions: no runtime function reference
+- - **owner:** `projections/discovery` — use cases: `get-explore-feed`; functions: `getExploreFeed`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

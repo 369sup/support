@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Delivers `/account` through `requireCurrentSession`.
+Delivers account identity, personal account deletion, and owner-authorized profile editing through authenticated server boundaries.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -23,7 +23,9 @@ The filesystem route is active. Its business behavior remains owned by the refer
 
 ## Module contracts
 
-- - **owner:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
+- - **owner:** `identity/accounts` — use cases: `delete-personal-account`; functions: `deletePersonalAccount`
+- - **collaborator:** `identity/profiles` — use cases: `get-user-profile`, `update-user-profile`; functions: `getUserProfile`, `updateUserProfile`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `clearBrowserSessionToken`, `readBrowserSessionToken`, `requireCurrentSession`, `signOutAllSessions`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 
@@ -35,7 +37,8 @@ None.
 
 ### Query
 
-None.
+- - `profile`: optional, single
+- - `account`: optional, single
 
 Query keys not declared here are rejected by the typed URL builder.
 

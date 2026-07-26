@@ -8,14 +8,14 @@
 - **Support path:** `/{owner}/{repository}/discussions/{number}`
 - **GitHub canonical patterns:** No official pattern is asserted.
 - **Delivery:** `page`
-- **Status:** `planned`
-- **Materialization:** `scaffolded`
+- **Status:** `active`
+- **Materialization:** `active`
 
 ## Functional intent
 
 Review one discussion, its conversation, answer state, and moderation status.
 
-The filesystem route is reserved and currently returns the canonical unavailable response.
+The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
 ## Delivery functions
 
@@ -23,9 +23,14 @@ The filesystem route is reserved and currently returns the canonical unavailable
 
 ## Module contracts
 
-- - **owner:** `collaboration/discussions` — use cases: no route-level use-case reference; functions: no runtime function reference
-- - **collaborator:** `collaboration/conversations` — use cases: no route-level use-case reference; functions: no runtime function reference
-- - **collaborator:** `collaboration/moderation` — use cases: no route-level use-case reference; functions: no runtime function reference
+- - **owner:** `collaboration/discussions` — use cases: `get-repository-discussion`; functions: `getRepositoryDiscussion`
+- - **collaborator:** `collaboration/conversations` — use cases: `add-comment`, `list-conversation-comments`; functions: `addComment`, `listConversationComments`
+- - **collaborator:** `collaboration/moderation` — use cases: `report-content`; functions: `reportContent`
+- - **collaborator:** `identity/accounts` — use cases: `get-personal-account-by-username`; functions: `getPersonalAccountByUsername`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
+- - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`
+- - **collaborator:** `repositories/repository-access` — use cases: `resolve-effective-repository-permission`; functions: `resolveEffectiveRepositoryPermission`
+- - **collaborator:** `repositories/repositories` — use cases: `get-repository-by-owner-and-name`; functions: `getRepositoryByOwnerAndName`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 
@@ -39,7 +44,8 @@ The module README remains the semantic authority for each complete thirteen-fiel
 
 ### Query
 
-None.
+- - `comment`: optional, single
+- - `report`: optional, single
 
 Query keys not declared here are rejected by the typed URL builder.
 

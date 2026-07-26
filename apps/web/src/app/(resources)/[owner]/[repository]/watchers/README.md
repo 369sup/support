@@ -8,14 +8,14 @@
 - **Support path:** `/{owner}/{repository}/watchers`
 - **GitHub canonical patterns:** No official pattern is asserted.
 - **Delivery:** `page`
-- **Status:** `planned`
-- **Materialization:** `scaffolded`
+- **Status:** `active`
+- **Materialization:** `active`
 
 ## Functional intent
 
 List visible repository subscription relationships.
 
-The filesystem route is reserved and currently returns the canonical unavailable response.
+The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
 ## Delivery functions
 
@@ -23,7 +23,12 @@ The filesystem route is reserved and currently returns the canonical unavailable
 
 ## Module contracts
 
-- - **owner:** `engagement/subscriptions` — use cases: no route-level use-case reference; functions: no runtime function reference
+- - **owner:** `engagement/subscriptions` — use cases: `list-repository-subscribers`; functions: `listRepositorySubscribers`
+- - **collaborator:** `identity/accounts` — use cases: `get-personal-account-by-username`; functions: `getPersonalAccountByUsername`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
+- - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`
+- - **collaborator:** `repositories/repository-access` — use cases: `resolve-effective-repository-permission`; functions: `resolveEffectiveRepositoryPermission`
+- - **collaborator:** `repositories/repositories` — use cases: `get-repository-by-owner-and-name`; functions: `getRepositoryByOwnerAndName`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

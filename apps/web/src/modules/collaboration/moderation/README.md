@@ -1,83 +1,95 @@
-# Moderation Bounded Context
-
-- **Catalog path:** `collaboration/moderation`
-- **Kind:** `domain`
-- **Classification:** `supporting`
-- **Maturity:** `stable`
-- **Implementation:** `planned`
-- **Semantic status:** `candidate`
+# Moderation
 
 ## Purpose
 
-Content reports, moderation cases, blocks, interaction limits, and visibility decisions.
+Own content reports and the future moderation case, interaction, block, and
+visibility decisions used to support healthy collaboration.
 
 ## Context content tree
 
-- `collaboration/moderation` [planned]
-  - Purpose: Content reports, moderation cases, blocks, interaction limits, and visibility decisions.
-  - Capabilities
-    - No active use cases; activation scope remains empty.
-  - Owned domain concepts
-    - `ContentReport`
-    - `ModerationCase`
-    - `InteractionLimit`
-    - `OrganizationBlock`
-    - `ContentVisibilityDecision`
-  - Business rules and invariants
-    - Pending official-source validation before activation.
-  - Published events
-    - `ContentReported@1` [planned]: content reported.
-    - `ContentReportResolved@1` [planned]: content report resolved.
-    - `ContentReportReopened@1` [planned]: content report reopened.
-    - `InteractionLimitSet@1` [planned]: interaction limit set.
-    - `InteractionLimitLifted@1` [planned]: interaction limit lifted.
-    - `OrganizationBlocked@1` [planned]: organization blocked.
-    - `OrganizationUnblocked@1` [planned]: organization unblocked.
-    - `ContentHidden@1` [planned]: content hidden.
-    - `ContentUnhidden@1` [planned]: content unhidden.
-- External relationships
-  - Runtime dependencies: none.
-  - Planned relationships
-    - `organizations/organizations::OrganizationReference` (synchronous)
-    - `repositories/repository-access::ModerationPermission` (synchronous)
-    - `collaboration/issues::IssueModerationTarget` (synchronous)
-    - `collaboration/conversations::ConversationModerationTarget` (synchronous)
-    - `collaboration/discussions::DiscussionModerationTarget` (synchronous)
-- Explicit exclusions
-  - `CommentBody`
-  - `IssueState`
-  - `DiscussionState`
+- Content reporting [active]
+  - `report-content`
+  - Owned: `ContentReport`, `ModerationCase`
+- Moderation controls [planned]
+  - Owned: `InteractionLimit`, `OrganizationBlock`,
+    `ContentVisibilityDecision`
+- Planned events
+  - `ContentReported@1`, `ContentReportResolved@1`,
+    `ContentReportReopened@1`, `InteractionLimitSet@1`,
+    `InteractionLimitLifted@1`, `OrganizationBlocked@1`,
+    `OrganizationUnblocked@1`, `ContentHidden@1`, `ContentUnhidden@1`
+- Runtime dependencies: none.
+- Explicit exclusions: `CommentBody`, `IssueState`, `DiscussionState`.
 
 ## Designed use cases
 
-No approved use cases. Implementation remains blocked.
+### `report-content` [active]
+
+- **Type:** `command`
+- **Application boundary:** `ReportContentUseCase.reportContent()`
+- **Public entrypoint:** `server-api.ts#reportContent`
+- **Input:** Reporter account ID, target kind and ID, reason, and ISO timestamp.
+- **Success result:** `reported` with an open report reference.
+- **Expected rejections:** `invalid-report`, `duplicate-report`
+- **Authorization:** Target delivery establishes signed-in read access.
+- **Transaction:** Insert one reporter/target open report.
+- **Idempotency:** A duplicate open report by the same reporter is rejected.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `collaboration-moderation-source-01`
+- **Local policy:** Active targets are issue and comment; reasons are abuse, spam, or off-topic.
+
+## Ubiquitous language
+
+- **Content report**: a reporter's request for moderator review.
+- **Moderation case**: review lifecycle associated with one or more reports.
+- **Visibility decision**: moderator-owned content presentation outcome.
 
 ## Ownership and invariants
 
-This context owns `ContentReport`, `ModerationCase`, `InteractionLimit`, `OrganizationBlock`, `ContentVisibilityDecision`.
-It excludes `CommentBody`, `IssueState`, `DiscussionState`.
+This context owns `ContentReport`, `ModerationCase`, `InteractionLimit`,
+`OrganizationBlock`, and `ContentVisibilityDecision`. It never owns or mutates
+comment bodies, issue state, or discussion state.
 
-No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
+## Public capabilities
+
+`reportContent` is exported by `server-api.ts`.
 
 ## Dependencies and consistency
 
-### Runtime dependencies
+Delivery supplies a stable supported target only after read access is
+established. Planned target contracts remain non-runtime.
 
-None.
+## Authorization
 
-### Planned relationships
+Any signed-in reader may report a visible active target. Resolution, hiding,
+blocks, and interaction limits remain planned moderator operations.
 
-- `organizations/organizations::OrganizationReference` (synchronous)
-- `repositories/repository-access::ModerationPermission` (synchronous)
-- `collaboration/issues::IssueModerationTarget` (synchronous)
-- `collaboration/conversations::ConversationModerationTarget` (synchronous)
-- `collaboration/discussions::DiscussionModerationTarget` (synchronous)
+## Persistence and transactions
+
+Open reports use a process-local store with duplicate detection. It is not
+durable or cross-instance consistent.
+
+## Data classification
+
+Reporter identifiers, target references, reasons, and timestamps are sensitive
+moderation data and must not be displayed publicly.
+
+## Retention and erasure
+
+Reports live for the process lifetime. Durable retention and reviewer access
+policy remain blocked.
+
+## Events and failure behavior
+
+Catalog moderation events remain planned until durable transaction and
+publication exist. Expected validation and duplicate results are discriminated
+values.
 
 ## Official sources
 
-- `collaboration-moderation-source-01`: [content moderation, interaction limits, blocking, conversation locking](https://docs.github.com/en/communities/moderating-comments-and-conversations) (verified 2026-07-23)
+- <https://docs.github.com/en/communities/moderating-comments-and-conversations>
 
 ## Exceptions
 
-No context-specific exception is declared by the catalog. The central
-[exception registry](../../../../../../docs/architecture/exceptions/registry.json) remains authoritative.
+None.

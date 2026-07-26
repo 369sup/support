@@ -174,6 +174,7 @@
         }
       ],
       "activationScope": [
+        "delete-personal-account",
         "get-account-reference-by-id",
         "get-personal-account-by-username"
       ],
@@ -377,14 +378,15 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Public and private personal profiles, profile status, and pinned-item presentation.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "UserProfile",
         "ProfileVisibility",
         "ProfileStatus",
-        "PinnedItemSet"
+        "PinnedItemSet",
+        "ProfileAchievementSet"
       ],
       "excludes": [
         "AccountLifecycle",
@@ -399,9 +401,20 @@
           "supports": [
             "profile",
             "profile visibility",
+            "profile status",
             "pinned items"
           ],
-          "verifiedOn": "2026-07-23"
+          "verifiedOn": "2026-07-26"
+        },
+        {
+          "id": "identity-profiles-source-02",
+          "url": "https://docs.github.com/en/account-and-profile/reference/profile-reference",
+          "supports": [
+            "profile achievement badges",
+            "achievement visibility",
+            "permission-filtered contributing event links"
+          ],
+          "verifiedOn": "2026-07-26"
         }
       ],
       "publishedEvents": [
@@ -446,7 +459,10 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "get-user-profile",
+        "update-user-profile"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/accounts",
@@ -454,7 +470,38 @@
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "personal-profile-presentation",
+          "statement": "A personal profile presents user-controlled public information, visibility, status, and pinned items; private profiles hide social activity while retaining the documented public fields.",
+          "ownership": [
+            "UserProfile",
+            "ProfileVisibility",
+            "ProfileStatus",
+            "PinnedItemSet"
+          ],
+          "events": [
+            "ProfileUpdated@1",
+            "ProfileVisibilityChanged@1",
+            "ProfileStatusChanged@1",
+            "PinnedItemsChanged@1"
+          ],
+          "sourceIds": [
+            "identity-profiles-source-01"
+          ]
+        },
+        {
+          "id": "profile-achievement-presentation",
+          "statement": "Achievements are profile badges for supported product events; owners may hide achievements, and contributing-event links are visible only when the viewer can access their repository or organization.",
+          "ownership": [
+            "ProfileAchievementSet"
+          ],
+          "events": [],
+          "sourceIds": [
+            "identity-profiles-source-02"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "identity",
@@ -462,9 +509,9 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Following relationships between users and organizations.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "UserFollow",
         "OrganizationFollow"
@@ -536,7 +583,9 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "toggle-user-follow"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/accounts",
@@ -549,7 +598,36 @@
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "user-follow-relationship",
+          "statement": "A personal account may follow or unfollow another person to see that person's public activity on the personal dashboard.",
+          "ownership": [
+            "UserFollow"
+          ],
+          "events": [
+            "UserFollowed@1",
+            "UserUnfollowed@1"
+          ],
+          "sourceIds": [
+            "identity-social-graph-source-01"
+          ]
+        },
+        {
+          "id": "organization-follow-relationship",
+          "statement": "Organization following is a preview relationship distinct from user following.",
+          "ownership": [
+            "OrganizationFollow"
+          ],
+          "events": [
+            "OrganizationFollowed@1",
+            "OrganizationUnfollowed@1"
+          ],
+          "sourceIds": [
+            "identity-social-graph-source-02"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "enterprises",
@@ -3520,9 +3598,9 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Issue lifecycle, assignment, hierarchy, dependency, transfer, and work tracking.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "Issue",
         "SubIssueRelation",
@@ -3701,7 +3779,11 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "create-issue",
+        "get-repository-issue",
+        "list-repository-issues"
+      ],
       "plannedRelationships": [
         {
           "context": "repositories/repositories",
@@ -3745,7 +3827,50 @@
           ]
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "issue-work-tracking",
+          "statement": "Repository issues track actionable ideas, feedback, tasks, and bugs with lifecycle, assignment, hierarchy, dependencies, issue type selection, and field values.",
+          "ownership": [
+            "Issue",
+            "SubIssueRelation",
+            "IssueDependency",
+            "IssueTypeSelection",
+            "IssueFieldValueSet"
+          ],
+          "events": [
+            "IssueCreated@1",
+            "IssueUpdated@1",
+            "IssueClosed@1",
+            "IssueReopened@1",
+            "IssueAssigned@1",
+            "IssueUnassigned@1",
+            "SubIssueAdded@1",
+            "SubIssueRemoved@1",
+            "IssueDependencyAdded@1",
+            "IssueDependencyRemoved@1",
+            "IssueFieldValueSet@1",
+            "IssueFieldValueCleared@1"
+          ],
+          "sourceIds": [
+            "collaboration-issues-source-01",
+            "collaboration-issues-source-02"
+          ]
+        },
+        {
+          "id": "issue-transfer-reconciliation",
+          "statement": "Issue transfer and repository transfer reconcile issue ownership metadata, assignees, and issue types at the repository boundary.",
+          "ownership": [
+            "IssueTransfer"
+          ],
+          "events": [
+            "IssueTransferred@1"
+          ],
+          "sourceIds": [
+            "collaboration-issues-source-03"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "collaboration",
@@ -4004,9 +4129,9 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Capability-constrained comments, discussion replies, reactions, mentions, revisions, and locks for a closed set of subjects.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "Conversation",
         "Comment",
@@ -4156,7 +4281,11 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "add-comment",
+        "add-reaction",
+        "list-conversation-comments"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/accounts",
@@ -4169,7 +4298,39 @@
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "capability-constrained-conversation",
+          "statement": "Supported issue and discussion subjects have capability-constrained conversations containing comments, threaded replies, reactions, mentions, revisions, and lock state.",
+          "ownership": [
+            "Conversation",
+            "Comment",
+            "Reply",
+            "Reaction",
+            "Mention",
+            "CommentRevision",
+            "ConversationSubjectKind",
+            "ConversationCapabilities"
+          ],
+          "events": [
+            "ConversationCreated@1",
+            "ConversationLocked@1",
+            "ConversationUnlocked@1",
+            "CommentAdded@1",
+            "CommentEdited@1",
+            "CommentDeleted@1",
+            "ReplyAdded@1",
+            "ReactionAdded@1",
+            "ReactionRemoved@1",
+            "MentionDetected@1"
+          ],
+          "sourceIds": [
+            "collaboration-conversations-source-01",
+            "collaboration-conversations-source-02",
+            "collaboration-conversations-source-03"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "collaboration",
@@ -4177,7 +4338,7 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Repository discussion forums and organization discussion spaces, source-repository binding, categories, sections, polls, answers, pins, and lifecycle.",
       "semanticStatus": "validated",
       "owns": [
@@ -4479,7 +4640,11 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "create-discussion",
+        "get-repository-discussion",
+        "list-repository-discussions"
+      ],
       "plannedRelationships": [
         {
           "context": "repositories/repositories",
@@ -4633,9 +4798,9 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Content reports, moderation cases, blocks, interaction limits, and visibility decisions.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "ContentReport",
         "ModerationCase",
@@ -4754,7 +4919,9 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "report-content"
+      ],
       "plannedRelationships": [
         {
           "context": "organizations/organizations",
@@ -4782,7 +4949,33 @@
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "community-content-moderation",
+          "statement": "Community moderation owns reports and cases, interaction limits, organization blocks, and visibility decisions used to review disruptive content and de-escalate conflict.",
+          "ownership": [
+            "ContentReport",
+            "ModerationCase",
+            "InteractionLimit",
+            "OrganizationBlock",
+            "ContentVisibilityDecision"
+          ],
+          "events": [
+            "ContentReported@1",
+            "ContentReportResolved@1",
+            "ContentReportReopened@1",
+            "InteractionLimitSet@1",
+            "InteractionLimitLifted@1",
+            "OrganizationBlocked@1",
+            "OrganizationUnblocked@1",
+            "ContentHidden@1",
+            "ContentUnhidden@1"
+          ],
+          "sourceIds": [
+            "collaboration-moderation-source-01"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "collaboration",
@@ -4790,9 +4983,9 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "User- or organization-owned projects, items, draft issues, views, fields, workflows, charts, templates, and status updates.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "Project",
         "ProjectItem",
@@ -4947,7 +5140,11 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "list-account-projects",
+        "list-repository-projects",
+        "update-project-item-status"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/accounts",
@@ -4975,7 +5172,40 @@
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "projects-items-fields-and-status",
+          "statement": "User- and organization-owned projects organize items through configurable fields and views, can link repository resources without becoming repository-owned, and support status updates while workflows, charts, and templates remain separate capabilities.",
+          "ownership": [
+            "Project",
+            "ProjectItem",
+            "DraftIssue",
+            "ProjectView",
+            "ProjectField",
+            "ProjectWorkflow",
+            "ProjectChart",
+            "ProjectTemplate",
+            "ProjectStatusUpdate"
+          ],
+          "events": [
+            "ProjectCreated@1",
+            "ProjectUpdated@1",
+            "ProjectClosed@1",
+            "ProjectReopened@1",
+            "ProjectDeleted@1",
+            "ProjectItemAdded@1",
+            "ProjectItemUpdated@1",
+            "ProjectItemRemoved@1",
+            "ProjectViewChanged@1",
+            "ProjectFieldChanged@1",
+            "ProjectWorkflowChanged@1",
+            "ProjectStatusUpdated@1"
+          ],
+          "sourceIds": [
+            "collaboration-projects-source-01"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "engagement",
@@ -4983,9 +5213,9 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Repository starring and user-defined star lists for discovery and collection.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "RepositoryStar",
         "StarList",
@@ -5097,7 +5327,10 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "list-repository-stargazers",
+        "toggle-repository-star"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/accounts",
@@ -5126,7 +5359,31 @@
           ]
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "repository-stars-and-lists",
+          "statement": "Personal accounts can star accessible repositories, view stargazers, and organize starred repositories in lists; repository visibility changes can remove inaccessible stars while archived repositories remain starrable.",
+          "ownership": [
+            "RepositoryStar",
+            "StarList",
+            "StarListEntry"
+          ],
+          "events": [
+            "RepositoryStarred@1",
+            "RepositoryUnstarred@1",
+            "StarListCreated@1",
+            "StarListUpdated@1",
+            "StarListDeleted@1",
+            "StarListEntryAdded@1",
+            "StarListEntryRemoved@1"
+          ],
+          "sourceIds": [
+            "engagement-stars-source-01",
+            "engagement-stars-source-02",
+            "engagement-stars-source-03"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "engagement",
@@ -5134,9 +5391,9 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Repository watch preferences, conversation participation and manual subscriptions, ignore preferences, and notification-interest decisions.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "RepositoryWatchPreference",
         "RepositoryEventPreference",
@@ -5202,7 +5459,10 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "list-repository-subscribers",
+        "toggle-repository-subscription"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/accounts",
@@ -5236,7 +5496,28 @@
           ]
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "repository-and-conversation-subscriptions",
+          "statement": "Accounts may watch accessible repositories, customize repository event preferences, participate in or manually subscribe to conversations, and ignore updates; visibility changes remove inaccessible watchers.",
+          "ownership": [
+            "RepositoryWatchPreference",
+            "RepositoryEventPreference",
+            "ConversationParticipation",
+            "ManualConversationSubscription",
+            "IgnorePreference"
+          ],
+          "events": [
+            "RepositorySubscriptionChanged@1",
+            "ConversationSubscriptionChanged@1"
+          ],
+          "sourceIds": [
+            "engagement-subscriptions-source-01",
+            "engagement-subscriptions-source-02",
+            "engagement-subscriptions-source-03"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "engagement",
@@ -5244,9 +5525,9 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "User notification records, inboxes, reasons, filters, and read, saved, or done state.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "Notification",
         "NotificationInbox",
@@ -5374,7 +5655,10 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "list-notifications",
+        "mark-notification-read"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/accounts",
@@ -5472,7 +5756,34 @@
           ]
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "notification-inbox-triage",
+          "statement": "Notifications are recipient-specific updates for subscribed activity, carry a reason, and can be triaged through read, saved, done, reopened, and filtered inbox states with delivery requested separately.",
+          "ownership": [
+            "Notification",
+            "NotificationInbox",
+            "NotificationReason",
+            "NotificationState",
+            "InboxFilter"
+          ],
+          "events": [
+            "NotificationCreated@1",
+            "NotificationRead@1",
+            "NotificationUnread@1",
+            "NotificationSaved@1",
+            "NotificationUnsaved@1",
+            "NotificationDone@1",
+            "NotificationReopened@1",
+            "InboxFilterChanged@1",
+            "NotificationDeliveryRequested@1"
+          ],
+          "sourceIds": [
+            "engagement-notifications-source-01",
+            "engagement-notifications-source-02"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "integrations",
@@ -7471,9 +7782,9 @@
       "name": "search",
       "kind": "projection",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Permission-filtered search projections across users, organizations, repositories, issues, discussions, and projects.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "SearchDocument",
         "SearchResultProjection"
@@ -7483,7 +7794,13 @@
         "AuthorizationSourceOfTruth",
         "CodeSearch"
       ],
-      "dependencies": [],
+      "dependencies": [
+        {
+          "context": "platform/search-index",
+          "contract": "SearchIndexPort",
+          "mode": "synchronous"
+        }
+      ],
       "officialSources": [
         {
           "id": "projections-search-source-01",
@@ -7499,7 +7816,9 @@
       ],
       "publishedEvents": [],
       "eventRationale": "Read-model context consumes versioned events and does not publish product facts.",
-      "activationScope": [],
+      "activationScope": [
+        "search-public-resources"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/accounts",
@@ -7729,14 +8048,22 @@
               "version": 1
             }
           ]
-        },
-        {
-          "context": "platform/search-index",
-          "contract": "SearchIndexPort",
-          "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "permission-filtered-resource-search",
+          "statement": "Search returns only indexed candidates allowed by coarse authorization keys and the presenting context must still enforce authoritative visibility; code search is excluded.",
+          "ownership": [
+            "SearchDocument",
+            "SearchResultProjection"
+          ],
+          "events": [],
+          "sourceIds": [
+            "projections-search-source-01"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "projections",
@@ -7852,9 +8179,9 @@
       "name": "activity-feed",
       "kind": "projection",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "User-visible dashboard and resource activity projections.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "ActivityItem",
         "PersonalActivityFeed",
@@ -7881,7 +8208,9 @@
       ],
       "publishedEvents": [],
       "eventRationale": "Read-model context consumes versioned events and does not publish product facts.",
-      "activationScope": [],
+      "activationScope": [
+        "list-repository-activity"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/social-graph",
@@ -8024,7 +8353,22 @@
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "permission-filtered-product-activity",
+          "statement": "Activity items form personal, repository, and organization feeds from supported product activity, with followed public activity shown on the personal dashboard and inaccessible resources omitted.",
+          "ownership": [
+            "ActivityItem",
+            "PersonalActivityFeed",
+            "RepositoryActivityFeed",
+            "OrganizationActivityFeed"
+          ],
+          "events": [],
+          "sourceIds": [
+            "projections-activity-feed-source-01"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "projections",
@@ -8507,9 +8851,9 @@
       "name": "discovery",
       "kind": "projection",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Public discovery projections for explore feeds, curated collections, topics, and trending repositories.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "DiscoveryFeed",
         "CuratedCollection",
@@ -8536,9 +8880,26 @@
       ],
       "publishedEvents": [],
       "eventRationale": "Discovery is a read-model context and does not publish product facts.",
-      "activationScope": [],
+      "activationScope": [
+        "get-explore-feed"
+      ],
       "plannedRelationships": [],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "public-explore-feed",
+          "statement": "Explore presents public repository, topic, collection, and trending projections; Support uses deterministic fixture ordering and does not claim behavioral ranking telemetry.",
+          "ownership": [
+            "DiscoveryFeed",
+            "CuratedCollection",
+            "TopicListing",
+            "TrendingListing"
+          ],
+          "events": [],
+          "sourceIds": [
+            "projections-discovery-source-01"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "integrations",

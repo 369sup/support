@@ -1,9 +1,14 @@
 ﻿import { Building2, FolderKanban, User2 } from "lucide-react";
 import Link from "next/link";
+import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 
+import { readFormString } from "@/app/_route-contracts/read-form-string";
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
 import { getPersonalAccountByUsername } from "@/modules/identity/accounts/server-api";
+import { getUserProfile } from "@/modules/identity/profiles/server-api";
+import { toggleUserFollow } from "@/modules/identity/social-graph/server-api";
 import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
 import {
   listActiveRepositoriesForOwner,
@@ -72,20 +77,54 @@ async function resolveOwnerByLogin(
   };
 }
 
+async function toggleFollowAction(formData: FormData): Promise<never> {
+  "use server";
+
+  const session = await requireCurrentSession();
+  const login = readFormString(formData, "owner").trim();
+  const account = await getPersonalAccountByUsername(login);
+  if (!account.isSuccessful) {
+    redirect(`/${login}?follow=account-not-found`);
+  }
+
+  const result = await toggleUserFollow({
+    followerAccountId: session.account.accountId,
+    followedAccountId: account.account.accountId,
+  });
+  revalidatePath(`/${login}`);
+  let followStatus: string = result.status;
+  if (result.status === "updated") {
+    followStatus = result.follow.isFollowing ? "following" : "unfollowed";
+  }
+  redirect(`/${login}?follow=${followStatus}`);
+}
+
 export default async function OwnerPage({
   params,
 }: Readonly<{
   params: Promise<{ owner: string }>;
 }>) {
-  const session = await requireCurrentSession();
   const routeParams = await params;
-  const owner = await resolveOwnerByLogin(routeParams.owner);
+  const [session, owner] = await Promise.all([
+    requireCurrentSession(),
+    resolveOwnerByLogin(routeParams.owner),
+  ]);
 
   if (owner === null) {
     notFound();
   }
 
-  const repositories = await listActiveRepositoriesForOwner(owner.id);
+  const [repositories, profileResult] = await Promise.all([
+    listActiveRepositoriesForOwner(owner.id),
+    owner.kind === "account"
+      ? getUserProfile({
+          accountId: owner.id,
+          isOwner: session.account.accountId === owner.id,
+        })
+      : Promise.resolve({ status: "profile-not-found" } as const),
+  ]);
+  const profile =
+    profileResult.status === "found" ? profileResult.profile : null;
 
   const visibleRepositories = (
     await Promise.all(
@@ -126,14 +165,68 @@ export default async function OwnerPage({
           </span>
           <div>
             <h1 className="text-4xl font-semibold tracking-[-0.04em] text-white">
-              {owner.displayName}
+              {profile?.displayName ?? owner.displayName}
             </h1>
             <p className="mt-4 max-w-3xl leading-7 text-slate-400">
-              Repositories visible to the current session for{" "}
+              {profile?.bio === "" || profile === null
+                ? "Repositories visible to the current session for"
+                : profile.bio}{" "}
               <span className="font-semibold text-white">@{owner.login}</span>
             </p>
+            {profile === null ? null : (
+              <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-500">
+                {profile.location === "" ? null : <span>{profile.location}</span>}
+                {profile.pronouns === "" ? null : <span>{profile.pronouns}</span>}
+                {profile.status === null ? null : (
+                  <span>
+                    {profile.status.emoji} {profile.status.message}
+                  </span>
+                )}
+              </div>
+            )}
+            {owner.kind === "account" &&
+            owner.id !== session.account.accountId ? (
+              <form action={toggleFollowAction} className="mt-5">
+                <input name="owner" type="hidden" value={owner.login} />
+                <button
+                  className="rounded-lg border border-emerald-400/40 px-4 py-2 text-sm font-semibold text-emerald-200 hover:bg-emerald-400/10"
+                  type="submit"
+                >
+                  Follow / unfollow
+                </button>
+              </form>
+            ) : null}
           </div>
         </div>
+
+        {profile === null || profile.achievements.length === 0 ? null : (
+          <section className="mt-8" aria-labelledby="achievements-heading">
+            <h2
+              className="text-sm font-medium text-slate-300"
+              id="achievements-heading"
+            >
+              Achievements
+            </h2>
+            <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {profile.achievements.map((achievement) => (
+                <li
+                  className="rounded-xl border border-amber-300/20 bg-amber-300/5 p-4"
+                  key={achievement.slug}
+                >
+                  <p className="text-sm font-semibold text-amber-100">
+                    {achievement.title}
+                  </p>
+                  <p className="mt-1 text-xs tracking-wider text-amber-300/70 uppercase">
+                    {achievement.tier}
+                  </p>
+                  <p className="mt-3 text-sm leading-6 text-slate-400">
+                    {achievement.description}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <div className="mt-9 overflow-hidden rounded-xl border border-white/15 bg-[#0a1624]">
           <div className="border-b border-white/10 px-5 py-4">

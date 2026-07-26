@@ -5,8 +5,8 @@
 
 - accounts: domain, active
 - authentication: domain, active
-- profiles: domain, planned
-- social-graph: domain, planned
+- profiles: domain, active
+- social-graph: domain, active
 
 ## enterprises
 
@@ -38,21 +38,21 @@
 
 ## collaboration
 
-- issues: domain, planned
+- issues: domain, active
 - issue-schema: domain, planned
 - labels-and-milestones: domain, planned
-- conversations: domain, planned
-- discussions: domain, planned
-- moderation: domain, planned
-- projects: domain, planned
+- conversations: domain, active
+- discussions: domain, active
+- moderation: domain, active
+- projects: domain, active
 - community-profiles: domain, planned
 - wikis: domain, planned
 
 ## engagement
 
-- stars: domain, planned
-- subscriptions: domain, planned
-- notifications: domain, planned
+- stars: domain, active
+- subscriptions: domain, active
+- notifications: domain, active
 
 ## integrations
 
@@ -76,11 +76,11 @@
 
 ## projections
 
-- search: projection, planned
+- search: projection, active
 - dashboard: projection, active
-- activity-feed: projection, planned
+- activity-feed: projection, active
 - repository-insights: projection, planned
-- discovery: projection, planned
+- discovery: projection, active
 - repository-traffic: projection, planned
 
 ## platform
