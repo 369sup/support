@@ -8,6 +8,8 @@ export type {
   AccountReferenceLookupResult,
   ActorReference,
 } from "./contracts/account-reference";
+export const getAccountCandidateByUsername =
+  accountsServerFacade.getAccountCandidateByUsername;
 export const getAccountReferenceById =
   accountsServerFacade.getAccountReferenceById;
 export const deletePersonalAccount =

@@ -36,7 +36,7 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 | identity | [social-graph](../../apps/web/src/modules/identity/social-graph/README.md) | domain | supporting | stable | active | fresh | validated | Following relationships between users and organizations. |
 | enterprises | [enterprises](../../apps/web/src/modules/enterprises/enterprises/README.md) | domain | core | stable | active | fresh | validated | Enterprise identity, profile, account mode, lifecycle, and authoritative organization ownership links. |
 | enterprises | [enterprise-memberships](../../apps/web/src/modules/enterprises/enterprise-memberships/README.md) | domain | core | stable | active | fresh | validated | Enterprise membership, invitations, affiliation, guest collaborators, and unaffiliated users. |
-| enterprises | [enterprise-teams](../../apps/web/src/modules/enterprises/enterprise-teams/README.md) | domain | supporting | preview | planned | fresh | candidate | Enterprise-wide teams used for centralized role, organization, and license assignment. |
+| enterprises | [enterprise-teams](../../apps/web/src/modules/enterprises/enterprise-teams/README.md) | domain | supporting | preview | active | fresh | validated | Enterprise-wide teams used for centralized role, organization, and license assignment. |
 | enterprises | [enterprise-roles](../../apps/web/src/modules/enterprises/enterprise-roles/README.md) | domain | core | stable | active | fresh | validated | Predefined and custom enterprise roles, permissions, and assignments. |
 | enterprises | [enterprise-iam](../../apps/web/src/modules/enterprises/enterprise-iam/README.md) | domain | core | stable | planned | fresh | candidate | Enterprise identity-provider configuration, SAML or OIDC authentication, SCIM provisioning, and group synchronization. |
 | enterprises | [enterprise-policies](../../apps/web/src/modules/enterprises/enterprise-policies/README.md) | domain | core | stable | planned | fresh | candidate | Enterprise policy constraints applied across owned organizations and repositories. |
@@ -101,7 +101,7 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 - **Owns:** Account, Username, AccountLifecycle, GhostAttribution.
 - **Excludes:** Credential, Session, Profile, EnterpriseMembership.
-- **Activation scope:** delete-personal-account, get-account-reference-by-id, get-personal-account-by-username
+- **Activation scope:** delete-personal-account, get-account-candidate-by-username, get-account-reference-by-id, get-personal-account-by-username
 - **Runtime dependencies:** None.
 - **Planned relationships:** None.
 - **Published events:** AccountCreated@1 (domain; planned; contract pending), UsernameChanged@1 (domain; planned; contract pending), AccountDeleted@1 (domain; planned; contract pending)
@@ -167,12 +167,12 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 - **Owns:** EnterpriseTeam, EnterpriseTeamMembership, EnterpriseTeamOrganizationGrant.
 - **Excludes:** OrganizationTeam, RepositoryGrant, CostCenter.
-- **Activation scope:** None while planned.
-- **Runtime dependencies:** None.
-- **Planned relationships:** enterprises/enterprises via EnterpriseReference (synchronous); enterprises/enterprise-memberships via EnterpriseMemberReference (synchronous)
+- **Activation scope:** add-enterprise-team-member, create-enterprise-team, delete-enterprise-team, list-enterprise-team-members, list-enterprise-teams, remove-enterprise-team-member, update-enterprise-team
+- **Runtime dependencies:** enterprises/enterprises via EnterpriseReference (synchronous); enterprises/enterprise-roles via EnterpriseAdministrationDecision (synchronous); identity/accounts via AccountReference (synchronous)
+- **Planned relationships:** organizations/organizations via OrganizationReference (synchronous); organizations/organization-memberships via OrganizationMembership (synchronous)
 - **Published events:** EnterpriseTeamCreated@1 (domain; planned; contract pending), EnterpriseTeamUpdated@1 (domain; planned; contract pending), EnterpriseTeamDeleted@1 (domain; planned; contract pending), EnterpriseTeamMemberAdded@1 (domain; planned; contract pending), EnterpriseTeamMemberRemoved@1 (domain; planned; contract pending), EnterpriseTeamOrganizationGranted@1 (domain; planned; contract pending), EnterpriseTeamOrganizationRevoked@1 (domain; planned; contract pending)
-- **Semantic claims:** None while product semantics remain candidate.
-- **Official sources:** enterprises-enterprise-teams-source-01 ([enterprise teams, enterprise team membership](https://docs.github.com/en/enterprise-cloud@latest/admin/concepts/enterprise-fundamentals/teams-in-an-enterprise), checked 2026-07-23)
+- **Semantic claims:** enterprise-team-administration (owns EnterpriseTeam; events EnterpriseTeamCreated@1, EnterpriseTeamUpdated@1, EnterpriseTeamDeleted@1; sources enterprises-enterprise-teams-source-01, enterprises-enterprise-teams-source-02, enterprises-enterprise-teams-source-03); enterprise-team-membership (owns EnterpriseTeamMembership; events EnterpriseTeamMemberAdded@1, EnterpriseTeamMemberRemoved@1; sources enterprises-enterprise-teams-source-01, enterprises-enterprise-teams-source-02, enterprises-enterprise-teams-source-04); enterprise-team-organization-assignment (owns EnterpriseTeamOrganizationGrant; events EnterpriseTeamOrganizationGranted@1, EnterpriseTeamOrganizationRevoked@1; sources enterprises-enterprise-teams-source-01, enterprises-enterprise-teams-source-02)
+- **Official sources:** enterprises-enterprise-teams-source-01 ([enterprise teams, enterprise team membership, enterprise and organization team differences, enterprise team limits](https://docs.github.com/en/enterprise-cloud@latest/admin/concepts/enterprise-fundamentals/teams-in-an-enterprise), checked 2026-07-26); enterprises-enterprise-teams-source-02 ([enterprise owner team management, direct enterprise team membership, organization assignment effects](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories/managing-users-in-your-enterprise/create-enterprise-teams), checked 2026-07-26); enterprises-enterprise-teams-source-03 ([enterprise team listing, enterprise team create update delete, name-derived enterprise team slug](https://docs.github.com/en/rest/enterprise-teams/enterprise-teams), checked 2026-07-26); enterprises-enterprise-teams-source-04 ([enterprise team member listing, enterprise team member add remove](https://docs.github.com/en/rest/enterprise-teams/enterprise-team-members), checked 2026-07-26)
 
 ### [enterprises/enterprise-roles](../../apps/web/src/modules/enterprises/enterprise-roles/README.md)
 

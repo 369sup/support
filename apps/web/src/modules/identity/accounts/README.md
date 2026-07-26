@@ -3,24 +3,29 @@
 ## Purpose
 
 Own GitHub-like user account identity, username, account type, usage, and
-lifecycle semantics. Active queries resolve public account references.
+lifecycle semantics. Active queries resolve public personal-owner references
+and trusted user-account candidates.
 
 ## Context content tree
 
 - Personal account identity
   - Account discovery [active]
     - Use case: `get-personal-account-by-username`
+    - Use case: `get-account-candidate-by-username`
     - Use case: `get-account-reference-by-id`
     - Application boundary:
       `GetPersonalAccountByUsernameUseCase.getPersonalAccountByUsername()`
     - Owned concepts: `Account`, `Username`
     - Rules and invariants:
-      - Only personal accounts are returned.
+      - Public owner lookup returns only personal accounts.
+      - Trusted candidate lookup may return personal or managed accounts.
       - Only active accounts are discoverable.
       - Account type is `personal` or `managed`; `machine` is usage.
       - Username input must remain non-empty after trimming.
     - Decisions:
-      - Return a `UserOwnerReference`.
+      - Return a `UserOwnerReference` for public owner lookup.
+      - Return an `AccountReference` only to a trusted server consumer that
+        already owns the managed-user visibility decision.
       - Return `account-not-found` when no active personal account matches.
       - Return `invalid-username` when the input is invalid.
     - Published events: none for this query-only active slice.
@@ -84,6 +89,22 @@ lifecycle semantics. Active queries resolve public account references.
 - **Official evidence:** `identity-accounts-source-06`
 - **Local policy:** Suspended and deleted accounts are not returned.
 
+### `get-account-candidate-by-username` [active]
+
+- **Type:** `query`
+- **Application boundary:** `GetAccountCandidateByUsernameUseCase.getAccountCandidateByUsername()`
+- **Public entrypoint:** `server-api.ts#getAccountCandidateByUsername`
+- **Input:** Raw username string from a trusted server consumer.
+- **Success result:** `found` with an active personal or managed `AccountReference`.
+- **Expected rejections:** `account-not-found`, `invalid-username`
+- **Authorization:** The consuming context must authorize managed-user visibility before calling this trusted candidate query.
+- **Transaction:** Read-only context-local lookup.
+- **Idempotency:** Query; repeated input has no side effect.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `identity-accounts-source-05`, `identity-accounts-source-06`
+- **Local policy:** Trim before lookup; inactive accounts are indistinguishable from absent accounts.
+
 ### `get-personal-account-by-username` [active]
 
 - **Type:** `query`
@@ -112,12 +133,16 @@ lifecycle semantics. Active queries resolve public account references.
 ## Ownership and invariants
 
 This context owns `Account`, `Username`, `AccountLifecycle`, and
-`GhostAttribution`. The active query returns only active personal accounts. It
-does not own credentials, sessions, profiles, or repository permissions.
+`GhostAttribution`. Public owner lookup returns only active personal accounts;
+the trusted candidate query can return an active managed account after the
+consumer has made its own authorization decision. This context does not own
+credentials, sessions, profiles, enterprise visibility, or repository
+permissions.
 
 ## Public capabilities
 
 - `getPersonalAccountByUsername(username)` through `server-api.ts`.
+- `getAccountCandidateByUsername(username)` through `server-api.ts`.
 - `getAccountReferenceById(accountId)` through `server-api.ts`.
 - `deletePersonalAccount(command)` through `server-api.ts`.
 - `AccountReference`, `ActorReference`, and `UserOwnerReference` through
@@ -125,8 +150,8 @@ does not own credentials, sessions, profiles, or repository permissions.
 - `GetPersonalAccountByUsernameUseCase.getPersonalAccountByUsername()` is the
   application boundary implemented by `GetPersonalAccountByUsernameHandler`.
 
-The query returns a discriminated `account-not-found` or `invalid-username`
-result instead of throwing for expected absence.
+Queries return discriminated absence or invalid-input results instead of
+throwing for expected outcomes.
 `server-api.ts` delegates through a process-reused facade created by the
 private composition root; consumers do not configure or select its adapter.
 
@@ -138,9 +163,11 @@ database access is permitted.
 
 ## Authorization
 
-The active capability exposes only the public account ID and username and does
-not require authorization. Authentication and session validation remain
-excluded. A client-side mock session boundary is not an authorization source.
+Public personal-owner lookup exposes only public account identifiers. Trusted
+candidate lookup is server-only and does not decide whether a caller may see a
+managed account; the consuming context must establish that decision first.
+Authentication and session validation remain excluded. A client-side mock
+session boundary is not an authorization source.
 
 ## Persistence and transactions
 
@@ -150,8 +177,10 @@ There is no durable or cross-instance transaction.
 
 ## Data classification
 
-Account ID and username are public product identifiers. Email addresses,
-credentials, tokens, and private profile data are not stored or returned.
+Personal account ID and username are public product identifiers. Managed
+account identity is enterprise-scoped data and is returned only to trusted
+server consumers. Email addresses, credentials, tokens, and private profile
+data are not stored or returned.
 
 ## Retention and erasure
 

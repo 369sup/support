@@ -175,6 +175,7 @@
       ],
       "activationScope": [
         "delete-personal-account",
+        "get-account-candidate-by-username",
         "get-account-reference-by-id",
         "get-personal-account-by-username"
       ],
@@ -915,9 +916,9 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "preview",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Enterprise-wide teams used for centralized role, organization, and license assignment.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "EnterpriseTeam",
         "EnterpriseTeamMembership",
@@ -928,17 +929,65 @@
         "RepositoryGrant",
         "CostCenter"
       ],
-      "dependencies": [],
+      "dependencies": [
+        {
+          "context": "enterprises/enterprises",
+          "contract": "EnterpriseReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "enterprises/enterprise-roles",
+          "contract": "EnterpriseAdministrationDecision",
+          "mode": "synchronous"
+        },
+        {
+          "context": "identity/accounts",
+          "contract": "AccountReference",
+          "mode": "synchronous"
+        }
+      ],
       "officialSources": [
         {
           "id": "enterprises-enterprise-teams-source-01",
           "url": "https://docs.github.com/en/enterprise-cloud@latest/admin/concepts/enterprise-fundamentals/teams-in-an-enterprise",
           "supports": [
             "enterprise teams",
-            "enterprise team membership"
+            "enterprise team membership",
+            "enterprise and organization team differences",
+            "enterprise team limits"
           ],
           "maturity": "preview",
-          "verifiedOn": "2026-07-23"
+          "verifiedOn": "2026-07-26"
+        },
+        {
+          "id": "enterprises-enterprise-teams-source-02",
+          "url": "https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories/managing-users-in-your-enterprise/create-enterprise-teams",
+          "supports": [
+            "enterprise owner team management",
+            "direct enterprise team membership",
+            "organization assignment effects"
+          ],
+          "maturity": "preview",
+          "verifiedOn": "2026-07-26"
+        },
+        {
+          "id": "enterprises-enterprise-teams-source-03",
+          "url": "https://docs.github.com/en/rest/enterprise-teams/enterprise-teams",
+          "supports": [
+            "enterprise team listing",
+            "enterprise team create update delete",
+            "name-derived enterprise team slug"
+          ],
+          "verifiedOn": "2026-07-26"
+        },
+        {
+          "id": "enterprises-enterprise-teams-source-04",
+          "url": "https://docs.github.com/en/rest/enterprise-teams/enterprise-team-members",
+          "supports": [
+            "enterprise team member listing",
+            "enterprise team member add remove"
+          ],
+          "verifiedOn": "2026-07-26"
         }
       ],
       "publishedEvents": [
@@ -1013,20 +1062,77 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "add-enterprise-team-member",
+        "create-enterprise-team",
+        "delete-enterprise-team",
+        "list-enterprise-team-members",
+        "list-enterprise-teams",
+        "remove-enterprise-team-member",
+        "update-enterprise-team"
+      ],
       "plannedRelationships": [
         {
-          "context": "enterprises/enterprises",
-          "contract": "EnterpriseReference",
+          "context": "organizations/organizations",
+          "contract": "OrganizationReference",
           "mode": "synchronous"
         },
         {
-          "context": "enterprises/enterprise-memberships",
-          "contract": "EnterpriseMemberReference",
+          "context": "organizations/organization-memberships",
+          "contract": "OrganizationMembership",
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "enterprise-team-administration",
+          "statement": "Enterprise teams are enterprise-scoped groups with name-derived slugs; enterprise owners create, update, and delete teams, while enterprise teams remain distinct from organization teams and do not support nested teams, secret visibility, or team maintainers.",
+          "ownership": [
+            "EnterpriseTeam"
+          ],
+          "events": [
+            "EnterpriseTeamCreated@1",
+            "EnterpriseTeamUpdated@1",
+            "EnterpriseTeamDeleted@1"
+          ],
+          "sourceIds": [
+            "enterprises-enterprise-teams-source-01",
+            "enterprises-enterprise-teams-source-02",
+            "enterprises-enterprise-teams-source-03"
+          ]
+        },
+        {
+          "id": "enterprise-team-membership",
+          "statement": "Enterprise teams contain direct personal or managed user members; adding or removing team membership changes team-derived privileges without removing the user from the enterprise.",
+          "ownership": [
+            "EnterpriseTeamMembership"
+          ],
+          "events": [
+            "EnterpriseTeamMemberAdded@1",
+            "EnterpriseTeamMemberRemoved@1"
+          ],
+          "sourceIds": [
+            "enterprises-enterprise-teams-source-01",
+            "enterprises-enterprise-teams-source-02",
+            "enterprises-enterprise-teams-source-04"
+          ]
+        },
+        {
+          "id": "enterprise-team-organization-assignment",
+          "statement": "Assigning an enterprise team to an organization can add team members directly to the organization and grants the organization's base repository permission, so organization assignment remains a separate cross-context capability.",
+          "ownership": [
+            "EnterpriseTeamOrganizationGrant"
+          ],
+          "events": [
+            "EnterpriseTeamOrganizationGranted@1",
+            "EnterpriseTeamOrganizationRevoked@1"
+          ],
+          "sourceIds": [
+            "enterprises-enterprise-teams-source-01",
+            "enterprises-enterprise-teams-source-02"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "enterprises",
