@@ -30,3 +30,5 @@ export const restoreDeletedRepository =
   repositoriesServerFacade.restoreDeletedRepository;
 export const unarchiveRepository =
   repositoriesServerFacade.unarchiveRepository;
+export const updateRepositoryProfile =
+  repositoriesServerFacade.updateRepositoryProfile;

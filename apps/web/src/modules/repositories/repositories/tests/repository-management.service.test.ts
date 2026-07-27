@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
+import type { EventRecorderPort } from "@/modules/platform/event-publication/integration-contracts";
+
+import { InMemoryRepositoriesOutboxAdapter } from "../adapters/outbound/persistence/in-memory-repositories-outbox.adapter";
 import { InMemoryRepositoryQueryAdapter } from "../adapters/outbound/persistence/in-memory-repository-query.adapter";
+import type { RepositoryAdministrationAuthorizationGatewayPort } from "../application/ports/outbound/repository-administration-authorization.gateway.port";
 import type { RepositoryClockPort } from "../application/ports/outbound/repository-clock.port";
 import type { RepositoryIdGeneratorPort } from "../application/ports/outbound/repository-id-generator.port";
 import type {
@@ -22,6 +26,20 @@ class OwnerGatewayFake implements RepositoryOwnerAuthorizationGatewayPort {
 
   authorizeOwner() {
     return Promise.resolve(this.owner);
+  }
+}
+
+class AdministrationGatewayFake
+  implements RepositoryAdministrationAuthorizationGatewayPort
+{
+  private readonly isAllowed: boolean;
+
+  constructor(isAllowed = true) {
+    this.isAllowed = isAllowed;
+  }
+
+  hasRepositoryAdministration() {
+    return Promise.resolve(this.isAllowed);
   }
 }
 
@@ -51,10 +69,14 @@ class ClockFake implements RepositoryClockPort {
 }
 
 function createService({
+  administrationGateway = new AdministrationGatewayFake(),
   clock = new ClockFake(),
+  eventRecorder,
   ownerGateway = new OwnerGatewayFake(),
 }: Readonly<{
+  administrationGateway?: RepositoryAdministrationAuthorizationGatewayPort;
   clock?: ClockFake;
+  eventRecorder?: EventRecorderPort;
   ownerGateway?: OwnerGatewayGateway;
 }> = {}) {
   return {
@@ -62,8 +84,10 @@ function createService({
     service: new RepositoryManagementService(
       new InMemoryRepositoryQueryAdapter([]),
       ownerGateway,
+      administrationGateway,
       new IdGeneratorFake(),
       clock,
+      eventRecorder,
     ),
   };
 }
@@ -153,6 +177,127 @@ describe("RepositoryManagementService", () => {
     ).resolves.toEqual({
       status: "internal-visibility-not-available",
     });
+  });
+
+  it("updates and clears the profile, then records only material changes", async () => {
+    const outbox = new InMemoryRepositoriesOutboxAdapter(
+      InMemoryRepositoriesOutboxAdapter.createState(),
+      {
+        nextEventId: () => "event_profile_updated",
+        now: () => "2026-07-27T00:00:00.000Z",
+      },
+    );
+    const { service } = createService({ eventRecorder: outbox });
+    await service.createEmptyRepository({
+      actorAccountId: "account_owner",
+      ownerId: "account_owner",
+      name: "support",
+      description: "",
+      visibility: "public",
+    });
+
+    await expect(
+      service.updateRepositoryProfile({
+        actorAccountId: "account_admin",
+        ownerId: "account_owner",
+        name: "support",
+        description: " Product support. ",
+        homepage: " https://support.example.com ",
+      }),
+    ).resolves.toMatchObject({
+      status: "profile-updated",
+      repository: {
+        description: "Product support.",
+        homepage: "https://support.example.com",
+      },
+    });
+    await expect(
+      service.updateRepositoryProfile({
+        actorAccountId: "account_admin",
+        ownerId: "account_owner",
+        name: "support",
+        description: "Product support.",
+        homepage: "https://support.example.com",
+      }),
+    ).resolves.toMatchObject({ status: "profile-updated" });
+
+    const events = await outbox.claimPending({
+      claimedAt: "2026-07-27T00:00:01.000Z",
+      limit: 10,
+    });
+    expect(events).toEqual([
+      expect.objectContaining({
+        eventId: "event_profile_updated",
+        eventName: "RepositoryProfileUpdated",
+        aggregateVersion: 2,
+        orderingKey: "repository_1",
+        payload: {
+          description: "Product support.",
+          homepage: "https://support.example.com",
+          ownerId: "account_owner",
+          repositoryId: "repository_1",
+          updatedAt: "2026-07-27T00:00:00.000Z",
+        },
+      }),
+    ]);
+
+    await expect(
+      service.updateRepositoryProfile({
+        actorAccountId: "account_admin",
+        ownerId: "account_owner",
+        name: "support",
+        description: "",
+        homepage: "",
+      }),
+    ).resolves.toMatchObject({
+      status: "profile-updated",
+      repository: { description: "", homepage: "" },
+    });
+  });
+
+  it("rejects invalid or archived profile updates", async () => {
+    const { service } = createService();
+    await service.createEmptyRepository({
+      actorAccountId: "account_owner",
+      ownerId: "account_owner",
+      name: "support",
+      description: "",
+      visibility: "public",
+    });
+
+    await expect(
+      service.updateRepositoryProfile({
+        actorAccountId: "account_admin",
+        ownerId: "account_owner",
+        name: "support",
+        description: "x".repeat(351),
+        homepage: "",
+      }),
+    ).resolves.toEqual({ status: "invalid-description" });
+    await expect(
+      service.updateRepositoryProfile({
+        actorAccountId: "account_admin",
+        ownerId: "account_owner",
+        name: "support",
+        description: "",
+        homepage: "javascript:alert(1)",
+      }),
+    ).resolves.toEqual({ status: "invalid-homepage" });
+    await service.archiveRepository({
+      actorAccountId: "account_owner",
+      ownerId: "account_owner",
+      name: "support",
+      confirmation: "owner/support",
+    });
+    await expect(
+      service.updateRepositoryProfile({
+        actorAccountId: "account_admin",
+        ownerId: "account_owner",
+        name: "support",
+        description: "Archived",
+        homepage: "",
+      }),
+    ).resolves.toEqual({ status: "invalid-state" });
   });
 
   it("archives, unarchives, deletes, and restores within ninety days", async () => {
@@ -283,5 +428,26 @@ describe("RepositoryManagementService", () => {
         confirmation: "support",
       }),
     ).resolves.toEqual({ status: "confirmation-mismatch" });
+  });
+
+  it("requires effective repository admin permission for management", async () => {
+    const { service } = createService({
+      administrationGateway: new AdministrationGatewayFake(false),
+    });
+    await service.createEmptyRepository({
+      actorAccountId: "account_owner",
+      ownerId: "account_owner",
+      name: "support",
+      description: "",
+      visibility: "public",
+    });
+
+    await expect(
+      service.getRepositoryForAdministration({
+        actorAccountId: "account_reader",
+        ownerId: "account_owner",
+        name: "support",
+      }),
+    ).resolves.toEqual({ status: "permission-denied" });
   });
 });

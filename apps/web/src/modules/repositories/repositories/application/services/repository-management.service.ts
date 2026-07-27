@@ -9,10 +9,13 @@ import type {
   CreateEmptyRepositoryCommand,
   GetRepositoryForAdministrationQuery,
   RenameRepositoryCommand,
+  UpdateRepositoryProfileCommand,
 } from "../ports/inbound/repository-management.types";
 import type { RenameRepositoryResult } from "../ports/inbound/rename-repository.use-case";
 import type { RestoreDeletedRepositoryResult } from "../ports/inbound/restore-deleted-repository.use-case";
 import type { UnarchiveRepositoryResult } from "../ports/inbound/unarchive-repository.use-case";
+import type { UpdateRepositoryProfileResult } from "../ports/inbound/update-repository-profile.use-case";
+import type { RepositoryAdministrationAuthorizationGatewayPort } from "../ports/outbound/repository-administration-authorization.gateway.port";
 import type { RepositoryClockPort } from "../ports/outbound/repository-clock.port";
 import type { RepositoryIdGeneratorPort } from "../ports/outbound/repository-id-generator.port";
 import type { RepositoryOwnerAuthorizationGatewayPort } from "../ports/outbound/repository-owner-authorization.gateway.port";
@@ -20,6 +23,7 @@ import type {
   RepositoryQueryRepositoryPort,
   RepositoryQuerySnapshot,
 } from "../ports/outbound/repository-query.repository.port";
+import type { EventRecorderPort } from "@/modules/platform/event-publication/integration-contracts";
 
 const maximumDescriptionLength = 350;
 const repositoryNamePattern = /^[A-Za-z0-9._-]{1,100}$/;
@@ -38,19 +42,25 @@ type LifecycleChangeResult<T extends "archived" | "unarchived"> =
 export class RepositoryManagementService {
   private readonly repository: RepositoryQueryRepositoryPort;
   private readonly ownerGateway: RepositoryOwnerAuthorizationGatewayPort;
+  private readonly administrationGateway: RepositoryAdministrationAuthorizationGatewayPort;
   private readonly idGenerator: RepositoryIdGeneratorPort;
   private readonly clock: RepositoryClockPort;
+  private readonly eventRecorder: EventRecorderPort | undefined;
 
   constructor(
     repository: RepositoryQueryRepositoryPort,
     ownerGateway: RepositoryOwnerAuthorizationGatewayPort,
+    administrationGateway: RepositoryAdministrationAuthorizationGatewayPort,
     idGenerator: RepositoryIdGeneratorPort,
     clock: RepositoryClockPort,
+    eventRecorder?: EventRecorderPort,
   ) {
     this.repository = repository;
     this.ownerGateway = ownerGateway;
+    this.administrationGateway = administrationGateway;
     this.idGenerator = idGenerator;
     this.clock = clock;
+    this.eventRecorder = eventRecorder;
   }
 
   async createEmptyRepository(
@@ -95,8 +105,10 @@ export class RepositoryManagementService {
       },
       name,
       description,
+      homepage: "",
       visibility: command.visibility,
       lifecycleState: "active",
+      version: 1,
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
@@ -109,20 +121,70 @@ export class RepositoryManagementService {
   async getRepositoryForAdministration(
     query: GetRepositoryForAdministrationQuery,
   ): Promise<GetRepositoryForAdministrationResult> {
-    const owner = await this.ownerGateway.authorizeOwner(
-      query.actorAccountId,
-      query.ownerId,
-    );
-    if (owner === null) {
-      return { status: "permission-denied" };
-    }
     const repository = await this.repository.findByOwnerIdAndName(
-      owner.id,
+      query.ownerId,
       query.name.trim(),
     );
-    return repository === null
-      ? { status: "repository-not-found" }
-      : { status: "found", repository };
+    if (repository === null) {
+      return { status: "repository-not-found" };
+    }
+    return (await this.administrationGateway.hasRepositoryAdministration({
+      actorAccountId: query.actorAccountId,
+      repository,
+    }))
+      ? { status: "found", repository }
+      : { status: "permission-denied" };
+  }
+
+  async updateRepositoryProfile(
+    command: UpdateRepositoryProfileCommand,
+  ): Promise<UpdateRepositoryProfileResult> {
+    const resolved = await this.getMutableRepository(command);
+    if (resolved.status !== "found") {
+      return resolved;
+    }
+    if (resolved.repository.lifecycleState !== "active") {
+      return { status: "invalid-state" };
+    }
+
+    const description = command.description.trim();
+    if (description.length > maximumDescriptionLength) {
+      return { status: "invalid-description" };
+    }
+    const homepage = this.normalizeHomepage(command.homepage);
+    if (homepage === null) {
+      return { status: "invalid-homepage" };
+    }
+    if (
+      description === resolved.repository.description &&
+      homepage === resolved.repository.homepage
+    ) {
+      return {
+        status: "profile-updated",
+        repository: resolved.repository,
+      };
+    }
+
+    const updated = this.touch(resolved.repository, {
+      description,
+      homepage,
+    });
+    await this.repository.save(updated);
+    await this.eventRecorder?.record({
+      aggregateId: updated.repositoryId,
+      aggregateVersion: updated.version,
+      eventName: "RepositoryProfileUpdated",
+      eventVersion: 1,
+      orderingKey: updated.repositoryId,
+      payload: {
+        description: updated.description,
+        homepage: updated.homepage,
+        ownerId: updated.owner.id,
+        repositoryId: updated.repositoryId,
+        updatedAt: updated.updatedAt,
+      },
+    });
+    return { status: "profile-updated", repository: updated };
   }
 
   async renameRepository(
@@ -212,6 +274,7 @@ export class RepositoryManagementService {
     const deleted: RepositoryQuerySnapshot = {
       ...resolved.repository,
       lifecycleState: "deleted",
+      version: resolved.repository.version + 1,
       updatedAt: now.toISOString(),
       deletedAt: now.toISOString(),
       restoreUntil: new Date(
@@ -243,6 +306,7 @@ export class RepositoryManagementService {
       ...resolved.repository,
       repositoryId: this.idGenerator.nextRepositoryId(),
       lifecycleState: "active",
+      version: 1,
       updatedAt: now.toISOString(),
       deletedAt: null,
       restoreUntil: null,
@@ -305,6 +369,21 @@ export class RepositoryManagementService {
       : null;
   }
 
+  private normalizeHomepage(value: string): string | null {
+    const homepage = value.trim();
+    if (homepage === "") {
+      return "";
+    }
+    try {
+      const parsed = new URL(homepage);
+      return parsed.protocol === "http:" || parsed.protocol === "https:"
+        ? homepage
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
   private touch(
     repository: RepositoryQuerySnapshot,
     updates: Partial<RepositoryQuerySnapshot>,
@@ -312,6 +391,7 @@ export class RepositoryManagementService {
     return {
       ...repository,
       ...updates,
+      version: repository.version + 1,
       updatedAt: this.clock.now().toISOString(),
     };
   }

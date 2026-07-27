@@ -18,6 +18,12 @@ export type RenameRepositoryCommand = RepositoryCommandInput &
 export type ChangeRepositoryVisibilityCommand = RepositoryCommandInput &
   Readonly<{ visibility: string }>;
 
+export type UpdateRepositoryProfileCommand = RepositoryCommandInput &
+  Readonly<{
+    description: string;
+    homepage: string;
+  }>;
+
 export type ConfirmRepositoryLifecycleCommand = RepositoryCommandInput &
   Readonly<{ confirmation: string }>;
 

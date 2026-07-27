@@ -15,6 +15,7 @@ export type RepositoryCandidateReference = Readonly<{
   owner: RepositoryOwnerReference;
   name: string;
   description: string;
+  homepage: string;
   visibility: "public" | "private" | "internal";
   lifecycleState: "active";
   updatedAt: string;

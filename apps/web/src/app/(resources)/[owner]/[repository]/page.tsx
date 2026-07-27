@@ -170,6 +170,16 @@ export default async function RepositoryPage({
             <p className="mt-4 max-w-3xl leading-7 text-slate-400">
               {repository.description}
             </p>
+            {repository.homepage === "" ? null : (
+              <a
+                className="mt-2 block break-all text-sm text-sky-300 underline decoration-sky-300/40 underline-offset-4"
+                href={repository.homepage}
+                rel="noreferrer"
+                target="_blank"
+              >
+                {repository.homepage}
+              </a>
+            )}
           </div>
         </div>
 

@@ -2842,7 +2842,7 @@
       "dependencies": [
         {
           "context": "identity/accounts",
-          "contract": "UserOwnerReference",
+          "contract": "AccountReference",
           "mode": "synchronous"
         },
         {
@@ -2853,6 +2853,16 @@
         {
           "context": "organizations/organization-memberships",
           "contract": "OrganizationMembershipReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "repositories/repository-access",
+          "contract": "EffectiveRepositoryPermissionDecision",
+          "mode": "synchronous"
+        },
+        {
+          "context": "platform/event-publication",
+          "contract": "EventRecorderPort",
           "mode": "synchronous"
         }
       ],
@@ -2940,9 +2950,10 @@
           "url": "https://docs.github.com/en/rest/repos/repos",
           "supports": [
             "repository description updates",
-            "repository homepage updates"
+            "repository homepage updates",
+            "repository administration permission"
           ],
-          "verifiedOn": "2026-07-22"
+          "verifiedOn": "2026-07-27"
         },
         {
           "id": "repositories-repositories-source-10",
@@ -2979,11 +2990,13 @@
           "name": "RepositoryProfileUpdated",
           "version": 1,
           "kind": "domain",
-          "implementationStatus": "planned",
+          "implementationStatus": "active",
           "meaning": "repository profile updated.",
           "sourceIds": [
             "repositories-repositories-source-09"
-          ]
+          ],
+          "schema": "integration-contracts.ts#RepositoryProfileUpdatedV1",
+          "orderingKey": "repositoryId"
         },
         {
           "name": "RepositoryRenamed",
@@ -3088,7 +3101,8 @@
         "list-active-repositories-for-owner",
         "rename-repository",
         "restore-deleted-repository",
-        "unarchive-repository"
+        "unarchive-repository",
+        "update-repository-profile"
       ],
       "plannedRelationships": [
         {
@@ -3206,11 +3220,6 @@
         "EffectivePermissionAsSourceOfTruth"
       ],
       "dependencies": [
-        {
-          "context": "repositories/repositories",
-          "contract": "RepositoryCandidateReference",
-          "mode": "synchronous"
-        },
         {
           "context": "identity/accounts",
           "contract": "AccountReference",

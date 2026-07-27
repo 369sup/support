@@ -45,6 +45,7 @@ function mapRepositoryForPermissionLookup(
           },
     name: repository.name,
     description: repository.description,
+    homepage: repository.homepage,
     visibility: repository.visibility,
     lifecycleState: repository.lifecycleState,
     updatedAt: repository.updatedAt,
