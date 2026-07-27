@@ -5,6 +5,8 @@ import { InMemoryBrowserSessionSetAdapter } from "../adapters/outbound/persisten
 import { InMemoryDevelopmentCredentialAdapter } from "../adapters/outbound/persistence/in-memory-development-credential.adapter";
 import { NodeSessionRuntimeAdapter } from "../adapters/outbound/runtime/node-session-runtime.adapter";
 import { CreateDevelopmentSessionHandler } from "../application/commands/create-development-session.handler";
+import { ApplyPasswordCredentialTransactionHandler } from "../application/commands/apply-password-credential-transaction.handler";
+import type { ApplyPasswordCredentialTransactionUseCase } from "../application/ports/inbound/apply-password-credential-transaction.use-case";
 import { ExpireSessionHandler } from "../application/commands/expire-session.handler";
 import { ReauthenticateSessionHandler } from "../application/commands/reauthenticate-session.handler";
 import { RemoveAccountSessionHandler } from "../application/commands/remove-account-session.handler";
@@ -24,6 +26,7 @@ import type {
 } from "../contracts/authenticated-session-reference";
 
 export interface AuthenticationServerFacade {
+  applyPasswordCredentialTransaction: ApplyPasswordCredentialTransactionUseCase["applyPasswordCredentialTransaction"];
   clearBrowserSessionToken: () => Promise<void>;
   createDevelopmentSession: (input: {
     browserToken: string | null;
@@ -70,6 +73,8 @@ function composeAuthenticationServerFacade(): AuthenticationServerFacade {
   const sessionRepository = new InMemoryBrowserSessionSetAdapter();
   const credentialRepository =
     new InMemoryDevelopmentCredentialAdapter();
+  const applyCredentialTransaction =
+    new ApplyPasswordCredentialTransactionHandler(credentialRepository);
   const accountGateway = new AccountReferenceAdapter();
   const runtime = new NodeSessionRuntimeAdapter();
 
@@ -115,6 +120,8 @@ function composeAuthenticationServerFacade(): AuthenticationServerFacade {
   });
 
   return {
+    applyPasswordCredentialTransaction: (command) =>
+      applyCredentialTransaction.applyPasswordCredentialTransaction(command),
     clearBrowserSessionToken: browserSessionCookie.clear,
     createDevelopmentSession: (input) =>
       create.createDevelopmentSession(input),

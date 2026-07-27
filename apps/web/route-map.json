@@ -1582,23 +1582,49 @@
       "supportPath": "/accept-invitation",
       "githubUrls": [],
       "status": "active",
-      "materialization": "scaffolded",
+      "materialization": "active",
       "title": "Accept invitation",
-      "summary": "Review and accept an organization or enterprise membership invitation.",
+      "summary": "Delivers `/accept-invitation` through `requireCurrentSession`, `acceptOrganizationInvitation`, `declineOrganizationInvitation`, `listPendingOrganizationInvitationsForAccount`, `getOrganizationReferenceById`.",
       "pathParams": [],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "invitation",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
-          "context": "enterprises/enterprise-memberships",
+          "context": "organizations/organization-memberships",
           "role": "owner",
-          "useCases": [],
-          "functions": []
+          "useCases": [
+            "accept-organization-invitation",
+            "decline-organization-invitation",
+            "list-pending-organization-invitations-for-account"
+          ],
+          "functions": [
+            "acceptOrganizationInvitation",
+            "declineOrganizationInvitation",
+            "listPendingOrganizationInvitationsForAccount"
+          ]
         },
         {
-          "context": "organizations/organization-memberships",
+          "context": "identity/authentication",
           "role": "collaborator",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "requireCurrentSession"
+          ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "collaborator",
+          "useCases": [
+            "get-organization-reference-by-id"
+          ],
+          "functions": [
+            "getOrganizationReferenceById"
+          ]
         }
       ],
       "sourceIds": [
@@ -1645,7 +1671,7 @@
       "status": "active",
       "materialization": "active",
       "title": "Account Page",
-      "summary": "Delivers account identity, personal account deletion, and owner-authorized profile editing through authenticated server boundaries.",
+      "summary": "Delivers `/account` through `changePersonalAccountUsername`, `deletePersonalAccount`, `clearBrowserSessionToken`, `readBrowserSessionToken`, `requireCurrentSession`, `signOutAllSessions`, `getUserProfile`, `updateUserProfile`.",
       "pathParams": [],
       "queryParams": [
         {
@@ -1661,8 +1687,18 @@
       ],
       "modules": [
         {
-          "context": "identity/accounts",
+          "context": "identity/account-registration",
           "role": "owner",
+          "useCases": [
+            "change-personal-account-username"
+          ],
+          "functions": [
+            "changePersonalAccountUsername"
+          ]
+        },
+        {
+          "context": "identity/accounts",
+          "role": "collaborator",
           "useCases": [
             "delete-personal-account"
           ],
@@ -2233,7 +2269,7 @@
       "status": "active",
       "materialization": "active",
       "title": "Enterprise Teams Page",
-      "summary": "Lists enterprise teams and supports owner-authorized team lifecycle and direct member management without Git or code capabilities.",
+      "summary": "Lists enterprise teams and supports owner-authorized team, direct-member, and organization-assignment lifecycle without Git or code capabilities.",
       "pathParams": [
         {
           "name": "slug",
@@ -2258,20 +2294,26 @@
           "role": "owner",
           "useCases": [
             "add-enterprise-team-member",
+            "assign-enterprise-team-to-organization",
             "create-enterprise-team",
             "delete-enterprise-team",
             "list-enterprise-team-members",
+            "list-enterprise-team-organization-assignments",
             "list-enterprise-teams",
             "remove-enterprise-team-member",
+            "unassign-enterprise-team-from-organization",
             "update-enterprise-team"
           ],
           "functions": [
             "addEnterpriseTeamMember",
+            "assignEnterpriseTeamToOrganization",
             "createEnterpriseTeam",
             "deleteEnterpriseTeam",
             "listEnterpriseTeamMembers",
+            "listEnterpriseTeamOrganizationAssignments",
             "listEnterpriseTeams",
             "removeEnterpriseTeamMember",
+            "unassignEnterpriseTeamFromOrganization",
             "updateEnterpriseTeam"
           ]
         },
@@ -2279,10 +2321,12 @@
           "context": "enterprises/enterprises",
           "role": "collaborator",
           "useCases": [
-            "get-enterprise-by-slug"
+            "get-enterprise-by-slug",
+            "list-enterprise-organizations"
           ],
           "functions": [
-            "getEnterpriseBySlug"
+            "getEnterpriseBySlug",
+            "listEnterpriseOrganizations"
           ]
         },
         {
@@ -2447,17 +2491,55 @@
       "supportPath": "/new",
       "githubUrls": [],
       "status": "active",
-      "materialization": "scaffolded",
+      "materialization": "active",
       "title": "New repository",
-      "summary": "Create a repository for a permitted user or organization owner.",
+      "summary": "Delivers `/new` through `requireCurrentSession`, `listActiveOrganizationMembershipsForAccount`, `getOrganizationReferenceById`, `createEmptyRepository`.",
       "pathParams": [],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "repository",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
           "context": "repositories/repositories",
           "role": "owner",
+          "useCases": [
+            "create-empty-repository"
+          ],
+          "functions": [
+            "createEmptyRepository"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "collaborator",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "requireCurrentSession"
+          ]
+        },
+        {
+          "context": "organizations/organization-memberships",
+          "role": "collaborator",
+          "useCases": [
+            "list-active-organization-memberships-for-account"
+          ],
+          "functions": [
+            "listActiveOrganizationMembershipsForAccount"
+          ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "collaborator",
+          "useCases": [
+            "get-organization-reference-by-id"
+          ],
+          "functions": [
+            "getOrganizationReferenceById"
+          ]
         }
       ],
       "sourceIds": [
@@ -3068,25 +3150,48 @@
       "status": "active",
       "materialization": "active",
       "title": "Organization People Page",
-      "summary": "Delivers `/orgs/{organization}/people` through `requireCurrentSession`, `getAccountReferenceById`, `checkOrganizationContextEligibility`, `listActiveOrganizationMembershipsForOrganization`, `getOrganizationByLogin`.",
+      "summary": "Delivers `/orgs/{organization}/people` through `requireCurrentSession`, `getAccountReferenceById`, `cancelOrganizationInvitation`, `changeOrganizationMemberRole`, `checkOrganizationContextEligibility`, `inviteOrganizationMember`, `listActiveOrganizationMembershipsForOrganization`, `listOrganizationInvitationsForOrganization`, `removeOrganizationMember`, `updateOrganizationInvitation`, `getOrganizationByLogin`.",
       "pathParams": [
         {
           "name": "organization",
           "kind": "scalar"
         }
       ],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "invitation",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "member",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
           "context": "organizations/organization-memberships",
           "role": "owner",
           "useCases": [
+            "cancel-organization-invitation",
+            "change-organization-member-role",
             "check-organization-context-eligibility",
-            "list-active-organization-memberships-for-organization"
+            "invite-organization-member",
+            "list-active-organization-memberships-for-organization",
+            "list-organization-invitations-for-organization",
+            "remove-organization-member",
+            "update-organization-invitation"
           ],
           "functions": [
+            "cancelOrganizationInvitation",
+            "changeOrganizationMemberRole",
             "checkOrganizationContextEligibility",
-            "listActiveOrganizationMembershipsForOrganization"
+            "inviteOrganizationMember",
+            "listActiveOrganizationMembershipsForOrganization",
+            "listOrganizationInvitationsForOrganization",
+            "removeOrganizationMember",
+            "updateOrganizationInvitation"
           ]
         },
         {
@@ -5755,7 +5860,7 @@
       "status": "active",
       "materialization": "active",
       "title": "Repository Settings Page",
-      "summary": "Delivers `/{owner}/{repository}/settings` through `requireCurrentSession`, `getPersonalAccountByUsername`, `getOrganizationByLogin`, `getRepositoryByOwnerAndName`, `resolveEffectiveRepositoryPermission`.",
+      "summary": "Delivers `/{owner}/{repository}/settings` through `requireCurrentSession`, `getPersonalAccountByUsername`, `getOrganizationByLogin`, `archiveRepository`, `changeRepositoryVisibility`, `deleteRepository`, `getRepositoryForAdministration`, `renameRepository`, `restoreDeletedRepository`, `unarchiveRepository`.",
       "pathParams": [
         {
           "name": "owner",
@@ -5766,16 +5871,34 @@
           "kind": "scalar"
         }
       ],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "repository",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
           "context": "repositories/repositories",
           "role": "owner",
           "useCases": [
-            "get-repository-by-owner-and-name"
+            "archive-repository",
+            "change-repository-visibility",
+            "delete-repository",
+            "get-repository-for-administration",
+            "rename-repository",
+            "restore-deleted-repository",
+            "unarchive-repository"
           ],
           "functions": [
-            "getRepositoryByOwnerAndName"
+            "archiveRepository",
+            "changeRepositoryVisibility",
+            "deleteRepository",
+            "getRepositoryForAdministration",
+            "renameRepository",
+            "restoreDeletedRepository",
+            "unarchiveRepository"
           ]
         },
         {
@@ -5804,16 +5927,6 @@
           ],
           "functions": [
             "getOrganizationByLogin"
-          ]
-        },
-        {
-          "context": "repositories/repository-access",
-          "role": "collaborator",
-          "useCases": [
-            "resolve-effective-repository-permission"
-          ],
-          "functions": [
-            "resolveEffectiveRepositoryPermission"
           ]
         }
       ],
@@ -6765,23 +6878,27 @@
       "supportPath": "/signup",
       "githubUrls": [],
       "status": "active",
-      "materialization": "scaffolded",
+      "materialization": "active",
       "title": "Sign up",
-      "summary": "GitHub-style canonical URL for personal account registration.",
+      "summary": "Delivers `/signup` through `registerPersonalAccount`.",
       "pathParams": [],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "registration",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
-          "context": "identity/accounts",
+          "context": "identity/account-registration",
           "role": "owner",
-          "useCases": [],
-          "functions": []
-        },
-        {
-          "context": "identity/authentication",
-          "role": "collaborator",
-          "useCases": [],
-          "functions": []
+          "useCases": [
+            "register-personal-account"
+          ],
+          "functions": [
+            "registerPersonalAccount"
+          ]
         }
       ],
       "sourceIds": [

@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Delivers `/orgs/{organization}/people` through `requireCurrentSession`, `getAccountReferenceById`, `checkOrganizationContextEligibility`, `listActiveOrganizationMembershipsForOrganization`, `getOrganizationByLogin`.
+Delivers `/orgs/{organization}/people` through `requireCurrentSession`, `getAccountReferenceById`, `cancelOrganizationInvitation`, `changeOrganizationMemberRole`, `checkOrganizationContextEligibility`, `inviteOrganizationMember`, `listActiveOrganizationMembershipsForOrganization`, `listOrganizationInvitationsForOrganization`, `removeOrganizationMember`, `updateOrganizationInvitation`, `getOrganizationByLogin`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -23,7 +23,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 
 ## Module contracts
 
-- - **owner:** `organizations/organization-memberships` — use cases: `check-organization-context-eligibility`, `list-active-organization-memberships-for-organization`; functions: `checkOrganizationContextEligibility`, `listActiveOrganizationMembershipsForOrganization`
+- - **owner:** `organizations/organization-memberships` — use cases: `cancel-organization-invitation`, `change-organization-member-role`, `check-organization-context-eligibility`, `invite-organization-member`, `list-active-organization-memberships-for-organization`, `list-organization-invitations-for-organization`, `remove-organization-member`, `update-organization-invitation`; functions: `cancelOrganizationInvitation`, `changeOrganizationMemberRole`, `checkOrganizationContextEligibility`, `inviteOrganizationMember`, `listActiveOrganizationMembershipsForOrganization`, `listOrganizationInvitationsForOrganization`, `removeOrganizationMember`, `updateOrganizationInvitation`
 - - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
 - - **collaborator:** `identity/accounts` — use cases: `get-account-reference-by-id`; functions: `getAccountReferenceById`
 - - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`
@@ -38,7 +38,8 @@ The module README remains the semantic authority for each complete thirteen-fiel
 
 ### Query
 
-None.
+- - `invitation`: optional, single
+- - `member`: optional, single
 
 Query keys not declared here are rejected by the typed URL builder.
 

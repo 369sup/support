@@ -57,3 +57,10 @@ export type AppAccessDecisionStatus =
     }>;
 
 export type AppAccessPolicyDecision = AppAccessDecisionStatus;
+
+export type BaseRepositoryPermission =
+  | "read"
+  | "triage"
+  | "write"
+  | "maintain"
+  | "admin";

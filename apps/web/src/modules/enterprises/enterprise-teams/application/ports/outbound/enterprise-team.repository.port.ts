@@ -1,5 +1,6 @@
 import type {
   EnterpriseTeamMembershipReference,
+  EnterpriseTeamOrganizationGrantReference,
   EnterpriseTeamReference,
 } from "../../../domain/enterprise-team";
 
@@ -26,5 +27,16 @@ export interface EnterpriseTeamRepositoryPort {
   ): Promise<readonly EnterpriseTeamMembershipReference[]>;
   saveMembership(
     membership: EnterpriseTeamMembershipReference,
+  ): Promise<void>;
+  countActiveOrganizationGrantsByTeam(teamId: string): Promise<number>;
+  findActiveOrganizationGrant(
+    teamId: string,
+    organizationId: string,
+  ): Promise<EnterpriseTeamOrganizationGrantReference | null>;
+  listActiveOrganizationGrantsByTeam(
+    teamId: string,
+  ): Promise<readonly EnterpriseTeamOrganizationGrantReference[]>;
+  saveOrganizationGrant(
+    grant: EnterpriseTeamOrganizationGrantReference,
   ): Promise<void>;
 }

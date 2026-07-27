@@ -29,6 +29,11 @@ and trusted user-account candidates.
       - Return `account-not-found` when no active personal account matches.
       - Return `invalid-username` when the input is invalid.
     - Published events: none for this query-only active slice.
+  - Account identity transaction protocol [active]
+    - Use case: `apply-account-identity-transaction`
+    - Reserves registration and username changes invisibly.
+    - Commits remain reversible until the coordinator finalizes.
+    - Rollback removes a pending registration or restores the prior username.
   - Account lifecycle
     - Personal account deletion [active]
       - Use case: `delete-personal-account`
@@ -56,6 +61,22 @@ and trusted user-account candidates.
   - `EnterpriseMembership`
 
 ## Designed use cases
+
+### `apply-account-identity-transaction` [active]
+
+- **Type:** `command`
+- **Application boundary:** `ApplyAccountIdentityTransactionUseCase.applyAccountIdentityTransaction()`
+- **Public entrypoint:** `server-api.ts#applyAccountIdentityTransaction`
+- **Input:** Trusted coordinator transaction ID and prepare, commit, rollback, or finalize step.
+- **Success result:** `prepared`, `committed`, `rolled-back`, or `finalized` with account state.
+- **Expected rejections:** `account-not-found`, `invalid-account`, `permission-denied`, `transaction-not-found`, `unsupported-account-type`, `username-conflict`
+- **Authorization:** Registration creates personal humans only; username change rechecks actor equals target.
+- **Transaction:** One account store plus case-insensitive username reservations and reversible commit metadata.
+- **Idempotency:** Transaction IDs are single-use; missing or finalized IDs return `transaction-not-found`.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `identity-accounts-source-02`, `identity-accounts-source-03`
+- **Local policy:** Trusted internal coordinator only; pending accounts are absent from all public and trusted active-account queries.
 
 ### `delete-personal-account` [active]
 

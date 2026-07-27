@@ -16,6 +16,12 @@ export function createGetAccountCandidateByUsernameAdapter(
       return { status: "account-not-found" };
     }
 
-    return { status: "found", account: result.account };
+    return {
+      status: "found",
+      account: {
+        ...result.account,
+        lifecycleState: "active",
+      },
+    };
   };
 }

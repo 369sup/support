@@ -16,8 +16,11 @@ import { GetAccountReferenceByIdHandler } from "../application/queries/get-accou
 import { GetPersonalAccountByUsernameHandler } from "../application/queries/get-personal-account-by-username.handler";
 import { DeletePersonalAccountHandler } from "../application/commands/delete-personal-account.handler";
 import type { DeletePersonalAccountUseCase } from "../application/ports/inbound/delete-personal-account.use-case";
+import { ApplyAccountIdentityTransactionHandler } from "../application/commands/apply-account-identity-transaction.handler";
+import type { ApplyAccountIdentityTransactionUseCase } from "../application/ports/inbound/apply-account-identity-transaction.use-case";
 
 export interface AccountsServerFacade {
+  applyAccountIdentityTransaction: ApplyAccountIdentityTransactionUseCase["applyAccountIdentityTransaction"];
   deletePersonalAccount: DeletePersonalAccountUseCase["deletePersonalAccount"];
   getAccountCandidateByUsername: GetAccountCandidateByUsernameAdapter;
   getAccountReferenceById: GetAccountReferenceByIdAdapter;
@@ -34,8 +37,12 @@ function composeAccountsServerFacade(): AccountsServerFacade {
     new GetPersonalAccountByUsernameHandler(accountQueryRepository);
   const deletePersonalAccountHandler =
     new DeletePersonalAccountHandler(accountQueryRepository);
+  const applyIdentityTransaction =
+    new ApplyAccountIdentityTransactionHandler(accountQueryRepository);
 
   return {
+    applyAccountIdentityTransaction: (command) =>
+      applyIdentityTransaction.applyAccountIdentityTransaction(command),
     deletePersonalAccount:
       deletePersonalAccountHandler.deletePersonalAccount.bind(
         deletePersonalAccountHandler,

@@ -1,5 +1,7 @@
 import { authenticationServerFacade } from "./composition/authentication.composition";
 
+export const applyPasswordCredentialTransaction =
+  authenticationServerFacade.applyPasswordCredentialTransaction;
 export { hasSameOrigin } from "./adapters/inbound/server/same-origin.adapter";
 
 export type {

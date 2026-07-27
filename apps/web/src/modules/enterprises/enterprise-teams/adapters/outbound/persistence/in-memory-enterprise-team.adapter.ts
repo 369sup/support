@@ -1,12 +1,14 @@
 import type { EnterpriseTeamRepositoryPort } from "../../../application/ports/outbound/enterprise-team.repository.port";
 import type {
   EnterpriseTeamMembershipReference,
+  EnterpriseTeamOrganizationGrantReference,
   EnterpriseTeamReference,
 } from "../../../contracts/enterprise-team-reference";
 
 export type EnterpriseTeamSeed = Readonly<{
   teams: readonly EnterpriseTeamReference[];
   memberships: readonly EnterpriseTeamMembershipReference[];
+  organizationGrants?: readonly EnterpriseTeamOrganizationGrantReference[];
 }>;
 
 const developmentEnterpriseTeamSeed: EnterpriseTeamSeed = {
@@ -54,6 +56,9 @@ type EnterpriseTeamStore = {
   membershipById: Map<string, EnterpriseTeamMembershipReference>;
   membershipIdByTeamAndAccount: Map<string, string>;
   membershipIdsByTeam: Map<string, string[]>;
+  organizationGrantById: Map<string, EnterpriseTeamOrganizationGrantReference>;
+  organizationGrantIdByTeamAndOrganization: Map<string, string>;
+  organizationGrantIdsByTeam: Map<string, string[]>;
 };
 
 declare global {
@@ -78,6 +83,9 @@ function createStore(seed: EnterpriseTeamSeed): EnterpriseTeamStore {
     membershipById: new Map(),
     membershipIdByTeamAndAccount: new Map(),
     membershipIdsByTeam: new Map(),
+    organizationGrantById: new Map(),
+    organizationGrantIdByTeamAndOrganization: new Map(),
+    organizationGrantIdsByTeam: new Map(),
   };
   for (const team of seed.teams) {
     store.byTeamId.set(team.teamId, team);
@@ -98,7 +106,26 @@ function createStore(seed: EnterpriseTeamSeed): EnterpriseTeamStore {
       membership.teamMembershipId,
     );
   }
+  for (const grant of seed.organizationGrants ?? []) {
+    writeOrganizationGrant(store, grant);
+  }
   return store;
+}
+
+function writeOrganizationGrant(
+  store: EnterpriseTeamStore,
+  grant: EnterpriseTeamOrganizationGrantReference,
+): void {
+  store.organizationGrantById.set(grant.grantId, grant);
+  store.organizationGrantIdByTeamAndOrganization.set(
+    compoundKey(grant.teamId, grant.organizationId),
+    grant.grantId,
+  );
+  appendUnique(
+    store.organizationGrantIdsByTeam,
+    grant.teamId,
+    grant.grantId,
+  );
 }
 
 function getProcessStore() {
@@ -215,6 +242,45 @@ export class InMemoryEnterpriseTeamAdapter
       membership.teamId,
       membership.teamMembershipId,
     );
+    return Promise.resolve();
+  }
+
+  countActiveOrganizationGrantsByTeam(teamId: string) {
+    return Promise.resolve(
+      (this.store.organizationGrantIdsByTeam.get(teamId) ?? []).filter(
+        (grantId) =>
+          this.store.organizationGrantById.get(grantId)?.state === "active",
+      ).length,
+    );
+  }
+
+  findActiveOrganizationGrant(teamId: string, organizationId: string) {
+    const grantId =
+      this.store.organizationGrantIdByTeamAndOrganization.get(
+        compoundKey(teamId, organizationId),
+      );
+    const grant =
+      grantId === undefined
+        ? undefined
+        : this.store.organizationGrantById.get(grantId);
+    return Promise.resolve(grant?.state === "active" ? grant : null);
+  }
+
+  listActiveOrganizationGrantsByTeam(teamId: string) {
+    return Promise.resolve(
+      (this.store.organizationGrantIdsByTeam.get(teamId) ?? []).flatMap(
+        (grantId) => {
+          const grant = this.store.organizationGrantById.get(grantId);
+          return grant?.state === "active" ? [grant] : [];
+        },
+      ),
+    );
+  }
+
+  saveOrganizationGrant(
+    grant: EnterpriseTeamOrganizationGrantReference,
+  ) {
+    writeOrganizationGrant(this.store, grant);
     return Promise.resolve();
   }
 }

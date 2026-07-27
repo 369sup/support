@@ -174,6 +174,7 @@
         }
       ],
       "activationScope": [
+        "apply-account-identity-transaction",
         "delete-personal-account",
         "get-account-candidate-by-username",
         "get-account-reference-by-id",
@@ -262,6 +263,15 @@
             "managed user reauthentication"
           ],
           "verifiedOn": "2026-07-23"
+        },
+        {
+          "id": "identity-authentication-source-03",
+          "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-strong-password",
+          "supports": [
+            "password minimums",
+            "password verifier storage"
+          ],
+          "verifiedOn": "2026-07-27"
         }
       ],
       "publishedEvents": [
@@ -327,6 +337,7 @@
         }
       ],
       "activationScope": [
+        "apply-password-credential-transaction",
         "create-development-session",
         "expire-session",
         "get-current-authenticated-session",
@@ -369,6 +380,91 @@
           ],
           "sourceIds": [
             "identity-authentication-source-01"
+          ]
+        }
+      ]
+    },
+    {
+      "subdomain": "identity",
+      "name": "account-registration",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "active",
+      "responsibility": "Coordinate personal account registration and username changes so account identity and password credentials never remain half-complete.",
+      "semanticStatus": "validated",
+      "owns": [
+        "AccountCredentialTransaction",
+        "UsernameChangeTransaction"
+      ],
+      "excludes": [
+        "Account",
+        "Credential",
+        "Session",
+        "EmailVerification",
+        "ScimProvisioning"
+      ],
+      "dependencies": [
+        {
+          "context": "identity/accounts",
+          "contract": "AccountIdentityTransaction",
+          "mode": "synchronous"
+        },
+        {
+          "context": "identity/authentication",
+          "contract": "PasswordCredentialTransaction",
+          "mode": "synchronous"
+        }
+      ],
+      "officialSources": [
+        {
+          "id": "identity-account-registration-source-01",
+          "url": "https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github",
+          "supports": [
+            "personal account registration",
+            "managed user exclusion"
+          ],
+          "verifiedOn": "2026-07-27"
+        },
+        {
+          "id": "identity-account-registration-source-02",
+          "url": "https://docs.github.com/en/account-and-profile/concepts/username-changes",
+          "supports": [
+            "username availability",
+            "username changes"
+          ],
+          "verifiedOn": "2026-07-27"
+        },
+        {
+          "id": "identity-account-registration-source-03",
+          "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-strong-password",
+          "supports": [
+            "password minimums",
+            "password verifier storage"
+          ],
+          "verifiedOn": "2026-07-27"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "The coordinator owns transaction consistency rather than a product fact; account and credential event publication remains with their owning contexts.",
+      "activationScope": [
+        "change-personal-account-username",
+        "register-personal-account"
+      ],
+      "plannedRelationships": [],
+      "semanticClaims": [
+        {
+          "id": "account-credential-consistency",
+          "statement": "Personal account registration and username changes coordinate account identity with its password credential through reservations, reversible commits, and compensation before finalization.",
+          "ownership": [
+            "AccountCredentialTransaction",
+            "UsernameChangeTransaction"
+          ],
+          "events": [],
+          "sourceIds": [
+            "identity-account-registration-source-01",
+            "identity-account-registration-source-02",
+            "identity-account-registration-source-03"
           ]
         }
       ]
@@ -944,6 +1040,21 @@
           "context": "identity/accounts",
           "contract": "AccountReference",
           "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organizations",
+          "contract": "OrganizationReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-memberships",
+          "contract": "OrganizationMembershipReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-policies",
+          "contract": "BaseRepositoryPermission",
+          "mode": "synchronous"
         }
       ],
       "officialSources": [
@@ -957,7 +1068,7 @@
             "enterprise team limits"
           ],
           "maturity": "preview",
-          "verifiedOn": "2026-07-26"
+          "verifiedOn": "2026-07-27"
         },
         {
           "id": "enterprises-enterprise-teams-source-02",
@@ -968,7 +1079,7 @@
             "organization assignment effects"
           ],
           "maturity": "preview",
-          "verifiedOn": "2026-07-26"
+          "verifiedOn": "2026-07-27"
         },
         {
           "id": "enterprises-enterprise-teams-source-03",
@@ -1064,25 +1175,17 @@
       ],
       "activationScope": [
         "add-enterprise-team-member",
+        "assign-enterprise-team-to-organization",
         "create-enterprise-team",
         "delete-enterprise-team",
         "list-enterprise-team-members",
+        "list-enterprise-team-organization-assignments",
         "list-enterprise-teams",
         "remove-enterprise-team-member",
+        "unassign-enterprise-team-from-organization",
         "update-enterprise-team"
       ],
-      "plannedRelationships": [
-        {
-          "context": "organizations/organizations",
-          "contract": "OrganizationReference",
-          "mode": "synchronous"
-        },
-        {
-          "context": "organizations/organization-memberships",
-          "contract": "OrganizationMembership",
-          "mode": "synchronous"
-        }
-      ],
+      "plannedRelationships": [],
       "semanticClaims": [
         {
           "id": "enterprise-team-administration",
@@ -1119,7 +1222,7 @@
         },
         {
           "id": "enterprise-team-organization-assignment",
-          "statement": "Assigning an enterprise team to an organization can add team members directly to the organization and grants the organization's base repository permission, so organization assignment remains a separate cross-context capability.",
+          "statement": "Assigning an enterprise team to an organization adds team members directly without invitations and makes the organization's base repository permission an effective permission source.",
           "ownership": [
             "EnterpriseTeamOrganizationGrant"
           ],
@@ -1834,7 +1937,43 @@
             "organization invitations",
             "membership lifecycle"
           ],
-          "verifiedOn": "2026-07-23"
+          "verifiedOn": "2026-07-27"
+        },
+        {
+          "id": "organizations-organization-memberships-source-02",
+          "url": "https://docs.github.com/en/organizations/managing-membership-in-your-organization/inviting-users-to-join-your-organization",
+          "supports": [
+            "seven-day invitation expiry",
+            "personal account invitations",
+            "managed user SCIM provisioning"
+          ],
+          "verifiedOn": "2026-07-27"
+        },
+        {
+          "id": "organizations-organization-memberships-source-03",
+          "url": "https://docs.github.com/en/organizations/managing-membership-in-your-organization/canceling-or-editing-an-invitation-to-join-your-organization",
+          "supports": [
+            "invitation editing",
+            "invitation cancellation"
+          ],
+          "verifiedOn": "2026-07-27"
+        },
+        {
+          "id": "organizations-organization-memberships-source-04",
+          "url": "https://docs.github.com/en/organizations/managing-membership-in-your-organization/removing-a-member-from-your-organization",
+          "supports": [
+            "member removal"
+          ],
+          "verifiedOn": "2026-07-27"
+        },
+        {
+          "id": "organizations-organization-memberships-source-05",
+          "url": "https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories/managing-users-in-your-enterprise/create-enterprise-teams",
+          "supports": [
+            "enterprise team direct organization membership",
+            "organization base repository permission"
+          ],
+          "verifiedOn": "2026-07-27"
         }
       ],
       "publishedEvents": [
@@ -1900,9 +2039,19 @@
         }
       ],
       "activationScope": [
+        "accept-organization-invitation",
+        "cancel-organization-invitation",
+        "change-organization-member-role",
         "check-organization-context-eligibility",
+        "decline-organization-invitation",
+        "invite-organization-member",
         "list-active-organization-memberships-for-account",
-        "list-active-organization-memberships-for-organization"
+        "list-active-organization-memberships-for-organization",
+        "list-organization-invitations-for-organization",
+        "list-pending-organization-invitations-for-account",
+        "remove-organization-member",
+        "synchronize-enterprise-team-organization-memberships",
+        "update-organization-invitation"
       ],
       "plannedRelationships": [
         {
@@ -1914,7 +2063,7 @@
       "semanticClaims": [
         {
           "id": "organization-membership-lifecycle",
-          "statement": "Organization membership has member or owner roles and lifecycle states; pending, suspended, and removed memberships are not active membership.",
+          "statement": "Organization membership has member or owner roles and lifecycle states; direct personal-account invitations expire after seven days, while managed users are provisioned through SCIM.",
           "ownership": [
             "OrganizationMembership",
             "OrganizationInvitation",
@@ -1930,7 +2079,11 @@
             "OrganizationMemberRoleChanged@1"
           ],
           "sourceIds": [
-            "organizations-organization-memberships-source-01"
+            "organizations-organization-memberships-source-01",
+            "organizations-organization-memberships-source-02",
+            "organizations-organization-memberships-source-03",
+            "organizations-organization-memberships-source-04",
+            "organizations-organization-memberships-source-05"
           ]
         }
       ]
@@ -2383,6 +2536,15 @@
             "repository policies"
           ],
           "verifiedOn": "2026-07-23"
+        },
+        {
+          "id": "organizations-organization-policies-source-02",
+          "url": "https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/repository-roles-for-an-organization",
+          "supports": [
+            "organization base repository permission",
+            "base permission for organization members"
+          ],
+          "verifiedOn": "2026-07-27"
         }
       ],
       "publishedEvents": [
@@ -2403,7 +2565,8 @@
           "implementationStatus": "planned",
           "meaning": "base repository permission changed.",
           "sourceIds": [
-            "organizations-organization-policies-source-01"
+            "organizations-organization-policies-source-01",
+            "organizations-organization-policies-source-02"
           ]
         },
         {
@@ -2428,6 +2591,7 @@
         }
       ],
       "activationScope": [
+        "get-organization-base-repository-permission",
         "resolve-app-access-decision"
       ],
       "plannedRelationships": [
@@ -2465,7 +2629,8 @@
             "GitHubAppInstallationPolicyChanged@1"
           ],
           "sourceIds": [
-            "organizations-organization-policies-source-01"
+            "organizations-organization-policies-source-01",
+            "organizations-organization-policies-source-02"
           ]
         }
       ]
@@ -2683,6 +2848,11 @@
         {
           "context": "organizations/organizations",
           "contract": "OrganizationOwnerReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-memberships",
+          "contract": "OrganizationMembershipReference",
           "mode": "synchronous"
         }
       ],
@@ -2907,10 +3077,18 @@
         }
       ],
       "activationScope": [
+        "archive-repository",
+        "change-repository-visibility",
+        "create-empty-repository",
+        "delete-repository",
+        "get-repository-for-administration",
         "get-repository-by-owner-and-name",
         "list-active-public-repositories-for-organization-owner",
         "list-active-public-repositories-for-personal-owner",
-        "list-active-repositories-for-owner"
+        "list-active-repositories-for-owner",
+        "rename-repository",
+        "restore-deleted-repository",
+        "unarchive-repository"
       ],
       "plannedRelationships": [
         {
@@ -3051,6 +3229,11 @@
         {
           "context": "organizations/organization-roles",
           "contract": "OrganizationRepositoryRoleContribution",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-policies",
+          "contract": "BaseRepositoryPermission",
           "mode": "synchronous"
         },
         {
@@ -3258,11 +3441,6 @@
         "resolve-effective-repository-permission"
       ],
       "plannedRelationships": [
-        {
-          "context": "organizations/organization-policies",
-          "contract": "OrganizationRepositoryPolicyContribution",
-          "mode": "synchronous"
-        },
         {
           "context": "enterprises/enterprise-teams",
           "contract": "EnterpriseTeamPermissionContribution",

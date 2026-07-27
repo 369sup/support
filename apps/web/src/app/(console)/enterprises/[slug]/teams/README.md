@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Lists enterprise teams and supports owner-authorized team lifecycle and direct member management without Git or code capabilities.
+Lists enterprise teams and supports owner-authorized team, direct-member, and organization-assignment lifecycle without Git or code capabilities.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -23,8 +23,8 @@ The filesystem route is active. Its business behavior remains owned by the refer
 
 ## Module contracts
 
-- - **owner:** `enterprises/enterprise-teams` — use cases: `add-enterprise-team-member`, `create-enterprise-team`, `delete-enterprise-team`, `list-enterprise-team-members`, `list-enterprise-teams`, `remove-enterprise-team-member`, `update-enterprise-team`; functions: `addEnterpriseTeamMember`, `createEnterpriseTeam`, `deleteEnterpriseTeam`, `listEnterpriseTeamMembers`, `listEnterpriseTeams`, `removeEnterpriseTeamMember`, `updateEnterpriseTeam`
-- - **collaborator:** `enterprises/enterprises` — use cases: `get-enterprise-by-slug`; functions: `getEnterpriseBySlug`
+- - **owner:** `enterprises/enterprise-teams` — use cases: `add-enterprise-team-member`, `assign-enterprise-team-to-organization`, `create-enterprise-team`, `delete-enterprise-team`, `list-enterprise-team-members`, `list-enterprise-team-organization-assignments`, `list-enterprise-teams`, `remove-enterprise-team-member`, `unassign-enterprise-team-from-organization`, `update-enterprise-team`; functions: `addEnterpriseTeamMember`, `assignEnterpriseTeamToOrganization`, `createEnterpriseTeam`, `deleteEnterpriseTeam`, `listEnterpriseTeamMembers`, `listEnterpriseTeamOrganizationAssignments`, `listEnterpriseTeams`, `removeEnterpriseTeamMember`, `unassignEnterpriseTeamFromOrganization`, `updateEnterpriseTeam`
+- - **collaborator:** `enterprises/enterprises` — use cases: `get-enterprise-by-slug`, `list-enterprise-organizations`; functions: `getEnterpriseBySlug`, `listEnterpriseOrganizations`
 - - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
 - - **collaborator:** `enterprises/enterprise-roles` — use cases: `authorize-enterprise-administration`; functions: `authorizeEnterpriseAdministration`
 

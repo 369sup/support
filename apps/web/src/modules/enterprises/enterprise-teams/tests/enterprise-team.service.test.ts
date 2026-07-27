@@ -5,6 +5,9 @@ import type { AccountReferenceGatewayPort } from "../application/ports/outbound/
 import type { EnterpriseAdministrationGatewayPort } from "../application/ports/outbound/enterprise-administration.gateway.port";
 import type { EnterpriseReferenceGatewayPort } from "../application/ports/outbound/enterprise-reference.gateway.port";
 import type { EnterpriseTeamIdGeneratorPort } from "../application/ports/outbound/enterprise-team-id-generator.port";
+import type { OrganizationMembershipGatewayPort } from "../application/ports/outbound/organization-membership.gateway.port";
+import type { OrganizationPolicyGatewayPort } from "../application/ports/outbound/organization-policy.gateway.port";
+import type { OrganizationReferenceGatewayPort } from "../application/ports/outbound/organization-reference.gateway.port";
 import { EnterpriseTeamService } from "../application/services/enterprise-team.service";
 
 class EnterpriseReferenceGatewayFake
@@ -74,9 +77,58 @@ class EnterpriseTeamIdGeneratorFake
 {
   private nextSequence = 0;
 
-  nextId(kind: "team" | "membership") {
+  nextId(kind: "team" | "membership" | "organization-grant") {
     this.nextSequence += 1;
     return `${kind}_${this.nextSequence}`;
+  }
+}
+
+class OrganizationReferenceGatewayFake
+  implements OrganizationReferenceGatewayPort
+{
+  getActiveOrganizationInEnterprise(
+    enterpriseSlug: string,
+    organizationId: string,
+  ) {
+    return Promise.resolve(
+      enterpriseSlug === "acme-enterprise" &&
+        organizationId === "organization_acme"
+        ? {
+            organizationId,
+            login: "acme",
+            displayName: "ACME",
+          }
+        : null,
+    );
+  }
+}
+
+class OrganizationMembershipGatewayFake
+  implements OrganizationMembershipGatewayPort
+{
+  synchronizeEnterpriseTeamAssignment(input: {
+    assignmentId: string;
+    organizationId: string;
+    accountIds: readonly string[];
+  }) {
+    return Promise.resolve(
+      input.accountIds.map((accountId) => ({
+        membershipId: `${input.assignmentId}_${accountId}`,
+        organizationId: input.organizationId,
+        accountId,
+        role: "member" as const,
+        state: "active" as const,
+        source: "enterprise-managed" as const,
+      })),
+    );
+  }
+}
+
+class OrganizationPolicyGatewayFake
+  implements OrganizationPolicyGatewayPort
+{
+  getBaseRepositoryPermission() {
+    return Promise.resolve("read" as const);
   }
 }
 
@@ -91,6 +143,9 @@ function createService(
     new EnterpriseReferenceGatewayFake(),
     administrationGateway,
     new AccountReferenceGatewayFake(),
+    new OrganizationReferenceGatewayFake(),
+    new OrganizationMembershipGatewayFake(),
+    new OrganizationPolicyGatewayFake(),
     new EnterpriseTeamIdGeneratorFake(),
   );
 }
@@ -249,5 +304,64 @@ describe("EnterpriseTeamService", () => {
         teamId: "missing-team",
       }),
     ).resolves.toEqual({ status: "team-not-found" });
+  });
+
+  it("assigns a team to an enterprise organization with direct membership and base permission", async () => {
+    const service = createService();
+    const created = await service.create({
+      actorAccountId: "account_owner",
+      enterpriseSlug: "acme-enterprise",
+      name: "Organization access",
+      description: "",
+    });
+    if (created.status !== "created") {
+      throw new Error("Expected a created enterprise team.");
+    }
+    await service.addMember({
+      actorAccountId: "account_owner",
+      enterpriseSlug: "acme-enterprise",
+      teamId: created.team.teamId,
+      username: "carol_acme",
+    });
+
+    await expect(
+      service.assignToOrganization({
+        actorAccountId: "account_owner",
+        enterpriseSlug: "acme-enterprise",
+        teamId: created.team.teamId,
+        organizationId: "organization_acme",
+      }),
+    ).resolves.toMatchObject({
+      status: "assigned",
+      assignment: {
+        organization: { login: "acme" },
+        baseRepositoryPermission: "read",
+      },
+      memberships: [
+        {
+          accountId: "account_carol_acme",
+          state: "active",
+          source: "enterprise-managed",
+        },
+      ],
+    });
+    await expect(
+      service.listOrganizationAssignments({
+        actorAccountId: "account_owner",
+        enterpriseSlug: "acme-enterprise",
+        teamId: created.team.teamId,
+      }),
+    ).resolves.toMatchObject({
+      status: "found",
+      assignments: [{ organization: { organizationId: "organization_acme" } }],
+    });
+    await expect(
+      service.unassignFromOrganization({
+        actorAccountId: "account_owner",
+        enterpriseSlug: "acme-enterprise",
+        teamId: created.team.teamId,
+        organizationId: "organization_acme",
+      }),
+    ).resolves.toMatchObject({ status: "unassigned" });
   });
 });

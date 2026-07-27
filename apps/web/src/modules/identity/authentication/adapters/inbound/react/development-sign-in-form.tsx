@@ -129,6 +129,17 @@ export function DevelopmentSignInForm({
             {getSubmitLabel(isPending, isAddingAccount)}
           </Button>
         </form>
+        {isAddingAccount ? null : (
+          <p className="mt-5 text-center text-sm text-slate-400">
+            New to Support?{" "}
+            <Link
+              className="font-medium text-emerald-400 hover:text-emerald-300"
+              href="/signup"
+            >
+              Create an account
+            </Link>
+          </p>
+        )}
 
         <div
           className="mt-7 flex gap-3 rounded-md border border-slate-700 bg-[#0a1624] px-3 py-3 text-xs leading-5 text-slate-400"

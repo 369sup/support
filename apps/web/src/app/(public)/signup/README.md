@@ -9,13 +9,13 @@
 - **GitHub canonical patterns:** No official pattern is asserted.
 - **Delivery:** `page`
 - **Status:** `active`
-- **Materialization:** `scaffolded`
+- **Materialization:** `active`
 
 ## Functional intent
 
-GitHub-style canonical URL for personal account registration.
+Delivers `/signup` through `registerPersonalAccount`.
 
-The filesystem route is reserved and currently returns the canonical unavailable response.
+The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
 ## Delivery functions
 
@@ -23,8 +23,7 @@ The filesystem route is reserved and currently returns the canonical unavailable
 
 ## Module contracts
 
-- - **owner:** `identity/accounts` — use cases: no route-level use-case reference; functions: no runtime function reference
-- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: no runtime function reference
+- - **owner:** `identity/account-registration` — use cases: `register-personal-account`; functions: `registerPersonalAccount`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 
@@ -36,7 +35,7 @@ None.
 
 ### Query
 
-None.
+- - `registration`: optional, single
 
 Query keys not declared here are rejected by the typed URL builder.
 

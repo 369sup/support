@@ -26,11 +26,26 @@ import type {
   UpdateEnterpriseTeamCommand,
   UpdateEnterpriseTeamResult,
 } from "../ports/inbound/update-enterprise-team.use-case";
+import type {
+  AssignEnterpriseTeamToOrganizationCommand,
+  AssignEnterpriseTeamToOrganizationResult,
+} from "../ports/inbound/assign-enterprise-team-to-organization.use-case";
+import type {
+  ListEnterpriseTeamOrganizationAssignmentsQuery,
+  ListEnterpriseTeamOrganizationAssignmentsResult,
+} from "../ports/inbound/list-enterprise-team-organization-assignments.use-case";
+import type {
+  UnassignEnterpriseTeamFromOrganizationCommand,
+  UnassignEnterpriseTeamFromOrganizationResult,
+} from "../ports/inbound/unassign-enterprise-team-from-organization.use-case";
 import type { AccountReferenceGatewayPort } from "../ports/outbound/account-reference.gateway.port";
 import type { EnterpriseAdministrationGatewayPort } from "../ports/outbound/enterprise-administration.gateway.port";
 import type { EnterpriseReferenceGatewayPort } from "../ports/outbound/enterprise-reference.gateway.port";
 import type { EnterpriseTeamIdGeneratorPort } from "../ports/outbound/enterprise-team-id-generator.port";
 import type { EnterpriseTeamRepositoryPort } from "../ports/outbound/enterprise-team.repository.port";
+import type { OrganizationMembershipGatewayPort } from "../ports/outbound/organization-membership.gateway.port";
+import type { OrganizationPolicyGatewayPort } from "../ports/outbound/organization-policy.gateway.port";
+import type { OrganizationReferenceGatewayPort } from "../ports/outbound/organization-reference.gateway.port";
 import {
   createEnterpriseTeamSlug,
   type EnterpriseTeamReference,
@@ -42,6 +57,7 @@ const maximumEnterpriseTeams = 2_500;
 const maximumEnterpriseTeamMembers = 5_000;
 const maximumEnterpriseTeamNameLength = 100;
 const maximumEnterpriseTeamDescriptionLength = 280;
+const maximumEnterpriseTeamOrganizationAssignments = 1_000;
 
 type EnterpriseAccess =
   | Readonly<{
@@ -57,6 +73,9 @@ export class EnterpriseTeamService {
   private readonly enterpriseGateway: EnterpriseReferenceGatewayPort;
   private readonly administrationGateway: EnterpriseAdministrationGatewayPort;
   private readonly accountGateway: AccountReferenceGatewayPort;
+  private readonly organizationGateway: OrganizationReferenceGatewayPort;
+  private readonly organizationMembershipGateway: OrganizationMembershipGatewayPort;
+  private readonly organizationPolicyGateway: OrganizationPolicyGatewayPort;
   private readonly idGenerator: EnterpriseTeamIdGeneratorPort;
 
   constructor(
@@ -64,12 +83,18 @@ export class EnterpriseTeamService {
     enterpriseGateway: EnterpriseReferenceGatewayPort,
     administrationGateway: EnterpriseAdministrationGatewayPort,
     accountGateway: AccountReferenceGatewayPort,
+    organizationGateway: OrganizationReferenceGatewayPort,
+    organizationMembershipGateway: OrganizationMembershipGatewayPort,
+    organizationPolicyGateway: OrganizationPolicyGatewayPort,
     idGenerator: EnterpriseTeamIdGeneratorPort,
   ) {
     this.repository = repository;
     this.enterpriseGateway = enterpriseGateway;
     this.administrationGateway = administrationGateway;
     this.accountGateway = accountGateway;
+    this.organizationGateway = organizationGateway;
+    this.organizationMembershipGateway = organizationMembershipGateway;
+    this.organizationPolicyGateway = organizationPolicyGateway;
     this.idGenerator = idGenerator;
   }
 
@@ -213,6 +238,21 @@ export class EnterpriseTeamService {
       ...team,
       lifecycleState: "deleted",
     };
+    const organizationGrants =
+      await this.repository.listActiveOrganizationGrantsByTeam(team.teamId);
+    for (const grant of organizationGrants) {
+      await this.organizationMembershipGateway.synchronizeEnterpriseTeamAssignment(
+        {
+          assignmentId: grant.grantId,
+          organizationId: grant.organizationId,
+          accountIds: [],
+        },
+      );
+      await this.repository.saveOrganizationGrant({
+        ...grant,
+        state: "revoked",
+      });
+    }
     await this.repository.saveTeam(deleted);
     return { status: "deleted", team: deleted };
   }
@@ -264,6 +304,15 @@ export class EnterpriseTeamService {
       state: "active" as const,
     };
     await this.repository.saveMembership(membership);
+    try {
+      await this.synchronizeActiveOrganizationAssignments(team.teamId);
+    } catch (error: unknown) {
+      await this.repository.saveMembership({
+        ...membership,
+        state: "removed",
+      });
+      throw error;
+    }
     return { status: "added", membership, account };
   }
 
@@ -295,6 +344,12 @@ export class EnterpriseTeamService {
 
     const removed = { ...membership, state: "removed" as const };
     await this.repository.saveMembership(removed);
+    try {
+      await this.synchronizeActiveOrganizationAssignments(team.teamId);
+    } catch (error: unknown) {
+      await this.repository.saveMembership(membership);
+      throw error;
+    }
     return { status: "removed", membership: removed };
   }
 
@@ -337,6 +392,183 @@ export class EnterpriseTeamService {
     };
   }
 
+  async assignToOrganization(
+    command: AssignEnterpriseTeamToOrganizationCommand,
+  ): Promise<AssignEnterpriseTeamToOrganizationResult> {
+    const access = await this.resolveAccess(
+      command.actorAccountId,
+      command.enterpriseSlug,
+      "manage",
+    );
+    if (access.status !== "allowed") {
+      return access;
+    }
+    const team = await this.findActiveTeam(
+      command.teamId,
+      access.enterpriseId,
+    );
+    if (team === null) {
+      return { status: "team-not-found" };
+    }
+    const organization =
+      await this.organizationGateway.getActiveOrganizationInEnterprise(
+        command.enterpriseSlug,
+        command.organizationId,
+      );
+    if (organization === null) {
+      return { status: "organization-not-found" };
+    }
+    if (
+      (await this.repository.findActiveOrganizationGrant(
+        team.teamId,
+        organization.organizationId,
+      )) !== null
+    ) {
+      return { status: "already-assigned" };
+    }
+    if (
+      (await this.repository.countActiveOrganizationGrantsByTeam(
+        team.teamId,
+      )) >= maximumEnterpriseTeamOrganizationAssignments
+    ) {
+      return { status: "organization-assignment-limit-reached" };
+    }
+
+    const grant = {
+      grantId: this.idGenerator.nextId("organization-grant"),
+      teamId: team.teamId,
+      enterpriseId: team.enterpriseId,
+      organizationId: organization.organizationId,
+      state: "active" as const,
+    };
+    const teamMemberships =
+      await this.repository.listActiveMembershipsByTeam(
+        team.teamId,
+        maximumEnterpriseTeamMembers,
+      );
+    const memberships =
+      await this.organizationMembershipGateway.synchronizeEnterpriseTeamAssignment(
+        {
+          assignmentId: grant.grantId,
+          organizationId: organization.organizationId,
+          accountIds: teamMemberships.map(
+            (membership) => membership.accountId,
+          ),
+        },
+      );
+    try {
+      await this.repository.saveOrganizationGrant(grant);
+    } catch (error: unknown) {
+      await this.organizationMembershipGateway.synchronizeEnterpriseTeamAssignment(
+        {
+          assignmentId: grant.grantId,
+          organizationId: organization.organizationId,
+          accountIds: [],
+        },
+      );
+      throw error;
+    }
+    const baseRepositoryPermission =
+      await this.organizationPolicyGateway.getBaseRepositoryPermission(
+        organization.organizationId,
+      );
+    return {
+      status: "assigned",
+      assignment: {
+        grant,
+        organization,
+        baseRepositoryPermission,
+      },
+      memberships,
+    };
+  }
+
+  async unassignFromOrganization(
+    command: UnassignEnterpriseTeamFromOrganizationCommand,
+  ): Promise<UnassignEnterpriseTeamFromOrganizationResult> {
+    const access = await this.resolveAccess(
+      command.actorAccountId,
+      command.enterpriseSlug,
+      "manage",
+    );
+    if (access.status !== "allowed") {
+      return access;
+    }
+    const team = await this.findActiveTeam(
+      command.teamId,
+      access.enterpriseId,
+    );
+    if (team === null) {
+      return { status: "team-not-found" };
+    }
+    const grant = await this.repository.findActiveOrganizationGrant(
+      team.teamId,
+      command.organizationId,
+    );
+    if (grant === null) {
+      return { status: "assignment-not-found" };
+    }
+    const revokedGrant = { ...grant, state: "revoked" as const };
+    await this.repository.saveOrganizationGrant(revokedGrant);
+    try {
+      await this.organizationMembershipGateway.synchronizeEnterpriseTeamAssignment(
+        {
+          assignmentId: grant.grantId,
+          organizationId: grant.organizationId,
+          accountIds: [],
+        },
+      );
+    } catch (error: unknown) {
+      await this.repository.saveOrganizationGrant(grant);
+      throw error;
+    }
+    return { status: "unassigned", grant: revokedGrant };
+  }
+
+  async listOrganizationAssignments(
+    query: ListEnterpriseTeamOrganizationAssignmentsQuery,
+  ): Promise<ListEnterpriseTeamOrganizationAssignmentsResult> {
+    const access = await this.resolveAccess(
+      query.actorAccountId,
+      query.enterpriseSlug,
+      "view",
+    );
+    if (access.status !== "allowed") {
+      return access;
+    }
+    const team = await this.findActiveTeam(
+      query.teamId,
+      access.enterpriseId,
+    );
+    if (team === null) {
+      return { status: "team-not-found" };
+    }
+    const grants =
+      await this.repository.listActiveOrganizationGrantsByTeam(team.teamId);
+    const assignments = await Promise.all(
+      grants.map(async (grant) => {
+        const [organization, baseRepositoryPermission] = await Promise.all([
+          this.organizationGateway.getActiveOrganizationInEnterprise(
+            query.enterpriseSlug,
+            grant.organizationId,
+          ),
+          this.organizationPolicyGateway.getBaseRepositoryPermission(
+            grant.organizationId,
+          ),
+        ]);
+        return organization === null
+          ? null
+          : { grant, organization, baseRepositoryPermission };
+      }),
+    );
+    return {
+      status: "found",
+      assignments: assignments.filter(
+        (assignment) => assignment !== null,
+      ),
+    };
+  }
+
   private async resolveAccess(
     actorAccountId: string,
     enterpriseSlug: string,
@@ -362,6 +594,32 @@ export class EnterpriseTeamService {
     return isAllowed
       ? { status: "allowed", enterpriseId: enterprise.enterpriseId }
       : { status: "permission-denied" };
+  }
+
+  private async synchronizeActiveOrganizationAssignments(
+    teamId: string,
+  ): Promise<void> {
+    const [grants, memberships] = await Promise.all([
+      this.repository.listActiveOrganizationGrantsByTeam(teamId),
+      this.repository.listActiveMembershipsByTeam(
+        teamId,
+        maximumEnterpriseTeamMembers,
+      ),
+    ]);
+    const accountIds = memberships.map(
+      (membership) => membership.accountId,
+    );
+    await Promise.all(
+      grants.map((grant) =>
+        this.organizationMembershipGateway.synchronizeEnterpriseTeamAssignment(
+          {
+            assignmentId: grant.grantId,
+            organizationId: grant.organizationId,
+            accountIds,
+          },
+        ),
+      ),
+    );
   }
 
   private findActiveTeam(

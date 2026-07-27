@@ -22,6 +22,10 @@ class RepositoryQueryRepositoryFake
   findByOwnerIdAndName() {
     return Promise.resolve(null);
   }
+
+  save() {
+    return Promise.resolve();
+  }
 }
 
 const matchingRepository: RepositoryQuerySnapshot = {
@@ -35,7 +39,10 @@ const matchingRepository: RepositoryQuerySnapshot = {
   description: "Support",
   visibility: "public",
   lifecycleState: "active",
+  createdAt: "2026-07-23T00:00:00.000Z",
   updatedAt: "2026-07-23T00:00:00.000Z",
+  deletedAt: null,
+  restoreUntil: null,
 };
 
 describe("ListActivePublicRepositoriesForPersonalOwnerHandler", () => {

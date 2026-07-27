@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { readFormString } from "@/app/_route-contracts/read-form-string";
+import { changePersonalAccountUsername } from "@/modules/identity/account-registration/server-api";
 import { deletePersonalAccount } from "@/modules/identity/accounts/server-api";
 import {
   clearBrowserSessionToken,
@@ -61,6 +62,29 @@ async function deleteAccountAction(formData: FormData): Promise<never> {
   }
   await clearBrowserSessionToken();
   redirect("/login");
+}
+
+async function changeUsernameAction(formData: FormData): Promise<never> {
+  "use server";
+
+  const session = await requireCurrentSession();
+  if (
+    readFormString(formData, "confirmation").trim() !==
+    session.account.username
+  ) {
+    redirect("/account?account=username-confirmation-required");
+  }
+  const result = await changePersonalAccountUsername({
+    actorAccountId: session.account.accountId,
+    accountId: session.account.accountId,
+    newUsername: readFormString(formData, "newUsername"),
+  });
+  if (result.status === "changed") {
+    revalidatePath("/account");
+    revalidatePath(`/${session.account.username}`);
+    revalidatePath(`/${result.account.username}`);
+  }
+  redirect(`/account?account=${result.status}`);
 }
 
 export default async function AccountPage({
@@ -191,6 +215,67 @@ export default async function AccountPage({
             </form>
           )}
 
+          <section className="mt-12 border-t border-border pt-8">
+            <h2 className="text-xl font-semibold">Change username</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-7 text-muted-foreground">
+              The account namespace and password credential change through one
+              compensatable transaction. Existing sessions remain attached to
+              the stable account ID.
+            </p>
+            {query.account === "changed" ? (
+              <p
+                className="mt-4 rounded-lg border border-border bg-muted/50 px-4 py-3 text-sm"
+                role="status"
+              >
+                Username changed successfully.
+              </p>
+            ) : null}
+            {query.account !== undefined &&
+            query.account !== "changed" &&
+            query.account !== "confirmation-required" ? (
+              <p
+                className="mt-4 rounded-lg border border-border bg-muted/50 px-4 py-3 text-sm"
+                role="alert"
+              >
+                {usernameChangeMessage(query.account)}
+              </p>
+            ) : null}
+            {session.account.accountType === "personal" &&
+            session.account.usage === "human" ? (
+              <form action={changeUsernameAction} className="mt-5 grid gap-4">
+                <label className="grid gap-2 text-sm font-medium text-slate-200">
+                  New username
+                  <input
+                    className="rounded-lg border border-white/15 bg-[#08111d] px-3 py-2.5 text-white outline-none focus:border-emerald-400"
+                    maxLength={39}
+                    name="newUsername"
+                    pattern="[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?"
+                    required
+                  />
+                </label>
+                <label className="grid gap-2 text-sm font-medium text-slate-200">
+                  Type your current username to confirm
+                  <input
+                    className="rounded-lg border border-white/15 bg-[#08111d] px-3 py-2.5 text-white outline-none focus:border-emerald-400"
+                    name="confirmation"
+                    placeholder={session.account.username}
+                    required
+                  />
+                </label>
+                <button
+                  className="w-fit rounded-lg bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-300"
+                  type="submit"
+                >
+                  Change username
+                </button>
+              </form>
+            ) : (
+              <p className="mt-4 text-sm text-muted-foreground">
+                Managed usernames are controlled by enterprise provisioning.
+              </p>
+            )}
+          </section>
+
           <section className="mt-12 border-t border-red-400/20 pt-8">
             <h2 className="text-xl font-semibold text-red-200">Danger zone</h2>
             <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
@@ -228,4 +313,23 @@ export default async function AccountPage({
       </section>
     </main>
   );
+}
+
+function usernameChangeMessage(status: string): string {
+  const messages: Readonly<Record<string, string>> = {
+    "account-not-found": "The account is no longer available.",
+    "credential-unavailable":
+      "The account has no password credential that can be renamed.",
+    "invalid-username":
+      "Use 1–39 letters, numbers, or single hyphens; do not begin or end with a hyphen.",
+    "permission-denied": "You can change only your own username.",
+    "transaction-failed":
+      "The transaction failed and both account and credential were restored.",
+    "unsupported-account-type":
+      "Managed and machine-use accounts cannot use this personal account flow.",
+    "username-confirmation-required":
+      "Type your current username exactly to confirm.",
+    "username-conflict": "That username is already in use.",
+  };
+  return messages[status] ?? "The username could not be changed.";
 }

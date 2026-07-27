@@ -190,8 +190,8 @@ export function createTypeScriptLibraryConfig({ tsconfigRootDir }) {
             allowedImportAliases: [
               {
                 source: "^@base-ui/react/",
-                imported: "^(Button|Separator)$",
-                local: "^(Button|Separator)Primitive$",
+                imported: "^(Button|Select|Separator)$",
+                local: "^(Button|Select|Separator)Primitive$",
               },
               {
                 source: "^pino$",

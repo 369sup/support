@@ -4,8 +4,7 @@
 
 Own enterprise-wide team identity, lifecycle, and direct membership for
 centralized administration across an enterprise. Organization assignment,
-roles, licenses, IdP synchronization, and repository grants remain separate
-capabilities.
+roles, licenses, and IdP synchronization remain separate capabilities.
 
 ## Context content tree
 
@@ -25,10 +24,13 @@ capabilities.
   - Owned: `EnterpriseTeamMembership`
   - Enterprise owners add or remove active personal or managed accounts.
   - Removing a member does not remove the user from the enterprise.
-- Organization assignment [planned]
+- Organization assignment [active]
+  - `assign-enterprise-team-to-organization`
+  - `list-enterprise-team-organization-assignments`
+  - `unassign-enterprise-team-from-organization`
   - Owned: `EnterpriseTeamOrganizationGrant`
-  - Assignment can add team members directly to an organization and grant its
-    base repository permission.
+  - Assignment adds team members directly without invitations and exposes the
+    organization base repository permission as an effective permission source.
   - Planned events:
     `EnterpriseTeamOrganizationGranted@1`,
     `EnterpriseTeamOrganizationRevoked@1`
@@ -40,9 +42,9 @@ capabilities.
   - `enterprises/enterprises::EnterpriseReference`
   - `enterprises/enterprise-roles::EnterpriseAdministrationDecision`
   - `identity/accounts::AccountReference`
-  - Planned `organizations/organizations::OrganizationReference`
-  - Planned
-    `organizations/organization-memberships::OrganizationMembership`
+  - `organizations/organizations::OrganizationReference`
+  - `organizations/organization-memberships::OrganizationMembershipReference`
+  - `organizations/organization-policies::BaseRepositoryPermission`
 - Explicit exclusions
   - `OrganizationTeam`
   - `RepositoryGrant`
@@ -68,6 +70,38 @@ capabilities.
 - **Published events:** `none`
 - **Official evidence:** `enterprises-enterprise-teams-source-02`, `enterprises-enterprise-teams-source-04`
 - **Local policy:** This slice supports one member per command; bulk membership remains planned.
+
+### `assign-enterprise-team-to-organization` [active]
+
+- **Type:** `command`
+- **Application boundary:** `AssignEnterpriseTeamToOrganizationUseCase.assignEnterpriseTeamToOrganization()`
+- **Public entrypoint:** `server-api.ts#assignEnterpriseTeamToOrganization`
+- **Input:** Verified actor account ID, enterprise slug, enterprise team ID, and organization ID.
+- **Success result:** Active organization grant, organization reference, current base repository permission, and synchronized organization memberships.
+- **Expected rejections:** `already-assigned`, `enterprise-not-found`, `organization-assignment-limit-reached`, `organization-not-found`, `permission-denied`, `team-not-found`
+- **Authorization:** Enterprise owner decision from `enterprises/enterprise-roles`; the target organization must belong to the same active enterprise.
+- **Transaction:** The process-local coordinator synchronizes all active team members into one assignment-scoped membership batch, then records the organization grant; a grant write failure compensates the membership batch.
+- **Idempotency:** A duplicate active team and organization grant returns `already-assigned`.
+- **Dependencies:** `enterprises/enterprises::EnterpriseReference`, `enterprises/enterprise-roles::EnterpriseAdministrationDecision`, `organizations/organizations::OrganizationReference`, `organizations/organization-memberships::OrganizationMembershipReference`, `organizations/organization-policies::BaseRepositoryPermission`
+- **Published events:** `none`
+- **Official evidence:** `enterprises-enterprise-teams-source-02`
+- **Local policy:** A team has at most 1,000 active organization assignments; no per-repository grant is created.
+
+### `list-enterprise-team-organization-assignments` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ListEnterpriseTeamOrganizationAssignmentsUseCase.listEnterpriseTeamOrganizationAssignments()`
+- **Public entrypoint:** `server-api.ts#listEnterpriseTeamOrganizationAssignments`
+- **Input:** Verified actor account ID, enterprise slug, and enterprise team ID.
+- **Success result:** Active organization assignment views with organization identity and current base repository permission.
+- **Expected rejections:** `enterprise-not-found`, `permission-denied`, `team-not-found`
+- **Authorization:** Enterprise administration decision from `enterprises/enterprise-roles`.
+- **Transaction:** Read-only across the grant repository, organization references, and organization policy.
+- **Idempotency:** Query.
+- **Dependencies:** `enterprises/enterprises::EnterpriseReference`, `enterprises/enterprise-roles::EnterpriseAdministrationDecision`, `organizations/organizations::OrganizationReference`, `organizations/organization-policies::BaseRepositoryPermission`
+- **Published events:** `none`
+- **Official evidence:** `enterprises-enterprise-teams-source-02`
+- **Local policy:** Inactive or unavailable organization references are omitted from the bounded view.
 
 ### `create-enterprise-team` [active]
 
@@ -165,6 +199,22 @@ capabilities.
 - **Official evidence:** `enterprises-enterprise-teams-source-03`
 - **Local policy:** Renaming regenerates the slug; organization selection, notification settings, and IdP bindings remain planned.
 
+### `unassign-enterprise-team-from-organization` [active]
+
+- **Type:** `command`
+- **Application boundary:** `UnassignEnterpriseTeamFromOrganizationUseCase.unassignEnterpriseTeamFromOrganization()`
+- **Public entrypoint:** `server-api.ts#unassignEnterpriseTeamFromOrganization`
+- **Input:** Verified actor account ID, enterprise slug, enterprise team ID, and organization ID.
+- **Success result:** Revoked organization grant after assignment-scoped membership synchronization.
+- **Expected rejections:** `assignment-not-found`, `enterprise-not-found`, `permission-denied`, `team-not-found`
+- **Authorization:** Enterprise owner decision from `enterprises/enterprise-roles`.
+- **Transaction:** The process-local coordinator revokes the grant and removes that grant's membership contribution; a membership synchronization failure restores the active grant.
+- **Idempotency:** Repeating after revocation returns `assignment-not-found`.
+- **Dependencies:** `enterprises/enterprises::EnterpriseReference`, `enterprises/enterprise-roles::EnterpriseAdministrationDecision`, `organizations/organization-memberships::OrganizationMembershipReference`
+- **Published events:** `none`
+- **Official evidence:** `enterprises-enterprise-teams-source-02`
+- **Local policy:** Direct, identity-provider, and other active enterprise-team membership sources survive this grant's revocation.
+
 ## Ubiquitous language
 
 - **Enterprise team**: an enterprise-scoped group that may contain users from
@@ -172,8 +222,8 @@ capabilities.
 - **Direct member**: a personal or managed user explicitly added to the team.
 - **Enterprise team slug**: the name-derived identifier displayed with the
   `ent:` mention prefix.
-- **Organization assignment**: a future team-to-organization grant with
-  organization membership and base-permission effects.
+- **Organization assignment**: a team-to-organization grant that synchronizes
+  direct organization membership and exposes the organization base permission.
 
 ## Ownership and invariants
 
@@ -183,15 +233,16 @@ secret visibility, or team maintainers. One enterprise can contain at most
 2,500 active enterprise teams, and one enterprise team can contain at most
 5,000 active members.
 
-Organization teams, organization membership, enterprise roles, repository
-grants, IdP group bindings, licenses, and cost centers remain outside this
-context.
+Organization teams, organization membership storage, organization policy,
+enterprise roles, repository grants, IdP group bindings, licenses, and cost
+centers remain outside this context.
 
 ## Public capabilities
 
-`server-api.ts` exposes bounded team CRUD, listing, and direct-member
-operations. Contract types contain only stable team, membership, and account
-reference fields needed by server consumers.
+`server-api.ts` exposes bounded team CRUD, direct-member operations, and
+organization assignment lifecycle. Contract types contain only stable team,
+membership, organization grant, and account reference fields needed by server
+consumers.
 
 ## Dependencies and consistency
 
@@ -200,25 +251,27 @@ Enterprise-role authorization is resolved before protected data or managed
 account lookup. Account references are resolved through the accounts public
 server boundary; this context does not read account storage.
 
-Organization assignment remains planned because it requires a coordinated
-organization-membership write contract. No distributed transaction is
-invented.
+Organization assignment resolves active enterprise organizations, delegates
+membership storage to `organizations/organization-memberships`, and reads base
+permission from `organizations/organization-policies`. The process-local
+coordinator compensates the other participant if a later write fails; no
+durable distributed transaction is claimed.
 
 ## Authorization
 
 Every operation receives an authenticated actor account ID from delivery and
 re-evaluates enterprise scope in the application service. Enterprise
 administrators with an active administration decision may list teams and
-members. Create, update, delete, add-member, and remove-member commands require
-the `enterprise-owner` role. Denials do not disclose protected team or managed
-account data.
+members. Create, update, delete, add-member, remove-member, assign, and unassign
+commands require the `enterprise-owner` role. Denials do not disclose protected
+team, managed-account, or organization-assignment data.
 
 ## Persistence and transactions
 
 The active slice uses one context-local process Map for team and membership
-records. Each command changes one context-local record. There is no durable
-transaction, cross-instance coordination, IdP synchronization, or
-cross-context write.
+records. Organization assignment uses an assignment-scoped membership batch
+and compensating writes within the same process. There is no durable
+transaction, cross-instance coordination, or IdP synchronization.
 
 ## Data classification
 
@@ -229,9 +282,10 @@ profile data are not stored.
 
 ## Retention and erasure
 
-Records live for the process lifetime. Deleted teams and removed memberships
-remain as process-local lifecycle records until restart. Durable retention,
-eventual erasure, restore behavior, and IdP mapping cleanup remain planned.
+Records live for the process lifetime. Deleted teams, removed memberships, and
+revoked organization grants remain as process-local lifecycle records until
+restart. Durable retention, eventual erasure, restore behavior, and IdP
+mapping cleanup remain planned.
 
 ## Events and failure behavior
 
