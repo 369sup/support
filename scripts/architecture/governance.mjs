@@ -458,34 +458,23 @@ export function validateSerenaMemories(repositoryRoot, errors) {
 
   const serenaGuidancePath = join(repositoryRoot, ".serena", "AGENTS.md");
   const operatorGuidePath = join(repositoryRoot, ".serena", "README.md");
-  const modelInstructionsPath = join(
-    repositoryRoot,
-    ".codex",
-    "instructions",
-    "model-instructions.md",
-  );
   const serenaGuidance = existsSync(serenaGuidancePath)
     ? readFileSync(serenaGuidancePath, "utf8")
     : "";
   const operatorGuide = existsSync(operatorGuidePath)
     ? readFileSync(operatorGuidePath, "utf8")
     : "";
-  const modelInstructions = existsSync(modelInstructionsPath)
-    ? readFileSync(modelInstructionsPath, "utf8")
-    : "";
 
   if (
-    !serenaGuidance.includes("## Exclusive local memory ownership") ||
+    !serenaGuidance.includes("## Memory ownership") ||
     !serenaGuidance.includes("Exclusive ownership is always enabled") ||
+    !serenaGuidance.includes(".serena/memories/local/current-task.md") ||
+    !serenaGuidance.includes("only local memory the") ||
     !operatorGuide.includes("## Exclusive ownership and quarantine") ||
-    !operatorGuide.includes("always owns the local namespace") ||
-    !modelInstructions.includes(
-      "Do not create or preserve unmanaged visible local memories.",
-    ) ||
-    !modelInstructions.includes("only `local/current-task`")
+    !operatorGuide.includes("always owns the local namespace")
   ) {
     errors.push(
-      "[ARCH-MEM-002] Serena policy, operator guidance, and model instructions must enforce exclusive local-memory ownership and quarantine.",
+      "[ARCH-MEM-002] Serena policy and operator guidance must enforce exclusive local-memory ownership and quarantine.",
     );
   }
 

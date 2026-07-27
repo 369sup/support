@@ -1,7 +1,0 @@
-{
-  "name": "support-repository",
-  "interface": {
-    "displayName": "Support Repository"
-  },
-  "plugins": []
-}

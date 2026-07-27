@@ -49,8 +49,6 @@ the root `AGENTS.md`.
 - Machine state and raw episodes remain ignored local data. Shared committed
   memories continue to be owned exclusively by
   `serena-memories.mjs`.
-- Exclusive ownership is permanent. Activation quarantines any unmanaged
-  visible local memory without interpreting its contents.
 - In exclusive mode, activation quarantines unknown visible local memories
   without interpreting their contents and records only bounded metadata in
   `local/unresolved`.

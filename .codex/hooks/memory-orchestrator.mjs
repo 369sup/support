@@ -142,7 +142,7 @@ function sessionStartContext(checkpointToken, serenaContext) {
     "Automatic Serena memory is active for this repository.",
     `Current checkpoint token: ${checkpointToken}`,
     "For a multi-step or material task, maintain `mem:local/current-task` and include exactly one marked JSON candidate bundle using this token.",
-    "The tracked model instructions define the candidate schema. Store only verified distilled facts; never store transcripts, tool output, secrets, payloads, or chain-of-thought.",
+    "Follow `.serena/AGENTS.md` for the task sections and candidate schema. Store only verified distilled facts; never store transcripts, tool output, secrets, payloads, or chain-of-thought.",
   );
 
   return lines.join("\n");

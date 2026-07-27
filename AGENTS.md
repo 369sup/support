@@ -28,8 +28,8 @@ not a mandatory startup file.
   `app` delivery and `modules` product behavior remain separate.
 - [`packages/AGENTS.md`](packages/AGENTS.md) owns reusable, business-free
   workspace packages.
-- `.agents`, `.codex`, `.github`, `.serena`, `docs`, `plugins`, and `scripts`
-  are governed by their own nearest `AGENTS.md`.
+- `.codex`, `.github`, `.serena`, `docs`, and `scripts` are governed by their
+  own nearest `AGENTS.md`.
 
 ## Invariants
 
@@ -49,6 +49,10 @@ not a mandatory startup file.
 - Use Serena JetBrains semantic tools for source symbols and references.
 - Use direct file tools for Markdown, JSON, YAML, TOML, and other non-symbolic
   content.
+- When `SessionStart` announces automatic Serena memory, read
+  [`.serena/AGENTS.md`](.serena/AGENTS.md) before multi-step or material work.
+  Maintain only `mem:local/current-task` at phase boundaries or before
+  compaction; skip task memory for trivial work.
 - Use Repomix only for narrow repository snapshots, architecture mapping, or
   cross-file patterns. Start with `includePatterns`, inspect metrics, then grep
   or read exact ranges. Keep security scanning enabled, distrust remote

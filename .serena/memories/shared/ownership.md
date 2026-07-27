@@ -3,11 +3,10 @@
 
 Nearest-file precedence applies. Each file below remains authoritative only for its subtree or delegated concern.
 
-- `.agents/AGENTS.md`: Repository Agent Assets Contract
-- `.codex/AGENTS.md`: Project Codex Configuration Contract
+- `.codex/AGENTS.md`: Codex Project Configuration
 - `.codex/hooks/AGENTS.md`: Repository Hook Workflow
-- `.github/AGENTS.md`: GitHub Collaboration and Automation Contract
-- `.serena/AGENTS.md`: Serena Project Configuration Workflow
+- `.github/AGENTS.md`: GitHub Collaboration and Automation
+- `.serena/AGENTS.md`: Serena Project and Memory Workflow
 - `AGENTS.md`: Support Repository Guidance
 - `apps/AGENTS.md`: Deployable Applications Contract
 - `apps/web/AGENTS.md`: Next.js Web Application Contract
@@ -24,7 +23,5 @@ Nearest-file precedence applies. Each file below remains authoritative only for 
 - `packages/testing-config/AGENTS.md`: Test Configuration Workflow
 - `packages/tooling/AGENTS.md`: Repository Tooling Workflow
 - `packages/typescript-config/AGENTS.md`: TypeScript Configuration Workflow
-- `plugins/AGENTS.md`: Plugin Source Contract
-- `plugins/plugin-template/AGENTS.md`: Plugin Template Instructions
 - `scripts/AGENTS.md`: Repository Script Workflow
 - `scripts/memory/AGENTS.md`: Serena Memory Engine Workflow

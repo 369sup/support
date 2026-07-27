@@ -3,7 +3,6 @@ import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 export const agentGuidanceSourcePaths = [
-  ".agents/AGENTS.md",
   ".codex/AGENTS.md",
   ".codex/hooks/AGENTS.md",
   ".github/AGENTS.md",
@@ -24,8 +23,6 @@ export const agentGuidanceSourcePaths = [
   "packages/testing-config/AGENTS.md",
   "packages/tooling/AGENTS.md",
   "packages/typescript-config/AGENTS.md",
-  "plugins/AGENTS.md",
-  "plugins/plugin-template/AGENTS.md",
   "scripts/AGENTS.md",
   "scripts/memory/AGENTS.md",
 ];
