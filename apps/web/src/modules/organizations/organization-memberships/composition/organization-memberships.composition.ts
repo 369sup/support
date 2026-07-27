@@ -8,6 +8,7 @@ import { ChangeOrganizationMemberRoleHandler } from "../application/commands/cha
 import { DeclineOrganizationInvitationHandler } from "../application/commands/decline-organization-invitation.handler";
 import { InviteOrganizationMemberHandler } from "../application/commands/invite-organization-member.handler";
 import { RemoveOrganizationMemberHandler } from "../application/commands/remove-organization-member.handler";
+import { SynchronizeEnterpriseTeamOrganizationMembershipsHandler } from "../application/commands/synchronize-enterprise-team-organization-memberships.handler";
 import { UpdateOrganizationInvitationHandler } from "../application/commands/update-organization-invitation.handler";
 import type { AcceptOrganizationInvitationUseCase } from "../application/ports/inbound/accept-organization-invitation.use-case";
 import type { CancelOrganizationInvitationUseCase } from "../application/ports/inbound/cancel-organization-invitation.use-case";
@@ -17,6 +18,7 @@ import type { InviteOrganizationMemberUseCase } from "../application/ports/inbou
 import type { ListOrganizationInvitationsForOrganizationUseCase } from "../application/ports/inbound/list-organization-invitations-for-organization.use-case";
 import type { ListPendingOrganizationInvitationsForAccountUseCase } from "../application/ports/inbound/list-pending-organization-invitations-for-account.use-case";
 import type { RemoveOrganizationMemberUseCase } from "../application/ports/inbound/remove-organization-member.use-case";
+import type { SynchronizeEnterpriseTeamOrganizationMembershipsUseCase } from "../application/ports/inbound/synchronize-enterprise-team-organization-memberships.use-case";
 import type { UpdateOrganizationInvitationUseCase } from "../application/ports/inbound/update-organization-invitation.use-case";
 import { CheckOrganizationContextEligibilityHandler } from "../application/queries/check-organization-context-eligibility.handler";
 import { ListActiveOrganizationMembershipsForAccountHandler } from "../application/queries/list-active-organization-memberships-for-account.handler";
@@ -48,6 +50,7 @@ export interface OrganizationMembershipsServerFacade {
   listOrganizationInvitationsForOrganization: ListOrganizationInvitationsForOrganizationUseCase["listOrganizationInvitationsForOrganization"];
   listPendingOrganizationInvitationsForAccount: ListPendingOrganizationInvitationsForAccountUseCase["listPendingOrganizationInvitationsForAccount"];
   removeOrganizationMember: RemoveOrganizationMemberUseCase["removeOrganizationMember"];
+  synchronizeEnterpriseTeamOrganizationMemberships: SynchronizeEnterpriseTeamOrganizationMembershipsUseCase["synchronizeEnterpriseTeamOrganizationMemberships"];
   updateOrganizationInvitation: UpdateOrganizationInvitationUseCase["updateOrganizationInvitation"];
 }
 
@@ -79,6 +82,8 @@ function composeOrganizationMembershipsServerFacade(): OrganizationMembershipsSe
   const listPendingInvitations =
     new ListPendingOrganizationInvitationsForAccountHandler(service);
   const removeMember = new RemoveOrganizationMemberHandler(service);
+  const synchronizeEnterpriseMemberships =
+    new SynchronizeEnterpriseTeamOrganizationMembershipsHandler(service);
   const updateInvitation =
     new UpdateOrganizationInvitationHandler(service);
 
@@ -109,6 +114,10 @@ function composeOrganizationMembershipsServerFacade(): OrganizationMembershipsSe
       ),
     removeOrganizationMember: (command) =>
       removeMember.removeOrganizationMember(command),
+    synchronizeEnterpriseTeamOrganizationMemberships: (command) =>
+      synchronizeEnterpriseMemberships.synchronizeEnterpriseTeamOrganizationMemberships(
+        command,
+      ),
     updateOrganizationInvitation: (command) =>
       updateInvitation.updateOrganizationInvitation(command),
   };

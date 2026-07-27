@@ -19,3 +19,10 @@ export type AppAccessRequestPolicy = Readonly<{
 }>;
 
 export type ActorMembershipScope = "member" | "outside-collaborator";
+
+export type BaseRepositoryPermission =
+  | "read"
+  | "triage"
+  | "write"
+  | "maintain"
+  | "admin";

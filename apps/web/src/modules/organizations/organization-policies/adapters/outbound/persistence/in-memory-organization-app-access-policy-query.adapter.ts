@@ -1,4 +1,5 @@
 import type {
+  BaseRepositoryPermission,
   GitHubAppInstallationPolicy,
   OAuthAppAccessRestriction,
 } from "../../../domain/organization-app-access-policy";
@@ -6,6 +7,7 @@ import type { OrganizationAppAccessPolicyQueryRepositoryPort } from "../../../ap
 
 export type InMemoryOrganizationAppAccessPolicyRecord = Readonly<{
   organizationId: string;
+  baseRepositoryPermission?: BaseRepositoryPermission;
   oauthAppAccess: OAuthAppAccessRestriction;
   githubAppInstallation: GitHubAppInstallationPolicy;
 }>;
@@ -25,6 +27,22 @@ export class InMemoryOrganizationAppAccessPolicyQueryAdapter
     return [];
   }
 
+  static createDevelopmentState(): InMemoryOrganizationAppAccessPolicyState {
+    return [
+      createDevelopmentPolicy("organization_acme_platform", "read"),
+      createDevelopmentPolicy("organization_acme_support", "read"),
+      createDevelopmentPolicy("organization_community_lab", "read"),
+    ];
+  }
+
+  getBaseRepositoryPermission(
+    organizationId: string,
+  ): Promise<BaseRepositoryPermission | null> {
+    return Promise.resolve(
+      this.lookup(organizationId)?.baseRepositoryPermission ?? null,
+    );
+  }
+
   getOAuthAppAccessRestriction(
     organizationId: string,
   ): Promise<OAuthAppAccessRestriction | null> {
@@ -42,4 +60,24 @@ export class InMemoryOrganizationAppAccessPolicyQueryAdapter
   private lookup(organizationId: string) {
     return this.state.find((entry) => entry.organizationId === organizationId);
   }
+}
+
+function createDevelopmentPolicy(
+  organizationId: string,
+  baseRepositoryPermission: BaseRepositoryPermission,
+): InMemoryOrganizationAppAccessPolicyRecord {
+  return {
+    organizationId,
+    baseRepositoryPermission,
+    oauthAppAccess: {
+      organizationId,
+      isOutsideCollaboratorAllowed: true,
+      allowedScopes: [],
+    },
+    githubAppInstallation: {
+      organizationId,
+      isOutsideCollaboratorAllowed: true,
+      hasOwnerApprovalRequiredForAdditionalPermissions: false,
+    },
+  };
 }

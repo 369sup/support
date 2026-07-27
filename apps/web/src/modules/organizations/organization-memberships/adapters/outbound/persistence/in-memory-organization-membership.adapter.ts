@@ -1,4 +1,7 @@
-import type { OrganizationMembershipQueryRepositoryPort } from "../../../application/ports/outbound/organization-membership-query.repository.port";
+import type {
+  EnterpriseTeamOrganizationMembershipSynchronization,
+  OrganizationMembershipQueryRepositoryPort,
+} from "../../../application/ports/outbound/organization-membership-query.repository.port";
 import type {
   OrganizationInvitationReference,
   OrganizationMembershipReference,
@@ -53,6 +56,8 @@ type OrganizationMembershipStore = {
   invitationIdsByAccount: Map<string, string[]>;
   invitationIdsByOrganization: Map<string, string[]>;
   latestInvitationIdByAccountAndOrganization: Map<string, string>;
+  membershipIdsByEnterpriseAssignment: Map<string, string[]>;
+  enterpriseAssignmentIdsByMembershipId: Map<string, string[]>;
 };
 
 declare global {
@@ -109,6 +114,8 @@ function createStore(
     invitationIdsByAccount: new Map(),
     invitationIdsByOrganization: new Map(),
     latestInvitationIdByAccountAndOrganization: new Map(),
+    membershipIdsByEnterpriseAssignment: new Map(),
+    enterpriseAssignmentIdsByMembershipId: new Map(),
   };
 
   for (const membership of seed.memberships) {
@@ -126,6 +133,69 @@ function getProcessStore(): OrganizationMembershipStore {
     createDevelopmentSeed(),
   );
   return globalThis.__supportOrganizationMembershipStoreV2;
+}
+
+function cloneStringArrayMap(
+  source: Map<string, string[]>,
+): Map<string, string[]> {
+  return new Map(
+    [...source.entries()].map(([key, values]) => [key, [...values]]),
+  );
+}
+
+function cloneStore(
+  source: OrganizationMembershipStore,
+): OrganizationMembershipStore {
+  return {
+    membershipById: new Map(source.membershipById),
+    membershipIdByAccountAndOrganization: new Map(
+      source.membershipIdByAccountAndOrganization,
+    ),
+    membershipIdsByAccount: cloneStringArrayMap(
+      source.membershipIdsByAccount,
+    ),
+    membershipIdsByOrganization: cloneStringArrayMap(
+      source.membershipIdsByOrganization,
+    ),
+    invitationById: new Map(source.invitationById),
+    invitationIdsByAccount: cloneStringArrayMap(
+      source.invitationIdsByAccount,
+    ),
+    invitationIdsByOrganization: cloneStringArrayMap(
+      source.invitationIdsByOrganization,
+    ),
+    latestInvitationIdByAccountAndOrganization: new Map(
+      source.latestInvitationIdByAccountAndOrganization,
+    ),
+    membershipIdsByEnterpriseAssignment: cloneStringArrayMap(
+      source.membershipIdsByEnterpriseAssignment,
+    ),
+    enterpriseAssignmentIdsByMembershipId: cloneStringArrayMap(
+      source.enterpriseAssignmentIdsByMembershipId,
+    ),
+  };
+}
+
+function replaceStore(
+  target: OrganizationMembershipStore,
+  source: OrganizationMembershipStore,
+): void {
+  target.membershipById = source.membershipById;
+  target.membershipIdByAccountAndOrganization =
+    source.membershipIdByAccountAndOrganization;
+  target.membershipIdsByAccount = source.membershipIdsByAccount;
+  target.membershipIdsByOrganization =
+    source.membershipIdsByOrganization;
+  target.invitationById = source.invitationById;
+  target.invitationIdsByAccount = source.invitationIdsByAccount;
+  target.invitationIdsByOrganization =
+    source.invitationIdsByOrganization;
+  target.latestInvitationIdByAccountAndOrganization =
+    source.latestInvitationIdByAccountAndOrganization;
+  target.membershipIdsByEnterpriseAssignment =
+    source.membershipIdsByEnterpriseAssignment;
+  target.enterpriseAssignmentIdsByMembershipId =
+    source.enterpriseAssignmentIdsByMembershipId;
 }
 
 function writeMembership(
@@ -310,4 +380,129 @@ export class InMemoryOrganizationMembershipAdapter
     writeMembership(this.store, membership);
     return Promise.resolve();
   }
+
+  synchronizeEnterpriseTeamAssignment(
+    synchronization: EnterpriseTeamOrganizationMembershipSynchronization,
+  ): Promise<readonly OrganizationMembershipReference[]> {
+    const nextStore = cloneStore(this.store);
+    const generatedMembershipIdByAccount = new Map(
+      synchronization.generatedMembershipIds.map((entry) => [
+        entry.accountId,
+        entry.membershipId,
+      ]),
+    );
+    const desiredMembershipIds = synchronization.accountIds.map(
+      (accountId) => {
+        const membershipKey = compoundKey(
+          accountId,
+          synchronization.organizationId,
+        );
+        const existingMembershipId =
+          nextStore.membershipIdByAccountAndOrganization.get(membershipKey);
+        const membershipId =
+          existingMembershipId ??
+          generatedMembershipIdByAccount.get(accountId);
+        if (membershipId === undefined) {
+          throw new Error(
+            "Enterprise assignment is missing a generated membership ID.",
+          );
+        }
+        const existingMembership =
+          nextStore.membershipById.get(membershipId);
+        const shouldPreserveActiveSource =
+          existingMembership?.state === "active" &&
+          existingMembership.source !== "enterprise-managed";
+        const membership = shouldPreserveActiveSource
+          ? existingMembership
+          : {
+              membershipId,
+              organizationId: synchronization.organizationId,
+              accountId,
+              role: "member" as const,
+              state: "active" as const,
+              source: "enterprise-managed" as const,
+            };
+        writeMembership(nextStore, membership);
+        appendUnique(
+          nextStore.enterpriseAssignmentIdsByMembershipId,
+          membershipId,
+          synchronization.assignmentId,
+        );
+        cancelPendingInvitation(
+          nextStore,
+          accountId,
+          synchronization.organizationId,
+          synchronization.decidedAt,
+        );
+        return membershipId;
+      },
+    );
+    const desiredMembershipIdSet = new Set(desiredMembershipIds);
+    const previousMembershipIds =
+      nextStore.membershipIdsByEnterpriseAssignment.get(
+        synchronization.assignmentId,
+      ) ?? [];
+    for (const membershipId of previousMembershipIds) {
+      if (desiredMembershipIdSet.has(membershipId)) {
+        continue;
+      }
+      const remainingAssignmentIds = (
+        nextStore.enterpriseAssignmentIdsByMembershipId.get(membershipId) ??
+        []
+      ).filter(
+        (assignmentId) =>
+          assignmentId !== synchronization.assignmentId,
+      );
+      if (remainingAssignmentIds.length === 0) {
+        nextStore.enterpriseAssignmentIdsByMembershipId.delete(membershipId);
+        const membership = nextStore.membershipById.get(membershipId);
+        if (membership?.source === "enterprise-managed") {
+          writeMembership(nextStore, {
+            ...membership,
+            state: "removed",
+          });
+        }
+      } else {
+        nextStore.enterpriseAssignmentIdsByMembershipId.set(
+          membershipId,
+          remainingAssignmentIds,
+        );
+      }
+    }
+    nextStore.membershipIdsByEnterpriseAssignment.set(
+      synchronization.assignmentId,
+      desiredMembershipIds,
+    );
+    replaceStore(this.store, nextStore);
+    return Promise.resolve(
+      desiredMembershipIds.flatMap((membershipId) => {
+        const membership = this.store.membershipById.get(membershipId);
+        return membership === undefined ? [] : [membership];
+      }),
+    );
+  }
+}
+
+function cancelPendingInvitation(
+  store: OrganizationMembershipStore,
+  accountId: string,
+  organizationId: string,
+  decidedAt: string,
+): void {
+  const invitationId =
+    store.latestInvitationIdByAccountAndOrganization.get(
+      compoundKey(accountId, organizationId),
+    );
+  if (invitationId === undefined) {
+    return;
+  }
+  const invitation = store.invitationById.get(invitationId);
+  if (invitation?.state !== "pending") {
+    return;
+  }
+  writeInvitation(store, {
+    ...invitation,
+    state: "canceled",
+    decidedAt,
+  });
 }

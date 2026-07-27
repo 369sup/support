@@ -944,6 +944,21 @@
           "context": "identity/accounts",
           "contract": "AccountReference",
           "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organizations",
+          "contract": "OrganizationReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-memberships",
+          "contract": "OrganizationMembershipReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-policies",
+          "contract": "BaseRepositoryPermission",
+          "mode": "synchronous"
         }
       ],
       "officialSources": [
@@ -957,7 +972,7 @@
             "enterprise team limits"
           ],
           "maturity": "preview",
-          "verifiedOn": "2026-07-26"
+          "verifiedOn": "2026-07-27"
         },
         {
           "id": "enterprises-enterprise-teams-source-02",
@@ -968,7 +983,7 @@
             "organization assignment effects"
           ],
           "maturity": "preview",
-          "verifiedOn": "2026-07-26"
+          "verifiedOn": "2026-07-27"
         },
         {
           "id": "enterprises-enterprise-teams-source-03",
@@ -1064,25 +1079,17 @@
       ],
       "activationScope": [
         "add-enterprise-team-member",
+        "assign-enterprise-team-to-organization",
         "create-enterprise-team",
         "delete-enterprise-team",
         "list-enterprise-team-members",
+        "list-enterprise-team-organization-assignments",
         "list-enterprise-teams",
         "remove-enterprise-team-member",
+        "unassign-enterprise-team-from-organization",
         "update-enterprise-team"
       ],
-      "plannedRelationships": [
-        {
-          "context": "organizations/organizations",
-          "contract": "OrganizationReference",
-          "mode": "synchronous"
-        },
-        {
-          "context": "organizations/organization-memberships",
-          "contract": "OrganizationMembership",
-          "mode": "synchronous"
-        }
-      ],
+      "plannedRelationships": [],
       "semanticClaims": [
         {
           "id": "enterprise-team-administration",
@@ -1119,7 +1126,7 @@
         },
         {
           "id": "enterprise-team-organization-assignment",
-          "statement": "Assigning an enterprise team to an organization can add team members directly to the organization and grants the organization's base repository permission, so organization assignment remains a separate cross-context capability.",
+          "statement": "Assigning an enterprise team to an organization adds team members directly without invitations and makes the organization's base repository permission an effective permission source.",
           "ownership": [
             "EnterpriseTeamOrganizationGrant"
           ],
@@ -1862,6 +1869,15 @@
             "member removal"
           ],
           "verifiedOn": "2026-07-27"
+        },
+        {
+          "id": "organizations-organization-memberships-source-05",
+          "url": "https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories/managing-users-in-your-enterprise/create-enterprise-teams",
+          "supports": [
+            "enterprise team direct organization membership",
+            "organization base repository permission"
+          ],
+          "verifiedOn": "2026-07-27"
         }
       ],
       "publishedEvents": [
@@ -1938,6 +1954,7 @@
         "list-organization-invitations-for-organization",
         "list-pending-organization-invitations-for-account",
         "remove-organization-member",
+        "synchronize-enterprise-team-organization-memberships",
         "update-organization-invitation"
       ],
       "plannedRelationships": [
@@ -1969,7 +1986,8 @@
             "organizations-organization-memberships-source-01",
             "organizations-organization-memberships-source-02",
             "organizations-organization-memberships-source-03",
-            "organizations-organization-memberships-source-04"
+            "organizations-organization-memberships-source-04",
+            "organizations-organization-memberships-source-05"
           ]
         }
       ]
@@ -2422,6 +2440,15 @@
             "repository policies"
           ],
           "verifiedOn": "2026-07-23"
+        },
+        {
+          "id": "organizations-organization-policies-source-02",
+          "url": "https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/repository-roles-for-an-organization",
+          "supports": [
+            "organization base repository permission",
+            "base permission for organization members"
+          ],
+          "verifiedOn": "2026-07-27"
         }
       ],
       "publishedEvents": [
@@ -2442,7 +2469,8 @@
           "implementationStatus": "planned",
           "meaning": "base repository permission changed.",
           "sourceIds": [
-            "organizations-organization-policies-source-01"
+            "organizations-organization-policies-source-01",
+            "organizations-organization-policies-source-02"
           ]
         },
         {
@@ -2467,6 +2495,7 @@
         }
       ],
       "activationScope": [
+        "get-organization-base-repository-permission",
         "resolve-app-access-decision"
       ],
       "plannedRelationships": [
@@ -2504,7 +2533,8 @@
             "GitHubAppInstallationPolicyChanged@1"
           ],
           "sourceIds": [
-            "organizations-organization-policies-source-01"
+            "organizations-organization-policies-source-01",
+            "organizations-organization-policies-source-02"
           ]
         }
       ]
@@ -3093,6 +3123,11 @@
           "mode": "synchronous"
         },
         {
+          "context": "organizations/organization-policies",
+          "contract": "BaseRepositoryPermission",
+          "mode": "synchronous"
+        },
+        {
           "context": "platform/event-publication",
           "contract": "EventRecorderPort",
           "mode": "synchronous"
@@ -3297,11 +3332,6 @@
         "resolve-effective-repository-permission"
       ],
       "plannedRelationships": [
-        {
-          "context": "organizations/organization-policies",
-          "contract": "OrganizationRepositoryPolicyContribution",
-          "mode": "synchronous"
-        },
         {
           "context": "enterprises/enterprise-teams",
           "contract": "EnterpriseTeamPermissionContribution",

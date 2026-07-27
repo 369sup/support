@@ -807,11 +807,14 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
     byPath.get("enterprises/enterprise-teams").activationScope,
     [
       "add-enterprise-team-member",
+      "assign-enterprise-team-to-organization",
       "create-enterprise-team",
       "delete-enterprise-team",
       "list-enterprise-team-members",
+      "list-enterprise-team-organization-assignments",
       "list-enterprise-teams",
       "remove-enterprise-team-member",
+      "unassign-enterprise-team-from-organization",
       "update-enterprise-team",
     ],
   );

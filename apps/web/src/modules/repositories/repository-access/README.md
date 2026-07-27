@@ -80,7 +80,7 @@ Repository invitations, direct and inherited grants, outside collaborators, role
 - **Dependencies:** `repositories/repositories::RepositoryCandidateReference`, `identity/accounts::AccountReference`, `organizations/organization-memberships::OrganizationMembershipReference`, `organizations/organization-teams::EffectiveTeamMembershipReference`, `organizations/organization-roles::OrganizationRepositoryRoleContribution`
 - **Published events:** `none`
 - **Official evidence:** `repositories-repository-access-source-01`
-- **Local policy:** Active sources are public read, personal owner, organization owner, direct grant, direct or inherited team grant, and predefined organization role; general membership is not a base permission.
+- **Local policy:** Active sources are public read, personal owner, organization owner, organization base permission for active members, direct grant, direct or inherited team grant, and predefined organization role.
 
 ### `grant-team-repository-access` [active]
 
@@ -184,6 +184,7 @@ Team grant, change, and revoke commands are exposed through `server-api.ts`.
 - `repositories/repositories::RepositoryCandidateReference`
 - `identity/accounts::AccountReference`
 - `organizations/organization-memberships::OrganizationMembershipReference`
+- `organizations/organization-policies::BaseRepositoryPermission`
 - `organizations/organization-teams::EffectiveTeamMembershipReference`
 - `organizations/organization-roles::OrganizationRepositoryRoleContribution`
 - `platform/event-publication::EventRecorderPort`
@@ -193,7 +194,6 @@ Team grant, change, and revoke commands are exposed through `server-api.ts`.
 - `repositories/repositories::RepositoryPermissionContextAndLifecycleState` (synchronous)
 - `identity/accounts::AccountReference` (synchronous)
 - `organizations/organization-memberships::OrganizationMembershipPermissionContribution` (synchronous)
-- `organizations/organization-policies::OrganizationRepositoryPolicyContribution` (synchronous)
 - `enterprises/enterprise-teams::EnterpriseTeamPermissionContribution` (synchronous)
 - `enterprises/enterprise-roles::EnterpriseRepositoryPermissionContribution` (synchronous)
 - `repositories/repositories::RepositoryLifecycleEvents` (event; events `RepositoryTransferred@1`, `RepositoryDeleted@1`)

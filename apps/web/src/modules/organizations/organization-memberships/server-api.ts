@@ -30,5 +30,7 @@ export const listPendingOrganizationInvitationsForAccount =
   organizationMembershipsServerFacade.listPendingOrganizationInvitationsForAccount;
 export const removeOrganizationMember =
   organizationMembershipsServerFacade.removeOrganizationMember;
+export const synchronizeEnterpriseTeamOrganizationMemberships =
+  organizationMembershipsServerFacade.synchronizeEnterpriseTeamOrganizationMemberships;
 export const updateOrganizationInvitation =
   organizationMembershipsServerFacade.updateOrganizationInvitation;

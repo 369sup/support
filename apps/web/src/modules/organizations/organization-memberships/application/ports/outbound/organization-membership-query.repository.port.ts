@@ -20,6 +20,17 @@ export type OrganizationInvitationSnapshot = Readonly<{
   decidedAt: string | null;
 }>;
 
+export type EnterpriseTeamOrganizationMembershipSynchronization = Readonly<{
+  assignmentId: string;
+  organizationId: string;
+  accountIds: readonly string[];
+  generatedMembershipIds: readonly Readonly<{
+    accountId: string;
+    membershipId: string;
+  }>[];
+  decidedAt: string;
+}>;
+
 export interface OrganizationMembershipQueryRepositoryPort {
   findByAccountId(
     accountId: string,
@@ -55,4 +66,7 @@ export interface OrganizationMembershipQueryRepositoryPort {
     invitation: OrganizationInvitationSnapshot,
     membership: OrganizationMembershipQuerySnapshot,
   ): Promise<void>;
+  synchronizeEnterpriseTeamAssignment(
+    synchronization: EnterpriseTeamOrganizationMembershipSynchronization,
+  ): Promise<readonly OrganizationMembershipQuerySnapshot[]>;
 }

@@ -3,6 +3,7 @@ import { registerEventSource } from "@/modules/platform/event-publication/server
 import type { RepositoryCandidateReference } from "@/modules/repositories/repositories/integration-contracts";
 
 import { OrganizationMembershipAdapter } from "../adapters/outbound/integration/organization-membership.adapter";
+import { OrganizationPolicyAdapter } from "../adapters/outbound/integration/organization-policy.adapter";
 import { OrganizationRoleAdapter } from "../adapters/outbound/integration/organization-role.adapter";
 import { OrganizationTeamAdapter } from "../adapters/outbound/integration/organization-team.adapter";
 import { InMemoryRepositoryGrantAdapter } from "../adapters/outbound/persistence/in-memory-repository-grant.adapter";
@@ -94,6 +95,7 @@ function composeRepositoryAccessServerFacade(): RepositoryAccessServerFacade {
   const resolver = new ResolveEffectiveRepositoryPermissionHandler(
     grantAdapter,
     new OrganizationMembershipAdapter(),
+    new OrganizationPolicyAdapter(),
     grantAdapter,
     teamAdapter,
     new OrganizationRoleAdapter(),

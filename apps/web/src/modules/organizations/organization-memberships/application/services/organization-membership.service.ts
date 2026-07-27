@@ -34,6 +34,10 @@ import type {
   UpdateOrganizationInvitationCommand,
   UpdateOrganizationInvitationResult,
 } from "../ports/inbound/update-organization-invitation.use-case";
+import type {
+  SynchronizeEnterpriseTeamOrganizationMembershipsCommand,
+  SynchronizeEnterpriseTeamOrganizationMembershipsResult,
+} from "../ports/inbound/synchronize-enterprise-team-organization-memberships.use-case";
 import type { OrganizationInvitationAccountGatewayPort } from "../ports/outbound/organization-invitation-account.gateway.port";
 import type { OrganizationMembershipClockPort } from "../ports/outbound/organization-membership-clock.port";
 import type { OrganizationMembershipIdGeneratorPort } from "../ports/outbound/organization-membership-id-generator.port";
@@ -445,6 +449,36 @@ export class OrganizationMembershipService {
     };
     await this.repository.saveMembership(removedMembership);
     return { status: "removed", membership: removedMembership };
+  }
+
+  async synchronizeEnterpriseTeamOrganizationMemberships(
+    command: SynchronizeEnterpriseTeamOrganizationMembershipsCommand,
+  ): Promise<SynchronizeEnterpriseTeamOrganizationMembershipsResult> {
+    const uniqueAccountIds = [...new Set(command.accountIds)];
+    const generatedMembershipIds = await Promise.all(
+      uniqueAccountIds.map(async (accountId) => {
+        const membership =
+          await this.repository.findByAccountAndOrganization(
+            accountId,
+            command.organizationId,
+          );
+        return {
+          accountId,
+          membershipId:
+            membership?.membershipId ??
+            this.idGenerator.nextId("membership"),
+        };
+      }),
+    );
+    const memberships =
+      await this.repository.synchronizeEnterpriseTeamAssignment({
+        assignmentId: command.assignmentId,
+        organizationId: command.organizationId,
+        accountIds: uniqueAccountIds,
+        generatedMembershipIds,
+        decidedAt: this.clock.now().toISOString(),
+      });
+    return { status: "synchronized", memberships };
   }
 
   private async isOrganizationOwner(

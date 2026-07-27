@@ -26,3 +26,27 @@ export type EnterpriseTeamMemberView = Readonly<{
   membership: EnterpriseTeamMembershipReference;
   account: EnterpriseTeamMemberAccount;
 }>;
+
+export type EnterpriseTeamOrganizationGrantReference = Readonly<{
+  grantId: string;
+  teamId: string;
+  enterpriseId: string;
+  organizationId: string;
+  state: "active" | "revoked";
+}>;
+
+export type EnterpriseTeamOrganizationAssignmentView = Readonly<{
+  grant: EnterpriseTeamOrganizationGrantReference;
+  organization: Readonly<{
+    organizationId: string;
+    login: string;
+    displayName: string;
+  }>;
+  baseRepositoryPermission:
+    | "read"
+    | "triage"
+    | "write"
+    | "maintain"
+    | "admin"
+    | null;
+}>;

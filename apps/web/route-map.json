@@ -2259,7 +2259,7 @@
       "status": "active",
       "materialization": "active",
       "title": "Enterprise Teams Page",
-      "summary": "Lists enterprise teams and supports owner-authorized team lifecycle and direct member management without Git or code capabilities.",
+      "summary": "Lists enterprise teams and supports owner-authorized team, direct-member, and organization-assignment lifecycle without Git or code capabilities.",
       "pathParams": [
         {
           "name": "slug",
@@ -2284,20 +2284,26 @@
           "role": "owner",
           "useCases": [
             "add-enterprise-team-member",
+            "assign-enterprise-team-to-organization",
             "create-enterprise-team",
             "delete-enterprise-team",
             "list-enterprise-team-members",
+            "list-enterprise-team-organization-assignments",
             "list-enterprise-teams",
             "remove-enterprise-team-member",
+            "unassign-enterprise-team-from-organization",
             "update-enterprise-team"
           ],
           "functions": [
             "addEnterpriseTeamMember",
+            "assignEnterpriseTeamToOrganization",
             "createEnterpriseTeam",
             "deleteEnterpriseTeam",
             "listEnterpriseTeamMembers",
+            "listEnterpriseTeamOrganizationAssignments",
             "listEnterpriseTeams",
             "removeEnterpriseTeamMember",
+            "unassignEnterpriseTeamFromOrganization",
             "updateEnterpriseTeam"
           ]
         },
@@ -2305,10 +2311,12 @@
           "context": "enterprises/enterprises",
           "role": "collaborator",
           "useCases": [
-            "get-enterprise-by-slug"
+            "get-enterprise-by-slug",
+            "list-enterprise-organizations"
           ],
           "functions": [
-            "getEnterpriseBySlug"
+            "getEnterpriseBySlug",
+            "listEnterpriseOrganizations"
           ]
         },
         {

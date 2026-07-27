@@ -28,6 +28,11 @@ membership source.
   - `change-organization-member-role`
   - `remove-organization-member`
   - The last active owner is protected.
+- Enterprise-team membership synchronization [active]
+  - `synchronize-enterprise-team-organization-memberships`
+  - One assignment contributes active member membership without invitations.
+  - Direct, identity-provider, and other enterprise assignment sources survive
+    one assignment's removal.
 - Planned events
   - `OrganizationInvitationCreated@1`, `OrganizationInvitationAccepted@1`,
     `OrganizationInvitationRevoked@1`, `OrganizationMemberAdded@1`,
@@ -233,6 +238,22 @@ membership source.
 - **Official evidence:** `organizations-organization-memberships-source-03`
 - **Local policy:** Editing changes the invited role without extending the original seven-day expiry.
 
+### `synchronize-enterprise-team-organization-memberships` [active]
+
+- **Type:** `command`
+- **Application boundary:** `SynchronizeEnterpriseTeamOrganizationMembershipsUseCase.synchronizeEnterpriseTeamOrganizationMemberships()`
+- **Public entrypoint:** `server-api.ts#synchronizeEnterpriseTeamOrganizationMemberships`
+- **Input:** Trusted enterprise-team assignment ID, organization ID, and complete active team-member account ID set.
+- **Success result:** `synchronized` with the resulting active organization memberships.
+- **Expected rejections:** `none`
+- **Authorization:** A trusted server-side enterprise-team coordinator must authorize the assignment before invoking this boundary; it is not exposed through a route.
+- **Transaction:** Membership creation, activation, assignment-source replacement, removal, and pending-invitation cancellation commit from one cloned process-local store.
+- **Idempotency:** Repeating the same assignment and account set preserves the same memberships and source associations.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `organizations-organization-memberships-source-05`
+- **Local policy:** New memberships use member role and enterprise-managed source; direct and identity-provider membership survives synchronization, as does enterprise-managed membership supported by another assignment.
+
 ## Ubiquitous language
 
 - **Membership role**: `member` or `owner`.
@@ -243,17 +264,19 @@ membership source.
   and mutable by an organization owner.
 - **Externally managed membership**: Membership supplied by an enterprise team
   or identity-provider group and read-only in this context.
+- **Enterprise assignment source**: One enterprise-team organization grant
+  contributing an active organization membership.
 
 ## Ownership and invariants
 
-Only this context owns membership and invitation state. An organization never
+Only this context owns membership, invitation, and assignment-source state. An organization never
 embeds its membership collection. Every invitation references one pending
 direct membership. Invitation decisions update both records atomically. A
 membership collection must retain at least one active owner.
 
 ## Public capabilities
 
-The twelve active use cases are exposed explicitly through `server-api.ts`.
+The thirteen active use cases are exposed explicitly through `server-api.ts`.
 `OrganizationMembershipReference` and `OrganizationInvitationReference` are
 the framework-free integration contracts.
 
@@ -276,7 +299,9 @@ authority.
 
 Context-local process Maps store memberships and invitations. The repository
 port provides one atomic save boundary for an invitation and its corresponding
-membership. Role changes and direct member removal update one membership.
+membership. Enterprise assignments replace one complete assignment source set
+using a cloned store, then commit all affected memberships and invitation
+decisions together. Role changes and direct member removal update one membership.
 Expiration uses an injected clock, and identifiers use an injected generator.
 
 ## Data classification
@@ -304,6 +329,7 @@ and raises an error rather than exposing a partial state.
 - `organizations-organization-memberships-source-02`: <https://docs.github.com/en/organizations/managing-membership-in-your-organization/inviting-users-to-join-your-organization>
 - `organizations-organization-memberships-source-03`: <https://docs.github.com/en/organizations/managing-membership-in-your-organization/canceling-or-editing-an-invitation-to-join-your-organization>
 - `organizations-organization-memberships-source-04`: <https://docs.github.com/en/organizations/managing-membership-in-your-organization/removing-a-member-from-your-organization>
+- `organizations-organization-memberships-source-05`: <https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories/managing-users-in-your-enterprise/create-enterprise-teams>
 
 ## Exceptions
 

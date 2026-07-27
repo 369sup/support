@@ -17,7 +17,7 @@ Owner-level policy constraints for repository and application-access behavior in
   - Purpose: Repository and app-access policy constraints for organizations.
   - Capabilities
     - `resolve-app-access-decision` [active]
-    - `repository-permission-contribution` [planned]
+    - `get-organization-base-repository-permission` [active]
   - Owned domain concepts
     - `BaseRepositoryPermission`
     - `RepositoryCreationPolicy`
@@ -32,7 +32,8 @@ Owner-level policy constraints for repository and application-access behavior in
   - Business rules and invariants
     - `OAuthPolicyConstraints` defines whether organization outside collaborators are allowed and optional scope allow-lists for OAuth App authorization.
     - `GitHubAppInstallationPolicy` controls outside-collaborator installation and whether extra requested permissions require owner approval.
-    - `BaseRepositoryPermission` and repository-policy concepts remain planned and are modeled as read-model facts until lifecycle contexts are activated.
+    - `BaseRepositoryPermission` is an active read contribution; its mutation
+      lifecycle remains planned.
   - Published events
     - `OrganizationPolicyChanged@1` [planned]: organization policy changed.
     - `BaseRepositoryPermissionChanged@1` [planned]: base repository permission changed.
@@ -45,6 +46,22 @@ Owner-level policy constraints for repository and application-access behavior in
     - `enterprises/enterprise-policies::EnterprisePolicyConstraints` (synchronous)
 
 ## Designed use cases
+
+### `get-organization-base-repository-permission` [active]
+
+- **Type:** `query`
+- **Application boundary:** `GetOrganizationBaseRepositoryPermissionUseCase.getOrganizationBaseRepositoryPermission()`
+- **Public entrypoint:** `server-api.ts#getOrganizationBaseRepositoryPermission`
+- **Input:** Organization ID.
+- **Success result:** `found` with the configured repository permission or `null` when the organization grants no base permission.
+- **Expected rejections:** `none`
+- **Authorization:** Trusted server consumers provide an organization ID after their own resource-scope authorization; this query does not disclose member or repository data.
+- **Transaction:** Read-only policy lookup.
+- **Idempotency:** Query.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `organizations-organization-policies-source-02`
+- **Local policy:** Development organizations default to read; absent policy contributes no repository permission.
 
 ### `resolve-app-access-decision` [active]
 
@@ -75,7 +92,10 @@ It excludes `EnterprisePolicy`, `RepositoryGrant`, and `CodeRuleset`.
 
 ## Public capabilities
 
-`resolveAppAccessDecision` is exposed through `server-api.ts` and resolves `AppAccessPolicyDecision` using organization policy records.
+`resolveAppAccessDecision` and `getOrganizationBaseRepositoryPermission` are
+exposed through `server-api.ts`. The base permission is a framework-free
+integration contract consumed by repository permission resolution and
+enterprise-team organization assignment.
 
 ## Dependencies and consistency
 
@@ -94,7 +114,9 @@ Outside-collaborator and sensitive-permission gates are evaluated as policy deci
 
 ## Persistence and transactions
 
-Persistent policy state is not implemented in this phase. In-memory adapters are used in policy-seed tests and defaults are applied when policy records are absent.
+Persistent policy state is not implemented in this phase. In-memory adapters
+store development base-permission facts and app-access policies; absent base
+permission contributes no repository access.
 
 ## Data classification
 
@@ -114,6 +136,7 @@ Retention and erasure behavior are deferred to policy command activation.
 ## Official sources
 
 - `organizations-organization-policies-source-01`: [organization settings, member privileges, repository policies](https://docs.github.com/en/organizations/managing-organization-settings) (verified 2026-07-23)
+- `organizations-organization-policies-source-02`: [organization base repository permission](https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/repository-roles-for-an-organization) (verified 2026-07-27)
 
 ## Exceptions
 

@@ -342,4 +342,76 @@ describe("OrganizationMembershipService", () => {
       }),
     ).resolves.toEqual({ status: "membership-managed-externally" });
   });
+
+  it("synchronizes enterprise-team assignments atomically without removing direct or shared membership", async () => {
+    const { repository, service } = createService({
+      memberships: [
+        ownerMembership,
+        {
+          membershipId: "membership_direct",
+          organizationId: "organization_test",
+          accountId: "account_direct",
+          role: "member",
+          state: "active",
+          source: "direct",
+        },
+      ],
+    });
+
+    await expect(
+      service.synchronizeEnterpriseTeamOrganizationMemberships({
+        assignmentId: "assignment_one",
+        organizationId: "organization_test",
+        accountIds: ["account_enterprise", "account_direct"],
+      }),
+    ).resolves.toMatchObject({
+      status: "synchronized",
+      memberships: [
+        {
+          accountId: "account_enterprise",
+          state: "active",
+          source: "enterprise-managed",
+        },
+        {
+          accountId: "account_direct",
+          state: "active",
+          source: "direct",
+        },
+      ],
+    });
+    await service.synchronizeEnterpriseTeamOrganizationMemberships({
+      assignmentId: "assignment_two",
+      organizationId: "organization_test",
+      accountIds: ["account_enterprise"],
+    });
+    await service.synchronizeEnterpriseTeamOrganizationMemberships({
+      assignmentId: "assignment_one",
+      organizationId: "organization_test",
+      accountIds: [],
+    });
+    await expect(
+      repository.findByAccountAndOrganization(
+        "account_enterprise",
+        "organization_test",
+      ),
+    ).resolves.toMatchObject({ state: "active" });
+
+    await service.synchronizeEnterpriseTeamOrganizationMemberships({
+      assignmentId: "assignment_two",
+      organizationId: "organization_test",
+      accountIds: [],
+    });
+    await expect(
+      repository.findByAccountAndOrganization(
+        "account_enterprise",
+        "organization_test",
+      ),
+    ).resolves.toMatchObject({ state: "removed" });
+    await expect(
+      repository.findByAccountAndOrganization(
+        "account_direct",
+        "organization_test",
+      ),
+    ).resolves.toMatchObject({ state: "active", source: "direct" });
+  });
 });

@@ -12,14 +12,20 @@ import { readFormString } from "@/app/_route-contracts/read-form-string";
 import { authorizeEnterpriseAdministration } from "@/modules/enterprises/enterprise-roles/server-api";
 import {
   addEnterpriseTeamMember,
+  assignEnterpriseTeamToOrganization,
   createEnterpriseTeam,
   deleteEnterpriseTeam,
   listEnterpriseTeamMembers,
+  listEnterpriseTeamOrganizationAssignments,
   listEnterpriseTeams,
   removeEnterpriseTeamMember,
+  unassignEnterpriseTeamFromOrganization,
   updateEnterpriseTeam,
 } from "@/modules/enterprises/enterprise-teams/server-api";
-import { getEnterpriseBySlug } from "@/modules/enterprises/enterprises/server-api";
+import {
+  getEnterpriseBySlug,
+  listEnterpriseOrganizations,
+} from "@/modules/enterprises/enterprises/server-api";
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
 import { Button } from "@support/shadcn/ui/button";
 import {
@@ -30,6 +36,13 @@ import {
 } from "@support/shadcn/ui/field";
 import { Input } from "@support/shadcn/ui/input";
 import { Separator } from "@support/shadcn/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@support/shadcn/ui/select";
 import { Textarea } from "@support/shadcn/ui/textarea";
 
 const teamStatusMessages: Readonly<Record<string, string>> = {
@@ -42,6 +55,14 @@ const teamStatusMessages: Readonly<Record<string, string>> = {
   "team-not-found": "The selected enterprise team no longer exists.",
   "team-slug-conflict": "Another enterprise team already uses that slug.",
   updated: "Enterprise team updated.",
+  assigned: "Enterprise team assigned to the organization.",
+  "already-assigned": "That team is already assigned to the organization.",
+  "assignment-not-found": "That organization assignment no longer exists.",
+  "organization-assignment-limit-reached":
+    "This enterprise team has reached its organization assignment limit.",
+  "organization-not-found":
+    "That active organization is not part of this enterprise.",
+  unassigned: "Enterprise team removed from the organization.",
 };
 
 const memberStatusMessages: Readonly<Record<string, string>> = {
@@ -167,6 +188,42 @@ async function removeEnterpriseTeamMemberAction(
   );
 }
 
+async function assignEnterpriseTeamOrganizationAction(
+  formData: FormData,
+): Promise<never> {
+  "use server";
+
+  const access = await requireEnterpriseTeamOwner(formData);
+  const result = await assignEnterpriseTeamToOrganization({
+    ...access,
+    teamId: readFormString(formData, "teamId"),
+    organizationId: readFormString(formData, "organizationId"),
+  });
+
+  revalidatePath(`/enterprises/${access.enterpriseSlug}/teams`);
+  redirect(
+    `/enterprises/${access.enterpriseSlug}/teams?team=${result.status}`,
+  );
+}
+
+async function unassignEnterpriseTeamOrganizationAction(
+  formData: FormData,
+): Promise<never> {
+  "use server";
+
+  const access = await requireEnterpriseTeamOwner(formData);
+  const result = await unassignEnterpriseTeamFromOrganization({
+    ...access,
+    teamId: readFormString(formData, "teamId"),
+    organizationId: readFormString(formData, "organizationId"),
+  });
+
+  revalidatePath(`/enterprises/${access.enterpriseSlug}/teams`);
+  redirect(
+    `/enterprises/${access.enterpriseSlug}/teams?team=${result.status}`,
+  );
+}
+
 export default async function EnterpriseTeamsPage({
   params,
   searchParams,
@@ -194,16 +251,34 @@ export default async function EnterpriseTeamsPage({
     enterpriseSlug: enterprise.enterprise.slug,
   });
   const teams = enterpriseTeams.status === "found" ? enterpriseTeams.teams : [];
+  const enterpriseOrganizations = await listEnterpriseOrganizations(
+    enterprise.enterprise.slug,
+  );
+  const organizations =
+    enterpriseOrganizations.status === "found"
+      ? enterpriseOrganizations.organizations
+      : [];
   const teamsWithMembers = await Promise.all(
     teams.map(async (team) => {
-      const members = await listEnterpriseTeamMembers({
-        actorAccountId: session.account.accountId,
-        enterpriseSlug: enterprise.enterprise.slug,
-        teamId: team.teamId,
-      });
+      const [members, organizationAssignments] = await Promise.all([
+        listEnterpriseTeamMembers({
+          actorAccountId: session.account.accountId,
+          enterpriseSlug: enterprise.enterprise.slug,
+          teamId: team.teamId,
+        }),
+        listEnterpriseTeamOrganizationAssignments({
+          actorAccountId: session.account.accountId,
+          enterpriseSlug: enterprise.enterprise.slug,
+          teamId: team.teamId,
+        }),
+      ]);
       return {
         team,
         members: members.status === "found" ? members.members : [],
+        organizationAssignments:
+          organizationAssignments.status === "found"
+            ? organizationAssignments.assignments
+            : [],
       };
     }),
   );
@@ -237,8 +312,9 @@ export default async function EnterpriseTeamsPage({
 
         <p className="mt-6 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
           Development data is process-local and resets when the server restarts.
-          Organization assignment is not active yet because it must update
-          organization membership and base repository permission together.
+          Organization assignment adds team members directly without an
+          invitation. Members receive the organization&apos;s current base
+          repository permission; no per-repository grant is created.
         </p>
 
         {teamMessage !== undefined ? (
@@ -323,7 +399,8 @@ export default async function EnterpriseTeamsPage({
               No active enterprise teams.
             </p>
           ) : (
-            teamsWithMembers.map(({ team, members }) => (
+            teamsWithMembers.map(
+              ({ team, members, organizationAssignments }) => (
               <article
                 className="rounded-xl border border-border bg-card p-6"
                 key={team.teamId}
@@ -393,6 +470,107 @@ export default async function EnterpriseTeamsPage({
                       </FieldGroup>
                     </form>
                   </>
+                ) : null}
+
+                <Separator className="my-6" />
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="font-semibold">Organizations</h3>
+                  <span className="text-xs text-muted-foreground">
+                    {organizationAssignments.length} assigned
+                  </span>
+                </div>
+                {organizationAssignments.length === 0 ? (
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    This enterprise team is not assigned to an organization.
+                  </p>
+                ) : (
+                  <ul className="mt-4 divide-y divide-border rounded-lg border border-border">
+                    {organizationAssignments.map((assignment) => (
+                      <li
+                        className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                        key={assignment.grant.grantId}
+                      >
+                        <div>
+                          <p className="text-sm font-medium">
+                            {assignment.organization.displayName}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            @{assignment.organization.login} · base permission{" "}
+                            {assignment.baseRepositoryPermission ?? "none"}
+                          </p>
+                        </div>
+                        {canManage ? (
+                          <form
+                            action={
+                              unassignEnterpriseTeamOrganizationAction
+                            }
+                          >
+                            <input
+                              name="enterpriseSlug"
+                              type="hidden"
+                              value={enterprise.enterprise.slug}
+                            />
+                            <input
+                              name="teamId"
+                              type="hidden"
+                              value={team.teamId}
+                            />
+                            <input
+                              name="organizationId"
+                              type="hidden"
+                              value={assignment.organization.organizationId}
+                            />
+                            <Button
+                              size="sm"
+                              type="submit"
+                              variant="destructive"
+                            >
+                              Remove organization
+                            </Button>
+                          </form>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {canManage && organizations.length > 0 ? (
+                  <form
+                    action={assignEnterpriseTeamOrganizationAction}
+                    className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end"
+                  >
+                    <input
+                      name="enterpriseSlug"
+                      type="hidden"
+                      value={enterprise.enterprise.slug}
+                    />
+                    <input name="teamId" type="hidden" value={team.teamId} />
+                    <Field className="flex-1">
+                      <FieldLabel htmlFor={`${team.teamId}-organization`}>
+                        Assign an organization
+                      </FieldLabel>
+                      <Select name="organizationId" required>
+                        <SelectTrigger
+                          id={`${team.teamId}-organization`}
+                        >
+                          <SelectValue placeholder="Choose an organization" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {organizations.map((organization) => (
+                            <SelectItem
+                              key={organization.organizationId}
+                              value={organization.organizationId}
+                            >
+                              {organization.displayName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Button type="submit" variant="secondary">
+                      Assign organization
+                    </Button>
+                  </form>
                 ) : null}
 
                 <Separator className="my-6" />
@@ -504,7 +682,8 @@ export default async function EnterpriseTeamsPage({
                   </>
                 ) : null}
               </article>
-            ))
+              ),
+            )
           )}
         </div>
       </section>
