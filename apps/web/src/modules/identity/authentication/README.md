@@ -22,6 +22,12 @@ and active account selection. Account identity remains in `identity/accounts`.
     - `activeSessionId` is null or references a session in that set.
     - Expired or revoked sessions cannot become active.
     - An expired managed-user session requires reauthentication.
+- Password credential transaction protocol [active]
+  - Use case: `apply-password-credential-transaction`
+  - New passwords are converted to salted scrypt verifiers during prepare.
+  - Prepared registration credentials cannot authenticate.
+  - Username-change prepare locks password authentication until commit or rollback.
+  - Commits remain reversible until the coordinator finalizes.
 - Additional authentication factors [planned]
   - Owned: `TwoFactorConfiguration`, `ExternalLoginBinding`
   - Events: `TwoFactorEnabled@1`, `TwoFactorDisabled@1`,
@@ -34,6 +40,22 @@ and active account selection. Account identity remains in `identity/accounts`.
   - `AccountLifecycle`, `ScimProvisioning`, `OAuthAppAuthorization`
 
 ## Designed use cases
+
+### `apply-password-credential-transaction` [active]
+
+- **Type:** `command`
+- **Application boundary:** `ApplyPasswordCredentialTransactionUseCase.applyPasswordCredentialTransaction()`
+- **Public entrypoint:** `server-api.ts#applyPasswordCredentialTransaction`
+- **Input:** Trusted coordinator transaction ID and registration or username-change transaction step.
+- **Success result:** `prepared`, `committed`, `rolled-back`, or `finalized` with credential subject identifiers.
+- **Expected rejections:** `credential-conflict`, `credential-not-found`, `password-rejected`, `transaction-not-found`
+- **Authorization:** Internal account-registration coordinator only.
+- **Transaction:** One password credential store with locked preparation and reversible commit metadata.
+- **Idempotency:** Transaction IDs are single-use; missing or finalized IDs return `transaction-not-found`.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `identity-authentication-source-01`, `identity-authentication-source-03`
+- **Local policy:** Newly supplied passwords are never retained as plaintext and use salted scrypt verifiers; deterministic development fixtures retain their existing development-only verifier exception.
 
 ### `create-development-session` [active]
 

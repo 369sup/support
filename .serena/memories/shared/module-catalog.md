@@ -5,6 +5,7 @@
 
 - accounts: domain, active
 - authentication: domain, active
+- account-registration: domain, active
 - profiles: domain, active
 - social-graph: domain, active
 

@@ -744,7 +744,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       dependency.events.some((selected) => selected.name === event && selected.version === 1));
 
   assert.equal(catalog.version, 6);
-  assert.equal(catalog.contexts.length, 64);
+  assert.equal(catalog.contexts.length, 65);
   assert.equal(catalog.contexts.every((item) => item.status === undefined), true);
   assert.deepEqual(
     catalog.contexts
@@ -753,6 +753,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
     [
       "identity/accounts",
       "identity/authentication",
+      "identity/account-registration",
       "identity/profiles",
       "identity/social-graph",
       "enterprises/enterprises",
@@ -797,6 +798,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
   assert.deepEqual(
     byPath.get("identity/accounts").activationScope,
     [
+      "apply-account-identity-transaction",
       "delete-personal-account",
       "get-account-candidate-by-username",
       "get-account-reference-by-id",

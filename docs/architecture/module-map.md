@@ -32,6 +32,7 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | identity | [accounts](../../apps/web/src/modules/identity/accounts/README.md) | domain | core | stable | active | fresh | validated | User account identity, personal or managed account type, human or machine usage, username, lifecycle, and ghost attribution. |
 | identity | [authentication](../../apps/web/src/modules/identity/authentication/README.md) | domain | core | stable | active | fresh | validated | Credentials, browser session sets, active account-session selection, two-factor authentication, recovery, and external login binding. |
+| identity | [account-registration](../../apps/web/src/modules/identity/account-registration/README.md) | domain | supporting | stable | active | fresh | validated | Coordinate personal account registration and username changes so account identity and password credentials never remain half-complete. |
 | identity | [profiles](../../apps/web/src/modules/identity/profiles/README.md) | domain | supporting | stable | active | fresh | validated | Public and private personal profiles, profile status, and pinned-item presentation. |
 | identity | [social-graph](../../apps/web/src/modules/identity/social-graph/README.md) | domain | supporting | stable | active | fresh | validated | Following relationships between users and organizations. |
 | enterprises | [enterprises](../../apps/web/src/modules/enterprises/enterprises/README.md) | domain | core | stable | active | fresh | validated | Enterprise identity, profile, account mode, lifecycle, and authoritative organization ownership links. |
@@ -101,7 +102,7 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 - **Owns:** Account, Username, AccountLifecycle, GhostAttribution.
 - **Excludes:** Credential, Session, Profile, EnterpriseMembership.
-- **Activation scope:** delete-personal-account, get-account-candidate-by-username, get-account-reference-by-id, get-personal-account-by-username
+- **Activation scope:** apply-account-identity-transaction, delete-personal-account, get-account-candidate-by-username, get-account-reference-by-id, get-personal-account-by-username
 - **Runtime dependencies:** None.
 - **Planned relationships:** None.
 - **Published events:** AccountCreated@1 (domain; planned; contract pending), UsernameChanged@1 (domain; planned; contract pending), AccountDeleted@1 (domain; planned; contract pending)
@@ -112,12 +113,23 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 - **Owns:** Credential, Session, TwoFactorConfiguration, ExternalLoginBinding.
 - **Excludes:** AccountLifecycle, ScimProvisioning, OAuthAppAuthorization.
-- **Activation scope:** create-development-session, expire-session, get-current-authenticated-session, list-browser-account-sessions, reauthenticate-session, remove-account-session, sign-out-all-sessions, switch-active-account-session
+- **Activation scope:** apply-password-credential-transaction, create-development-session, expire-session, get-current-authenticated-session, list-browser-account-sessions, reauthenticate-session, remove-account-session, sign-out-all-sessions, switch-active-account-session
 - **Runtime dependencies:** identity/accounts via AccountReference (synchronous)
 - **Planned relationships:** None.
 - **Published events:** SessionCreated@1 (domain; planned; contract pending), SessionRevoked@1 (domain; planned; contract pending), TwoFactorEnabled@1 (domain; planned; contract pending), TwoFactorDisabled@1 (domain; planned; contract pending), ExternalLoginLinked@1 (domain; planned; contract pending), ExternalLoginUnlinked@1 (domain; planned; contract pending)
 - **Semantic claims:** authentication-session-lifecycle (owns Credential, Session; events SessionCreated@1, SessionRevoked@1; sources identity-authentication-source-01, identity-authentication-source-02); authentication-additional-factors (owns TwoFactorConfiguration, ExternalLoginBinding; events TwoFactorEnabled@1, TwoFactorDisabled@1, ExternalLoginLinked@1, ExternalLoginUnlinked@1; sources identity-authentication-source-01)
-- **Official sources:** identity-authentication-source-01 ([authentication, sessions, two-factor authentication](https://docs.github.com/en/authentication), checked 2026-07-23); identity-authentication-source-02 ([multiple browser account sessions, active account switching, managed user reauthentication](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/switching-between-accounts), checked 2026-07-23)
+- **Official sources:** identity-authentication-source-01 ([authentication, sessions, two-factor authentication](https://docs.github.com/en/authentication), checked 2026-07-23); identity-authentication-source-02 ([multiple browser account sessions, active account switching, managed user reauthentication](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/switching-between-accounts), checked 2026-07-23); identity-authentication-source-03 ([password minimums, password verifier storage](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-strong-password), checked 2026-07-27)
+
+### [identity/account-registration](../../apps/web/src/modules/identity/account-registration/README.md)
+
+- **Owns:** AccountCredentialTransaction, UsernameChangeTransaction.
+- **Excludes:** Account, Credential, Session, EmailVerification, ScimProvisioning.
+- **Activation scope:** change-personal-account-username, register-personal-account
+- **Runtime dependencies:** identity/accounts via AccountIdentityTransaction (synchronous); identity/authentication via PasswordCredentialTransaction (synchronous)
+- **Planned relationships:** None.
+- **Published events:** None. The coordinator owns transaction consistency rather than a product fact; account and credential event publication remains with their owning contexts.
+- **Semantic claims:** account-credential-consistency (owns AccountCredentialTransaction, UsernameChangeTransaction; no events; sources identity-account-registration-source-01, identity-account-registration-source-02, identity-account-registration-source-03)
+- **Official sources:** identity-account-registration-source-01 ([personal account registration, managed user exclusion](https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github), checked 2026-07-27); identity-account-registration-source-02 ([username availability, username changes](https://docs.github.com/en/account-and-profile/concepts/username-changes), checked 2026-07-27); identity-account-registration-source-03 ([password minimums, password verifier storage](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-strong-password), checked 2026-07-27)
 
 ### [identity/profiles](../../apps/web/src/modules/identity/profiles/README.md)
 

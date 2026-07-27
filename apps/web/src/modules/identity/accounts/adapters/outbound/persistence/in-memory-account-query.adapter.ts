@@ -3,6 +3,11 @@ import type {
   AccountQuerySnapshot,
 } from "../../../application/ports/outbound/account-query.repository.port";
 import type { AccountLifecycleRepositoryPort } from "../../../application/ports/outbound/account-lifecycle.repository.port";
+import type {
+  AccountIdentityTransactionCommand,
+  AccountIdentityTransactionRepositoryPort,
+  AccountIdentityTransactionResult,
+} from "../../../application/ports/outbound/account-identity-transaction.repository.port";
 
 const developmentAccounts: readonly AccountQuerySnapshot[] = [
   {
@@ -47,13 +52,22 @@ const developmentAccounts: readonly AccountQuerySnapshot[] = [
   },
 ];
 
-type AccountStore = Readonly<{
-  byId: Map<string, AccountQuerySnapshot>;
-  accountIdByUsername: Map<string, string>;
+type AccountIdentityTransaction = Readonly<{
+  transactionId: string;
+  kind: "registration" | "username-change";
+  account: AccountQuerySnapshot;
+  previousAccount: AccountQuerySnapshot | null;
+  reservedUsername: string;
 }>;
 
+type AccountStore = {
+  byId: Map<string, AccountQuerySnapshot>;
+  accountIdByUsername: Map<string, string>;
+  transactionById: Map<string, AccountIdentityTransaction>;
+};
+
 declare global {
-  var __supportAccountStoreV1: AccountStore | undefined;
+  var __supportAccountStoreV2: AccountStore | undefined;
 }
 
 function createStore(
@@ -67,16 +81,20 @@ function createStore(
         account.accountId,
       ]),
     ),
+    transactionById: new Map(),
   };
 }
 
 function getProcessStore(): AccountStore {
-  globalThis.__supportAccountStoreV1 ??= createStore(developmentAccounts);
-  return globalThis.__supportAccountStoreV1;
+  globalThis.__supportAccountStoreV2 ??= createStore(developmentAccounts);
+  return globalThis.__supportAccountStoreV2;
 }
 
 export class InMemoryAccountQueryAdapter
-  implements AccountQueryRepositoryPort, AccountLifecycleRepositoryPort
+  implements
+    AccountQueryRepositoryPort,
+    AccountLifecycleRepositoryPort,
+    AccountIdentityTransactionRepositoryPort
 {
   private readonly store: AccountStore;
 
@@ -93,8 +111,13 @@ export class InMemoryAccountQueryAdapter
     const accountId = this.store.accountIdByUsername.get(
       username.toLocaleLowerCase("en-US"),
     );
+    const account =
+      accountId === undefined ? undefined : this.store.byId.get(accountId);
     return Promise.resolve(
-      accountId === undefined ? null : (this.store.byId.get(accountId) ?? null),
+      account !== undefined &&
+        normalizeUsername(account.username) === normalizeUsername(username)
+        ? account
+        : null,
     );
   }
 
@@ -118,4 +141,156 @@ export class InMemoryAccountQueryAdapter
     }
     return Promise.resolve();
   }
+
+  apply(
+    command: AccountIdentityTransactionCommand,
+  ): Promise<AccountIdentityTransactionResult> {
+    if (command.action === "prepare-registration") {
+      return Promise.resolve(this.prepareRegistration(command));
+    }
+    if (command.action === "prepare-username-change") {
+      return Promise.resolve(this.prepareUsernameChange(command));
+    }
+    if (command.action === "finalize") {
+      return Promise.resolve(this.finalizeTransaction(command.transactionId));
+    }
+    return Promise.resolve(
+      command.action === "commit"
+        ? this.commitTransaction(command.transactionId)
+        : this.rollbackTransaction(command.transactionId),
+    );
+  }
+
+  private prepareRegistration(
+    command: Extract<
+      AccountIdentityTransactionCommand,
+      { action: "prepare-registration" }
+    >,
+  ): AccountIdentityTransactionResult {
+    const usernameKey = normalizeUsername(command.account.username);
+    if (
+      command.account.accountType !== "personal" ||
+      command.account.usage !== "human" ||
+      command.account.lifecycleState !== "pending"
+    ) {
+      return { status: "invalid-account" };
+    }
+    if (
+      this.store.byId.has(command.account.accountId) ||
+      this.store.accountIdByUsername.has(usernameKey)
+    ) {
+      return { status: "username-conflict" };
+    }
+    this.store.accountIdByUsername.set(
+      usernameKey,
+      command.account.accountId,
+    );
+    this.store.transactionById.set(command.transactionId, {
+      transactionId: command.transactionId,
+      kind: "registration",
+      account: command.account,
+      previousAccount: null,
+      reservedUsername: usernameKey,
+    });
+    return { status: "prepared", account: command.account };
+  }
+
+  private prepareUsernameChange(
+    command: Extract<
+      AccountIdentityTransactionCommand,
+      { action: "prepare-username-change" }
+    >,
+  ): AccountIdentityTransactionResult {
+    const account = this.store.byId.get(command.accountId);
+    if (account === undefined || account.lifecycleState !== "active") {
+      return { status: "account-not-found" };
+    }
+    if (command.actorAccountId !== account.accountId) {
+      return { status: "permission-denied" };
+    }
+    if (account.accountType !== "personal" || account.usage !== "human") {
+      return { status: "unsupported-account-type" };
+    }
+    const usernameKey = normalizeUsername(command.newUsername);
+    const currentOwner = this.store.accountIdByUsername.get(usernameKey);
+    if (currentOwner !== undefined && currentOwner !== account.accountId) {
+      return { status: "username-conflict" };
+    }
+    this.store.accountIdByUsername.set(usernameKey, account.accountId);
+    const pendingAccount: AccountQuerySnapshot = {
+      ...account,
+      username: command.newUsername,
+    };
+    this.store.transactionById.set(command.transactionId, {
+      transactionId: command.transactionId,
+      kind: "username-change",
+      account: pendingAccount,
+      previousAccount: account,
+      reservedUsername: usernameKey,
+    });
+    return { status: "prepared", account: pendingAccount };
+  }
+
+  private commitTransaction(
+    transactionId: string,
+  ): AccountIdentityTransactionResult {
+    const transaction = this.store.transactionById.get(transactionId);
+    if (transaction === undefined) {
+      return { status: "transaction-not-found" };
+    }
+    const committed: AccountQuerySnapshot = {
+      ...transaction.account,
+      lifecycleState: "active",
+    };
+    if (transaction.previousAccount !== null) {
+      this.store.accountIdByUsername.delete(
+        normalizeUsername(transaction.previousAccount.username),
+      );
+    }
+    this.store.byId.set(committed.accountId, committed);
+    this.store.accountIdByUsername.set(
+      normalizeUsername(committed.username),
+      committed.accountId,
+    );
+    return { status: "committed", account: committed };
+  }
+
+  private rollbackTransaction(
+    transactionId: string,
+  ): AccountIdentityTransactionResult {
+    const transaction = this.store.transactionById.get(transactionId);
+    if (transaction === undefined) {
+      return { status: "transaction-not-found" };
+    }
+    this.store.accountIdByUsername.delete(transaction.reservedUsername);
+    if (transaction.previousAccount === null) {
+      this.store.byId.delete(transaction.account.accountId);
+    } else {
+      this.store.byId.set(
+        transaction.previousAccount.accountId,
+        transaction.previousAccount,
+      );
+      this.store.accountIdByUsername.set(
+        normalizeUsername(transaction.previousAccount.username),
+        transaction.previousAccount.accountId,
+      );
+    }
+    this.store.transactionById.delete(transactionId);
+    return { status: "rolled-back", account: transaction.account };
+  }
+
+  private finalizeTransaction(
+    transactionId: string,
+  ): AccountIdentityTransactionResult {
+    const transaction = this.store.transactionById.get(transactionId);
+    if (transaction === undefined) {
+      return { status: "transaction-not-found" };
+    }
+    this.store.transactionById.delete(transactionId);
+    return { status: "finalized", account: transaction.account };
+  }
+}
+
+function normalizeUsername(username: string): string {
+  return username.toLocaleLowerCase("en-US");
 }

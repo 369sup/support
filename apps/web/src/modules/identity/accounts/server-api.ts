@@ -10,6 +10,8 @@ export type {
 } from "./contracts/account-reference";
 export const getAccountCandidateByUsername =
   accountsServerFacade.getAccountCandidateByUsername;
+export const applyAccountIdentityTransaction =
+  accountsServerFacade.applyAccountIdentityTransaction;
 export const getAccountReferenceById =
   accountsServerFacade.getAccountReferenceById;
 export const deletePersonalAccount =

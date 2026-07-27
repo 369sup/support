@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Delivers account identity, personal account deletion, and owner-authorized profile editing through authenticated server boundaries.
+Delivers `/account` through `changePersonalAccountUsername`, `deletePersonalAccount`, `clearBrowserSessionToken`, `readBrowserSessionToken`, `requireCurrentSession`, `signOutAllSessions`, `getUserProfile`, `updateUserProfile`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -23,7 +23,8 @@ The filesystem route is active. Its business behavior remains owned by the refer
 
 ## Module contracts
 
-- - **owner:** `identity/accounts` — use cases: `delete-personal-account`; functions: `deletePersonalAccount`
+- - **owner:** `identity/account-registration` — use cases: `change-personal-account-username`; functions: `changePersonalAccountUsername`
+- - **collaborator:** `identity/accounts` — use cases: `delete-personal-account`; functions: `deletePersonalAccount`
 - - **collaborator:** `identity/profiles` — use cases: `get-user-profile`, `update-user-profile`; functions: `getUserProfile`, `updateUserProfile`
 - - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `clearBrowserSessionToken`, `readBrowserSessionToken`, `requireCurrentSession`, `signOutAllSessions`
 

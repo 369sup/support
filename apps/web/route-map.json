@@ -1671,7 +1671,7 @@
       "status": "active",
       "materialization": "active",
       "title": "Account Page",
-      "summary": "Delivers account identity, personal account deletion, and owner-authorized profile editing through authenticated server boundaries.",
+      "summary": "Delivers `/account` through `changePersonalAccountUsername`, `deletePersonalAccount`, `clearBrowserSessionToken`, `readBrowserSessionToken`, `requireCurrentSession`, `signOutAllSessions`, `getUserProfile`, `updateUserProfile`.",
       "pathParams": [],
       "queryParams": [
         {
@@ -1687,8 +1687,18 @@
       ],
       "modules": [
         {
-          "context": "identity/accounts",
+          "context": "identity/account-registration",
           "role": "owner",
+          "useCases": [
+            "change-personal-account-username"
+          ],
+          "functions": [
+            "changePersonalAccountUsername"
+          ]
+        },
+        {
+          "context": "identity/accounts",
+          "role": "collaborator",
           "useCases": [
             "delete-personal-account"
           ],
@@ -6868,23 +6878,27 @@
       "supportPath": "/signup",
       "githubUrls": [],
       "status": "active",
-      "materialization": "scaffolded",
+      "materialization": "active",
       "title": "Sign up",
-      "summary": "GitHub-style canonical URL for personal account registration.",
+      "summary": "Delivers `/signup` through `registerPersonalAccount`.",
       "pathParams": [],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "registration",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
-          "context": "identity/accounts",
+          "context": "identity/account-registration",
           "role": "owner",
-          "useCases": [],
-          "functions": []
-        },
-        {
-          "context": "identity/authentication",
-          "role": "collaborator",
-          "useCases": [],
-          "functions": []
+          "useCases": [
+            "register-personal-account"
+          ],
+          "functions": [
+            "registerPersonalAccount"
+          ]
         }
       ],
       "sourceIds": [
