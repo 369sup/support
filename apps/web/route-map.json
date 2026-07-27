@@ -1582,23 +1582,49 @@
       "supportPath": "/accept-invitation",
       "githubUrls": [],
       "status": "active",
-      "materialization": "scaffolded",
+      "materialization": "active",
       "title": "Accept invitation",
-      "summary": "Review and accept an organization or enterprise membership invitation.",
+      "summary": "Delivers `/accept-invitation` through `requireCurrentSession`, `acceptOrganizationInvitation`, `declineOrganizationInvitation`, `listPendingOrganizationInvitationsForAccount`, `getOrganizationReferenceById`.",
       "pathParams": [],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "invitation",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
-          "context": "enterprises/enterprise-memberships",
+          "context": "organizations/organization-memberships",
           "role": "owner",
-          "useCases": [],
-          "functions": []
+          "useCases": [
+            "accept-organization-invitation",
+            "decline-organization-invitation",
+            "list-pending-organization-invitations-for-account"
+          ],
+          "functions": [
+            "acceptOrganizationInvitation",
+            "declineOrganizationInvitation",
+            "listPendingOrganizationInvitationsForAccount"
+          ]
         },
         {
-          "context": "organizations/organization-memberships",
+          "context": "identity/authentication",
           "role": "collaborator",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "requireCurrentSession"
+          ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "collaborator",
+          "useCases": [
+            "get-organization-reference-by-id"
+          ],
+          "functions": [
+            "getOrganizationReferenceById"
+          ]
         }
       ],
       "sourceIds": [
@@ -3068,25 +3094,48 @@
       "status": "active",
       "materialization": "active",
       "title": "Organization People Page",
-      "summary": "Delivers `/orgs/{organization}/people` through `requireCurrentSession`, `getAccountReferenceById`, `checkOrganizationContextEligibility`, `listActiveOrganizationMembershipsForOrganization`, `getOrganizationByLogin`.",
+      "summary": "Delivers `/orgs/{organization}/people` through `requireCurrentSession`, `getAccountReferenceById`, `cancelOrganizationInvitation`, `changeOrganizationMemberRole`, `checkOrganizationContextEligibility`, `inviteOrganizationMember`, `listActiveOrganizationMembershipsForOrganization`, `listOrganizationInvitationsForOrganization`, `removeOrganizationMember`, `updateOrganizationInvitation`, `getOrganizationByLogin`.",
       "pathParams": [
         {
           "name": "organization",
           "kind": "scalar"
         }
       ],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "invitation",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "member",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
           "context": "organizations/organization-memberships",
           "role": "owner",
           "useCases": [
+            "cancel-organization-invitation",
+            "change-organization-member-role",
             "check-organization-context-eligibility",
-            "list-active-organization-memberships-for-organization"
+            "invite-organization-member",
+            "list-active-organization-memberships-for-organization",
+            "list-organization-invitations-for-organization",
+            "remove-organization-member",
+            "update-organization-invitation"
           ],
           "functions": [
+            "cancelOrganizationInvitation",
+            "changeOrganizationMemberRole",
             "checkOrganizationContextEligibility",
-            "listActiveOrganizationMembershipsForOrganization"
+            "inviteOrganizationMember",
+            "listActiveOrganizationMembershipsForOrganization",
+            "listOrganizationInvitationsForOrganization",
+            "removeOrganizationMember",
+            "updateOrganizationInvitation"
           ]
         },
         {

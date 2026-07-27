@@ -9,13 +9,13 @@
 - **GitHub canonical patterns:** No official pattern is asserted.
 - **Delivery:** `page`
 - **Status:** `active`
-- **Materialization:** `scaffolded`
+- **Materialization:** `active`
 
 ## Functional intent
 
-Review and accept an organization or enterprise membership invitation.
+Delivers `/accept-invitation` through `requireCurrentSession`, `acceptOrganizationInvitation`, `declineOrganizationInvitation`, `listPendingOrganizationInvitationsForAccount`, `getOrganizationReferenceById`.
 
-The filesystem route is reserved and currently returns the canonical unavailable response.
+The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
 ## Delivery functions
 
@@ -23,8 +23,9 @@ The filesystem route is reserved and currently returns the canonical unavailable
 
 ## Module contracts
 
-- - **owner:** `enterprises/enterprise-memberships` — use cases: no route-level use-case reference; functions: no runtime function reference
-- - **collaborator:** `organizations/organization-memberships` — use cases: no route-level use-case reference; functions: no runtime function reference
+- - **owner:** `organizations/organization-memberships` — use cases: `accept-organization-invitation`, `decline-organization-invitation`, `list-pending-organization-invitations-for-account`; functions: `acceptOrganizationInvitation`, `declineOrganizationInvitation`, `listPendingOrganizationInvitationsForAccount`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
+- - **collaborator:** `organizations/organizations` — use cases: `get-organization-reference-by-id`; functions: `getOrganizationReferenceById`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 
@@ -36,7 +37,7 @@ None.
 
 ### Query
 
-None.
+- - `invitation`: optional, single
 
 Query keys not declared here are rejected by the typed URL builder.
 
