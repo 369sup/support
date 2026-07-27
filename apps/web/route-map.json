@@ -2481,17 +2481,55 @@
       "supportPath": "/new",
       "githubUrls": [],
       "status": "active",
-      "materialization": "scaffolded",
+      "materialization": "active",
       "title": "New repository",
-      "summary": "Create a repository for a permitted user or organization owner.",
+      "summary": "Delivers `/new` through `requireCurrentSession`, `listActiveOrganizationMembershipsForAccount`, `getOrganizationReferenceById`, `createEmptyRepository`.",
       "pathParams": [],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "repository",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
           "context": "repositories/repositories",
           "role": "owner",
+          "useCases": [
+            "create-empty-repository"
+          ],
+          "functions": [
+            "createEmptyRepository"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "collaborator",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "requireCurrentSession"
+          ]
+        },
+        {
+          "context": "organizations/organization-memberships",
+          "role": "collaborator",
+          "useCases": [
+            "list-active-organization-memberships-for-account"
+          ],
+          "functions": [
+            "listActiveOrganizationMembershipsForAccount"
+          ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "collaborator",
+          "useCases": [
+            "get-organization-reference-by-id"
+          ],
+          "functions": [
+            "getOrganizationReferenceById"
+          ]
         }
       ],
       "sourceIds": [
@@ -5812,7 +5850,7 @@
       "status": "active",
       "materialization": "active",
       "title": "Repository Settings Page",
-      "summary": "Delivers `/{owner}/{repository}/settings` through `requireCurrentSession`, `getPersonalAccountByUsername`, `getOrganizationByLogin`, `getRepositoryByOwnerAndName`, `resolveEffectiveRepositoryPermission`.",
+      "summary": "Delivers `/{owner}/{repository}/settings` through `requireCurrentSession`, `getPersonalAccountByUsername`, `getOrganizationByLogin`, `archiveRepository`, `changeRepositoryVisibility`, `deleteRepository`, `getRepositoryForAdministration`, `renameRepository`, `restoreDeletedRepository`, `unarchiveRepository`.",
       "pathParams": [
         {
           "name": "owner",
@@ -5823,16 +5861,34 @@
           "kind": "scalar"
         }
       ],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "repository",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
           "context": "repositories/repositories",
           "role": "owner",
           "useCases": [
-            "get-repository-by-owner-and-name"
+            "archive-repository",
+            "change-repository-visibility",
+            "delete-repository",
+            "get-repository-for-administration",
+            "rename-repository",
+            "restore-deleted-repository",
+            "unarchive-repository"
           ],
           "functions": [
-            "getRepositoryByOwnerAndName"
+            "archiveRepository",
+            "changeRepositoryVisibility",
+            "deleteRepository",
+            "getRepositoryForAdministration",
+            "renameRepository",
+            "restoreDeletedRepository",
+            "unarchiveRepository"
           ]
         },
         {
@@ -5861,16 +5917,6 @@
           ],
           "functions": [
             "getOrganizationByLogin"
-          ]
-        },
-        {
-          "context": "repositories/repository-access",
-          "role": "collaborator",
-          "useCases": [
-            "resolve-effective-repository-permission"
-          ],
-          "functions": [
-            "resolveEffectiveRepositoryPermission"
           ]
         }
       ],

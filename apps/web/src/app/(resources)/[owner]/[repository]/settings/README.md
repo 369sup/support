@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Delivers `/{owner}/{repository}/settings` through `requireCurrentSession`, `getPersonalAccountByUsername`, `getOrganizationByLogin`, `getRepositoryByOwnerAndName`, `resolveEffectiveRepositoryPermission`.
+Delivers `/{owner}/{repository}/settings` through `requireCurrentSession`, `getPersonalAccountByUsername`, `getOrganizationByLogin`, `archiveRepository`, `changeRepositoryVisibility`, `deleteRepository`, `getRepositoryForAdministration`, `renameRepository`, `restoreDeletedRepository`, `unarchiveRepository`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -23,11 +23,10 @@ The filesystem route is active. Its business behavior remains owned by the refer
 
 ## Module contracts
 
-- - **owner:** `repositories/repositories` — use cases: `get-repository-by-owner-and-name`; functions: `getRepositoryByOwnerAndName`
+- - **owner:** `repositories/repositories` — use cases: `archive-repository`, `change-repository-visibility`, `delete-repository`, `get-repository-for-administration`, `rename-repository`, `restore-deleted-repository`, `unarchive-repository`; functions: `archiveRepository`, `changeRepositoryVisibility`, `deleteRepository`, `getRepositoryForAdministration`, `renameRepository`, `restoreDeletedRepository`, `unarchiveRepository`
 - - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
 - - **collaborator:** `identity/accounts` — use cases: `get-personal-account-by-username`; functions: `getPersonalAccountByUsername`
 - - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`
-- - **collaborator:** `repositories/repository-access` — use cases: `resolve-effective-repository-permission`; functions: `resolveEffectiveRepositoryPermission`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 
@@ -40,7 +39,7 @@ The module README remains the semantic authority for each complete thirteen-fiel
 
 ### Query
 
-None.
+- - `repository`: optional, single
 
 Query keys not declared here are rejected by the typed URL builder.
 

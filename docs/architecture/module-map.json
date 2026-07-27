@@ -2753,6 +2753,11 @@
           "context": "organizations/organizations",
           "contract": "OrganizationOwnerReference",
           "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-memberships",
+          "contract": "OrganizationMembershipReference",
+          "mode": "synchronous"
         }
       ],
       "officialSources": [
@@ -2976,10 +2981,18 @@
         }
       ],
       "activationScope": [
+        "archive-repository",
+        "change-repository-visibility",
+        "create-empty-repository",
+        "delete-repository",
+        "get-repository-for-administration",
         "get-repository-by-owner-and-name",
         "list-active-public-repositories-for-organization-owner",
         "list-active-public-repositories-for-personal-owner",
-        "list-active-repositories-for-owner"
+        "list-active-repositories-for-owner",
+        "rename-repository",
+        "restore-deleted-repository",
+        "unarchive-repository"
       ],
       "plannedRelationships": [
         {

@@ -856,10 +856,18 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
   assert.deepEqual(
     byPath.get("repositories/repositories").activationScope,
     [
+      "archive-repository",
+      "change-repository-visibility",
+      "create-empty-repository",
+      "delete-repository",
+      "get-repository-for-administration",
       "get-repository-by-owner-and-name",
       "list-active-public-repositories-for-organization-owner",
       "list-active-public-repositories-for-personal-owner",
       "list-active-repositories-for-owner",
+      "rename-repository",
+      "restore-deleted-repository",
+      "unarchive-repository",
     ],
   );
   assert.deepEqual(
@@ -873,6 +881,11 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       {
         context: "organizations/organizations",
         contract: "OrganizationOwnerReference",
+        mode: "synchronous",
+      },
+      {
+        context: "organizations/organization-memberships",
+        contract: "OrganizationMembershipReference",
         mode: "synchronous",
       },
     ],

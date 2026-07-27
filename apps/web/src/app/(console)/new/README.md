@@ -9,13 +9,13 @@
 - **GitHub canonical patterns:** No official pattern is asserted.
 - **Delivery:** `page`
 - **Status:** `active`
-- **Materialization:** `scaffolded`
+- **Materialization:** `active`
 
 ## Functional intent
 
-Create a repository for a permitted user or organization owner.
+Delivers `/new` through `requireCurrentSession`, `listActiveOrganizationMembershipsForAccount`, `getOrganizationReferenceById`, `createEmptyRepository`.
 
-The filesystem route is reserved and currently returns the canonical unavailable response.
+The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
 ## Delivery functions
 
@@ -23,7 +23,10 @@ The filesystem route is reserved and currently returns the canonical unavailable
 
 ## Module contracts
 
-- - **owner:** `repositories/repositories` — use cases: no route-level use-case reference; functions: no runtime function reference
+- - **owner:** `repositories/repositories` — use cases: `create-empty-repository`; functions: `createEmptyRepository`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
+- - **collaborator:** `organizations/organization-memberships` — use cases: `list-active-organization-memberships-for-account`; functions: `listActiveOrganizationMembershipsForAccount`
+- - **collaborator:** `organizations/organizations` — use cases: `get-organization-reference-by-id`; functions: `getOrganizationReferenceById`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 
@@ -35,7 +38,7 @@ None.
 
 ### Query
 
-None.
+- - `repository`: optional, single
 
 Query keys not declared here are rejected by the typed URL builder.
 
