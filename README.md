@@ -54,25 +54,13 @@ The current product runtime is intentionally in-memory:
 - Each bounded context owns its own versioned store. Cross-context reads use
   public contracts rather than a shared application database.
 - Browser authentication uses an opaque HttpOnly cookie. The deterministic
-  development sign-in fixtures use `octocat`, `hubot`, `carol_ACME`, and `bob`
-  with the non-secret fixture password `github`.
+  development sign-in form is prefilled with the non-secret `mock` / `123456`
+  fixture; additional fixtures remain owned by the authentication adapter.
 
-The implemented product slice currently includes multi-account sessions,
-personal and organization Dashboard contexts, enterprise administration,
-organization teams and predefined role assignments, personal and organization
-repositories, and source-attributed repository permission decisions. The
-active technical foundation also includes context-local event publication,
-search-index candidates, opaque media storage, and audit storage. Remaining
-catalog contexts stay `planned`; a catalog entry does not imply a completed
-runtime capability.
-
-Useful development pages include:
-
-- `/dashboard` and `/account`
-- `/enterprises/[slug]`
-- `/organizations/[login]/settings/teams`
-- `/organizations/[login]/settings/roles`
-- `/organizations/[login]/settings/repository-access/[repository]`
+Use [`docs/architecture/module-map.json`](docs/architecture/module-map.json)
+for current bounded-context status and
+[`apps/web/route-map.json`](apps/web/route-map.json) for route materialization.
+Do not infer implemented behavior from a directory, README, or dated report.
 
 Development authentication endpoints are disabled outside development or the
 explicit in-memory E2E runtime. Platform delivery adapters are simulated and

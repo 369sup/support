@@ -285,9 +285,9 @@ function createValidFixture() {
     [
       "# Serena guidance",
       "",
-      "## Exclusive local memory ownership",
+      "## Memory ownership",
       "",
-      "The model owns only `local/current-task`.",
+      "`.serena/memories/local/current-task.md` is the only local memory the model may author.",
       "Exclusive ownership is always enabled.",
       "",
     ].join("\n"),
@@ -301,17 +301,6 @@ function createValidFixture() {
       "## Exclusive ownership and quarantine",
       "",
       "The engine always owns the local namespace.",
-      "",
-    ].join("\n"),
-  );
-  writeFixture(
-    rootDir,
-    ".codex/instructions/model-instructions.md",
-    [
-      "# Model instructions",
-      "",
-      "Do not create or preserve unmanaged visible local memories.",
-      "The model owns only `local/current-task`.",
       "",
     ].join("\n"),
   );
