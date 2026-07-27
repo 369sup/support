@@ -184,6 +184,38 @@ test("implemented repository pages render their implemented surface", async ({ p
   ).toBeVisible();
 });
 
+test("repository administrators update and clear repository profile fields", async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.goto("/octocat/support/settings");
+
+  await page
+    .getByLabel("Description")
+    .fill("Support repository profile updated through settings.");
+  await page.getByLabel("Homepage").fill("https://support.example.com");
+  await page.getByRole("button", { name: "Save profile" }).click();
+
+  await expect(page).toHaveURL(/repository=profile-updated/);
+  await expect(page.getByRole("status")).toHaveText(
+    "Repository profile updated.",
+  );
+
+  await page.goto("/octocat/support");
+  await expect(
+    page.getByText("Support repository profile updated through settings."),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "https://support.example.com" }),
+  ).toHaveAttribute("href", "https://support.example.com");
+
+  await page.goto("/octocat/support/settings");
+  await page.getByLabel("Description").fill("");
+  await page.getByLabel("Homepage").fill("");
+  await page.getByRole("button", { name: "Save profile" }).click();
+  await expect(page).toHaveURL(/repository=profile-updated/);
+});
+
 test("home layout is responsive and keyboard actions are supported", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
@@ -763,5 +795,4 @@ test("expired managed session requires reauthentication and keeps active account
   });
   await expect(page.getByLabel("Account menu for @octocat")).toBeVisible();
 });
-
 

@@ -7,8 +7,10 @@ export type RepositoryQuerySnapshot = Readonly<{
   }>;
   name: string;
   description: string;
+  homepage: string;
   visibility: "public" | "private" | "internal";
   lifecycleState: "active" | "archived" | "deleted";
+  version: number;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;

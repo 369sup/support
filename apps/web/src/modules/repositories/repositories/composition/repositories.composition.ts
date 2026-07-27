@@ -2,10 +2,13 @@ import {
   createListActivePublicRepositoriesForPersonalOwnerAdapter,
   type ListActivePublicRepositoriesForPersonalOwnerAdapter,
 } from "../adapters/inbound/server/list-active-public-repositories-for-personal-owner.adapter";
+import { RepositoryAdministrationAuthorizationAdapter } from "../adapters/outbound/integration/repository-administration-authorization.adapter";
 import { InMemoryRepositoryQueryAdapter } from "../adapters/outbound/persistence/in-memory-repository-query.adapter";
+import { InMemoryRepositoriesOutboxAdapter } from "../adapters/outbound/persistence/in-memory-repositories-outbox.adapter";
 import { InMemoryRepositoryIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-repository-id-generator.adapter";
 import { SystemRepositoryClockAdapter } from "../adapters/outbound/persistence/system-repository-clock.adapter";
 import { RepositoryOwnerAuthorizationAdapter } from "../adapters/outbound/integration/repository-owner-authorization.adapter";
+import { registerEventSource } from "@/modules/platform/event-publication/server-api";
 import { ArchiveRepositoryHandler } from "../application/commands/archive-repository.handler";
 import { ChangeRepositoryVisibilityHandler } from "../application/commands/change-repository-visibility.handler";
 import { CreateEmptyRepositoryHandler } from "../application/commands/create-empty-repository.handler";
@@ -14,6 +17,7 @@ import { GetRepositoryForAdministrationHandler } from "../application/queries/ge
 import { RenameRepositoryHandler } from "../application/commands/rename-repository.handler";
 import { RestoreDeletedRepositoryHandler } from "../application/commands/restore-deleted-repository.handler";
 import { UnarchiveRepositoryHandler } from "../application/commands/unarchive-repository.handler";
+import { UpdateRepositoryProfileHandler } from "../application/commands/update-repository-profile.handler";
 import type { ArchiveRepositoryUseCase } from "../application/ports/inbound/archive-repository.use-case";
 import type { ChangeRepositoryVisibilityUseCase } from "../application/ports/inbound/change-repository-visibility.use-case";
 import type { CreateEmptyRepositoryUseCase } from "../application/ports/inbound/create-empty-repository.use-case";
@@ -22,6 +26,7 @@ import type { GetRepositoryForAdministrationUseCase } from "../application/ports
 import type { RenameRepositoryUseCase } from "../application/ports/inbound/rename-repository.use-case";
 import type { RestoreDeletedRepositoryUseCase } from "../application/ports/inbound/restore-deleted-repository.use-case";
 import type { UnarchiveRepositoryUseCase } from "../application/ports/inbound/unarchive-repository.use-case";
+import type { UpdateRepositoryProfileUseCase } from "../application/ports/inbound/update-repository-profile.use-case";
 import { GetRepositoryByOwnerAndNameHandler } from "../application/queries/get-repository-by-owner-and-name.handler";
 import { ListActivePublicRepositoriesForOrganizationOwnerHandler } from "../application/queries/list-active-public-repositories-for-organization-owner.handler";
 import { ListActivePublicRepositoriesForPersonalOwnerHandler } from "../application/queries/list-active-public-repositories-for-personal-owner.handler";
@@ -54,6 +59,7 @@ export interface RepositoriesServerFacade {
   renameRepository: RenameRepositoryUseCase["renameRepository"];
   restoreDeletedRepository: RestoreDeletedRepositoryUseCase["restoreDeletedRepository"];
   unarchiveRepository: UnarchiveRepositoryUseCase["unarchiveRepository"];
+  updateRepositoryProfile: UpdateRepositoryProfileUseCase["updateRepositoryProfile"];
 }
 
 function mapCandidate(
@@ -75,6 +81,7 @@ function mapCandidate(
           },
     name: repository.name,
     description: repository.description,
+    homepage: repository.homepage,
     visibility: repository.visibility,
     lifecycleState: "active",
     updatedAt: repository.updatedAt,
@@ -83,6 +90,8 @@ function mapCandidate(
 
 function composeRepositoriesServerFacade(): RepositoriesServerFacade {
   const repository = new InMemoryRepositoryQueryAdapter();
+  const eventRecorder = new InMemoryRepositoriesOutboxAdapter();
+  registerEventSource(eventRecorder);
   const getByOwnerAndName = new GetRepositoryByOwnerAndNameHandler(repository);
   const listOrganizationPublic =
     new ListActivePublicRepositoriesForOrganizationOwnerHandler(repository);
@@ -93,8 +102,10 @@ function composeRepositoriesServerFacade(): RepositoriesServerFacade {
   const managementService = new RepositoryManagementService(
     repository,
     new RepositoryOwnerAuthorizationAdapter(),
+    new RepositoryAdministrationAuthorizationAdapter(),
     new InMemoryRepositoryIdGeneratorAdapter(),
     new SystemRepositoryClockAdapter(),
+    eventRecorder,
   );
   const archive = new ArchiveRepositoryHandler(managementService);
   const changeVisibility =
@@ -107,6 +118,7 @@ function composeRepositoriesServerFacade(): RepositoriesServerFacade {
   const rename = new RenameRepositoryHandler(managementService);
   const restore = new RestoreDeletedRepositoryHandler(managementService);
   const unarchive = new UnarchiveRepositoryHandler(managementService);
+  const updateProfile = new UpdateRepositoryProfileHandler(managementService);
 
   return {
     archiveRepository: (command) =>
@@ -138,6 +150,7 @@ function composeRepositoriesServerFacade(): RepositoriesServerFacade {
         ownerUsername: owner.login,
         name: candidate.name,
         description: candidate.description,
+        homepage: candidate.homepage,
         visibility: "public",
         lifecycleState: "active",
         updatedAt: candidate.updatedAt,
@@ -158,6 +171,8 @@ function composeRepositoriesServerFacade(): RepositoriesServerFacade {
       restore.restoreDeletedRepository(command),
     unarchiveRepository: (command) =>
       unarchive.unarchiveRepository(command),
+    updateRepositoryProfile: (command) =>
+      updateProfile.updateRepositoryProfile(command),
   };
 }
 

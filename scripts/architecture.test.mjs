@@ -870,6 +870,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "rename-repository",
       "restore-deleted-repository",
       "unarchive-repository",
+      "update-repository-profile",
     ],
   );
   assert.deepEqual(
@@ -877,7 +878,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
     [
       {
         context: "identity/accounts",
-        contract: "UserOwnerReference",
+        contract: "AccountReference",
         mode: "synchronous",
       },
       {
@@ -890,7 +891,34 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
         contract: "OrganizationMembershipReference",
         mode: "synchronous",
       },
+      {
+        context: "repositories/repository-access",
+        contract: "EffectiveRepositoryPermissionDecision",
+        mode: "synchronous",
+      },
+      {
+        context: "platform/event-publication",
+        contract: "EventRecorderPort",
+        mode: "synchronous",
+      },
     ],
+  );
+  assert.deepEqual(
+    byPath
+      .get("repositories/repositories")
+      .publishedEvents.find(
+        (event) => event.name === "RepositoryProfileUpdated",
+      ),
+    {
+      name: "RepositoryProfileUpdated",
+      version: 1,
+      kind: "domain",
+      implementationStatus: "active",
+      meaning: "repository profile updated.",
+      sourceIds: ["repositories-repositories-source-09"],
+      schema: "integration-contracts.ts#RepositoryProfileUpdatedV1",
+      orderingKey: "repositoryId",
+    },
   );
   assert.equal(
     catalog.contexts
@@ -917,6 +945,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
     [
       "organizations/organization-teams",
       "organizations/organization-roles",
+      "repositories/repositories",
       "repositories/repository-access",
     ],
   );

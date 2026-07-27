@@ -3,6 +3,7 @@ export type PublicRepositorySummary = Readonly<{
   ownerUsername: string;
   name: string;
   description: string;
+  homepage: string;
   visibility: "public";
   lifecycleState: "active";
   updatedAt: string;

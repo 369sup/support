@@ -23,6 +23,7 @@ export function createListActivePublicRepositoriesForPersonalOwnerAdapter(
       ownerUsername: owner.username,
       name: repository.name,
       description: repository.description,
+      homepage: repository.homepage,
       visibility: "public",
       lifecycleState: "active",
       updatedAt: repository.updatedAt,

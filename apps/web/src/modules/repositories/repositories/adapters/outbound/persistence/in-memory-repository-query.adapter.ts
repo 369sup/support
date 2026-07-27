@@ -13,8 +13,10 @@ const developmentRepositories: readonly RepositoryQuerySnapshot[] = [
     },
     name: "support",
     description: "A non-code GitHub product platform built as a modular monolith.",
+    homepage: "",
     visibility: "public",
     lifecycleState: "active",
+    version: 1,
     createdAt: "2026-07-23T00:00:00.000Z",
     updatedAt: "2026-07-23T00:00:00.000Z",
     deletedAt: null,
@@ -29,8 +31,10 @@ const developmentRepositories: readonly RepositoryQuerySnapshot[] = [
     },
     name: "docs",
     description: "Public documentation maintained by Community Lab.",
+    homepage: "",
     visibility: "public",
     lifecycleState: "active",
+    version: 1,
     createdAt: "2026-07-23T00:00:00.000Z",
     updatedAt: "2026-07-23T00:00:00.000Z",
     deletedAt: null,
@@ -45,8 +49,10 @@ const developmentRepositories: readonly RepositoryQuerySnapshot[] = [
     },
     name: "private-handbook",
     description: "Private operating handbook for Community Lab teams.",
+    homepage: "",
     visibility: "private",
     lifecycleState: "active",
+    version: 1,
     createdAt: "2026-07-23T00:00:00.000Z",
     updatedAt: "2026-07-23T00:00:00.000Z",
     deletedAt: null,
@@ -61,8 +67,10 @@ const developmentRepositories: readonly RepositoryQuerySnapshot[] = [
     },
     name: "internal-tools",
     description: "Internal tools for the ACME Platform organization.",
+    homepage: "",
     visibility: "internal",
     lifecycleState: "active",
+    version: 1,
     createdAt: "2026-07-23T00:00:00.000Z",
     updatedAt: "2026-07-23T00:00:00.000Z",
     deletedAt: null,
@@ -77,8 +85,10 @@ const developmentRepositories: readonly RepositoryQuerySnapshot[] = [
     },
     name: "private-fixture",
     description: "A fixture excluded from the public repository query.",
+    homepage: "",
     visibility: "private",
     lifecycleState: "active",
+    version: 1,
     createdAt: "2026-07-22T00:00:00.000Z",
     updatedAt: "2026-07-22T00:00:00.000Z",
     deletedAt: null,
@@ -93,8 +103,10 @@ const developmentRepositories: readonly RepositoryQuerySnapshot[] = [
     },
     name: "archived-fixture",
     description: "A fixture excluded from active repository results.",
+    homepage: "",
     visibility: "public",
     lifecycleState: "archived",
+    version: 1,
     createdAt: "2026-07-21T00:00:00.000Z",
     updatedAt: "2026-07-21T00:00:00.000Z",
     deletedAt: null,
@@ -109,7 +121,7 @@ type RepositoryStore = Readonly<{
 }>;
 
 declare global {
-  var __supportRepositoryStoreV2: RepositoryStore | undefined;
+  var __supportRepositoryStoreV3: RepositoryStore | undefined;
 }
 
 function ownerAndNameKey(ownerId: string, name: string) {
@@ -140,10 +152,10 @@ function createStore(
 }
 
 function getProcessStore(): RepositoryStore {
-  globalThis.__supportRepositoryStoreV2 ??= createStore(
+  globalThis.__supportRepositoryStoreV3 ??= createStore(
     developmentRepositories,
   );
-  return globalThis.__supportRepositoryStoreV2;
+  return globalThis.__supportRepositoryStoreV3;
 }
 
 export class InMemoryRepositoryQueryAdapter

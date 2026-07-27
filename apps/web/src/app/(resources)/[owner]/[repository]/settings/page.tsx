@@ -16,6 +16,7 @@ import {
   renameRepository,
   restoreDeletedRepository,
   unarchiveRepository,
+  updateRepositoryProfile,
 } from "@/modules/repositories/repositories/server-api";
 import { Button } from "@support/shadcn/ui/button";
 import {
@@ -32,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@support/shadcn/ui/select";
+import { Textarea } from "@support/shadcn/ui/textarea";
 
 type OwnerLookupResult =
   | Readonly<{ kind: "organization"; login: string; id: string }>
@@ -44,11 +46,14 @@ const repositoryStatusMessages: Readonly<Record<string, string>> = {
   "confirmation-mismatch": "Type the full owner/name exactly to confirm.",
   "internal-visibility-not-available":
     "Internal visibility requires verified enterprise entitlement.",
+  "invalid-description": "Descriptions can contain at most 350 characters.",
+  "invalid-homepage": "Enter a valid HTTP or HTTPS homepage URL.",
   "invalid-name":
     "Use 1–100 ASCII letters, numbers, periods, hyphens, or underscores.",
   "invalid-state": "That operation is not available in the current lifecycle state.",
   "invalid-visibility": "Choose a supported visibility.",
-  "permission-denied": "Only the personal owner or an organization owner can manage this repository.",
+  "permission-denied": "Repository administration permission is required.",
+  "profile-updated": "Repository profile updated.",
   "repository-name-conflict": "That owner already has a repository with this name.",
   "repository-not-found": "The repository no longer exists.",
   renamed: "Repository renamed.",
@@ -122,6 +127,36 @@ async function renameRepositoryAction(formData: FormData): Promise<never> {
   revalidatePath(`/${context.ownerLogin}/${context.name}`);
   redirect(
     repositorySettingsUrl(context.ownerLogin, targetName, result.status),
+  );
+}
+
+function revalidateRepositoryPresentation(context: {
+  name: string;
+  ownerLogin: string;
+}) {
+  revalidatePath(`/${context.ownerLogin}/${context.name}`);
+  revalidatePath(`/${context.ownerLogin}`);
+  revalidatePath(`/${context.ownerLogin}/${context.name}/settings`);
+  revalidatePath("/dashboard");
+  revalidatePath("/explore");
+  revalidatePath("/repositories");
+  revalidatePath(`/orgs/${context.ownerLogin}/repositories`);
+}
+
+async function updateRepositoryProfileAction(
+  formData: FormData,
+): Promise<never> {
+  "use server";
+
+  const context = await resolveRepositoryActionContext(formData);
+  const result = await updateRepositoryProfile({
+    ...context,
+    description: readFormString(formData, "description"),
+    homepage: readFormString(formData, "homepage"),
+  });
+  revalidateRepositoryPresentation(context);
+  redirect(
+    repositorySettingsUrl(context.ownerLogin, context.name, result.status),
   );
 }
 
@@ -282,6 +317,51 @@ export default async function RepositorySettingsPage({
 
         {repository.lifecycleState === "active" ? (
           <div className="mt-8 grid gap-6">
+            <form
+              action={updateRepositoryProfileAction}
+              className="rounded-xl border border-border bg-card p-6"
+            >
+              <RepositoryIdentityFields
+                owner={owner.login}
+                repository={repository.name}
+              />
+              <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="repository-description">
+                    Description
+                  </FieldLabel>
+                  <Textarea
+                    defaultValue={repository.description}
+                    id="repository-description"
+                    maxLength={350}
+                    name="description"
+                    placeholder="A short description of this repository"
+                  />
+                  <FieldDescription>
+                    Public repository summary, up to 350 characters.
+                  </FieldDescription>
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="repository-homepage">
+                    Homepage
+                  </FieldLabel>
+                  <Input
+                    defaultValue={repository.homepage}
+                    id="repository-homepage"
+                    name="homepage"
+                    placeholder="https://example.com"
+                    type="url"
+                  />
+                  <FieldDescription>
+                    Optional HTTP or HTTPS URL with more information.
+                  </FieldDescription>
+                </Field>
+              </FieldGroup>
+              <Button className="mt-5" type="submit">
+                Save profile
+              </Button>
+            </form>
+
             <form
               action={renameRepositoryAction}
               className="rounded-xl border border-border bg-card p-6"

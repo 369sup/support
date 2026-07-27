@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Delivers `/{owner}/{repository}/settings` through `requireCurrentSession`, `getPersonalAccountByUsername`, `getOrganizationByLogin`, `archiveRepository`, `changeRepositoryVisibility`, `deleteRepository`, `getRepositoryForAdministration`, `renameRepository`, `restoreDeletedRepository`, `unarchiveRepository`.
+Delivers `/{owner}/{repository}/settings` through `requireCurrentSession`, `getPersonalAccountByUsername`, `getOrganizationByLogin`, `archiveRepository`, `changeRepositoryVisibility`, `deleteRepository`, `getRepositoryForAdministration`, `renameRepository`, `restoreDeletedRepository`, `unarchiveRepository`, `updateRepositoryProfile`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -23,7 +23,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 
 ## Module contracts
 
-- - **owner:** `repositories/repositories` — use cases: `archive-repository`, `change-repository-visibility`, `delete-repository`, `get-repository-for-administration`, `rename-repository`, `restore-deleted-repository`, `unarchive-repository`; functions: `archiveRepository`, `changeRepositoryVisibility`, `deleteRepository`, `getRepositoryForAdministration`, `renameRepository`, `restoreDeletedRepository`, `unarchiveRepository`
+- - **owner:** `repositories/repositories` — use cases: `archive-repository`, `change-repository-visibility`, `delete-repository`, `get-repository-for-administration`, `rename-repository`, `restore-deleted-repository`, `unarchive-repository`, `update-repository-profile`; functions: `archiveRepository`, `changeRepositoryVisibility`, `deleteRepository`, `getRepositoryForAdministration`, `renameRepository`, `restoreDeletedRepository`, `unarchiveRepository`, `updateRepositoryProfile`
 - - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
 - - **collaborator:** `identity/accounts` — use cases: `get-personal-account-by-username`; functions: `getPersonalAccountByUsername`
 - - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`
