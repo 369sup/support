@@ -744,7 +744,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       dependency.events.some((selected) => selected.name === event && selected.version === 1));
 
   assert.equal(catalog.version, 6);
-  assert.equal(catalog.contexts.length, 65);
+  assert.equal(catalog.contexts.length, 67);
   assert.equal(catalog.contexts.every((item) => item.status === undefined), true);
   assert.deepEqual(
     catalog.contexts
@@ -753,6 +753,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
     [
       "identity/accounts",
       "identity/authentication",
+      "identity/account-emails",
       "identity/account-registration",
       "identity/profiles",
       "identity/social-graph",
@@ -780,14 +781,16 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "projections/activity-feed",
       "platform/event-publication",
       "platform/search-index",
+      "platform/scheduled-commands",
       "platform/media-storage",
+      "platform/notification-channels",
       "platform/audit-storage",
       "projections/discovery",
     ],
   );
   assert.equal(
     catalog.contexts.filter((item) => item.implementationStatus === "planned").length,
-    33,
+    32,
   );
   assert.equal(
     byPath.get("organizations/organization-memberships").activationScope.includes(
@@ -804,6 +807,35 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "get-account-reference-by-id",
       "get-personal-account-by-username",
     ],
+  );
+  assert.deepEqual(
+    byPath.get("identity/account-emails").activationScope,
+    [
+      "add-account-email",
+      "list-account-emails",
+      "update-account-email-settings",
+      "verify-account-email",
+    ],
+  );
+  assert.deepEqual(
+    byPath.get("platform/scheduled-commands").activationScope,
+    [
+      "claim-due-scheduled-commands",
+      "complete-scheduled-command",
+      "fail-scheduled-command",
+      "reconcile-expired-command-leases",
+      "schedule-command",
+    ],
+  );
+  assert.deepEqual(
+    byPath.get("platform/notification-channels").activationScope,
+    ["deliver-email", "get-channel-delivery"],
+  );
+  assert.equal(
+    byPath.get("identity/authentication").activationScope.includes(
+      "manage-passkey",
+    ),
+    true,
   );
   assert.deepEqual(
     byPath.get("enterprises/enterprise-teams").activationScope,

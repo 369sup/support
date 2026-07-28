@@ -32,6 +32,7 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | identity | [accounts](../../apps/web/src/modules/identity/accounts/README.md) | domain | core | stable | active | fresh | validated | User account identity, personal or managed account type, human or machine usage, username, lifecycle, and ghost attribution. |
 | identity | [authentication](../../apps/web/src/modules/identity/authentication/README.md) | domain | core | stable | active | fresh | validated | Credentials, browser session sets, active account-session selection, two-factor authentication, recovery, and external login binding. |
+| identity | [account-emails](../../apps/web/src/modules/identity/account-emails/README.md) | domain | core | stable | active | fresh | validated | Account email addresses, verification, primary and public selection, managed-user ownership, reuse quarantine, and organization notification routing. |
 | identity | [account-registration](../../apps/web/src/modules/identity/account-registration/README.md) | domain | supporting | stable | active | fresh | validated | Coordinate personal account registration and username changes so account identity and password credentials never remain half-complete. |
 | identity | [profiles](../../apps/web/src/modules/identity/profiles/README.md) | domain | supporting | stable | active | fresh | validated | Public and private personal profiles, profile status, and pinned-item presentation. |
 | identity | [social-graph](../../apps/web/src/modules/identity/social-graph/README.md) | domain | supporting | stable | active | fresh | validated | Following relationships between users and organizations. |
@@ -77,8 +78,9 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 | projections | [repository-insights](../../apps/web/src/modules/projections/repository-insights/README.md) | projection | — | stable | planned | fresh | candidate | Non-code repository engagement trends and integration-health projections. |
 | platform | [event-publication](../../apps/web/src/modules/platform/event-publication/README.md) | technical | — | stable | active | not-applicable | not-applicable | Dispatch, leasing, retry, operational idempotency, redelivery, and dead-letter handling for context-owned event envelopes. |
 | platform | [search-index](../../apps/web/src/modules/platform/search-index/README.md) | technical | — | stable | active | not-applicable | not-applicable | Search document indexing, querying, and index lifecycle adapters. |
+| platform | [scheduled-commands](../../apps/web/src/modules/platform/scheduled-commands/README.md) | technical | — | stable | active | not-applicable | not-applicable | Durable scheduling, leasing, retry, reconciliation, and dead-letter handling for context-owned commands. |
 | platform | [media-storage](../../apps/web/src/modules/platform/media-storage/README.md) | technical | — | stable | active | not-applicable | not-applicable | Storage and retrieval of media referenced by product domains. |
-| platform | [notification-channels](../../apps/web/src/modules/platform/notification-channels/README.md) | technical | — | stable | planned | not-applicable | not-applicable | External email or push delivery adapters for accepted notification delivery requests. |
+| platform | [notification-channels](../../apps/web/src/modules/platform/notification-channels/README.md) | technical | — | stable | active | not-applicable | not-applicable | External email or push delivery adapters for accepted notification delivery requests. |
 | platform | [audit-storage](../../apps/web/src/modules/platform/audit-storage/README.md) | technical | — | stable | active | not-applicable | not-applicable | Storage, export, and retention enforcement for audit records. |
 | platform | [site-content](../../apps/web/src/modules/platform/site-content/README.md) | domain | supporting | stable | planned | fresh | candidate | Stable public product, documentation, accessibility, policy, and informational page content. |
 | projections | [discovery](../../apps/web/src/modules/projections/discovery/README.md) | projection | — | stable | active | fresh | validated | Public discovery projections for explore feeds, curated collections, topics, and trending repositories. |
@@ -113,12 +115,23 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 - **Owns:** Credential, Session, TwoFactorConfiguration, ExternalLoginBinding.
 - **Excludes:** AccountLifecycle, ScimProvisioning, OAuthAppAuthorization.
-- **Activation scope:** apply-password-credential-transaction, create-development-session, expire-session, get-current-authenticated-session, list-browser-account-sessions, reauthenticate-session, remove-account-session, sign-out-all-sessions, switch-active-account-session
-- **Runtime dependencies:** identity/accounts via AccountReference (synchronous)
+- **Activation scope:** apply-password-credential-transaction, change-password, configure-totp, create-development-session, create-password-session, enter-sudo-mode, expire-session, get-current-authenticated-session, list-browser-account-sessions, manage-passkey, recover-two-factor, reauthenticate-session, remove-account-session, request-password-reset, reset-password, sign-out-all-sessions, switch-active-account-session, verify-additional-factor
+- **Runtime dependencies:** identity/accounts via AccountReference (synchronous); platform/notification-channels via EmailDelivery (synchronous)
 - **Planned relationships:** None.
 - **Published events:** SessionCreated@1 (domain; planned; contract pending), SessionRevoked@1 (domain; planned; contract pending), TwoFactorEnabled@1 (domain; planned; contract pending), TwoFactorDisabled@1 (domain; planned; contract pending), ExternalLoginLinked@1 (domain; planned; contract pending), ExternalLoginUnlinked@1 (domain; planned; contract pending)
 - **Semantic claims:** authentication-session-lifecycle (owns Credential, Session; events SessionCreated@1, SessionRevoked@1; sources identity-authentication-source-01, identity-authentication-source-02); authentication-additional-factors (owns TwoFactorConfiguration, ExternalLoginBinding; events TwoFactorEnabled@1, TwoFactorDisabled@1, ExternalLoginLinked@1, ExternalLoginUnlinked@1; sources identity-authentication-source-01)
 - **Official sources:** identity-authentication-source-01 ([authentication, sessions, two-factor authentication](https://docs.github.com/en/authentication), checked 2026-07-23); identity-authentication-source-02 ([multiple browser account sessions, active account switching, managed user reauthentication](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/switching-between-accounts), checked 2026-07-23); identity-authentication-source-03 ([password minimums, password verifier storage](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-strong-password), checked 2026-07-27)
+
+### [identity/account-emails](../../apps/web/src/modules/identity/account-emails/README.md)
+
+- **Owns:** AccountEmail, EmailVerification, EmailReuseQuarantine, OrganizationNotificationRoute.
+- **Excludes:** AccountLifecycle, AuthenticationFactor, NotificationContent, VerifiedDomainLifecycle.
+- **Activation scope:** add-account-email, list-account-emails, update-account-email-settings, verify-account-email
+- **Runtime dependencies:** platform/notification-channels via EmailVerificationDelivery (synchronous)
+- **Planned relationships:** None.
+- **Published events:** AccountEmailAdded@1 (domain; planned; contract pending), AccountEmailVerified@1 (domain; planned; contract pending), PrimaryAccountEmailChanged@1 (domain; planned; contract pending)
+- **Semantic claims:** account-email-lifecycle (owns AccountEmail, EmailVerification, EmailReuseQuarantine; events AccountEmailAdded@1, AccountEmailVerified@1, PrimaryAccountEmailChanged@1; sources identity-account-emails-source-01, identity-account-emails-source-02, identity-account-emails-source-03, identity-account-emails-source-04); managed-and-notification-email-policy (owns AccountEmail, OrganizationNotificationRoute; no events; sources identity-account-emails-source-05, identity-account-emails-source-06)
+- **Official sources:** identity-account-emails-source-01 ([multiple account email addresses, verification before primary selection](https://docs.github.com/en/account-and-profile/how-tos/email-preferences/adding-an-email-address-to-your-github-account), checked 2026-07-28); identity-account-emails-source-02 ([primary email selection, primary replacement before removal](https://docs.github.com/en/account-and-profile/how-tos/email-preferences/changing-your-primary-email-address), checked 2026-07-28); identity-account-emails-source-03 ([email verification, verification resend](https://docs.github.com/en/account-and-profile/how-tos/email-preferences/verifying-your-email-address), checked 2026-07-28); identity-account-emails-source-04 ([public email visibility, account email listing](https://docs.github.com/en/rest/users/emails), checked 2026-07-28); identity-account-emails-source-05 ([managed users cannot change email, IdP owns one managed-user email](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-iam/understanding-iam-for-enterprises/about-enterprise-managed-users), checked 2026-07-28); identity-account-emails-source-06 ([verified or approved notification domains, outside collaborator exception](https://docs.github.com/en/enterprise-cloud@latest/organizations/keeping-your-organization-secure/managing-security-settings-for-your-organization/restricting-email-notifications-for-your-organization), checked 2026-07-28)
 
 ### [identity/account-registration](../../apps/web/src/modules/identity/account-registration/README.md)
 
@@ -615,6 +628,17 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 - **Semantic claims:** Not applicable to technical capabilities.
 - **Official sources:** Not applicable; technical capability.
 
+### [platform/scheduled-commands](../../apps/web/src/modules/platform/scheduled-commands/README.md)
+
+- **Owns:** ScheduledCommand, ScheduledCommandLease, ScheduledCommandAttempt, ScheduledCommandDeadLetter.
+- **Excludes:** ProductExpirationPolicy, ProductCommandMeaning, SourceContextReadValidation, CrossContextTransaction.
+- **Activation scope:** claim-due-scheduled-commands, complete-scheduled-command, fail-scheduled-command, reconcile-expired-command-leases, schedule-command
+- **Runtime dependencies:** None.
+- **Planned relationships:** None.
+- **Published events:** ScheduledCommandCompleted@1 (technical; planned; contract pending), ScheduledCommandDeadLettered@1 (technical; planned; contract pending)
+- **Semantic claims:** Not applicable to technical capabilities.
+- **Official sources:** Not applicable; technical capability.
+
 ### [platform/media-storage](../../apps/web/src/modules/platform/media-storage/README.md)
 
 - **Owns:** MediaReference, MediaObject, MediaStoragePolicy.
@@ -630,7 +654,7 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 - **Owns:** ChannelDelivery, DeliveryAttempt, DeliveryProviderReference.
 - **Excludes:** Notification, SubscriptionPreference, RecipientSelection.
-- **Activation scope:** None while planned.
+- **Activation scope:** deliver-email, get-channel-delivery
 - **Runtime dependencies:** None.
 - **Planned relationships:** engagement/notifications via NotificationDeliveryRequests (event) [NotificationDeliveryRequested@1]
 - **Published events:** ChannelDeliverySucceeded@1 (technical; planned; contract pending), ChannelDeliveryFailed@1 (technical; planned; contract pending)

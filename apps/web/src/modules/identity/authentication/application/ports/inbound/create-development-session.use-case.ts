@@ -4,6 +4,9 @@ export type CreateDevelopmentSessionCommand = Readonly<{
   browserToken: string | null;
   username: string;
   password: string;
+  secondFactor?:
+    | Readonly<{ kind: "recovery-code"; code: string }>
+    | Readonly<{ kind: "totp"; token: string }>;
 }>;
 export type CreateDevelopmentSessionResult =
   | Readonly<{
@@ -12,7 +15,11 @@ export type CreateDevelopmentSessionResult =
       session: ResolvedAccountSessionSnapshot;
     }>
   | Readonly<{
-      status: "invalid-credentials" | "account-unavailable";
+      status:
+        | "account-unavailable"
+        | "additional-factor-required"
+        | "invalid-additional-factor"
+        | "invalid-credentials";
     }>;
 
 export interface CreateDevelopmentSessionUseCase {

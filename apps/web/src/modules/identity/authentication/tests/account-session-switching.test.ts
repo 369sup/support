@@ -117,19 +117,19 @@ describe("browser account session switching", () => {
     );
     await expect(
       switchSession.switchActiveAccountSession({
-        browserToken: first.browserToken,
+        browserToken: second.browserToken,
         sessionId: first.session.sessionId,
       }),
     ).resolves.toMatchObject({ status: "switched" });
 
     const expire = new ExpireSessionHandler(repository);
     await expire.expireSession({
-      browserToken: first.browserToken,
+      browserToken: second.browserToken,
       sessionId: second.session.sessionId,
     });
     await expect(
       switchSession.switchActiveAccountSession({
-        browserToken: first.browserToken,
+        browserToken: second.browserToken,
         sessionId: second.session.sessionId,
       }),
     ).resolves.toMatchObject({
@@ -144,7 +144,7 @@ describe("browser account session switching", () => {
     );
     await expect(
       current.getCurrentAuthenticatedSession({
-        browserToken: first.browserToken,
+        browserToken: second.browserToken,
       }),
     ).resolves.toMatchObject({
       status: "authenticated",
@@ -158,13 +158,13 @@ describe("browser account session switching", () => {
       runtime,
     );
     await reauthenticate.reauthenticateSession({
-      browserToken: first.browserToken,
+      browserToken: second.browserToken,
       sessionId: second.session.sessionId,
       password: "github",
     });
     await expect(
       switchSession.switchActiveAccountSession({
-        browserToken: first.browserToken,
+        browserToken: second.browserToken,
         sessionId: second.session.sessionId,
       }),
     ).resolves.toMatchObject({

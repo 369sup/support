@@ -47,7 +47,7 @@ export function DevelopmentSignInForm({
     setIsPending(true);
     setError(undefined);
     const formData = new FormData(event.currentTarget);
-    const response = await fetch("/api/development/auth/sessions", {
+    const response = await fetch("/api/auth/sessions", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
@@ -93,7 +93,7 @@ export function DevelopmentSignInForm({
               autoComplete="username"
               autoFocus
               className="mt-2 h-11 w-full rounded-md border border-slate-600 bg-[#0a1624] px-3 text-sm text-white outline-none transition-colors placeholder:text-slate-600 hover:border-slate-500 focus-visible:border-emerald-400 focus-visible:ring-2 focus-visible:ring-emerald-400/30 disabled:cursor-not-allowed disabled:opacity-60"
-              defaultValue={isAddingAccount ? "carol_ACME" : "mock"}
+              defaultValue={isAddingAccount ? "carol_ACME" : undefined}
               disabled={!isEnabled}
               id="username"
               name="username"
@@ -105,7 +105,6 @@ export function DevelopmentSignInForm({
             <input
               autoComplete="current-password"
               className="mt-2 h-11 w-full rounded-md border border-slate-600 bg-[#0a1624] px-3 text-sm text-white outline-none transition-colors placeholder:text-slate-600 hover:border-slate-500 focus-visible:border-emerald-400 focus-visible:ring-2 focus-visible:ring-emerald-400/30 disabled:cursor-not-allowed disabled:opacity-60"
-              defaultValue="123456"
               disabled={!isEnabled}
               id="password"
               name="password"
@@ -148,8 +147,8 @@ export function DevelopmentSignInForm({
           <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-slate-500" />
           <p>
             {isEnabled
-              ? 'Development access: use username "mock" with password "123456", or any other configured account.'
-              : "In-memory authentication is disabled for this deployment."}
+              ? "Development authentication is enabled by deployment configuration."
+              : "Development authentication is disabled for this deployment."}
           </p>
         </div>
       </section>

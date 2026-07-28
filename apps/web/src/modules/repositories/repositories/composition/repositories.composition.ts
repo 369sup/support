@@ -4,11 +4,13 @@ import {
 } from "../adapters/inbound/server/list-active-public-repositories-for-personal-owner.adapter";
 import { RepositoryAdministrationAuthorizationAdapter } from "../adapters/outbound/integration/repository-administration-authorization.adapter";
 import { InMemoryRepositoryQueryAdapter } from "../adapters/outbound/persistence/in-memory-repository-query.adapter";
-import { InMemoryRepositoriesOutboxAdapter } from "../adapters/outbound/persistence/in-memory-repositories-outbox.adapter";
 import { InMemoryRepositoryIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-repository-id-generator.adapter";
 import { SystemRepositoryClockAdapter } from "../adapters/outbound/persistence/system-repository-clock.adapter";
 import { RepositoryOwnerAuthorizationAdapter } from "../adapters/outbound/integration/repository-owner-authorization.adapter";
-import { registerEventSource } from "@/modules/platform/event-publication/server-api";
+import {
+  createContextEventSource,
+  registerEventSource,
+} from "@/modules/platform/event-publication/server-api";
 import { ArchiveRepositoryHandler } from "../application/commands/archive-repository.handler";
 import { ChangeRepositoryVisibilityHandler } from "../application/commands/change-repository-visibility.handler";
 import { CreateEmptyRepositoryHandler } from "../application/commands/create-empty-repository.handler";
@@ -90,7 +92,9 @@ function mapCandidate(
 
 function composeRepositoriesServerFacade(): RepositoriesServerFacade {
   const repository = new InMemoryRepositoryQueryAdapter();
-  const eventRecorder = new InMemoryRepositoriesOutboxAdapter();
+  const eventRecorder = createContextEventSource(
+    "repositories/repositories",
+  );
   registerEventSource(eventRecorder);
   const getByOwnerAndName = new GetRepositoryByOwnerAndNameHandler(repository);
   const listOrganizationPublic =

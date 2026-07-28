@@ -5,6 +5,7 @@
 
 - accounts: domain, active
 - authentication: domain, active
+- account-emails: domain, active
 - account-registration: domain, active
 - profiles: domain, active
 - social-graph: domain, active
@@ -88,8 +89,9 @@
 
 - event-publication: technical, active
 - search-index: technical, active
+- scheduled-commands: technical, active
 - media-storage: technical, active
-- notification-channels: technical, planned
+- notification-channels: technical, active
 - audit-storage: technical, active
 - site-content: domain, planned
 - actions-route-compatibility: technical, planned

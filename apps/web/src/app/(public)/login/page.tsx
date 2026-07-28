@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { DevelopmentSignInForm } from "@/modules/identity/authentication/browser-ui";
-import { isInMemoryRuntimeEnabled } from "@/modules/identity/authentication/server-api";
+import { isPasswordAuthenticationEnabled } from "@/modules/identity/authentication/server-api";
 
 export const metadata: Metadata = {
   title: "Sign in",
@@ -20,7 +20,7 @@ export default async function LoginPage({
 
   return (
     <DevelopmentSignInForm
-      isEnabled={isInMemoryRuntimeEnabled()}
+      isEnabled={isPasswordAuthenticationEnabled()}
       isAddingAccount={add === "1"}
     />
   );

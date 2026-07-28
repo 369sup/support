@@ -596,6 +596,18 @@ identity, effect safety, and related React compiler diagnostics.
   remediation, and escalation conditions. A metric without a defined response
   belongs in a dashboard rather than an alert.
 
+## Database runtime ownership
+
+- `@support/database` owns the business-free PostgreSQL pool, transaction, and
+  migration runtime. It does not own product tables, repositories, retention,
+  authorization, tenant rules, or cross-context transactions.
+- Each bounded context owns its schema namespace, migrations, persistence
+  adapters, optimistic-concurrency rules, and data lifecycle.
+- A transaction uses one checked-out connection for its complete lifetime and
+  performs no provider or network work while holding database locks.
+- Application composition selects PostgreSQL or in-memory adapters. The choice
+  changes durability and deployment requirements, not domain behavior.
+
 ## Security and data protection
 
 - Queries, DTOs, logs, and browser payloads contain only fields required for

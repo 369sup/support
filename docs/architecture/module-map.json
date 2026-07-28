@@ -241,6 +241,11 @@
           "context": "identity/accounts",
           "contract": "AccountReference",
           "mode": "synchronous"
+        },
+        {
+          "context": "platform/notification-channels",
+          "contract": "EmailDelivery",
+          "mode": "synchronous"
         }
       ],
       "officialSources": [
@@ -338,14 +343,23 @@
       ],
       "activationScope": [
         "apply-password-credential-transaction",
+        "change-password",
+        "configure-totp",
         "create-development-session",
+        "create-password-session",
+        "enter-sudo-mode",
         "expire-session",
         "get-current-authenticated-session",
         "list-browser-account-sessions",
+        "manage-passkey",
+        "recover-two-factor",
         "reauthenticate-session",
         "remove-account-session",
+        "request-password-reset",
+        "reset-password",
         "sign-out-all-sessions",
-        "switch-active-account-session"
+        "switch-active-account-session",
+        "verify-additional-factor"
       ],
       "plannedRelationships": [],
       "semanticClaims": [
@@ -380,6 +394,165 @@
           ],
           "sourceIds": [
             "identity-authentication-source-01"
+          ]
+        }
+      ]
+    },
+    {
+      "subdomain": "identity",
+      "name": "account-emails",
+      "kind": "domain",
+      "classification": "core",
+      "maturity": "stable",
+      "implementationStatus": "active",
+      "responsibility": "Account email addresses, verification, primary and public selection, managed-user ownership, reuse quarantine, and organization notification routing.",
+      "semanticStatus": "validated",
+      "owns": [
+        "AccountEmail",
+        "EmailVerification",
+        "EmailReuseQuarantine",
+        "OrganizationNotificationRoute"
+      ],
+      "excludes": [
+        "AccountLifecycle",
+        "AuthenticationFactor",
+        "NotificationContent",
+        "VerifiedDomainLifecycle"
+      ],
+      "dependencies": [
+        {
+          "context": "platform/notification-channels",
+          "contract": "EmailVerificationDelivery",
+          "mode": "synchronous"
+        }
+      ],
+      "officialSources": [
+        {
+          "id": "identity-account-emails-source-01",
+          "url": "https://docs.github.com/en/account-and-profile/how-tos/email-preferences/adding-an-email-address-to-your-github-account",
+          "supports": [
+            "multiple account email addresses",
+            "verification before primary selection"
+          ],
+          "verifiedOn": "2026-07-28"
+        },
+        {
+          "id": "identity-account-emails-source-02",
+          "url": "https://docs.github.com/en/account-and-profile/how-tos/email-preferences/changing-your-primary-email-address",
+          "supports": [
+            "primary email selection",
+            "primary replacement before removal"
+          ],
+          "verifiedOn": "2026-07-28"
+        },
+        {
+          "id": "identity-account-emails-source-03",
+          "url": "https://docs.github.com/en/account-and-profile/how-tos/email-preferences/verifying-your-email-address",
+          "supports": [
+            "email verification",
+            "verification resend"
+          ],
+          "verifiedOn": "2026-07-28"
+        },
+        {
+          "id": "identity-account-emails-source-04",
+          "url": "https://docs.github.com/en/rest/users/emails",
+          "supports": [
+            "public email visibility",
+            "account email listing"
+          ],
+          "verifiedOn": "2026-07-28"
+        },
+        {
+          "id": "identity-account-emails-source-05",
+          "url": "https://docs.github.com/en/enterprise-cloud@latest/admin/managing-iam/understanding-iam-for-enterprises/about-enterprise-managed-users",
+          "supports": [
+            "managed users cannot change email",
+            "IdP owns one managed-user email"
+          ],
+          "verifiedOn": "2026-07-28"
+        },
+        {
+          "id": "identity-account-emails-source-06",
+          "url": "https://docs.github.com/en/enterprise-cloud@latest/organizations/keeping-your-organization-secure/managing-security-settings-for-your-organization/restricting-email-notifications-for-your-organization",
+          "supports": [
+            "verified or approved notification domains",
+            "outside collaborator exception"
+          ],
+          "verifiedOn": "2026-07-28"
+        }
+      ],
+      "publishedEvents": [
+        {
+          "name": "AccountEmailAdded",
+          "version": 1,
+          "kind": "domain",
+          "implementationStatus": "planned",
+          "meaning": "An email address was added to an account.",
+          "sourceIds": [
+            "identity-account-emails-source-01"
+          ]
+        },
+        {
+          "name": "AccountEmailVerified",
+          "version": 1,
+          "kind": "domain",
+          "implementationStatus": "planned",
+          "meaning": "An account email address was verified.",
+          "sourceIds": [
+            "identity-account-emails-source-03"
+          ]
+        },
+        {
+          "name": "PrimaryAccountEmailChanged",
+          "version": 1,
+          "kind": "domain",
+          "implementationStatus": "planned",
+          "meaning": "An account selected a different primary email address.",
+          "sourceIds": [
+            "identity-account-emails-source-02"
+          ]
+        }
+      ],
+      "activationScope": [
+        "add-account-email",
+        "list-account-emails",
+        "update-account-email-settings",
+        "verify-account-email"
+      ],
+      "plannedRelationships": [],
+      "semanticClaims": [
+        {
+          "id": "account-email-lifecycle",
+          "statement": "A personal account can own multiple email addresses, but primary and public selections require a verified address and the primary address cannot be removed without replacement.",
+          "ownership": [
+            "AccountEmail",
+            "EmailVerification",
+            "EmailReuseQuarantine"
+          ],
+          "events": [
+            "AccountEmailAdded@1",
+            "AccountEmailVerified@1",
+            "PrimaryAccountEmailChanged@1"
+          ],
+          "sourceIds": [
+            "identity-account-emails-source-01",
+            "identity-account-emails-source-02",
+            "identity-account-emails-source-03",
+            "identity-account-emails-source-04"
+          ]
+        },
+        {
+          "id": "managed-and-notification-email-policy",
+          "statement": "An IdP owns the single email address of a managed user, while organization notification routing requires a verified address in an allowed domain unless the user is an outside collaborator.",
+          "ownership": [
+            "AccountEmail",
+            "OrganizationNotificationRoute"
+          ],
+          "events": [],
+          "sourceIds": [
+            "identity-account-emails-source-05",
+            "identity-account-emails-source-06"
           ]
         }
       ]
@@ -8940,6 +9113,56 @@
     },
     {
       "subdomain": "platform",
+      "name": "scheduled-commands",
+      "kind": "technical",
+      "maturity": "stable",
+      "implementationStatus": "active",
+      "responsibility": "Durable scheduling, leasing, retry, reconciliation, and dead-letter handling for context-owned commands.",
+      "semanticStatus": "not-applicable",
+      "owns": [
+        "ScheduledCommand",
+        "ScheduledCommandLease",
+        "ScheduledCommandAttempt",
+        "ScheduledCommandDeadLetter"
+      ],
+      "excludes": [
+        "ProductExpirationPolicy",
+        "ProductCommandMeaning",
+        "SourceContextReadValidation",
+        "CrossContextTransaction"
+      ],
+      "dependencies": [],
+      "officialSources": [],
+      "publishedEvents": [
+        {
+          "name": "ScheduledCommandCompleted",
+          "version": 1,
+          "kind": "technical",
+          "implementationStatus": "planned",
+          "meaning": "scheduled command completed.",
+          "sourceIds": []
+        },
+        {
+          "name": "ScheduledCommandDeadLettered",
+          "version": 1,
+          "kind": "technical",
+          "implementationStatus": "planned",
+          "meaning": "scheduled command exhausted automatic attempts.",
+          "sourceIds": []
+        }
+      ],
+      "activationScope": [
+        "claim-due-scheduled-commands",
+        "complete-scheduled-command",
+        "fail-scheduled-command",
+        "reconcile-expired-command-leases",
+        "schedule-command"
+      ],
+      "plannedRelationships": [],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "platform",
       "name": "media-storage",
       "kind": "technical",
       "maturity": "stable",
@@ -8998,7 +9221,7 @@
       "name": "notification-channels",
       "kind": "technical",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "External email or push delivery adapters for accepted notification delivery requests.",
       "semanticStatus": "not-applicable",
       "owns": [
@@ -9031,7 +9254,10 @@
           "sourceIds": []
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "deliver-email",
+        "get-channel-delivery"
+      ],
       "plannedRelationships": [
         {
           "context": "engagement/notifications",

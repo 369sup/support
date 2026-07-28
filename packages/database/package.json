@@ -1,0 +1,28 @@
+{
+  "name": "@support/database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./postgres": "./src/postgres.ts"
+  },
+  "scripts": {
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pg": "catalog:"
+  },
+  "devDependencies": {
+    "@support/eslint-config": "workspace:*",
+    "@support/testing-config": "workspace:*",
+    "@support/typescript-config": "workspace:*",
+    "@types/node": "^20",
+    "@types/pg": "8.20.0",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

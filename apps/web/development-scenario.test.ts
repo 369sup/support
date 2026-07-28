@@ -38,7 +38,8 @@ describe("development scenario referential integrity", () => {
     const created = await createDevelopmentSession({
       browserToken: null,
       username: "carol_ACME",
-      password: "github",
+      password:
+        process.env["SUPPORT_DEVELOPMENT_AUTH_PASSWORD"] ?? "",
     });
     expect(created.status).toBe("created");
     if (created.status !== "created") {

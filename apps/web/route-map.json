@@ -318,6 +318,46 @@
       ]
     },
     {
+      "id": "handler-api-auth-sessions",
+      "file": "apps/web/src/app/api/auth/sessions/route.ts",
+      "readme": "apps/web/src/app/api/auth/sessions/README.md",
+      "kind": "handler",
+      "supportPath": "/api/auth/sessions",
+      "githubUrls": [],
+      "status": "active",
+      "materialization": "active",
+      "title": "Sessions Handler",
+      "summary": "Handles POST requests for `/api/auth/sessions` through `createPasswordSession`, `hasSameOrigin`, `isPasswordAuthenticationEnabled`, `readBrowserSessionToken`, `writeBrowserSessionToken`.",
+      "pathParams": [],
+      "queryParams": [],
+      "modules": [
+        {
+          "context": "identity/authentication",
+          "role": "owner",
+          "useCases": [
+            "create-password-session"
+          ],
+          "functions": [
+            "createPasswordSession",
+            "hasSameOrigin",
+            "isPasswordAuthenticationEnabled",
+            "readBrowserSessionToken",
+            "writeBrowserSessionToken"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "repository-app-router"
+      ],
+      "methods": [
+        {
+          "method": "POST",
+          "function": "POST",
+          "summary": "Processes the POST transport contract without moving business policy into the route."
+        }
+      ]
+    },
+    {
       "id": "handler-api-auth-session",
       "file": "apps/web/src/app/api/auth/session/route.ts",
       "readme": "apps/web/src/app/api/auth/session/README.md",
@@ -634,7 +674,7 @@
       "status": "active",
       "materialization": "active",
       "title": "Sessions Handler",
-      "summary": "Handles POST requests for `/api/development/auth/sessions` through `createDevelopmentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`, `readBrowserSessionToken`, `writeBrowserSessionToken`.",
+      "summary": "Handles POST requests for `/api/development/auth/sessions` through `createDevelopmentSession`, `hasSameOrigin`, `isDevelopmentAuthenticationEnabled`, `readBrowserSessionToken`, `writeBrowserSessionToken`.",
       "pathParams": [],
       "queryParams": [],
       "modules": [
@@ -647,7 +687,7 @@
           "functions": [
             "createDevelopmentSession",
             "hasSameOrigin",
-            "isInMemoryRuntimeEnabled",
+            "isDevelopmentAuthenticationEnabled",
             "readBrowserSessionToken",
             "writeBrowserSessionToken"
           ]
@@ -2422,7 +2462,7 @@
       "status": "active",
       "materialization": "active",
       "title": "Login Page",
-      "summary": "Delivers `/login` through `isInMemoryRuntimeEnabled`.",
+      "summary": "Delivers `/login` through `isPasswordAuthenticationEnabled`.",
       "pathParams": [],
       "queryParams": [
         {
@@ -2437,7 +2477,7 @@
           "role": "owner",
           "useCases": [],
           "functions": [
-            "isInMemoryRuntimeEnabled"
+            "isPasswordAuthenticationEnabled"
           ]
         }
       ],

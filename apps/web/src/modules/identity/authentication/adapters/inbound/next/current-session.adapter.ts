@@ -6,7 +6,6 @@ import type {
 } from "../../../contracts/authenticated-session-reference";
 
 interface CurrentSessionDependencies {
-  isInMemoryRuntimeEnabled: () => boolean;
   readBrowserSessionToken: () => Promise<string | null>;
   getCurrentAuthenticatedSession: (
     browserToken: string,
@@ -14,14 +13,10 @@ interface CurrentSessionDependencies {
 }
 
 export function createCurrentSessionAdapter({
-  isInMemoryRuntimeEnabled,
   readBrowserSessionToken,
   getCurrentAuthenticatedSession,
 }: CurrentSessionDependencies) {
   async function getOptionalCurrentSession(): Promise<AuthenticatedSessionReference | null> {
-    if (!isInMemoryRuntimeEnabled()) {
-      return null;
-    }
     const browserToken = await readBrowserSessionToken();
     if (browserToken === null) {
       return null;

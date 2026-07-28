@@ -30,6 +30,10 @@ export const workspacePackagePolicy = Object.freeze({
     kind: "contracts",
     path: "packages/contracts",
   }),
+  "@support/database": Object.freeze({
+    kind: "runtime",
+    path: "packages/database",
+  }),
   "@support/eslint-config": Object.freeze({
     kind: "config",
     path: "packages/eslint-config",

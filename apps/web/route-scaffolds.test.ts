@@ -12,13 +12,13 @@ import {
 const repositoryRoot = resolve(import.meta.dirname, "..", "..");
 
 describe("App Router route catalog", () => {
-  it("covers all 134 public delivery files and excludes parallel fallbacks", () => {
+  it("covers all 135 public delivery files and excludes parallel fallbacks", () => {
     const files = discoverAppRoutes(repositoryRoot);
     const catalogFiles = routeMap.routes
       .flatMap((route) => "file" in route ? [route.file] : [])
       .sort();
 
-    expect(files).toHaveLength(134);
+    expect(files).toHaveLength(135);
     expect(catalogFiles).toEqual(files);
     expect(catalogFiles.some((file) => file.includes("/@"))).toBe(false);
   });

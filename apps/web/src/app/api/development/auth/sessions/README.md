@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Handles POST requests for `/api/development/auth/sessions` through `createDevelopmentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`, `readBrowserSessionToken`, `writeBrowserSessionToken`.
+Handles POST requests for `/api/development/auth/sessions` through `createDevelopmentSession`, `hasSameOrigin`, `isDevelopmentAuthenticationEnabled`, `readBrowserSessionToken`, `writeBrowserSessionToken`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -23,7 +23,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 
 ## Module contracts
 
-- - **owner:** `identity/authentication` — use cases: `create-development-session`; functions: `createDevelopmentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`, `readBrowserSessionToken`, `writeBrowserSessionToken`
+- - **owner:** `identity/authentication` — use cases: `create-development-session`; functions: `createDevelopmentSession`, `hasSameOrigin`, `isDevelopmentAuthenticationEnabled`, `readBrowserSessionToken`, `writeBrowserSessionToken`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

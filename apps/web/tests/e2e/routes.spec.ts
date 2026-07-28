@@ -1,5 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
 
+const developmentPassword =
+  process.env["SUPPORT_DEVELOPMENT_AUTH_PASSWORD"] ??
+  (() => {
+    throw new Error("SUPPORT_DEVELOPMENT_AUTH_PASSWORD is required for E2E.");
+  })();
+
 const publicRoutes = [
   { path: "/", heading: "Where teams build trust together." },
   { path: "/accessibility", heading: "Accessibility" },
@@ -121,6 +127,8 @@ const unavailableScaffoldRoutes = [
 
 async function signIn(page: Page) {
   await page.goto("/login");
+  await page.getByLabel("Username").fill("mock");
+  await page.getByLabel("Password").fill(developmentPassword);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
 }
@@ -128,6 +136,7 @@ async function signIn(page: Page) {
 async function signInAs(page: Page, username: string) {
   await page.goto("/login");
   await page.getByLabel("Username").fill(username);
+  await page.getByLabel("Password").fill(developmentPassword);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
 }
@@ -795,4 +804,3 @@ test("expired managed session requires reauthentication and keeps active account
   });
   await expect(page.getByLabel("Account menu for @octocat")).toBeVisible();
 });
-

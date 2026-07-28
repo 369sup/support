@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Delivers `/login` through `isInMemoryRuntimeEnabled`.
+Delivers `/login` through `isPasswordAuthenticationEnabled`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -23,7 +23,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 
 ## Module contracts
 
-- - **owner:** `identity/authentication` — use cases: no route-level use-case reference; functions: `isInMemoryRuntimeEnabled`
+- - **owner:** `identity/authentication` — use cases: no route-level use-case reference; functions: `isPasswordAuthenticationEnabled`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

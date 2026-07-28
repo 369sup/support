@@ -10,6 +10,7 @@ import type {
 } from "../ports/outbound/browser-session-set.repository.port";
 import type { DevelopmentCredentialRepositoryPort } from "../ports/outbound/development-credential.repository.port";
 import type { SessionRuntimeGatewayPort } from "../ports/outbound/session-runtime.gateway.port";
+import type { AccountSecurityService } from "../services/account-security.service";
 
 export class CreateDevelopmentSessionHandler
   implements CreateDevelopmentSessionUseCase
@@ -18,17 +19,26 @@ export class CreateDevelopmentSessionHandler
   private readonly credentialRepository: DevelopmentCredentialRepositoryPort;
   private readonly accountGateway: AccountReferenceGatewayPort;
   private readonly runtime: SessionRuntimeGatewayPort;
+  private readonly security: Pick<
+    AccountSecurityService,
+    "isTwoFactorRequired" | "verifyAdditionalFactor"
+  > | null;
 
   constructor(
     sessionRepository: BrowserSessionSetRepositoryPort,
     credentialRepository: DevelopmentCredentialRepositoryPort,
     accountGateway: AccountReferenceGatewayPort,
     runtime: SessionRuntimeGatewayPort,
+    security: Pick<
+      AccountSecurityService,
+      "isTwoFactorRequired" | "verifyAdditionalFactor"
+    > | null = null,
   ) {
     this.sessionRepository = sessionRepository;
     this.credentialRepository = credentialRepository;
     this.accountGateway = accountGateway;
     this.runtime = runtime;
+    this.security = security;
   }
 
   async createDevelopmentSession(
@@ -41,6 +51,23 @@ export class CreateDevelopmentSessionHandler
     if (accountId === null) {
       return { status: "invalid-credentials" };
     }
+    const isAdditionalFactorRequired =
+      (await this.security?.isTwoFactorRequired(accountId)) ?? false;
+    if (isAdditionalFactorRequired && command.secondFactor === undefined) {
+      return { status: "additional-factor-required" };
+    }
+    if (
+      isAdditionalFactorRequired &&
+      command.secondFactor !== undefined &&
+      (
+        await this.security?.verifyAdditionalFactor({
+          accountId,
+          factor: command.secondFactor,
+        })
+      )?.status !== "verified"
+    ) {
+      return { status: "invalid-additional-factor" };
+    }
 
     const account = await this.accountGateway.getAccountReference(accountId);
     if (account === null || account.lifecycleState !== "active") {
@@ -51,8 +78,7 @@ export class CreateDevelopmentSessionHandler
       command.browserToken === null
         ? null
         : await this.sessionRepository.findByToken(command.browserToken);
-    const browserToken =
-      existingSet?.browserToken ?? this.runtime.createOpaqueId();
+    const browserToken = this.runtime.createOpaqueId();
     const now = this.runtime.now();
     const expiresAt =
       account.accountType === "managed"
@@ -80,6 +106,12 @@ export class CreateDevelopmentSessionHandler
       activeSessionId: session.sessionId,
       sessions,
     });
+    if (
+      existingSet !== null &&
+      existingSet.browserToken !== browserToken
+    ) {
+      await this.sessionRepository.delete(existingSet.browserToken);
+    }
 
     return {
       status: "created",

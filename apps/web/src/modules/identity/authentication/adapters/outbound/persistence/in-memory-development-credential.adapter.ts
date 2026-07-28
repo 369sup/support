@@ -13,9 +13,11 @@ import type {
   PasswordCredentialTransactionResult,
 } from "../../../application/ports/outbound/password-credential-transaction.repository.port";
 
-type PasswordVerifier =
-  | Readonly<{ kind: "development-plain"; value: string }>
-  | Readonly<{ kind: "scrypt"; salt: string; digest: string }>;
+type PasswordVerifier = Readonly<{
+  kind: "scrypt";
+  salt: string;
+  digest: string;
+}>;
 
 type CredentialRecord = Readonly<{
   accountId: string;
@@ -37,36 +39,35 @@ type CredentialStore = {
   transactionById: Map<string, CredentialTransaction>;
 };
 
-const developmentCredentials = [
-  { accountId: "account_mock", username: "mock", password: "123456" },
-  { accountId: "account_octocat", username: "octocat", password: "github" },
-  { accountId: "account_hubot", username: "hubot", password: "github" },
+const developmentAccounts = [
+  { accountId: "account_mock", username: "mock" },
+  { accountId: "account_octocat", username: "octocat" },
+  { accountId: "account_hubot", username: "hubot" },
   {
     accountId: "account_carol_acme",
     username: "carol_ACME",
-    password: "github",
   },
-  { accountId: "account_bob", username: "bob", password: "github" },
+  { accountId: "account_bob", username: "bob" },
 ] as const;
 
 declare global {
-  var __supportDevelopmentCredentialStoreV2: CredentialStore | undefined;
+  var __supportDevelopmentCredentialStoreV3: CredentialStore | undefined;
 }
 
 function normalizeUsername(username: string) {
   return username.toLocaleLowerCase("en-US");
 }
 
-function createStore(): CredentialStore {
-  const records = developmentCredentials.map<CredentialRecord>((credential) => ({
-    accountId: credential.accountId,
-    username: credential.username,
-    passwordVerifier: {
-      kind: "development-plain",
-      value: credential.password,
-    },
-    isLocked: false,
-  }));
+function createStore(developmentPassword: string): CredentialStore {
+  const records =
+    developmentPassword.length === 0
+      ? []
+      : developmentAccounts.map<CredentialRecord>((account) => ({
+          accountId: account.accountId,
+          username: account.username,
+          passwordVerifier: createScryptVerifier(developmentPassword),
+          isLocked: false,
+        }));
   return {
     byAccountId: new Map(
       records.map((credential) => [credential.accountId, credential]),
@@ -81,9 +82,10 @@ function createStore(): CredentialStore {
   };
 }
 
-function getProcessStore() {
-  globalThis.__supportDevelopmentCredentialStoreV2 ??= createStore();
-  return globalThis.__supportDevelopmentCredentialStoreV2;
+function getProcessStore(developmentPassword: string) {
+  globalThis.__supportDevelopmentCredentialStoreV3 ??=
+    createStore(developmentPassword);
+  return globalThis.__supportDevelopmentCredentialStoreV3;
 }
 
 function createScryptVerifier(password: string): PasswordVerifier {
@@ -99,9 +101,6 @@ function verifyPassword(
   password: string,
   verifier: PasswordVerifier,
 ): boolean {
-  if (verifier.kind === "development-plain") {
-    return password === verifier.value;
-  }
   const actual = scryptSync(
     password,
     Buffer.from(verifier.salt, "hex"),
@@ -120,9 +119,19 @@ export class InMemoryDevelopmentCredentialAdapter
     PasswordCredentialTransactionRepositoryPort
 {
   private readonly store: CredentialStore;
+  private readonly isDevelopmentAuthenticationConfigured: boolean;
 
-  constructor() {
-    this.store = getProcessStore();
+  constructor(
+    developmentPassword =
+      process.env["SUPPORT_DEVELOPMENT_AUTH_PASSWORD"] ?? "",
+  ) {
+    this.isDevelopmentAuthenticationConfigured =
+      developmentPassword.length > 0;
+    this.store = getProcessStore(developmentPassword);
+  }
+
+  isConfigured(): boolean {
+    return this.isDevelopmentAuthenticationConfigured;
   }
 
   authenticate(username: string, password: string): Promise<string | null> {
