@@ -23,12 +23,15 @@ hook with Node.js. It does not interpolate event data into a shell command.
 `scripts/memory/`.
 
 It injects a checkpoint token, records only a dirty/hash checkpoint state,
-validates the
-model-authored candidate bundle in `local/current-task`, and performs
+validates the model-authored candidate bundle in `local/current-task`, and performs
 checkpoint, distillation, conflict handling, TTL, archive, and rendering. It
 never reads `transcript_path` or persists prompts, tool output, logs, provider
 payloads, secrets, or credentials. A missing `serena-hooks` executable produces
 a warning without blocking normal repository work.
+
+The task sections and candidate schema are defined in
+[`../../.serena/AGENTS.md`](../../.serena/AGENTS.md), not in a Codex base-model
+instruction override.
 
 `Stop` requests at most one continuation to repair a missing or stale
 checkpoint. A second failure is reported and allowed to stop so the hook cannot

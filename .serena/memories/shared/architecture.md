@@ -7,16 +7,16 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 - git-and-repository-content: Git objects, files, commits, refs, branches, tags, clone, fetch, push, and repository content are outside the product boundary.
 - diff-merge-and-pull-requests: Diffs, mergeability, merge execution, pull requests, reviews, and code-review state require the excluded code domain.
-- actions-and-code-products: Actions execution, code search and navigation, code security analysis, Dependabot, Packages, Pages, and Codespaces are excluded.
+- actions-and-source-backed-code-products: Actions execution, code search and navigation, code security analysis, Dependabot, source-backed package payloads, source-backed Pages builds, and Codespaces are excluded. Package metadata and app-owned site publication may be modeled without Git behavior.
 
 ## Deferred capabilities
 
-- releases: A trustworthy tag-reference provider.
-- forks-and-templates: Git history and repository-content provisioning providers.
-- community-profile: A repository-content provider for community files.
+- release-git-reference-resolution: A trustworthy tag-reference provider before release metadata may resolve Git tags or commits.
+- fork-history-and-template-provisioning: Git history and repository-content provisioning providers; relationship metadata remains independent.
+- community-file-discovery: A repository-content provider; structured app-owned community profiles remain independent.
 - code-rulesets: Branch, tag, push, and code-governance resources.
-- repository-traffic-metrics: A trustworthy product-telemetry ingestion, retention, and aggregation capability.
-- repository-wiki-content: A trustworthy Git-backed wiki content provider.
+- git-derived-repository-traffic: A trustworthy Git telemetry provider; Support web telemetry remains independent.
+- git-backed-repository-wiki-content: A trustworthy Git-backed wiki provider; app-owned wiki content remains independent.
 - repository-migration-locks: A repository migration orchestration capability with documented lock ownership and recovery.
 - organization-discussion-source-repository-disruption: Documented GitHub behavior or an accepted product policy for source repository transfer and deletion.
 

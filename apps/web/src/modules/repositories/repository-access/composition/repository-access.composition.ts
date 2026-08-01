@@ -1,8 +1,8 @@
 import type { AccountReference } from "@/modules/identity/accounts/integration-contracts";
 import { registerEventSource } from "@/modules/platform/event-publication/server-api";
-import type { RepositoryCandidateReference } from "@/modules/repositories/repositories/integration-contracts";
 
 import { OrganizationMembershipAdapter } from "../adapters/outbound/integration/organization-membership.adapter";
+import { OrganizationPolicyAdapter } from "../adapters/outbound/integration/organization-policy.adapter";
 import { OrganizationRoleAdapter } from "../adapters/outbound/integration/organization-role.adapter";
 import { OrganizationTeamAdapter } from "../adapters/outbound/integration/organization-team.adapter";
 import { InMemoryRepositoryGrantAdapter } from "../adapters/outbound/persistence/in-memory-repository-grant.adapter";
@@ -18,16 +18,20 @@ import type {
   RepositoryPermission,
   TeamRepositoryGrantReference,
 } from "../contracts/effective-repository-permission-decision";
+import type {
+  ActiveRepositoryAccessTarget,
+  RepositoryAccessTarget,
+} from "../contracts/repository-access-target";
 
 type TeamGrantInput = Readonly<{
-  repository: RepositoryCandidateReference;
+  repository: ActiveRepositoryAccessTarget;
   actor: AccountReference;
   teamId: string;
 }>;
 
 export interface RepositoryAccessServerFacade {
   resolveEffectiveRepositoryPermission: (input: {
-    repository: RepositoryCandidateReference;
+    repository: RepositoryAccessTarget;
     actor: AccountReference;
   }) => Promise<EffectiveRepositoryPermissionDecision>;
   grantTeamRepositoryAccess: (
@@ -69,7 +73,7 @@ export interface RepositoryAccessServerFacade {
   >;
 }
 
-function mapRepository(repository: RepositoryCandidateReference) {
+function mapRepository(repository: RepositoryAccessTarget) {
   return {
     repositoryId: repository.repositoryId,
     owner:
@@ -94,6 +98,7 @@ function composeRepositoryAccessServerFacade(): RepositoryAccessServerFacade {
   const resolver = new ResolveEffectiveRepositoryPermissionHandler(
     grantAdapter,
     new OrganizationMembershipAdapter(),
+    new OrganizationPolicyAdapter(),
     grantAdapter,
     teamAdapter,
     new OrganizationRoleAdapter(),

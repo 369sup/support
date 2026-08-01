@@ -17,6 +17,10 @@ export type RepositoryPermissionSource =
   | Readonly<{ kind: "public-read" }>
   | Readonly<{ kind: "personal-owner" }>
   | Readonly<{ kind: "organization-owner"; membershipId: string }>
+  | Readonly<{
+      kind: "organization-base-permission";
+      membershipId: string;
+    }>
   | Readonly<{ kind: "direct-grant"; grantId: string }>
   | Readonly<{
       kind: "team-grant";
@@ -37,6 +41,12 @@ export type RepositoryPermissionSource =
 export type EffectiveRepositoryPermissionDecision = Readonly<{
   isAllowed: boolean;
   permission: RepositoryPermission | null;
+  effectiveBaseRole: RepositoryPermission | null;
+  additionalPermissions: readonly RepositoryPermission[];
+  capabilityDecisions: readonly Readonly<{
+    permission: RepositoryPermission;
+    source: RepositoryPermissionSource;
+  }>[];
   sources: readonly RepositoryPermissionSource[];
 }>;
 

@@ -5,14 +5,15 @@
 
 - accounts: domain, active
 - authentication: domain, active
-- profiles: domain, planned
-- social-graph: domain, planned
+- account-registration: domain, active
+- profiles: domain, active
+- social-graph: domain, active
 
 ## enterprises
 
 - enterprises: domain, active
 - enterprise-memberships: domain, active
-- enterprise-teams: domain, planned
+- enterprise-teams: domain, active
 - enterprise-roles: domain, active
 - enterprise-iam: domain, planned
 - enterprise-policies: domain, planned
@@ -24,7 +25,7 @@
 - organization-memberships: domain, active
 - organization-teams: domain, active
 - organization-roles: domain, active
-- organization-policies: domain, planned
+- organization-policies: domain, active
 - custom-properties: domain, planned
 
 ## repositories
@@ -33,22 +34,26 @@
 - repository-access: domain, active
 - repository-features: domain, planned
 - repository-metadata: domain, planned
+- repository-releases: domain, planned
+- repository-forks: domain, planned
 
 ## collaboration
 
-- issues: domain, planned
+- issues: domain, active
 - issue-schema: domain, planned
 - labels-and-milestones: domain, planned
-- conversations: domain, planned
-- discussions: domain, planned
-- moderation: domain, planned
-- projects: domain, planned
+- conversations: domain, active
+- discussions: domain, active
+- moderation: domain, active
+- projects: domain, active
+- community-profiles: domain, planned
+- wikis: domain, planned
 
 ## engagement
 
-- stars: domain, planned
-- subscriptions: domain, planned
-- notifications: domain, planned
+- stars: domain, active
+- subscriptions: domain, active
+- notifications: domain, active
 
 ## integrations
 
@@ -58,11 +63,13 @@
 - oauth-authorizations: domain, planned
 - repository-autolinks: domain, planned
 - webhooks: domain, planned
+- marketplace-catalog: domain, planned
 
 ## commerce
 
 - billing: domain, planned
 - entitlements: domain, planned
+- package-registry: domain, planned
 
 ## governance
 
@@ -70,10 +77,12 @@
 
 ## projections
 
-- search: projection, planned
+- search: projection, active
 - dashboard: projection, active
-- activity-feed: projection, planned
+- activity-feed: projection, active
 - repository-insights: projection, planned
+- discovery: projection, active
+- repository-traffic: projection, planned
 
 ## platform
 
@@ -82,3 +91,10 @@
 - media-storage: technical, active
 - notification-channels: technical, planned
 - audit-storage: technical, active
+- site-content: domain, planned
+- actions-route-compatibility: technical, planned
+- repository-content-route-compatibility: technical, planned
+- repository-history-route-compatibility: technical, planned
+- repository-reference-route-compatibility: technical, planned
+- pull-request-route-compatibility: technical, planned
+- site-publishing: domain, planned

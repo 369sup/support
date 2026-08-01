@@ -7,9 +7,14 @@ export type RepositoryQuerySnapshot = Readonly<{
   }>;
   name: string;
   description: string;
+  homepage: string;
   visibility: "public" | "private" | "internal";
   lifecycleState: "active" | "archived" | "deleted";
+  version: number;
+  createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;
+  restoreUntil: string | null;
 }>;
 
 export interface RepositoryQueryRepositoryPort {
@@ -18,4 +23,5 @@ export interface RepositoryQueryRepositoryPort {
     ownerId: string,
     name: string,
   ): Promise<RepositoryQuerySnapshot | null>;
+  save(repository: RepositoryQuerySnapshot): Promise<void>;
 }

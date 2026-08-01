@@ -63,8 +63,11 @@ Every planned context README uses this minimum second-level heading set:
 ## Exceptions
 ```
 
-Existing planned READMEs may retain additional reviewed sections. They are
-valid supersets and are not rewritten merely to match the minimum template.
+Planned READMEs may retain additional reviewed, planned-specific sections.
+They must not contain the active-only headings `Ubiquitous language`, `Public
+capabilities`, `Authorization`, `Persistence and transactions`, `Data
+classification`, `Retention and erasure`, or `Events and failure behavior`.
+Those decisions become mandatory only when the context is activated.
 
 Every active context README uses the complete decision set:
 
@@ -137,6 +140,12 @@ The thirteen fields above are required for approved designed-use-case entries.
 The remaining active-only README headings become mandatory when the context is
 activated; a planned context does not need placeholder authorization,
 persistence, retention, or failure decisions before a use case is approved.
+
+For ordinary active-context work, load only the sections that govern the target
+behavior: designed use cases for handlers and public entrypoints, authorization
+for policy work, persistence/data/retention for stores and migrations, and
+events/failure behavior for publication or consumption. Read the full README
+for activation or cross-decision architecture review.
 
 Authorization records the actor source, resource or tenant scope, policy owner,
 and denial model when protection is required. Persistence records data and

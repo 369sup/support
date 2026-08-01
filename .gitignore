@@ -52,5 +52,13 @@ next-env.d.ts
 # package-manager cache created by sandboxed validation
 .pnpm-store/
 
+
+# repomix generated artifacts
+repomix-output.xml
+repomix-output.md
+repomix-output-web-src.md
+.npm-cache/
+repomix-cache/
+
 .vercel
 .env*

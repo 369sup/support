@@ -67,29 +67,12 @@ Organization and enterprise audit events, scopes, actors, targets, search, expor
 
 No approved use cases. Implementation remains blocked.
 
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `AuditEvent`
-- `AuditScope`
-- `AuditActor`
-- `AuditTarget`
-- `AuditExport`
-- `AuditRetentionPolicy`
-
-Precise definitions must be refined against the official sources before activation.
-
 ## Ownership and invariants
 
 This context owns `AuditEvent`, `AuditScope`, `AuditActor`, `AuditTarget`, `AuditExport`, `AuditRetentionPolicy`.
 It excludes `ProductActivityFeed`, `StorageRecord`, `ArbitraryApplicationLog`.
 
 No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
-
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
 
 ## Dependencies and consistency
 
@@ -122,30 +105,6 @@ None.
 - `integrations/webhooks::PublishedEventContract` (event; events `WebhookCreated@1`, `WebhookUpdated@1`, `WebhookDeleted@1`, `WebhookDeliveryFailed@1`, `WebhookRedelivered@1`)
 - `commerce/billing::PublishedEventContract` (event; events `BillingAccountUpdated@1`, `PaymentProfileUpdated@1`, `BudgetCreated@1`, `BudgetUpdated@1`, `BudgetExceeded@1`, `CostCenterCreated@1`, `CostCenterUpdated@1`, `CostCenterDeleted@1`)
 - `commerce/entitlements::PublishedEventContract` (event; events `PlanChanged@1`, `EntitlementGranted@1`, `EntitlementRevoked@1`, `LicenseAssigned@1`, `LicenseRevoked@1`, `UsageLimitReached@1`)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `AuditEventRecorded@1` (domain, planned): audit event recorded. contract and ordering pending activation.
-- `AuditExportRequested@1` (domain, planned): audit export requested. contract and ordering pending activation.
-- `AuditExportCompleted@1` (domain, planned): audit export completed. contract and ordering pending activation.
-- `AuditExportFailed@1` (domain, planned): audit export failed. contract and ordering pending activation.
-- `AuditRetentionPolicyChanged@1` (domain, planned): audit retention policy changed. contract and ordering pending activation.
 
 ## Official sources
 

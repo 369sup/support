@@ -32,6 +32,36 @@ runtime boundaries, data ownership, authorization, or operational safety.
   matching official migration guide, deprecations, and breaking changes; do not
   apply guidance for a different version to the current source.
 
+## Guidance context budgets
+
+- Guidance follows root invariants plus nested deltas. A task loads the
+  applicable `AGENTS.md` chain and only the README sections needed for the
+  behavior under change.
+- **ARCH-GUIDE-003:** AGENTS and README files do not repeat model-version
+  startup boilerplate. Discovery and precedence are defined once at the root.
+- **ARCH-GUIDE-004:** A nested AGENTS file does not copy an exact normalized
+  paragraph of at least 120 characters from an ancestor. Knowledge governance
+  reports such duplication so the child can link to the authority and retain
+  only its local delta.
+- **ARCH-GUIDE-005:** Guidance budgets use
+  `ceil(UTF-8 byte length / 4)` as a stable repository estimate, not as a model
+  tokenizer or billing measurement.
+
+| Context | Enforced estimated-token ceiling |
+| --- | ---: |
+| Root `AGENTS.md` | 1,200 |
+| Complete applicable AGENTS chain | 3,000 |
+| Complete package AGENTS chain | 2,000 |
+| Root `README.md` | 1,800 |
+| Route README | 1,200 |
+| Planned bounded-context README | 3,000 |
+
+Planned context READMEs normally target 700-1,500 estimated tokens. Reviewed
+semantic claims and official-source evidence may exceed that target up to the
+hard ceiling. Active context READMEs have no whole-file ceiling because their
+decision records are loaded section-by-section; activation and architecture
+audits may load the complete file.
+
 ## Source roots
 
 - **ARCH-SRC-001:** `apps/web/src` contains directories `app` and `modules`
@@ -40,6 +70,9 @@ runtime boundaries, data ownership, authorization, or operational safety.
   locations and must not recreate forbidden source roots.
 - `apps/web/src/app` owns App Router delivery, route composition, metadata, request
   binding, and route-specific presentation.
+- `apps/web/route-map.json` is the single route-contract authority. Generated
+  READMEs are loaded one URL at a time and never replace a module README's
+  complete designed-use-case contract.
 - `apps/web/src/modules/<subdomain>/<bounded-context>` owns product or technical
   capabilities. Both names use lowercase kebab-case.
 - Do not add global `components`, `lib`, `shared`, `common`, or `utils` roots.
@@ -233,6 +266,20 @@ not use wildcard or multi-level barrel re-exports.
   permanent `AGENTS.override.md` files are prohibited.
 - **ARCH-GUIDE-002:** The generated-memory authority allowlist exactly matches
   repository guidance and is checked with generated artifacts.
+- **ARCH-ROUTE-001:** Every public `page.tsx` and `route.ts` delivery file maps
+  to exactly one route-catalog entry. Parallel-slot fallbacks are not public
+  URLs.
+- **ARCH-ROUTE-002..004:** Route IDs, Support patterns, files, README outputs,
+  delivery functions, HTTP methods, and materialization states are unique and
+  agree with the App Router filesystem.
+- **ARCH-ROUTE-005..006:** Every route has one owning catalog context.
+  Collaborators, module imports, public entrypoints, and designed-use-case
+  references agree with module authorities.
+- **ARCH-ROUTE-007:** GitHub product evidence uses official HTTPS GitHub Docs.
+  Internal APIs cite repository contracts rather than inventing a GitHub URL.
+- **ARCH-ROUTE-008:** `pnpm architecture:docs` deterministically projects
+  per-URL READMEs and `_route-contracts/route-contracts.generated.ts`; generated
+  governance rejects manual drift.
 - **ARCH-MEM-001:** Committed Serena shared memories are deterministic,
   read-only generated projections of an explicit authority allowlist. Local
   writable memories are ignored by Git.

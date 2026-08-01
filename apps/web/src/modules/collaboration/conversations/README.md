@@ -1,132 +1,132 @@
-# Conversations Bounded Context
-
-- **Catalog path:** `collaboration/conversations`
-- **Kind:** `domain`
-- **Classification:** `supporting`
-- **Maturity:** `stable`
-- **Implementation:** `planned`
-- **Semantic status:** `candidate`
+# Conversations
 
 ## Purpose
 
-Capability-constrained comments, discussion replies, reactions, mentions, revisions, and locks for a closed set of subjects.
+Own comments and reactions for the closed set of supported issue and discussion
+subjects.
 
 ## Context content tree
 
-- `collaboration/conversations` [planned]
-  - Purpose: Capability-constrained comments, discussion replies, reactions, mentions, revisions, and locks for a closed set of subjects.
-  - Capabilities
-    - No active use cases; activation scope remains empty.
-  - Owned domain concepts
-    - `Conversation`
-    - `Comment`
-    - `Reply`
-    - `Reaction`
-    - `Mention`
-    - `CommentRevision`
-    - `ConversationSubjectKind`
-    - `ConversationCapabilities`
-  - Business rules and invariants
-    - Pending official-source validation before activation.
-  - Published events
-    - `ConversationCreated@1` [planned]: conversation created.
-    - `ConversationLocked@1` [planned]: conversation locked.
-    - `ConversationUnlocked@1` [planned]: conversation unlocked.
-    - `CommentAdded@1` [planned]: comment added.
-    - `CommentEdited@1` [planned]: comment edited.
-    - `CommentDeleted@1` [planned]: comment deleted.
-    - `ReplyAdded@1` [planned]: reply added.
-    - `ReactionAdded@1` [planned]: reaction added.
-    - `ReactionRemoved@1` [planned]: reaction removed.
-    - `MentionDetected@1` [planned]: mention detected.
-- External relationships
-  - Runtime dependencies: none.
-  - Planned relationships
-    - `identity/accounts::ActorReference` (synchronous)
-    - `repositories/repositories::RepositoryLifecycleState` (synchronous)
-- Explicit exclusions
-  - `IssueState`
-  - `DiscussionCategory`
-  - `ModerationCase`
-  - `ArbitrarySubjectType`
+- Issue conversation [active]
+  - `list-conversation-comments`
+  - `add-comment`
+  - `add-reaction`
+  - Owned: `Conversation`, `Comment`, `Reaction`,
+    `ConversationSubjectKind`, `ConversationCapabilities`
+- Threading and revisions [planned]
+  - Owned: `Reply`, `Mention`, `CommentRevision`
+- Planned events
+  - `ConversationCreated@1`, `ConversationLocked@1`,
+    `ConversationUnlocked@1`, `CommentAdded@1`, `CommentEdited@1`,
+    `CommentDeleted@1`, `ReplyAdded@1`, `ReactionAdded@1`,
+    `ReactionRemoved@1`, `MentionDetected@1`
+- Runtime dependencies: none.
+- Explicit exclusions: `IssueState`, `DiscussionCategory`, `ModerationCase`,
+  `ArbitrarySubjectType`.
 
 ## Designed use cases
 
-No approved use cases. Implementation remains blocked.
+### `list-conversation-comments` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ListConversationCommentsUseCase.listConversationComments()`
+- **Public entrypoint:** `server-api.ts#listConversationComments`
+- **Input:** Subject kind and stable subject ID.
+- **Success result:** Ordered comments and reaction counts.
+- **Expected rejections:** `invalid-subject`
+- **Authorization:** The owning subject delivery establishes read access.
+- **Transaction:** Read-only process-local snapshot.
+- **Idempotency:** Query.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `collaboration-conversations-source-01`
+- **Local policy:** Comments are returned oldest first.
+
+### `add-comment` [active]
+
+- **Type:** `command`
+- **Application boundary:** `AddCommentUseCase.addComment()`
+- **Public entrypoint:** `server-api.ts#addComment`
+- **Input:** Subject kind and ID, actor ID and username, body, and ISO timestamp.
+- **Success result:** `added` with the comment.
+- **Expected rejections:** `invalid-comment`, `conversation-locked`
+- **Authorization:** Subject delivery establishes authenticated participation.
+- **Transaction:** Allocate one comment ID and append one record.
+- **Idempotency:** Not idempotent.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `collaboration-conversations-source-01`
+- **Local policy:** Reject empty comments and writes to a locked conversation.
+
+### `add-reaction` [active]
+
+- **Type:** `command`
+- **Application boundary:** `AddReactionUseCase.addReaction()`
+- **Public entrypoint:** `server-api.ts#addReaction`
+- **Input:** Subject ID, comment ID, actor ID, and supported reaction.
+- **Success result:** `added` with updated reaction counts.
+- **Expected rejections:** `comment-not-found`, `duplicate-reaction`, `invalid-reaction`
+- **Authorization:** Subject delivery establishes authenticated participation.
+- **Transaction:** Insert one actor/comment/reaction tuple.
+- **Idempotency:** Duplicate tuples return `duplicate-reaction`.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `collaboration-conversations-source-01`
+- **Local policy:** Supported reactions are thumbs-up, heart, hooray, and eyes.
 
 ## Ubiquitous language
 
-The catalog reserves these terms for this context:
-
-- `Conversation`
-- `Comment`
-- `Reply`
-- `Reaction`
-- `Mention`
-- `CommentRevision`
-- `ConversationSubjectKind`
-- `ConversationCapabilities`
-
-Precise definitions must be refined against the official sources before activation.
+- **Subject**: an issue or discussion that owns a conversation.
+- **Comment**: authored message in a subject conversation.
+- **Reaction**: one supported actor expression attached to a comment.
 
 ## Ownership and invariants
 
-This context owns `Conversation`, `Comment`, `Reply`, `Reaction`, `Mention`, `CommentRevision`, `ConversationSubjectKind`, `ConversationCapabilities`.
-It excludes `IssueState`, `DiscussionCategory`, `ModerationCase`, `ArbitrarySubjectType`.
-
-No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
+This context owns `Conversation`, `Comment`, `Reply`, `Reaction`, `Mention`,
+`CommentRevision`, `ConversationSubjectKind`, and
+`ConversationCapabilities`. Subjects are a closed literal set.
 
 ## Public capabilities
 
-None while planned. Activation requires at least one real use case and public consumer.
+`listConversationComments`, `addComment`, and `addReaction` are exported from
+`server-api.ts`.
 
 ## Dependencies and consistency
 
-### Runtime dependencies
-
-None.
-
-### Planned relationships
-
-- `identity/accounts::ActorReference` (synchronous)
-- `repositories/repositories::RepositoryLifecycleState` (synchronous)
+The active process store accepts stable subject references after delivery has
+validated the owning subject and permission.
 
 ## Authorization
 
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
+The owning subject delivery establishes read and participation permission.
+Conversation-local lock and duplicate-reaction rules are enforced here.
 
 ## Persistence and transactions
 
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
+Comments and actor reaction tuples use a process-local store. There is no
+durable transaction or cross-instance ordering guarantee.
 
 ## Data classification
 
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Comment bodies, actor identifiers, reactions, and timestamps are repository
+collaboration data.
 
 ## Retention and erasure
 
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Data lives for the process lifetime. Durable revision, deletion, mention, and
+erasure behavior remains planned.
 
 ## Events and failure behavior
 
-- `ConversationCreated@1` (domain, planned): conversation created. contract and ordering pending activation.
-- `ConversationLocked@1` (domain, planned): conversation locked. contract and ordering pending activation.
-- `ConversationUnlocked@1` (domain, planned): conversation unlocked. contract and ordering pending activation.
-- `CommentAdded@1` (domain, planned): comment added. contract and ordering pending activation.
-- `CommentEdited@1` (domain, planned): comment edited. contract and ordering pending activation.
-- `CommentDeleted@1` (domain, planned): comment deleted. contract and ordering pending activation.
-- `ReplyAdded@1` (domain, planned): reply added. contract and ordering pending activation.
-- `ReactionAdded@1` (domain, planned): reaction added. contract and ordering pending activation.
-- `ReactionRemoved@1` (domain, planned): reaction removed. contract and ordering pending activation.
-- `MentionDetected@1` (domain, planned): mention detected. contract and ordering pending activation.
+Catalog events remain planned until transactional publication exists. Expected
+validation, lock, duplication, and absence results are discriminated values.
 
 ## Official sources
 
-- `collaboration-conversations-source-01`: [comments, mentions, reactions](https://docs.github.com/en/get-started/using-github/communicating-on-github) (verified 2026-07-22)
-- `collaboration-conversations-source-02`: [discussion comment threads, threaded replies](https://docs.github.com/en/discussions/collaborating-with-your-community-using-discussions/participating-in-a-discussion) (verified 2026-07-22)
-- `collaboration-conversations-source-03`: [issue conversation locks, locked-conversation behavior](https://docs.github.com/en/communities/moderating-comments-and-conversations/locking-conversations) (verified 2026-07-22)
+- <https://docs.github.com/en/get-started/using-github/communicating-on-github>
+- <https://docs.github.com/en/discussions/collaborating-with-your-community-using-discussions/participating-in-a-discussion>
+- <https://docs.github.com/en/communities/moderating-comments-and-conversations/locking-conversations>
 
 ## Exceptions
 
-No context-specific exception is declared by the catalog. The central
-[exception registry](../../../../../../docs/architecture/exceptions/registry.json) remains authoritative.
+None.

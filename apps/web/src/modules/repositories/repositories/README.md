@@ -3,8 +3,9 @@
 ## Purpose
 
 Own GitHub-like Repository identity, owner, visibility, profile, and lifecycle
-semantics. Active slices support personal and organization owner queries plus
-trusted candidate retrieval for permission-aware projections.
+semantics. Active slices support personal and organization owner queries,
+trusted candidates, empty repository creation, rename, visibility, archive,
+delete, restore, and repository profile updates without Git content.
 
 ## Context content tree
 
@@ -30,27 +31,43 @@ trusted candidate retrieval for permission-aware projections.
     - Use case: `get-repository-by-owner-and-name`
     - Use case: `list-active-repositories-for-owner`
     - Private and internal candidates are never a visibility decision.
-  - Repository identity and profile [planned]
+  - Repository identity and profile [active]
+    - Use case: `create-empty-repository`
+    - Use case: `get-repository-for-administration`
+    - Use case: `update-repository-profile`
     - Owned concept: `RepositoryHomepage`
-    - Planned events: `RepositoryCreated@1`, `RepositoryProfileUpdated@1`
-  - Repository rename and redirects [planned]
+    - Active event: `RepositoryProfileUpdated@1`
+    - Planned event: `RepositoryCreated@1`
+  - Repository rename [active]
+    - Use case: `rename-repository`
     - Owned concept: `RepositoryRedirect`
     - Planned event: `RepositoryRenamed@1`
-  - Repository visibility [planned]
+  - Repository visibility [active]
+    - Use case: `change-repository-visibility`
     - Planned event: `RepositoryVisibilityChanged@1`
   - Repository transfer [planned]
     - Owned concept: `RepositoryTransfer`
     - Planned events: `RepositoryTransferRequested@1`,
       `RepositoryTransferred@1`, `RepositoryTransferExpired@1`
-  - Repository lifecycle [planned]
+  - Repository lifecycle [active]
+    - Use case: `archive-repository`
+    - Use case: `unarchive-repository`
+    - Use case: `delete-repository`
+    - Use case: `restore-deleted-repository`
     - Owned concepts: `RepositoryTombstone`, `RepositoryRestoreWindow`
     - Planned events: `RepositoryArchived@1`, `RepositoryUnarchived@1`,
       `RepositoryDeleted@1`, `RepositoryRestored@1`
 - External relationships
   - Active synchronous dependency:
-    `identity/accounts::UserOwnerReference`
+    `identity/accounts::AccountReference`
   - Active synchronous dependency:
     `organizations/organizations::OrganizationOwnerReference`
+  - Active synchronous dependency:
+    `organizations/organization-memberships::OrganizationMembershipReference`
+  - Active synchronous dependency:
+    `repositories/repository-access::EffectiveRepositoryPermissionDecision`
+  - Active synchronous dependency:
+    `platform/event-publication::EventRecorderPort`
   - Planned synchronous relationships:
     `organizations/organization-policies::RepositoryPolicyConstraints`, and
     `commerce/entitlements::RepositoryEntitlement`
@@ -63,6 +80,150 @@ trusted candidate retrieval for permission-aware projections.
 
 ## Designed use cases
 
+### `create-empty-repository` [active]
+
+- **Type:** `command`
+- **Application boundary:** `CreateEmptyRepositoryUseCase.createEmptyRepository()`
+- **Public entrypoint:** `server-api.ts#createEmptyRepository`
+- **Input:** Authenticated actor, stable personal or organization owner ID, name, description, and public or private visibility.
+- **Success result:** `created` with an active empty repository management record.
+- **Expected rejections:** `permission-denied`, `invalid-name`, `invalid-description`, `invalid-visibility`, `internal-visibility-not-available`, `repository-name-conflict`
+- **Authorization:** A personal account may create for itself; an organization requires an active owner membership.
+- **Transaction:** Repository record and case-insensitive owner/name index update together in one process-local write.
+- **Idempotency:** Not idempotent; an owner/name conflict prevents duplicate creation.
+- **Dependencies:** `identity/accounts::AccountReference`, `organizations/organizations::OrganizationOwnerReference`, `organizations/organization-memberships::OrganizationMembershipReference`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repositories-source-02`
+- **Local policy:** Creates no Git repository, branch, commit, file, template, README, license, gitignore, import, or code object; new internal repositories remain gated until enterprise entitlement is trustworthy.
+
+### `get-repository-for-administration` [active]
+
+- **Type:** `query`
+- **Application boundary:** `GetRepositoryForAdministrationUseCase.getRepositoryForAdministration()`
+- **Public entrypoint:** `server-api.ts#getRepositoryForAdministration`
+- **Input:** Authenticated actor, stable owner ID, and repository name.
+- **Success result:** `found` with active, archived, or deleted repository management state.
+- **Expected rejections:** `permission-denied`, `repository-not-found`
+- **Authorization:** Effective `admin` repository permission, including personal owner, organization owner, and active team or organization-role contributions.
+- **Transaction:** Read-only.
+- **Idempotency:** Query.
+- **Dependencies:** `identity/accounts::AccountReference`, `repositories/repository-access::EffectiveRepositoryPermissionDecision`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repositories-source-01`
+- **Local policy:** This privileged query is the only route-facing lookup that can retrieve a deleted tombstone.
+
+### `update-repository-profile` [active]
+
+- **Type:** `command`
+- **Application boundary:** `UpdateRepositoryProfileUseCase.updateRepositoryProfile()`
+- **Public entrypoint:** `server-api.ts#updateRepositoryProfile`
+- **Input:** Authenticated actor, stable owner ID, repository name, description, and optional homepage URL.
+- **Success result:** `profile-updated` with the active repository, including an idempotent unchanged result.
+- **Expected rejections:** `permission-denied`, `repository-not-found`, `invalid-state`, `invalid-description`, `invalid-homepage`
+- **Authorization:** Effective `admin` repository permission from `repository-access`.
+- **Transaction:** Repository profile fields and the context-local `RepositoryProfileUpdated@1` outbox record complete before success.
+- **Idempotency:** Repeating the current description and homepage succeeds without recording another event.
+- **Dependencies:** `identity/accounts::AccountReference`, `repositories/repository-access::EffectiveRepositoryPermissionDecision`, `platform/event-publication::EventRecorderPort`
+- **Published events:** `RepositoryProfileUpdated@1`
+- **Official evidence:** `repositories-repositories-source-05`, `repositories-repositories-source-09`
+- **Local policy:** Description is trimmed and limited to 350 characters; an empty homepage clears it, otherwise only an absolute HTTP or HTTPS URL is accepted. Archived and deleted repositories must return to active state before profile changes.
+
+### `rename-repository` [active]
+
+- **Type:** `command`
+- **Application boundary:** `RenameRepositoryUseCase.renameRepository()`
+- **Public entrypoint:** `server-api.ts#renameRepository`
+- **Input:** Authorized actor, stable owner ID, current name, and new name.
+- **Success result:** `renamed` with the same active repository ID and new canonical name.
+- **Expected rejections:** `permission-denied`, `repository-not-found`, `invalid-state`, `invalid-name`, `repository-name-conflict`
+- **Authorization:** Effective `admin` repository permission.
+- **Transaction:** Repository and case-insensitive owner/name index change together.
+- **Idempotency:** Repeating the current name is an idempotent update.
+- **Dependencies:** `identity/accounts::AccountReference`, `repositories/repository-access::EffectiveRepositoryPermissionDecision`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repositories-source-08`
+- **Local policy:** Archived repositories must first be unarchived; redirect history remains deferred.
+
+### `change-repository-visibility` [active]
+
+- **Type:** `command`
+- **Application boundary:** `ChangeRepositoryVisibilityUseCase.changeRepositoryVisibility()`
+- **Public entrypoint:** `server-api.ts#changeRepositoryVisibility`
+- **Input:** Authorized actor, stable owner ID, repository name, and target visibility.
+- **Success result:** `visibility-changed` with the active repository.
+- **Expected rejections:** `permission-denied`, `repository-not-found`, `invalid-state`, `invalid-visibility`, `internal-visibility-not-available`
+- **Authorization:** Effective `admin` repository permission.
+- **Transaction:** One repository record update.
+- **Idempotency:** Repeating the current visibility is idempotent.
+- **Dependencies:** `identity/accounts::AccountReference`, `repositories/repository-access::EffectiveRepositoryPermissionDecision`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repositories-source-04`
+- **Local policy:** Public and private transitions are active; an existing internal fixture may remain internal, but entry into internal visibility is gated.
+
+### `archive-repository` [active]
+
+- **Type:** `command`
+- **Application boundary:** `ArchiveRepositoryUseCase.archiveRepository()`
+- **Public entrypoint:** `server-api.ts#archiveRepository`
+- **Input:** Authorized actor, stable owner ID, repository name, and exact owner/name confirmation.
+- **Success result:** `archived` with a read-only lifecycle state.
+- **Expected rejections:** `permission-denied`, `repository-not-found`, `confirmation-mismatch`, `invalid-state`
+- **Authorization:** Effective `admin` repository permission.
+- **Transaction:** One repository lifecycle update.
+- **Idempotency:** State-guarded; already archived returns `invalid-state`.
+- **Dependencies:** `identity/accounts::AccountReference`, `repositories/repository-access::EffectiveRepositoryPermissionDecision`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repositories-source-05`
+- **Local policy:** Exact full-name confirmation is required and archived management records cannot be renamed or change visibility.
+
+### `unarchive-repository` [active]
+
+- **Type:** `command`
+- **Application boundary:** `UnarchiveRepositoryUseCase.unarchiveRepository()`
+- **Public entrypoint:** `server-api.ts#unarchiveRepository`
+- **Input:** Authorized actor, stable owner ID, repository name, and exact owner/name confirmation.
+- **Success result:** `unarchived` with active lifecycle state.
+- **Expected rejections:** `permission-denied`, `repository-not-found`, `confirmation-mismatch`, `invalid-state`
+- **Authorization:** Effective `admin` repository permission.
+- **Transaction:** One repository lifecycle update.
+- **Idempotency:** State-guarded; active repositories return `invalid-state`.
+- **Dependencies:** `identity/accounts::AccountReference`, `repositories/repository-access::EffectiveRepositoryPermissionDecision`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repositories-source-05`
+- **Local policy:** Exact full-name confirmation is required.
+
+### `delete-repository` [active]
+
+- **Type:** `command`
+- **Application boundary:** `DeleteRepositoryUseCase.deleteRepository()`
+- **Public entrypoint:** `server-api.ts#deleteRepository`
+- **Input:** Authorized actor, stable owner ID, repository name, and exact owner/name confirmation.
+- **Success result:** `deleted` with deletion time and 90-day restore deadline.
+- **Expected rejections:** `permission-denied`, `repository-not-found`, `confirmation-mismatch`, `invalid-state`
+- **Authorization:** Effective `admin` repository permission.
+- **Transaction:** Repository becomes a tombstone in one process-local update.
+- **Idempotency:** State-guarded; deleted repositories return `invalid-state`.
+- **Dependencies:** `identity/accounts::AccountReference`, `repositories/repository-access::EffectiveRepositoryPermissionDecision`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repositories-source-06`
+- **Local policy:** Active or archived repositories may be deleted; full-name confirmation is mandatory.
+
+### `restore-deleted-repository` [active]
+
+- **Type:** `command`
+- **Application boundary:** `RestoreDeletedRepositoryUseCase.restoreDeletedRepository()`
+- **Public entrypoint:** `server-api.ts#restoreDeletedRepository`
+- **Input:** Authorized actor, stable owner ID, deleted repository name, and exact owner/name confirmation.
+- **Success result:** `restored` with active lifecycle state and a new authorization subject ID.
+- **Expected rejections:** `permission-denied`, `repository-not-found`, `confirmation-mismatch`, `invalid-state`, `restore-window-expired`
+- **Authorization:** Effective `admin` repository permission.
+- **Transaction:** Tombstone replacement and owner/name index update together.
+- **Idempotency:** State-guarded; restored repositories return `invalid-state`.
+- **Dependencies:** `identity/accounts::AccountReference`, `repositories/repository-access::EffectiveRepositoryPermissionDecision`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repositories-source-07`
+- **Local policy:** Restore is available through exactly 90 days; the new authorization subject ID ensures prior team permissions are not restored.
+
 ### `get-repository-by-owner-and-name` [active]
 
 - **Type:** `query`
@@ -74,7 +235,7 @@ trusted candidate retrieval for permission-aware projections.
 - **Authorization:** Trusted server callers must apply repository access before disclosure.
 - **Transaction:** Read-only.
 - **Idempotency:** Query.
-- **Dependencies:** `identity/accounts::UserOwnerReference`, `organizations/organizations::OrganizationOwnerReference`
+- **Dependencies:** `identity/accounts::AccountReference`, `organizations/organizations::OrganizationOwnerReference`
 - **Published events:** `none`
 - **Official evidence:** `repositories-repositories-source-01`
 - **Local policy:** Archived and deleted records are absent.
@@ -106,7 +267,7 @@ trusted candidate retrieval for permission-aware projections.
 - **Authorization:** None; only public repository summaries are exposed.
 - **Transaction:** Read-only lookup with no transaction.
 - **Idempotency:** Query; repeated input has no side effect.
-- **Dependencies:** `identity/accounts::UserOwnerReference`
+- **Dependencies:** `identity/accounts::AccountReference`
 - **Published events:** `none`
 - **Official evidence:** `repositories-repositories-source-11`
 - **Local policy:** Resolve by stable account ID, require personal ownership, filter to `public` and `active`, and return a summary projection without Git content or grants.
@@ -122,7 +283,7 @@ trusted candidate retrieval for permission-aware projections.
 - **Authorization:** Trusted projection only; candidates are not visibility decisions.
 - **Transaction:** Read-only.
 - **Idempotency:** Query.
-- **Dependencies:** `identity/accounts::UserOwnerReference`, `organizations/organizations::OrganizationOwnerReference`
+- **Dependencies:** `identity/accounts::AccountReference`, `organizations/organizations::OrganizationOwnerReference`
 - **Published events:** `none`
 - **Official evidence:** `repositories-repositories-source-10`
 - **Local policy:** Every candidate must pass `repository-access` before user disclosure.
@@ -148,6 +309,7 @@ Git objects, grants, issues, stars, and subscriptions remain excluded.
 
 - `listActivePublicRepositoriesForPersonalOwner(owner)` through
   `server-api.ts`.
+- `updateRepositoryProfile(command)` through `server-api.ts`.
 - `ListActivePublicRepositoriesForPersonalOwnerUseCase.listActivePublicRepositoriesForPersonalOwner()`
   is the application boundary implemented by
   `ListActivePublicRepositoriesForPersonalOwnerHandler`.
@@ -158,39 +320,47 @@ consumers do not configure or select its adapter.
 
 ## Dependencies and consistency
 
-This context synchronously consumes account and organization owner references
-through framework-free integration contracts. It does not read their storage.
+This context synchronously consumes account and organization owner references,
+effective repository administration decisions, and the event recorder through
+framework-free public contracts. It does not read another context's storage.
 
 ## Authorization
 
 Public summaries require no authorization. Trusted private/internal candidate
 queries require a separate `repository-access` decision before disclosure.
+Administration queries and mutations require effective `admin` permission.
 
 ## Persistence and transactions
 
-A context-local in-memory query adapter owns deterministic development
-fixtures and owner/name indexes. Queries perform no writes.
+A context-local in-memory adapter owns deterministic development fixtures,
+repository tombstones, and case-insensitive owner/name indexes. Profile changes
+also record a context-owned outbox envelope before returning success. Both
+stores remain process-local and non-durable.
 
 ## Data classification
 
-Repository ID, public owner username, name, description, visibility, lifecycle
-state, and update timestamp are public product data in this slice. No Git
-content, collaborator data, or private metadata is stored or returned.
+Repository ID, public owner username, name, description, homepage, visibility,
+lifecycle state, and update timestamp are public product data in this slice. No
+Git content, collaborator data, or private metadata is stored or returned.
 
 ## Retention and erasure
 
-Fixtures live for the process lifetime. Durable retention, tombstones, and
-restore windows remain planned with their lifecycle commands.
+Fixtures and mutations live for the process lifetime. Deleted records retain a
+90-day restore deadline; durable erasure scheduling remains deferred.
 
 ## Events and failure behavior
 
-This query-only activation emits no events. All catalog events remain planned.
-Expected empty results return an empty collection; unexpected adapter failures
-propagate as infrastructure errors.
+Material profile changes increment the context-owned aggregate version and
+record `RepositoryProfileUpdated@1` with `repositoryId` ordering. The platform
+publisher owns leasing, retry, and dead-letter behavior; this context retains
+the source outbox. Expected empty results return an empty collection, and
+unexpected adapter failures propagate as infrastructure errors.
 
 ## Official sources
 
 - <https://docs.github.com/en/repositories/creating-and-managing-repositories/about-repositories>
+- <https://docs.github.com/en/rest/repos/repos>
+- <https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories>
 - <https://docs.github.com/en/repositories/creating-and-managing-repositories/viewing-all-your-repositories>
 - <https://docs.github.com/en/rest/repos/repos#list-repositories-for-a-user>
 

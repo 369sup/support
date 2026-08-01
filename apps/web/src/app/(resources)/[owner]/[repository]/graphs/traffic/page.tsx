@@ -1,13 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function RepositoryTrafficPage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/graphs/traffic",
-    title: "Repository traffic",
-    summary:
-      "Reserve the GitHub-style traffic route while repository traffic metrics remain deferred.",
-    contexts: [],
-    catalogStatus: "deferred",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-graphs-traffic");
 }

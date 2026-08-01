@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { KeyRound, ShieldCheck, UserRound, UsersRound } from "lucide-react";
 
 import { Button } from "@support/shadcn/ui/button";
 
@@ -10,6 +11,9 @@ import type {
   PredefinedOrganizationRoleDefinition,
   PredefinedOrganizationRoleKey,
 } from "../../../contracts/organization-role-reference";
+
+const fieldClassName =
+  "h-10 rounded-md border border-[#30363d] bg-[#0d1117] px-3 text-[#f0f6fc] outline-none transition placeholder:text-[#6e7681] focus:border-[#2f81f7] focus:ring-2 focus:ring-[#2f81f7]/20 disabled:cursor-not-allowed disabled:opacity-60";
 
 export function OrganizationRolesManager({
   assignments,
@@ -66,107 +70,157 @@ export function OrganizationRolesManager({
   }
 
   return (
-    <div className="grid gap-8">
-      <section>
-        <h2 className="text-lg font-semibold">Predefined roles</h2>
-        <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+    <div className="grid gap-8 text-[#f0f6fc]">
+      <section aria-labelledby="predefined-roles-heading">
+        <div className="mb-3 flex items-center gap-2">
+          <ShieldCheck aria-hidden="true" className="size-4 text-[#8b949e]" />
+          <h2 className="text-base font-semibold" id="predefined-roles-heading">
+            Predefined roles
+          </h2>
+        </div>
+        <ul className="divide-y divide-[#21262d] overflow-hidden rounded-md border border-[#30363d] bg-[#0d1117]">
           {roles.map((role) => (
-            <li className="rounded-xl border p-4" key={role.roleKey}>
-              <h3 className="font-medium">{role.displayName}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {role.description}
-              </p>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Repository permission: {role.repositoryPermission ?? "none"}
-              </p>
+            <li
+              className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-start sm:justify-between"
+              key={role.roleKey}
+            >
+              <div>
+                <h3 className="text-sm font-semibold">{role.displayName}</h3>
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-[#8b949e]">
+                  {role.description}
+                </p>
+              </div>
+              <span className="w-fit shrink-0 rounded-full border border-[#30363d] bg-[#161b22] px-2 py-0.5 text-xs font-medium text-[#8b949e]">
+                {role.repositoryPermission ?? "no repository access"}
+              </span>
             </li>
           ))}
         </ul>
       </section>
 
       {canManage ? (
-        <form
-          className="grid gap-3 rounded-xl border p-5 sm:grid-cols-4"
-          onSubmit={(event) => {
-          void handleAssign(event);
-          }}
+        <section
+          aria-labelledby="assign-role-heading"
+          className="overflow-hidden rounded-md border border-[#30363d] bg-[#0d1117]"
         >
-          <label className="grid gap-1 text-sm">
-            Role
-            <select
-              className="h-10 rounded-md border bg-background px-2"
+          <div className="border-b border-[#21262d] bg-[#161b22] px-4 py-3">
+            <div className="flex items-center gap-2">
+              <KeyRound aria-hidden="true" className="size-4 text-[#8b949e]" />
+              <h2 className="text-sm font-semibold" id="assign-role-heading">
+                Assign an organization role
+              </h2>
+            </div>
+            <p className="mt-1 text-xs text-[#8b949e]">
+              Grant a predefined role to an account or team in this
+              organization.
+            </p>
+          </div>
+          <form
+            className="grid gap-4 p-4 sm:grid-cols-4"
+            onSubmit={(event) => {
+              void handleAssign(event);
+            }}
+          >
+            <label className="grid gap-1.5 text-sm font-medium">
+              Role
+              <select
+                className={fieldClassName}
+                disabled={isPending}
+                onChange={(event) => {
+                  const value = event.currentTarget.value;
+                  if (isPredefinedRoleKey(value)) {
+                    setRoleKey(value);
+                  }
+                }}
+                value={roleKey}
+              >
+                {roles.map((role) => (
+                  <option key={role.roleKey} value={role.roleKey}>
+                    {role.displayName}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="grid gap-1.5 text-sm font-medium">
+              Subject type
+              <select
+                className={fieldClassName}
+                disabled={isPending}
+                onChange={(event) => {
+                  const value = event.currentTarget.value;
+                  if (isRoleSubjectKind(value)) {
+                    setSubjectKind(value);
+                  }
+                }}
+                value={subjectKind}
+              >
+                <option value="account">Account</option>
+                <option value="team">Team</option>
+              </select>
+            </label>
+            <label className="grid gap-1.5 text-sm font-medium">
+              Account ID or team slug
+              <input
+                className={fieldClassName}
+                disabled={isPending}
+                onChange={(event) => {
+                  setSubjectIdentifier(event.currentTarget.value);
+                }}
+                required
+                value={subjectIdentifier}
+              />
+            </label>
+            <Button
+              className="self-end border border-[#2ea043] bg-[#238636] text-white hover:bg-[#2ea043]"
               disabled={isPending}
-              onChange={(event) => {
-                const value = event.currentTarget.value;
-                if (isPredefinedRoleKey(value)) {
-                  setRoleKey(value);
-                }
-              }}
-              value={roleKey}
+              type="submit"
             >
-              {roles.map((role) => (
-                <option key={role.roleKey} value={role.roleKey}>
-                  {role.displayName}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="grid gap-1 text-sm">
-            Subject type
-            <select
-              className="h-10 rounded-md border bg-background px-2"
-              disabled={isPending}
-              onChange={(event) => {
-                const value = event.currentTarget.value;
-                if (isRoleSubjectKind(value)) {
-                  setSubjectKind(value);
-                }
-              }}
-              value={subjectKind}
-            >
-              <option value="account">Account</option>
-              <option value="team">Team</option>
-            </select>
-          </label>
-          <label className="grid gap-1 text-sm">
-            Account ID or team slug
-            <input
-              className="h-10 rounded-md border bg-background px-3"
-              disabled={isPending}
-              onChange={(event) => {
-                setSubjectIdentifier(event.currentTarget.value);
-              }}
-              required
-              value={subjectIdentifier}
-            />
-          </label>
-          <Button className="self-end" disabled={isPending} type="submit">
-            Assign role
-          </Button>
-        </form>
+              Assign role
+            </Button>
+          </form>
+        </section>
       ) : null}
 
       {message === undefined ? null : (
-        <p className="text-sm text-muted-foreground" role="status">
+        <p
+          className="rounded-md border border-[#30363d] bg-[#161b22] px-3 py-2 text-sm text-[#8b949e]"
+          role="status"
+        >
           {message}
         </p>
       )}
 
-      <section>
-        <h2 className="text-lg font-semibold">Role assignments</h2>
+      <section aria-labelledby="role-assignments-heading">
+        <div className="mb-3 flex items-center gap-2">
+          <UsersRound aria-hidden="true" className="size-4 text-[#8b949e]" />
+          <h2 className="text-base font-semibold" id="role-assignments-heading">
+            Role assignments
+          </h2>
+        </div>
         {assignments.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">
-            No active role assignments.
-          </p>
+          <div className="rounded-md border border-dashed border-[#30363d] bg-[#0d1117] px-6 py-10 text-center">
+            <UserRound
+              aria-hidden="true"
+              className="mx-auto size-6 text-[#6e7681]"
+            />
+            <p className="mt-3 text-sm font-medium">
+              No active role assignments
+            </p>
+            <p className="mt-1 text-sm text-[#8b949e]">
+              Assigned accounts and teams will appear here.
+            </p>
+          </div>
         ) : (
-          <ul className="mt-3 divide-y rounded-xl border">
+          <ul className="divide-y divide-[#21262d] overflow-hidden rounded-md border border-[#30363d] bg-[#0d1117]">
             {assignments.map((assignment) => (
               <li
-                className="flex flex-wrap items-center gap-3 p-4 text-sm"
+                className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm"
                 key={assignment.assignmentId}
               >
-                <span className="font-medium">{assignment.roleKey}</span>
-                <span className="min-w-0 flex-1 text-muted-foreground">
+                <span className="rounded-full border border-[#30363d] bg-[#161b22] px-2 py-0.5 text-xs font-medium">
+                  {assignment.roleKey}
+                </span>
+                <span className="min-w-0 flex-1 text-[#8b949e]">
                   {assignment.subject.kind === "account"
                     ? `account:${assignment.subject.accountId}`
                     : `team:${assignment.subject.teamId}`}
@@ -179,6 +233,7 @@ export function OrganizationRolesManager({
                     }}
                     size="sm"
                     variant="outline"
+                    className="border-[#30363d] bg-[#21262d] text-[#f0f6fc] hover:border-[#8b949e] hover:bg-[#30363d]"
                   >
                     Revoke
                   </Button>

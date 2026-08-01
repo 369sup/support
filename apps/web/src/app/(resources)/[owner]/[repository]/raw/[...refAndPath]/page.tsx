@@ -1,13 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function RepositoryRawPage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/raw/{*refAndPath}",
-    title: "Raw repository content",
-    summary:
-      "Reserve the GitHub-style raw content route without introducing Git content behavior.",
-    contexts: [],
-    catalogStatus: "excluded",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-raw-refandpath");
 }

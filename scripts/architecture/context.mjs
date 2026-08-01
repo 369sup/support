@@ -25,6 +25,16 @@ export const plannedContextReadmeHeadings = Object.freeze([
   "Exceptions",
 ]);
 
+export const activeOnlyContextReadmeHeadings = Object.freeze([
+  "Ubiquitous language",
+  "Public capabilities",
+  "Authorization",
+  "Persistence and transactions",
+  "Data classification",
+  "Retention and erasure",
+  "Events and failure behavior",
+]);
+
 export const designedUseCaseFields = Object.freeze([
   "Type",
   "Application boundary",

@@ -1,12 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function AppsSettingsPage(): never {
-  void {
-    urlPattern: "/settings/apps",
-    title: "GitHub Apps",
-    summary: "Manage account-owned application registrations.",
-    contexts: ["integrations/github-app-registrations"],
-    catalogStatus: "planned",
-  };
-  notFound();
+  return renderUnavailableRoute("page-settings-apps");
 }

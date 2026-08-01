@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
-
-import { Separator } from "@support/shadcn/ui/separator";
+import { ShieldCheck } from "lucide-react";
 
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
 import { OrganizationRolesManager } from "@/modules/organizations/organization-roles/browser-ui";
@@ -42,27 +41,38 @@ export default async function OrganizationRolesPage({
     : { status: "permission-denied" as const };
 
   return (
-    <main className="flex flex-1 px-5 py-16 sm:px-8">
-      <section className="mx-auto w-full max-w-5xl">
-        <p className="text-sm font-medium text-muted-foreground">
-          {organization.organization.displayName}
+    <main className="flex flex-1 px-4 py-10 sm:px-8 lg:px-10">
+      <section className="mx-auto w-full max-w-6xl">
+        <p className="font-mono text-xs font-semibold tracking-[0.16em] text-emerald-400 uppercase">
+          Organization settings · {organization.organization.login}
         </p>
-        <h1 className="mt-2 text-4xl font-semibold tracking-[-0.035em]">
-          Organization roles
-        </h1>
-        <p className="mt-4 max-w-3xl text-muted-foreground">
-          Assign predefined roles to active organization members or teams.
-          Custom roles remain planned.
-        </p>
-        <Separator className="my-10" />
-        <OrganizationRolesManager
-          assignments={
-            assignments.status === "found" ? assignments.assignments : []
-          }
-          canManage={canManage}
-          organizationLogin={organization.organization.login}
-          roles={roles.roles}
-        />
+        <div className="mt-3 flex items-start gap-4">
+          <span
+            aria-hidden="true"
+            className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-lg border border-emerald-400/30 bg-emerald-400/10 text-emerald-400"
+          >
+            <ShieldCheck className="size-5" />
+          </span>
+          <div>
+            <h1 className="text-4xl font-semibold tracking-[-0.04em] text-white">
+              Organization roles
+            </h1>
+            <p className="mt-4 max-w-3xl leading-7 text-slate-400">
+              Assign predefined roles to active organization members or teams.
+              Custom roles remain planned.
+            </p>
+          </div>
+        </div>
+        <div className="mt-9">
+          <OrganizationRolesManager
+            assignments={
+              assignments.status === "found" ? assignments.assignments : []
+            }
+            canManage={canManage}
+            organizationLogin={organization.organization.login}
+            roles={roles.roles}
+          />
+        </div>
       </section>
     </main>
   );

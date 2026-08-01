@@ -1,46 +1,24 @@
 # Support Codex configuration
 
-This directory contains trusted-project Codex behavior for the Support
-pnpm/Turborepo workspace. It is repository configuration, not a reusable
-configuration pack.
+This directory contains the smallest shared Codex Desktop configuration needed
+by this repository:
 
-## Active project behavior
+- [`config.toml`](config.toml) registers the Support reviewer and Context7.
+- [`agents/reviewer.toml`](agents/reviewer.toml) defines the only
+  project-specific custom agent.
+- [`environments/environment.toml`](environments/environment.toml) checks a new
+  worktree and exposes dependency installation as an explicit action.
+- [`hooks.json`](hooks.json) and [`hooks/`](hooks/) enforce generated-file
+  policy and manage bounded Serena task memory.
 
-- [`config.toml`](config.toml) loads the repository model instructions,
-  registers the five focused custom agents, enables the reviewed hook, and
-  exposes the public Context7 MCP endpoint.
-- [`instructions/model-instructions.md`](instructions/model-instructions.md)
-  defines the project-wide execution baseline.
-- [`agents/`](agents/) contains exploration, implementation, review,
-  verification, and documentation-research roles.
-- [`environments/environment.toml`](environments/environment.toml) defines the
-  Codex Desktop worktree setup and the canonical pnpm actions.
-- [`hooks.json`](hooks.json) and [`hooks/`](hooks/) provide the reviewed
-  repository guard and automatic Serena task-memory lifecycle.
-- [`rules/`](rules/) contains narrow command policies for repository workflows.
+Repository guidance stays in the applicable `AGENTS.md` chain. There is no
+project base-model override: `model_instructions_file` replaces Codex's base
+instructions and is not the correct surface for repository conventions.
 
-## Important TOML rule
+There are also no project command rules. Validation commands run inside the
+selected sandbox; the repository does not pre-authorize them to execute
+outside it.
 
-`model_instructions_file` is a top-level setting and must appear before the
-first table header. If it is placed after `[agents]`, TOML treats it as
-`agents.model_instructions_file`; Codex then expects an agent-role table and
-rejects the string value.
-
-Agent registrations are tables whose `config_file` paths resolve from this
-directory:
-
-```toml
-[agents]
-enabled = true
-max_concurrent_threads_per_session = 5
-
-[agents.reviewer]
-config_file = "agents/reviewer.toml"
-description = "Review completed changes for actionable correctness, security, regression, and test risks."
-```
-
-## Maintenance
-
-Follow [`AGENTS.md`](AGENTS.md) before changing this directory. Validate TOML
-and JSON, verify every referenced path, and start a fresh trusted Codex task
-after configuration changes because project configuration is loaded at startup.
+Follow [`AGENTS.md`](AGENTS.md) before changing this directory. Validate TOML,
+JSON, references, and focused hook tests, then start a fresh trusted Codex
+Desktop task because project configuration is discovered at startup.

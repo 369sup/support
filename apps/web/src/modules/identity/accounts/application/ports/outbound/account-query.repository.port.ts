@@ -4,10 +4,13 @@ export type AccountQuerySnapshot = Readonly<{
   displayName: string;
   accountType: "personal" | "managed";
   usage: "human" | "machine";
-  lifecycleState: "active" | "suspended" | "deleted";
+  lifecycleState: "pending" | "active" | "suspended" | "deleted";
 }>;
 
 export interface AccountQueryRepositoryPort {
+  findByUsername(
+    username: string,
+  ): Promise<AccountQuerySnapshot | null>;
   findPersonalByUsername(
     username: string,
   ): Promise<AccountQuerySnapshot | null>;

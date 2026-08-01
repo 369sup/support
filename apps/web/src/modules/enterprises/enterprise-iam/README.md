@@ -48,27 +48,12 @@ Enterprise identity-provider configuration, SAML or OIDC authentication, SCIM pr
 
 No approved use cases. Implementation remains blocked.
 
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `IdentityProviderConfiguration`
-- `ProvisionedIdentity`
-- `ExternalGroupBinding`
-- `SetupUserConfiguration`
-
-Precise definitions must be refined against the official sources before activation.
-
 ## Ownership and invariants
 
 This context owns `IdentityProviderConfiguration`, `ProvisionedIdentity`, `ExternalGroupBinding`, `SetupUserConfiguration`.
 It excludes `InteractiveSession`, `AccountProfile`, `OrganizationRole`.
 
 No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
-
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
 
 ## Dependencies and consistency
 
@@ -82,32 +67,6 @@ None.
 - `identity/accounts::ManagedAccountProvisioning` (synchronous)
 - `identity/authentication::ExternalAuthenticationBinding` (synchronous)
 - `enterprises/enterprise-memberships::EnterpriseMembershipProvisioning` (synchronous)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `IdentityProviderConfigured@1` (domain, planned): identity provider configured. contract and ordering pending activation.
-- `ProvisionedIdentityCreated@1` (domain, planned): provisioned identity created. contract and ordering pending activation.
-- `ProvisionedIdentitySuspended@1` (domain, planned): provisioned identity suspended. contract and ordering pending activation.
-- `ProvisionedIdentityReinstated@1` (domain, planned): provisioned identity reinstated. contract and ordering pending activation.
-- `ProvisionedIdentityDeprovisioned@1` (domain, planned): provisioned identity deprovisioned. contract and ordering pending activation.
-- `ExternalGroupLinked@1` (domain, planned): external group linked. contract and ordering pending activation.
-- `ExternalGroupUnlinked@1` (domain, planned): external group unlinked. contract and ordering pending activation.
 
 ## Official sources
 

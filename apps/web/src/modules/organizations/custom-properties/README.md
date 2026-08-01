@@ -54,20 +54,6 @@ Organization-defined repository custom-property schemas and repository property 
 
 No approved use cases. Implementation remains blocked.
 
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `OrganizationRepositoryPropertyDefinition`
-- `OrganizationRepositoryPropertyAllowedValue`
-- `RepositoryPropertyValue`
-- `RepositoryPropertyValueSource`
-- `RequiredRepositoryPropertyPolicy`
-- `ExplicitRepositoryPropertyRequirement`
-- `OrganizationRepositoryPropertyPromotionRequest`
-
-Precise definitions must be refined against the official sources before activation.
-
 ## Ownership and invariants
 
 This context owns `OrganizationRepositoryPropertyDefinition`, `OrganizationRepositoryPropertyAllowedValue`, `RepositoryPropertyValue`, `RepositoryPropertyValueSource`, `RequiredRepositoryPropertyPolicy`, `ExplicitRepositoryPropertyRequirement`, `OrganizationRepositoryPropertyPromotionRequest`.
@@ -82,10 +68,6 @@ It excludes `EnterprisePropertyDefinition`, `OrganizationPropertyValue`, `Reposi
   - Events: `RepositoryPropertyValueSet@1`, `RepositoryPropertyValueCleared@1`
   - Sources: `organizations-custom-properties-source-01`
 
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
-
 ## Dependencies and consistency
 
 ### Runtime dependencies
@@ -99,31 +81,6 @@ None.
 - `repositories/repositories::RepositoryLifecycleState` (synchronous)
 - `repositories/repositories::RepositoryTransferEvents` (event; events `RepositoryTransferred@1`)
 - `enterprises/custom-properties::EnterprisePropertyPromotionEvents` (event; events `EnterpriseRepositoryPropertyPromoted@1`)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `OrganizationRepositoryPropertyDefined@1` (domain, planned): organization-defined repository property created. contract and ordering pending activation.
-- `OrganizationRepositoryPropertyUpdated@1` (domain, planned): organization-defined repository property updated. contract and ordering pending activation.
-- `OrganizationRepositoryPropertyDeleted@1` (domain, planned): organization-defined repository property deleted. contract and ordering pending activation.
-- `OrganizationRepositoryPropertyPromotionRequested@1` (domain, planned): organization repository property submitted for enterprise promotion. contract and ordering pending activation.
-- `RepositoryPropertyValueSet@1` (domain, planned): repository property value set. contract and ordering pending activation.
-- `RepositoryPropertyValueCleared@1` (domain, planned): repository property value cleared. contract and ordering pending activation.
 
 ## Official sources
 

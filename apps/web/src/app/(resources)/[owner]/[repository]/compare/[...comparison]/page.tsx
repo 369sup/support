@@ -1,13 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function RepositoryComparisonPage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/compare/{*comparison}",
-    title: "Repository comparison",
-    summary:
-      "Reserve GitHub-style revision comparison routes without introducing Git diff behavior.",
-    contexts: [],
-    catalogStatus: "excluded",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-compare-comparison");
 }

@@ -48,28 +48,12 @@ Organization-level issue type and field definitions, visibility, pinning, and ty
 
 No approved use cases. Implementation remains blocked.
 
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `IssueTypeDefinition`
-- `IssueFieldDefinition`
-- `IssueFieldVisibility`
-- `IssueFieldPinning`
-- `IssueTypeFieldAssociation`
-
-Precise definitions must be refined against the official sources before activation.
-
 ## Ownership and invariants
 
 This context owns `IssueTypeDefinition`, `IssueFieldDefinition`, `IssueFieldVisibility`, `IssueFieldPinning`, `IssueTypeFieldAssociation`.
 It excludes `ProjectField`, `CustomPropertyDefinition`, `Label`, `IssueFieldValue`.
 
 No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
-
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
 
 ## Dependencies and consistency
 
@@ -82,31 +66,6 @@ None.
 - `organizations/organizations::OrganizationReference` (synchronous)
 - `organizations/organization-policies::IssueSchemaPolicy` (synchronous)
 - `commerce/entitlements::IssueSchemaEntitlement` (synchronous)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `IssueTypeDefined@1` (domain, planned): issue type defined. contract and ordering pending activation.
-- `IssueTypeUpdated@1` (domain, planned): issue type updated. contract and ordering pending activation.
-- `IssueTypeRetired@1` (domain, planned): issue type retired. contract and ordering pending activation.
-- `IssueFieldDefined@1` (domain, planned): issue field defined. contract and ordering pending activation.
-- `IssueFieldUpdated@1` (domain, planned): issue field updated. contract and ordering pending activation.
-- `IssueFieldRetired@1` (domain, planned): issue field retired. contract and ordering pending activation.
 
 ## Official sources
 

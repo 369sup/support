@@ -1,13 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function RepositoryPagesPage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/pages",
-    title: "Repository Pages",
-    summary:
-      "Reserve the requested GitHub-style Pages route without introducing source publishing behavior.",
-    contexts: [],
-    catalogStatus: "excluded",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-pages");
 }

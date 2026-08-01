@@ -1,12 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function RepositoryInsightsPage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/pulse",
-    title: "Repository insights",
-    summary: "Present non-code engagement and integration-health insights without traffic or Git metrics.",
-    contexts: ["projections/repository-insights"],
-    catalogStatus: "planned",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-pulse");
 }

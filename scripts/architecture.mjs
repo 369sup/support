@@ -17,6 +17,7 @@ import {
 } from "@support/tooling/architecture/policy";
 
 import {
+  activeOnlyContextReadmeHeadings,
   activeContextReadmeHeadings,
   blockedUseCaseDesign,
   designedUseCaseFields,
@@ -27,6 +28,10 @@ import {
   renderModuleMap,
 } from "./architecture/projection.mjs";
 export { renderContextReadme, renderModuleMap };
+import {
+  generateRouteArtifacts,
+  validateRouteCatalog,
+} from "./architecture/routes.mjs";
 import {
   assertArchitectureProfile,
   selectViolations,
@@ -731,6 +736,18 @@ function validateCatalog(rootDir, catalog, now, errors, knowledgeErrors) {
         errors.push(
           `[ARCH-MAP-019] Context ${contextPath} README.md is missing required headings: ${missingHeadings.join(", ")}.`,
         );
+      }
+
+      if (context.implementationStatus === "planned") {
+        const activeOnlyHeadings = activeOnlyContextReadmeHeadings.filter(
+          (heading) => headings.has(heading),
+        );
+
+        if (activeOnlyHeadings.length > 0) {
+          errors.push(
+            `[ARCH-MAP-019] Planned context ${contextPath} README.md contains active-only headings: ${activeOnlyHeadings.join(", ")}.`,
+          );
+        }
       }
 
       const contentTreeHeadingIndex = readmeLines.findIndex((line) => {
@@ -1652,9 +1669,29 @@ export function runArchitectureChecks({
       renderModuleMap(catalog),
       generatedErrors,
     );
+
+    if (
+      resolve(applicationRoot) ===
+        resolve(repositoryRoot, "apps", "web")
+    ) {
+      validateRouteCatalog({
+        repositoryRoot,
+        contextsByPath,
+        designsByContext,
+        errors: requiredErrors,
+        generatedErrors,
+      });
+    }
   }
 
-  validateAgentGuidance(repositoryRoot, requiredErrors, generatedErrors);
+  validateAgentGuidance(
+    repositoryRoot,
+    applicationRoot,
+    contextsByPath,
+    requiredErrors,
+    generatedErrors,
+    knowledgeErrors,
+  );
   validateSerenaMemories(repositoryRoot, generatedErrors);
 
   validateModuleNamesAndRoles(applicationRoot, sourceFiles, requiredErrors);
@@ -1727,6 +1764,15 @@ export function generateModuleMap(repositoryRoot = repositoryPaths().repositoryR
   return markdownPath;
 }
 
+export function generateArchitectureDocs(
+  repositoryRoot = repositoryPaths().repositoryRoot,
+) {
+  const moduleMapPath = generateModuleMap(repositoryRoot);
+  const routeArtifacts = generateRouteArtifacts(repositoryRoot);
+
+  return { moduleMapPath, routeArtifacts };
+}
+
 export function scaffoldContextReadmes(
   repositoryRoot = repositoryPaths().repositoryRoot,
 ) {
@@ -1768,8 +1814,10 @@ async function runArchitectureCli() {
   const [command = "check", ...arguments_] = process.argv.slice(2);
 
   if (command === "generate") {
-    generateModuleMap();
-    console.log("Generated docs/architecture/module-map.md.");
+    const result = generateArchitectureDocs();
+    console.log(
+      `Generated docs/architecture/module-map.md and ${result.routeArtifacts.length} route artifacts.`,
+    );
     return;
   }
 

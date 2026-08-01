@@ -54,29 +54,12 @@ Billing accounts, payment profiles, usage, budgets, cost centers, invoices, and 
 
 No approved use cases. Implementation remains blocked.
 
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `BillingAccount`
-- `PaymentProfile`
-- `UsageRecord`
-- `Budget`
-- `CostCenter`
-- `Invoice`
-
-Precise definitions must be refined against the official sources before activation.
-
 ## Ownership and invariants
 
 This context owns `BillingAccount`, `PaymentProfile`, `UsageRecord`, `Budget`, `CostCenter`, `Invoice`.
 It excludes `FeatureEntitlement`, `LicenseAssignment`, `PaymentProviderRecord`.
 
 No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
-
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
 
 ## Dependencies and consistency
 
@@ -89,37 +72,6 @@ None.
 - `identity/accounts::PersonalBillingOwner` (synchronous)
 - `organizations/organizations::OrganizationBillingOwner` (synchronous)
 - `enterprises/enterprises::EnterpriseBillingOwner` (synchronous)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `BillingAccountCreated@1` (domain, planned): billing account created. contract and ordering pending activation.
-- `BillingAccountUpdated@1` (domain, planned): billing account updated. contract and ordering pending activation.
-- `PaymentProfileUpdated@1` (domain, planned): payment profile updated. contract and ordering pending activation.
-- `UsageRecorded@1` (domain, planned): usage recorded. contract and ordering pending activation.
-- `BudgetCreated@1` (domain, planned): budget created. contract and ordering pending activation.
-- `BudgetUpdated@1` (domain, planned): budget updated. contract and ordering pending activation.
-- `BudgetExceeded@1` (domain, planned): budget exceeded. contract and ordering pending activation.
-- `CostCenterCreated@1` (domain, planned): cost center created. contract and ordering pending activation.
-- `CostCenterUpdated@1` (domain, planned): cost center updated. contract and ordering pending activation.
-- `CostCenterDeleted@1` (domain, planned): cost center deleted. contract and ordering pending activation.
-- `InvoiceIssued@1` (domain, planned): invoice issued. contract and ordering pending activation.
-- `InvoicePaid@1` (domain, planned): invoice paid. contract and ordering pending activation.
 
 ## Official sources
 

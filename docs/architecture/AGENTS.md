@@ -50,8 +50,9 @@ changes.
   handler, port, public entrypoint, or `activationScope` is implemented.
 - Give each exception one stable ID, the narrowest scope, a concrete reason,
   an owner, and a removal condition. An exception is not a reusable example.
-- Regenerate the Markdown catalog with `pnpm architecture:docs` after changing
-  `module-map.json`, then inspect the generated diff. Run
+- Regenerate the module-map Markdown, route READMEs, and typed route projection
+  with `pnpm architecture:docs` after changing either catalog, then inspect the
+  generated diff. Run
   `pnpm architecture:contexts` only to scaffold missing context READMEs; refine
   their semantic content manually.
 

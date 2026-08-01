@@ -1,13 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function RepositoryPullRequestPage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/pull/{*pullPath}",
-    title: "Pull request",
-    summary:
-      "Reserve GitHub-style pull request routes without introducing code review behavior.",
-    contexts: [],
-    catalogStatus: "excluded",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-pull-pullpath");
 }

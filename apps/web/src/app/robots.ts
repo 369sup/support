@@ -16,6 +16,7 @@ export default function robots(): MetadataRoute.Robots {
         "/settings",
         "/accept-invitation",
         "/forgot-password",
+        "/login",
         "/logout",
         "/reset-password",
         "/search",

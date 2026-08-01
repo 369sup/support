@@ -2,10 +2,35 @@ import { organizationMembershipsServerFacade } from "./composition/organization-
 
 export type {
   OrganizationContextEligibilityResult,
+  OrganizationInvitationReference,
   OrganizationMembershipReference,
+  OrganizationMembershipRole,
+  OrganizationMembershipSource,
 } from "./contracts/organization-membership-reference";
 
+export const acceptOrganizationInvitation =
+  organizationMembershipsServerFacade.acceptOrganizationInvitation;
+export const cancelOrganizationInvitation =
+  organizationMembershipsServerFacade.cancelOrganizationInvitation;
+export const changeOrganizationMemberRole =
+  organizationMembershipsServerFacade.changeOrganizationMemberRole;
 export const checkOrganizationContextEligibility =
   organizationMembershipsServerFacade.checkOrganizationContextEligibility;
+export const declineOrganizationInvitation =
+  organizationMembershipsServerFacade.declineOrganizationInvitation;
+export const inviteOrganizationMember =
+  organizationMembershipsServerFacade.inviteOrganizationMember;
 export const listActiveOrganizationMembershipsForAccount =
   organizationMembershipsServerFacade.listActiveOrganizationMembershipsForAccount;
+export const listActiveOrganizationMembershipsForOrganization =
+  organizationMembershipsServerFacade.listActiveOrganizationMembershipsForOrganization;
+export const listOrganizationInvitationsForOrganization =
+  organizationMembershipsServerFacade.listOrganizationInvitationsForOrganization;
+export const listPendingOrganizationInvitationsForAccount =
+  organizationMembershipsServerFacade.listPendingOrganizationInvitationsForAccount;
+export const removeOrganizationMember =
+  organizationMembershipsServerFacade.removeOrganizationMember;
+export const synchronizeEnterpriseTeamOrganizationMemberships =
+  organizationMembershipsServerFacade.synchronizeEnterpriseTeamOrganizationMemberships;
+export const updateOrganizationInvitation =
+  organizationMembershipsServerFacade.updateOrganizationInvitation;

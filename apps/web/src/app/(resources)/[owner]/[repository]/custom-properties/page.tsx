@@ -1,12 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function RepositoryCustomPropertiesPage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/custom-properties",
-    title: "Repository custom properties",
-    summary: "Review organization-defined custom property values for a repository.",
-    contexts: ["organizations/custom-properties"],
-    catalogStatus: "planned",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-custom-properties");
 }

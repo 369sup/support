@@ -1,13 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function RepositoryBranchViewPage(): never {
-  void {
-    urlPattern: "/{owner}/{repository}/branches/{view}",
-    title: "Repository branch view",
-    summary:
-      "Reserve GitHub-style branch view routes without introducing Git ref behavior.",
-    contexts: [],
-    catalogStatus: "excluded",
-  };
-  notFound();
+  return renderUnavailableRoute("page-owner-repository-branches-view");
 }

@@ -1,10 +1,9 @@
 # Project custom agents
 
-Registered project custom agents live here as `<agent-name>.toml`. The active
-roles are `explorer`, `implementer`, `reviewer`, `verifier`, and
-`docs-researcher`; their registrations live in [`../config.toml`](../config.toml).
+The only project-specific custom agent is `reviewer`; its registration lives in
+[`../config.toml`](../config.toml).
 
-Each active file must define `name`, `description`, and
-`developer_instructions`. Keep roles narrow, inherit the parent model unless a
-role has a demonstrated need for an override, and follow
-[`../AGENTS.md`](../AGENTS.md).
+Codex already provides general exploration and implementation agents.
+Verification and documentation lookup remain task instructions or skills, so
+they do not need project-specific agent files. Follow
+[`../AGENTS.md`](../AGENTS.md) before adding another role.

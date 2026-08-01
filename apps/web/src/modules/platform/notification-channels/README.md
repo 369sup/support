@@ -39,26 +39,12 @@ External email or push delivery adapters for accepted notification delivery requ
 
 No approved use cases. Implementation remains blocked.
 
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `ChannelDelivery`
-- `DeliveryAttempt`
-- `DeliveryProviderReference`
-
-Precise definitions must be refined against technical contracts before activation.
-
 ## Ownership and invariants
 
 This context owns `ChannelDelivery`, `DeliveryAttempt`, `DeliveryProviderReference`.
 It excludes `Notification`, `SubscriptionPreference`, `RecipientSelection`.
 
 Product-semantic claims are not applicable to this technical context.
-
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
 
 ## Dependencies and consistency
 
@@ -69,27 +55,6 @@ None.
 ### Planned relationships
 
 - `engagement/notifications::NotificationDeliveryRequests` (event; events `NotificationDeliveryRequested@1`)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `ChannelDeliverySucceeded@1` (technical, planned): channel delivery succeeded. contract and ordering pending activation.
-- `ChannelDeliveryFailed@1` (technical, planned): channel delivery failed. contract and ordering pending activation.
 
 ## Official sources
 

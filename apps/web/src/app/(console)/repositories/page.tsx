@@ -1,4 +1,4 @@
-import { Separator } from "@support/shadcn/ui/separator";
+import { FolderKanban, LockKeyhole } from "lucide-react";
 
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
 import { getDashboardRepositoryView } from "@/modules/projections/dashboard/server-api";
@@ -8,45 +8,80 @@ export default async function RepositoriesPage() {
   const view = await getDashboardRepositoryView(session);
 
   return (
-    <main className="flex flex-1 px-5 py-16 sm:px-8">
-      <section className="mx-auto w-full max-w-5xl">
-        <p className="text-sm font-medium text-muted-foreground">
+    <main className="flex flex-1 px-4 py-10 sm:px-8 lg:px-10">
+      <section className="mx-auto w-full max-w-6xl">
+        <p className="font-mono text-xs font-semibold tracking-[0.16em] text-emerald-400 uppercase">
           Selected {view.context.kind} context
         </p>
-        <h1 className="mt-2 text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">
-          Repositories
-        </h1>
-        <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
-          Active repositories visible to @{session.account.username}. Context
-          selection narrows the owner scope but never grants access.
-        </p>
-        <Separator className="my-10" />
-        {view.repositories.length === 0 ? (
-          <p role="status" className="text-sm text-muted-foreground">
-            No active repositories are available.
-          </p>
-        ) : (
-          <ul className="divide-y rounded-xl border">
-            {view.repositories.map((repository) => (
-              <li className="p-5 sm:p-6" key={repository.repositoryId}>
-                <div className="flex flex-wrap items-center gap-3">
-                  <h2 className="font-mono text-lg font-semibold">
-                    {repository.ownerLogin}/{repository.name}
-                  </h2>
-                  <span className="rounded-full border px-2.5 py-1 text-xs text-muted-foreground">
+        <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-4xl font-semibold tracking-[-0.04em] text-white">
+              Repositories
+            </h1>
+            <p className="mt-4 max-w-3xl leading-7 text-slate-400">
+              Active repositories visible to @{session.account.username}.
+              Context selection narrows the owner scope but never grants
+              access.
+            </p>
+          </div>
+          <span className="text-sm text-slate-500">
+            {view.repositories.length}{" "}
+            {view.repositories.length === 1 ? "repository" : "repositories"}
+          </span>
+        </div>
+
+        <div className="mt-9 overflow-hidden rounded-xl border border-white/15 bg-[#0a1624]">
+          <div className="hidden grid-cols-[minmax(0,1.5fr)_auto_auto] gap-5 border-b border-white/10 px-5 py-3 text-xs font-medium tracking-wide text-slate-500 uppercase sm:grid">
+            <span>Repository</span>
+            <span>Visibility</span>
+            <span>Permission</span>
+          </div>
+          {view.repositories.length === 0 ? (
+            <p
+              className="px-5 py-10 text-center text-sm text-slate-500"
+              role="status"
+            >
+              No active repositories are available.
+            </p>
+          ) : (
+            <ul className="divide-y divide-white/10">
+              {view.repositories.map((repository) => (
+                <li
+                  className="grid gap-4 px-4 py-5 sm:grid-cols-[minmax(0,1.5fr)_auto_auto] sm:items-center sm:gap-5 sm:px-5"
+                  key={repository.repositoryId}
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      {repository.visibility === "public" ? (
+                        <FolderKanban
+                          aria-hidden="true"
+                          className="size-4 shrink-0 text-slate-500"
+                        />
+                      ) : (
+                        <LockKeyhole
+                          aria-hidden="true"
+                          className="size-4 shrink-0 text-slate-500"
+                        />
+                      )}
+                      <h2 className="truncate font-mono font-semibold text-slate-100">
+                        {repository.ownerLogin}/{repository.name}
+                      </h2>
+                    </div>
+                    <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+                      {repository.description}
+                    </p>
+                  </div>
+                  <span className="w-fit rounded-full border border-slate-600 px-2.5 py-1 text-xs text-slate-400 capitalize">
                     {repository.visibility}
                   </span>
-                  <span className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">
+                  <span className="w-fit rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-300 capitalize">
                     {repository.permission}
                   </span>
-                </div>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-                  {repository.description}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </section>
     </main>
   );

@@ -52,19 +52,6 @@ GitHub App registration, ownership and ownership transfer, requested permissions
 
 No approved use cases. Implementation remains blocked.
 
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `GitHubAppRegistration`
-- `GitHubAppOwnerReference`
-- `GitHubAppPermissionRequest`
-- `GitHubAppWebhookPreference`
-- `RequestedWebhookEvents`
-- `WebhookActivationState`
-
-Precise definitions must be refined against the official sources before activation.
-
 ## Ownership and invariants
 
 This context owns `GitHubAppRegistration`, `GitHubAppOwnerReference`, `GitHubAppPermissionRequest`, `GitHubAppWebhookPreference`, `RequestedWebhookEvents`, `WebhookActivationState`.
@@ -87,10 +74,6 @@ It excludes `AppInstallation`, `UserAuthorization`, `WebhookDelivery`.
   - Events: `GitHubAppDeleted@1`
   - Sources: `integrations-github-app-registrations-source-04`
 
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
-
 ## Dependencies and consistency
 
 ### Runtime dependencies
@@ -103,31 +86,6 @@ None.
 - `organizations/organizations::OrganizationAppOwner` (synchronous)
 - `enterprises/enterprises::EnterpriseAppOwner` (synchronous)
 - `commerce/entitlements::AppEntitlement` (synchronous)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `GitHubAppRegistered@1` (domain, planned): app registered. contract and ordering pending activation.
-- `GitHubAppUpdated@1` (domain, planned): app updated. contract and ordering pending activation.
-- `GitHubAppDeleted@1` (domain, planned): GitHub App registration deleted and its installations invalidated. contract and ordering pending activation.
-- `GitHubAppPermissionsChanged@1` (domain, planned): app permissions changed. contract and ordering pending activation.
-- `GitHubAppWebhookConfigurationChanged@1` (domain, planned): app webhook configuration changed. contract and ordering pending activation.
-- `GitHubAppOwnershipTransferred@1` (domain, planned): GitHub App registration ownership transferred. contract and ordering pending activation.
 
 ## Official sources
 

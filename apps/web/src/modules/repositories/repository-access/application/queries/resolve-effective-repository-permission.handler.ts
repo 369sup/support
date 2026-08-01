@@ -4,6 +4,7 @@ import type {
   ResolveEffectiveRepositoryPermissionUseCase,
 } from "../ports/inbound/resolve-effective-repository-permission.use-case";
 import type { OrganizationMembershipGatewayPort } from "../ports/outbound/organization-membership.gateway.port";
+import type { OrganizationPolicyGatewayPort } from "../ports/outbound/organization-policy.gateway.port";
 import type { OrganizationRoleGatewayPort } from "../ports/outbound/organization-role.gateway.port";
 import type { OrganizationTeamGatewayPort } from "../ports/outbound/organization-team.gateway.port";
 import type { RepositoryGrantRepositoryPort } from "../ports/outbound/repository-grant.repository.port";
@@ -16,6 +17,7 @@ export class ResolveEffectiveRepositoryPermissionHandler
 {
   private readonly grantRepository: RepositoryGrantRepositoryPort;
   private readonly membershipGateway: OrganizationMembershipGatewayPort;
+  private readonly policyGateway: OrganizationPolicyGatewayPort;
   private readonly teamGrantRepository: TeamRepositoryGrantRepositoryPort;
   private readonly teamGateway: OrganizationTeamGatewayPort;
   private readonly roleGateway: OrganizationRoleGatewayPort;
@@ -23,12 +25,14 @@ export class ResolveEffectiveRepositoryPermissionHandler
   constructor(
     grantRepository: RepositoryGrantRepositoryPort,
     membershipGateway: OrganizationMembershipGatewayPort,
+    policyGateway: OrganizationPolicyGatewayPort,
     teamGrantRepository: TeamRepositoryGrantRepositoryPort,
     teamGateway: OrganizationTeamGatewayPort,
     roleGateway: OrganizationRoleGatewayPort,
   ) {
     this.grantRepository = grantRepository;
     this.membershipGateway = membershipGateway;
+    this.policyGateway = policyGateway;
     this.teamGrantRepository = teamGrantRepository;
     this.teamGateway = teamGateway;
     this.roleGateway = roleGateway;
@@ -64,6 +68,21 @@ export class ResolveEffectiveRepositoryPermissionHandler
         query.accountId,
         query.repository.owner.organizationId,
       );
+      if (membership !== null) {
+        const basePermission =
+          await this.policyGateway.getBaseRepositoryPermission(
+            query.repository.owner.organizationId,
+          );
+        if (basePermission !== null) {
+          contributions.push({
+            permission: basePermission,
+            source: {
+              kind: "organization-base-permission",
+              membershipId: membership.membershipId,
+            },
+          });
+        }
+      }
       if (membership?.role === "owner") {
         contributions.push({
           permission: "admin",
@@ -146,14 +165,30 @@ export class ResolveEffectiveRepositoryPermissionHandler
       );
     }
 
-    const strongest = contributions.toSorted(
+    const sortedContributions = contributions.toSorted(
       (left, right) =>
         compareRepositoryPermission(right.permission, left.permission),
-    )[0];
+    );
+    const capabilityDecisions = sortedContributions.map((contribution) => ({
+      permission: contribution.permission,
+      source: contribution.source,
+    }));
+    const strongest = sortedContributions[0];
+    const effectiveBaseRole = strongest?.permission ?? null;
+    const additionalPermissions = Array.from(
+      new Set(
+        capabilityDecisions
+          .filter((decision) => decision.permission !== effectiveBaseRole)
+          .map((decision) => decision.permission),
+      ),
+    );
 
     return {
       isAllowed: strongest !== undefined,
       permission: strongest?.permission ?? null,
+      effectiveBaseRole,
+      additionalPermissions,
+      capabilityDecisions,
       sources: contributions.map((contribution) => contribution.source),
     };
   }

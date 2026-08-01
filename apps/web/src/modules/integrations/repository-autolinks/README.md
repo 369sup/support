@@ -43,17 +43,6 @@ Repository-scoped autolink definitions for external resource references.
 
 No approved use cases. Implementation remains blocked.
 
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `RepositoryAutolink`
-- `AutolinkPrefix`
-- `AutolinkIdentifierFormat`
-- `AutolinkTargetTemplate`
-
-Precise definitions must be refined against the official sources before activation.
-
 ## Ownership and invariants
 
 This context owns `RepositoryAutolink`, `AutolinkPrefix`, `AutolinkIdentifierFormat`, `AutolinkTargetTemplate`.
@@ -68,10 +57,6 @@ It excludes `ExternalResource`, `RepositoryContent`, `ContentRendering`.
   - Events: `RepositoryAutolinkDeleted@1`
   - Sources: `integrations-repository-autolinks-source-02`
 
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
-
 ## Dependencies and consistency
 
 ### Runtime dependencies
@@ -83,27 +68,6 @@ None.
 - `repositories/repositories::RepositoryLifecycleState` (synchronous)
 - `repositories/repository-access::RepositoryAdministrationPermission` (synchronous)
 - `commerce/entitlements::RepositoryAutolinkEntitlement` (synchronous)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `RepositoryAutolinkCreated@1` (domain, planned): repository autolink created. contract and ordering pending activation.
-- `RepositoryAutolinkDeleted@1` (domain, planned): repository autolink deleted. contract and ordering pending activation.
 
 ## Official sources
 

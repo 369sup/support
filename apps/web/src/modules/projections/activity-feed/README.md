@@ -1,111 +1,80 @@
-# Activity Feed Bounded Context
-
-- **Catalog path:** `projections/activity-feed`
-- **Kind:** `projection`
-- **Classification:** `not-applicable`
-- **Maturity:** `stable`
-- **Implementation:** `planned`
-- **Semantic status:** `candidate`
+# Activity Feed
 
 ## Purpose
 
-User-visible dashboard and resource activity projections.
+Project supported, permission-filtered non-code product activity.
 
 ## Context content tree
 
-- `projections/activity-feed` [planned]
-  - Purpose: User-visible dashboard and resource activity projections.
-  - Capabilities
-    - No active use cases; activation scope remains empty.
-  - Owned domain concepts
-    - `ActivityItem`
-    - `PersonalActivityFeed`
-    - `RepositoryActivityFeed`
-    - `OrganizationActivityFeed`
-  - Business rules and invariants
-    - Pending official-source validation before activation.
-  - Published events
-    - None. Read-model context consumes versioned events and does not publish product facts.
-- External relationships
-  - Runtime dependencies: none.
-  - Planned relationships
-    - `identity/social-graph::FollowEvents` (event; events `UserFollowed@1`, `UserUnfollowed@1`, `OrganizationFollowed@1`, `OrganizationUnfollowed@1`)
-    - `repositories/repositories::RepositoryActivityEvents` (event; events `RepositoryCreated@1`, `RepositoryProfileUpdated@1`, `RepositoryRenamed@1`, `RepositoryVisibilityChanged@1`, `RepositoryArchived@1`, `RepositoryUnarchived@1`, `RepositoryDeleted@1`, `RepositoryRestored@1`)
-    - `collaboration/issues::IssueActivityEvents` (event; events `IssueCreated@1`, `IssueUpdated@1`, `IssueClosed@1`, `IssueReopened@1`)
-    - `collaboration/discussions::DiscussionActivityEvents` (event; events `DiscussionCreated@1`, `DiscussionUpdated@1`, `DiscussionClosed@1`, `DiscussionReopened@1`)
-    - `collaboration/projects::ProjectActivityEvents` (event; events `ProjectCreated@1`, `ProjectUpdated@1`, `ProjectClosed@1`, `ProjectReopened@1`, `ProjectStatusUpdated@1`)
-    - `repositories/repository-access::EffectiveReadPermission` (synchronous)
-- Explicit exclusions
-  - `AuditEvent`
-  - `DomainEventSource`
-  - `CodeActivity`
+- Repository activity [active]
+  - `list-repository-activity`
+  - Owned: `ActivityItem`, `RepositoryActivityFeed`
+- Personal and organization activity [planned]
+  - Owned: `PersonalActivityFeed`, `OrganizationActivityFeed`
+- Published events: none; this is a read model.
+- Runtime dependencies: none.
+- Excludes: `AuditEvent`, `DomainEventSource`, `CodeActivity`.
 
 ## Designed use cases
 
-No approved use cases. Implementation remains blocked.
+### `list-repository-activity` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ListRepositoryActivityUseCase.listRepositoryActivity()`
+- **Public entrypoint:** `server-api.ts#listRepositoryActivity`
+- **Input:** Repository ID.
+- **Success result:** `found` with supported activity newest first.
+- **Expected rejections:** `invalid-repository-id`
+- **Authorization:** Delivery establishes repository read access.
+- **Transaction:** Read-only projection snapshot.
+- **Idempotency:** Query.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `projections-activity-feed-source-01`
+- **Local policy:** Active kinds are issue opened, comment added, and repository starred; code activity is excluded.
 
 ## Ubiquitous language
 
-The catalog reserves these terms for this context:
-
-- `ActivityItem`
-- `PersonalActivityFeed`
-- `RepositoryActivityFeed`
-- `OrganizationActivityFeed`
-
-Precise definitions must be refined against the official sources before activation.
+- **Activity item**: projected supported product fact with actor, target, and time.
+- **Repository feed**: activity items scoped to one readable repository.
 
 ## Ownership and invariants
 
-This context owns `ActivityItem`, `PersonalActivityFeed`, `RepositoryActivityFeed`, `OrganizationActivityFeed`.
-It excludes `AuditEvent`, `DomainEventSource`, `CodeActivity`.
-
-No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
+Owns all catalog feed projections. It never becomes source-of-truth for events.
 
 ## Public capabilities
 
-None while planned. Activation requires at least one real use case and public consumer.
+`listRepositoryActivity`.
 
 ## Dependencies and consistency
 
-### Runtime dependencies
-
-None.
-
-### Planned relationships
-
-- `identity/social-graph::FollowEvents` (event; events `UserFollowed@1`, `UserUnfollowed@1`, `OrganizationFollowed@1`, `OrganizationUnfollowed@1`)
-- `repositories/repositories::RepositoryActivityEvents` (event; events `RepositoryCreated@1`, `RepositoryProfileUpdated@1`, `RepositoryRenamed@1`, `RepositoryVisibilityChanged@1`, `RepositoryArchived@1`, `RepositoryUnarchived@1`, `RepositoryDeleted@1`, `RepositoryRestored@1`)
-- `collaboration/issues::IssueActivityEvents` (event; events `IssueCreated@1`, `IssueUpdated@1`, `IssueClosed@1`, `IssueReopened@1`)
-- `collaboration/discussions::DiscussionActivityEvents` (event; events `DiscussionCreated@1`, `DiscussionUpdated@1`, `DiscussionClosed@1`, `DiscussionReopened@1`)
-- `collaboration/projects::ProjectActivityEvents` (event; events `ProjectCreated@1`, `ProjectUpdated@1`, `ProjectClosed@1`, `ProjectReopened@1`, `ProjectStatusUpdated@1`)
-- `repositories/repository-access::EffectiveReadPermission` (synchronous)
+The first slice uses deterministic fixtures. Event-driven projection remains
+planned, so new commands do not claim immediate feed publication.
 
 ## Authorization
 
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Delivery resolves effective repository read permission before querying.
 
 ## Persistence and transactions
 
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
+Read-only process fixtures.
 
 ## Data classification
 
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Activity inherits source resource visibility and must be permission-filtered.
 
 ## Retention and erasure
 
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
+Process lifetime only.
 
 ## Events and failure behavior
 
-- None. Read-model context consumes versioned events and does not publish product facts.
+No events are published. Invalid input is a discriminated value.
 
 ## Official sources
 
-- `projections-activity-feed-source-01`: [personal dashboard, activity feed, followed activity](https://docs.github.com/en/account-and-profile/reference/personal-dashboard) (verified 2026-07-23)
+- <https://docs.github.com/en/account-and-profile/reference/personal-dashboard>
 
 ## Exceptions
 
-No context-specific exception is declared by the catalog. The central
-[exception registry](../../../../../../docs/architecture/exceptions/registry.json) remains authoritative.
+None.

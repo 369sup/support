@@ -14,9 +14,13 @@ class AccountQueryRepositoryFake implements AccountQueryRepositoryPort {
     this.account = account;
   }
 
-  findPersonalByUsername(username: string) {
+  findByUsername(username: string) {
     this.requestedUsernames.push(username);
     return Promise.resolve(this.account);
+  }
+
+  findPersonalByUsername(username: string) {
+    return this.findByUsername(username);
   }
 
   findById() {

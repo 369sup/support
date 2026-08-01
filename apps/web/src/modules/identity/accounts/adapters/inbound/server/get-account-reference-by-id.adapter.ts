@@ -9,6 +9,16 @@ export function createGetAccountReferenceByIdAdapter(
   useCase: GetAccountReferenceByIdUseCase,
 ): GetAccountReferenceByIdAdapter {
   return async function getAccountReferenceById(accountId) {
-    return useCase.getAccountReferenceById({ accountId });
+    const result = await useCase.getAccountReferenceById({ accountId });
+    if (result.status !== "found") {
+      return result;
+    }
+    return {
+      status: "found",
+      account: {
+        ...result.account,
+        lifecycleState: "active",
+      },
+    };
   };
 }

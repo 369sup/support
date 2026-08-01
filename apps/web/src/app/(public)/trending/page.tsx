@@ -1,12 +1,5 @@
-import { notFound } from "next/navigation";
+import { renderUnavailableRoute } from "@/app/_route-contracts/route-contract";
 
 export default function TrendingPage(): never {
-  void {
-    urlPattern: "/trending",
-    title: "Trending",
-    summary: "Reserve the public trending entry point without defining ranking or telemetry semantics.",
-    contexts: [],
-    catalogStatus: "unowned",
-  };
-  notFound();
+  return renderUnavailableRoute("page-trending");
 }

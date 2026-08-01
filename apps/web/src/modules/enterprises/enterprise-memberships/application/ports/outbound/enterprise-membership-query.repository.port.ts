@@ -1,4 +1,4 @@
-export type EnterpriseMembershipQuerySnapshot = Readonly<{
+﻿export type EnterpriseMembershipQuerySnapshot = Readonly<{
   membershipId: string;
   enterpriseId: string;
   accountId: string;

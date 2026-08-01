@@ -1,12 +1,27 @@
-import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
-export default function LoginPage(): never {
-  void {
-    urlPattern: "/login",
-    title: "Login",
-    summary: "GitHub-style canonical login URL for the account authentication journey.",
-    contexts: ["identity/authentication"],
-    catalogStatus: "active",
-  };
-  notFound();
+import { DevelopmentSignInForm } from "@/modules/identity/authentication/browser-ui";
+import { isInMemoryRuntimeEnabled } from "@/modules/identity/authentication/server-api";
+
+export const metadata: Metadata = {
+  title: "Sign in",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+export default async function LoginPage({
+  searchParams,
+}: Readonly<{
+  searchParams: Promise<{ add?: string | readonly string[] }>;
+}>) {
+  const { add } = await searchParams;
+
+  return (
+    <DevelopmentSignInForm
+      isEnabled={isInMemoryRuntimeEnabled()}
+      isAddingAccount={add === "1"}
+    />
+  );
 }

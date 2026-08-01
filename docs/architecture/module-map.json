@@ -19,34 +19,34 @@
       "reason": "Diffs, mergeability, merge execution, pull requests, reviews, and code-review state require the excluded code domain."
     },
     {
-      "name": "actions-and-code-products",
-      "reason": "Actions execution, code search and navigation, code security analysis, Dependabot, Packages, Pages, and Codespaces are excluded."
+      "name": "actions-and-source-backed-code-products",
+      "reason": "Actions execution, code search and navigation, code security analysis, Dependabot, source-backed package payloads, source-backed Pages builds, and Codespaces are excluded. Package metadata and app-owned site publication may be modeled without Git behavior."
     }
   ],
   "deferredCapabilities": [
     {
-      "name": "releases",
-      "requires": "A trustworthy tag-reference provider."
+      "name": "release-git-reference-resolution",
+      "requires": "A trustworthy tag-reference provider before release metadata may resolve Git tags or commits."
     },
     {
-      "name": "forks-and-templates",
-      "requires": "Git history and repository-content provisioning providers."
+      "name": "fork-history-and-template-provisioning",
+      "requires": "Git history and repository-content provisioning providers; relationship metadata remains independent."
     },
     {
-      "name": "community-profile",
-      "requires": "A repository-content provider for community files."
+      "name": "community-file-discovery",
+      "requires": "A repository-content provider; structured app-owned community profiles remain independent."
     },
     {
       "name": "code-rulesets",
       "requires": "Branch, tag, push, and code-governance resources."
     },
     {
-      "name": "repository-traffic-metrics",
-      "requires": "A trustworthy product-telemetry ingestion, retention, and aggregation capability."
+      "name": "git-derived-repository-traffic",
+      "requires": "A trustworthy Git telemetry provider; Support web telemetry remains independent."
     },
     {
-      "name": "repository-wiki-content",
-      "requires": "A trustworthy Git-backed wiki content provider."
+      "name": "git-backed-repository-wiki-content",
+      "requires": "A trustworthy Git-backed wiki provider; app-owned wiki content remains independent."
     },
     {
       "name": "repository-migration-locks",
@@ -174,6 +174,9 @@
         }
       ],
       "activationScope": [
+        "apply-account-identity-transaction",
+        "delete-personal-account",
+        "get-account-candidate-by-username",
         "get-account-reference-by-id",
         "get-personal-account-by-username"
       ],
@@ -260,6 +263,15 @@
             "managed user reauthentication"
           ],
           "verifiedOn": "2026-07-23"
+        },
+        {
+          "id": "identity-authentication-source-03",
+          "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-strong-password",
+          "supports": [
+            "password minimums",
+            "password verifier storage"
+          ],
+          "verifiedOn": "2026-07-27"
         }
       ],
       "publishedEvents": [
@@ -325,6 +337,7 @@
         }
       ],
       "activationScope": [
+        "apply-password-credential-transaction",
         "create-development-session",
         "expire-session",
         "get-current-authenticated-session",
@@ -373,18 +386,104 @@
     },
     {
       "subdomain": "identity",
+      "name": "account-registration",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "active",
+      "responsibility": "Coordinate personal account registration and username changes so account identity and password credentials never remain half-complete.",
+      "semanticStatus": "validated",
+      "owns": [
+        "AccountCredentialTransaction",
+        "UsernameChangeTransaction"
+      ],
+      "excludes": [
+        "Account",
+        "Credential",
+        "Session",
+        "EmailVerification",
+        "ScimProvisioning"
+      ],
+      "dependencies": [
+        {
+          "context": "identity/accounts",
+          "contract": "AccountIdentityTransaction",
+          "mode": "synchronous"
+        },
+        {
+          "context": "identity/authentication",
+          "contract": "PasswordCredentialTransaction",
+          "mode": "synchronous"
+        }
+      ],
+      "officialSources": [
+        {
+          "id": "identity-account-registration-source-01",
+          "url": "https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github",
+          "supports": [
+            "personal account registration",
+            "managed user exclusion"
+          ],
+          "verifiedOn": "2026-07-27"
+        },
+        {
+          "id": "identity-account-registration-source-02",
+          "url": "https://docs.github.com/en/account-and-profile/concepts/username-changes",
+          "supports": [
+            "username availability",
+            "username changes"
+          ],
+          "verifiedOn": "2026-07-27"
+        },
+        {
+          "id": "identity-account-registration-source-03",
+          "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-strong-password",
+          "supports": [
+            "password minimums",
+            "password verifier storage"
+          ],
+          "verifiedOn": "2026-07-27"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "The coordinator owns transaction consistency rather than a product fact; account and credential event publication remains with their owning contexts.",
+      "activationScope": [
+        "change-personal-account-username",
+        "register-personal-account"
+      ],
+      "plannedRelationships": [],
+      "semanticClaims": [
+        {
+          "id": "account-credential-consistency",
+          "statement": "Personal account registration and username changes coordinate account identity with its password credential through reservations, reversible commits, and compensation before finalization.",
+          "ownership": [
+            "AccountCredentialTransaction",
+            "UsernameChangeTransaction"
+          ],
+          "events": [],
+          "sourceIds": [
+            "identity-account-registration-source-01",
+            "identity-account-registration-source-02",
+            "identity-account-registration-source-03"
+          ]
+        }
+      ]
+    },
+    {
+      "subdomain": "identity",
       "name": "profiles",
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Public and private personal profiles, profile status, and pinned-item presentation.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "UserProfile",
         "ProfileVisibility",
         "ProfileStatus",
-        "PinnedItemSet"
+        "PinnedItemSet",
+        "ProfileAchievementSet"
       ],
       "excludes": [
         "AccountLifecycle",
@@ -399,9 +498,20 @@
           "supports": [
             "profile",
             "profile visibility",
+            "profile status",
             "pinned items"
           ],
-          "verifiedOn": "2026-07-23"
+          "verifiedOn": "2026-07-26"
+        },
+        {
+          "id": "identity-profiles-source-02",
+          "url": "https://docs.github.com/en/account-and-profile/reference/profile-reference",
+          "supports": [
+            "profile achievement badges",
+            "achievement visibility",
+            "permission-filtered contributing event links"
+          ],
+          "verifiedOn": "2026-07-26"
         }
       ],
       "publishedEvents": [
@@ -446,7 +556,10 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "get-user-profile",
+        "update-user-profile"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/accounts",
@@ -454,7 +567,38 @@
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "personal-profile-presentation",
+          "statement": "A personal profile presents user-controlled public information, visibility, status, and pinned items; private profiles hide social activity while retaining the documented public fields.",
+          "ownership": [
+            "UserProfile",
+            "ProfileVisibility",
+            "ProfileStatus",
+            "PinnedItemSet"
+          ],
+          "events": [
+            "ProfileUpdated@1",
+            "ProfileVisibilityChanged@1",
+            "ProfileStatusChanged@1",
+            "PinnedItemsChanged@1"
+          ],
+          "sourceIds": [
+            "identity-profiles-source-01"
+          ]
+        },
+        {
+          "id": "profile-achievement-presentation",
+          "statement": "Achievements are profile badges for supported product events; owners may hide achievements, and contributing-event links are visible only when the viewer can access their repository or organization.",
+          "ownership": [
+            "ProfileAchievementSet"
+          ],
+          "events": [],
+          "sourceIds": [
+            "identity-profiles-source-02"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "identity",
@@ -462,9 +606,9 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Following relationships between users and organizations.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "UserFollow",
         "OrganizationFollow"
@@ -536,7 +680,9 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "toggle-user-follow"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/accounts",
@@ -549,7 +695,36 @@
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "user-follow-relationship",
+          "statement": "A personal account may follow or unfollow another person to see that person's public activity on the personal dashboard.",
+          "ownership": [
+            "UserFollow"
+          ],
+          "events": [
+            "UserFollowed@1",
+            "UserUnfollowed@1"
+          ],
+          "sourceIds": [
+            "identity-social-graph-source-01"
+          ]
+        },
+        {
+          "id": "organization-follow-relationship",
+          "statement": "Organization following is a preview relationship distinct from user following.",
+          "ownership": [
+            "OrganizationFollow"
+          ],
+          "events": [
+            "OrganizationFollowed@1",
+            "OrganizationUnfollowed@1"
+          ],
+          "sourceIds": [
+            "identity-social-graph-source-02"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "enterprises",
@@ -837,9 +1012,9 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "preview",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Enterprise-wide teams used for centralized role, organization, and license assignment.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "EnterpriseTeam",
         "EnterpriseTeamMembership",
@@ -850,17 +1025,80 @@
         "RepositoryGrant",
         "CostCenter"
       ],
-      "dependencies": [],
+      "dependencies": [
+        {
+          "context": "enterprises/enterprises",
+          "contract": "EnterpriseReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "enterprises/enterprise-roles",
+          "contract": "EnterpriseAdministrationDecision",
+          "mode": "synchronous"
+        },
+        {
+          "context": "identity/accounts",
+          "contract": "AccountReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organizations",
+          "contract": "OrganizationReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-memberships",
+          "contract": "OrganizationMembershipReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-policies",
+          "contract": "BaseRepositoryPermission",
+          "mode": "synchronous"
+        }
+      ],
       "officialSources": [
         {
           "id": "enterprises-enterprise-teams-source-01",
           "url": "https://docs.github.com/en/enterprise-cloud@latest/admin/concepts/enterprise-fundamentals/teams-in-an-enterprise",
           "supports": [
             "enterprise teams",
-            "enterprise team membership"
+            "enterprise team membership",
+            "enterprise and organization team differences",
+            "enterprise team limits"
           ],
           "maturity": "preview",
-          "verifiedOn": "2026-07-23"
+          "verifiedOn": "2026-07-27"
+        },
+        {
+          "id": "enterprises-enterprise-teams-source-02",
+          "url": "https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories/managing-users-in-your-enterprise/create-enterprise-teams",
+          "supports": [
+            "enterprise owner team management",
+            "direct enterprise team membership",
+            "organization assignment effects"
+          ],
+          "maturity": "preview",
+          "verifiedOn": "2026-07-27"
+        },
+        {
+          "id": "enterprises-enterprise-teams-source-03",
+          "url": "https://docs.github.com/en/rest/enterprise-teams/enterprise-teams",
+          "supports": [
+            "enterprise team listing",
+            "enterprise team create update delete",
+            "name-derived enterprise team slug"
+          ],
+          "verifiedOn": "2026-07-26"
+        },
+        {
+          "id": "enterprises-enterprise-teams-source-04",
+          "url": "https://docs.github.com/en/rest/enterprise-teams/enterprise-team-members",
+          "supports": [
+            "enterprise team member listing",
+            "enterprise team member add remove"
+          ],
+          "verifiedOn": "2026-07-26"
         }
       ],
       "publishedEvents": [
@@ -935,20 +1173,69 @@
           ]
         }
       ],
-      "activationScope": [],
-      "plannedRelationships": [
+      "activationScope": [
+        "add-enterprise-team-member",
+        "assign-enterprise-team-to-organization",
+        "create-enterprise-team",
+        "delete-enterprise-team",
+        "list-enterprise-team-members",
+        "list-enterprise-team-organization-assignments",
+        "list-enterprise-teams",
+        "remove-enterprise-team-member",
+        "unassign-enterprise-team-from-organization",
+        "update-enterprise-team"
+      ],
+      "plannedRelationships": [],
+      "semanticClaims": [
         {
-          "context": "enterprises/enterprises",
-          "contract": "EnterpriseReference",
-          "mode": "synchronous"
+          "id": "enterprise-team-administration",
+          "statement": "Enterprise teams are enterprise-scoped groups with name-derived slugs; enterprise owners create, update, and delete teams, while enterprise teams remain distinct from organization teams and do not support nested teams, secret visibility, or team maintainers.",
+          "ownership": [
+            "EnterpriseTeam"
+          ],
+          "events": [
+            "EnterpriseTeamCreated@1",
+            "EnterpriseTeamUpdated@1",
+            "EnterpriseTeamDeleted@1"
+          ],
+          "sourceIds": [
+            "enterprises-enterprise-teams-source-01",
+            "enterprises-enterprise-teams-source-02",
+            "enterprises-enterprise-teams-source-03"
+          ]
         },
         {
-          "context": "enterprises/enterprise-memberships",
-          "contract": "EnterpriseMemberReference",
-          "mode": "synchronous"
+          "id": "enterprise-team-membership",
+          "statement": "Enterprise teams contain direct personal or managed user members; adding or removing team membership changes team-derived privileges without removing the user from the enterprise.",
+          "ownership": [
+            "EnterpriseTeamMembership"
+          ],
+          "events": [
+            "EnterpriseTeamMemberAdded@1",
+            "EnterpriseTeamMemberRemoved@1"
+          ],
+          "sourceIds": [
+            "enterprises-enterprise-teams-source-01",
+            "enterprises-enterprise-teams-source-02",
+            "enterprises-enterprise-teams-source-04"
+          ]
+        },
+        {
+          "id": "enterprise-team-organization-assignment",
+          "statement": "Assigning an enterprise team to an organization adds team members directly without invitations and makes the organization's base repository permission an effective permission source.",
+          "ownership": [
+            "EnterpriseTeamOrganizationGrant"
+          ],
+          "events": [
+            "EnterpriseTeamOrganizationGranted@1",
+            "EnterpriseTeamOrganizationRevoked@1"
+          ],
+          "sourceIds": [
+            "enterprises-enterprise-teams-source-01",
+            "enterprises-enterprise-teams-source-02"
+          ]
         }
-      ],
-      "semanticClaims": []
+      ]
     },
     {
       "subdomain": "enterprises",
@@ -1650,7 +1937,43 @@
             "organization invitations",
             "membership lifecycle"
           ],
-          "verifiedOn": "2026-07-23"
+          "verifiedOn": "2026-07-27"
+        },
+        {
+          "id": "organizations-organization-memberships-source-02",
+          "url": "https://docs.github.com/en/organizations/managing-membership-in-your-organization/inviting-users-to-join-your-organization",
+          "supports": [
+            "seven-day invitation expiry",
+            "personal account invitations",
+            "managed user SCIM provisioning"
+          ],
+          "verifiedOn": "2026-07-27"
+        },
+        {
+          "id": "organizations-organization-memberships-source-03",
+          "url": "https://docs.github.com/en/organizations/managing-membership-in-your-organization/canceling-or-editing-an-invitation-to-join-your-organization",
+          "supports": [
+            "invitation editing",
+            "invitation cancellation"
+          ],
+          "verifiedOn": "2026-07-27"
+        },
+        {
+          "id": "organizations-organization-memberships-source-04",
+          "url": "https://docs.github.com/en/organizations/managing-membership-in-your-organization/removing-a-member-from-your-organization",
+          "supports": [
+            "member removal"
+          ],
+          "verifiedOn": "2026-07-27"
+        },
+        {
+          "id": "organizations-organization-memberships-source-05",
+          "url": "https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories/managing-users-in-your-enterprise/create-enterprise-teams",
+          "supports": [
+            "enterprise team direct organization membership",
+            "organization base repository permission"
+          ],
+          "verifiedOn": "2026-07-27"
         }
       ],
       "publishedEvents": [
@@ -1716,8 +2039,19 @@
         }
       ],
       "activationScope": [
+        "accept-organization-invitation",
+        "cancel-organization-invitation",
+        "change-organization-member-role",
         "check-organization-context-eligibility",
-        "list-active-organization-memberships-for-account"
+        "decline-organization-invitation",
+        "invite-organization-member",
+        "list-active-organization-memberships-for-account",
+        "list-active-organization-memberships-for-organization",
+        "list-organization-invitations-for-organization",
+        "list-pending-organization-invitations-for-account",
+        "remove-organization-member",
+        "synchronize-enterprise-team-organization-memberships",
+        "update-organization-invitation"
       ],
       "plannedRelationships": [
         {
@@ -1729,7 +2063,7 @@
       "semanticClaims": [
         {
           "id": "organization-membership-lifecycle",
-          "statement": "Organization membership has member or owner roles and lifecycle states; pending, suspended, and removed memberships are not active membership.",
+          "statement": "Organization membership has member or owner roles and lifecycle states; direct personal-account invitations expire after seven days, while managed users are provisioned through SCIM.",
           "ownership": [
             "OrganizationMembership",
             "OrganizationInvitation",
@@ -1745,7 +2079,11 @@
             "OrganizationMemberRoleChanged@1"
           ],
           "sourceIds": [
-            "organizations-organization-memberships-source-01"
+            "organizations-organization-memberships-source-01",
+            "organizations-organization-memberships-source-02",
+            "organizations-organization-memberships-source-03",
+            "organizations-organization-memberships-source-04",
+            "organizations-organization-memberships-source-05"
           ]
         }
       ]
@@ -2167,16 +2505,20 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Organization policies for repositories, collaborators, projects, discussions, and member privileges.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "RepositoryCreationPolicy",
         "RepositoryVisibilityPolicy",
         "OutsideCollaboratorPolicy",
         "ProjectPolicy",
         "DiscussionPolicy",
-        "BaseRepositoryPermission"
+        "BaseRepositoryPermission",
+        "OAuthPolicyConstraints",
+        "OAuthAppAccessRestriction",
+        "GitHubAppInstallationPolicy",
+        "AppAccessRequestPolicy"
       ],
       "excludes": [
         "EnterprisePolicy",
@@ -2194,6 +2536,15 @@
             "repository policies"
           ],
           "verifiedOn": "2026-07-23"
+        },
+        {
+          "id": "organizations-organization-policies-source-02",
+          "url": "https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/repository-roles-for-an-organization",
+          "supports": [
+            "organization base repository permission",
+            "base permission for organization members"
+          ],
+          "verifiedOn": "2026-07-27"
         }
       ],
       "publishedEvents": [
@@ -2214,11 +2565,35 @@
           "implementationStatus": "planned",
           "meaning": "base repository permission changed.",
           "sourceIds": [
+            "organizations-organization-policies-source-01",
+            "organizations-organization-policies-source-02"
+          ]
+        },
+        {
+          "name": "OAuthPolicyConstraintsChanged",
+          "version": 1,
+          "kind": "domain",
+          "implementationStatus": "planned",
+          "meaning": "oauth policy constraints changed.",
+          "sourceIds": [
+            "organizations-organization-policies-source-01"
+          ]
+        },
+        {
+          "name": "GitHubAppInstallationPolicyChanged",
+          "version": 1,
+          "kind": "domain",
+          "implementationStatus": "planned",
+          "meaning": "github app installation policy changed.",
+          "sourceIds": [
             "organizations-organization-policies-source-01"
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "get-organization-base-repository-permission",
+        "resolve-app-access-decision"
+      ],
       "plannedRelationships": [
         {
           "context": "organizations/organizations",
@@ -2231,7 +2606,34 @@
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "organization-app-access-policy-semantics",
+          "statement": "Organizations own app-access policy constraints for repositories, collaborators, projects, discussions, base permissions, and request-time decisions for OAuth and GitHub App install flows.",
+          "ownership": [
+            "RepositoryCreationPolicy",
+            "RepositoryVisibilityPolicy",
+            "OutsideCollaboratorPolicy",
+            "ProjectPolicy",
+            "DiscussionPolicy",
+            "BaseRepositoryPermission",
+            "OAuthPolicyConstraints",
+            "OAuthAppAccessRestriction",
+            "GitHubAppInstallationPolicy",
+            "AppAccessRequestPolicy"
+          ],
+          "events": [
+            "OrganizationPolicyChanged@1",
+            "BaseRepositoryPermissionChanged@1",
+            "OAuthPolicyConstraintsChanged@1",
+            "GitHubAppInstallationPolicyChanged@1"
+          ],
+          "sourceIds": [
+            "organizations-organization-policies-source-01",
+            "organizations-organization-policies-source-02"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "organizations",
@@ -2440,12 +2842,27 @@
       "dependencies": [
         {
           "context": "identity/accounts",
-          "contract": "UserOwnerReference",
+          "contract": "AccountReference",
           "mode": "synchronous"
         },
         {
           "context": "organizations/organizations",
           "contract": "OrganizationOwnerReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-memberships",
+          "contract": "OrganizationMembershipReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "repositories/repository-access",
+          "contract": "EffectiveRepositoryPermissionDecision",
+          "mode": "synchronous"
+        },
+        {
+          "context": "platform/event-publication",
+          "contract": "EventRecorderPort",
           "mode": "synchronous"
         }
       ],
@@ -2533,9 +2950,10 @@
           "url": "https://docs.github.com/en/rest/repos/repos",
           "supports": [
             "repository description updates",
-            "repository homepage updates"
+            "repository homepage updates",
+            "repository administration permission"
           ],
-          "verifiedOn": "2026-07-22"
+          "verifiedOn": "2026-07-27"
         },
         {
           "id": "repositories-repositories-source-10",
@@ -2572,11 +2990,13 @@
           "name": "RepositoryProfileUpdated",
           "version": 1,
           "kind": "domain",
-          "implementationStatus": "planned",
+          "implementationStatus": "active",
           "meaning": "repository profile updated.",
           "sourceIds": [
             "repositories-repositories-source-09"
-          ]
+          ],
+          "schema": "integration-contracts.ts#RepositoryProfileUpdatedV1",
+          "orderingKey": "repositoryId"
         },
         {
           "name": "RepositoryRenamed",
@@ -2670,10 +3090,19 @@
         }
       ],
       "activationScope": [
+        "archive-repository",
+        "change-repository-visibility",
+        "create-empty-repository",
+        "delete-repository",
+        "get-repository-for-administration",
         "get-repository-by-owner-and-name",
         "list-active-public-repositories-for-organization-owner",
         "list-active-public-repositories-for-personal-owner",
-        "list-active-repositories-for-owner"
+        "list-active-repositories-for-owner",
+        "rename-repository",
+        "restore-deleted-repository",
+        "unarchive-repository",
+        "update-repository-profile"
       ],
       "plannedRelationships": [
         {
@@ -2792,11 +3221,6 @@
       ],
       "dependencies": [
         {
-          "context": "repositories/repositories",
-          "contract": "RepositoryCandidateReference",
-          "mode": "synchronous"
-        },
-        {
           "context": "identity/accounts",
           "contract": "AccountReference",
           "mode": "synchronous"
@@ -2814,6 +3238,11 @@
         {
           "context": "organizations/organization-roles",
           "contract": "OrganizationRepositoryRoleContribution",
+          "mode": "synchronous"
+        },
+        {
+          "context": "organizations/organization-policies",
+          "contract": "BaseRepositoryPermission",
           "mode": "synchronous"
         },
         {
@@ -3021,11 +3450,6 @@
         "resolve-effective-repository-permission"
       ],
       "plannedRelationships": [
-        {
-          "context": "organizations/organization-policies",
-          "contract": "OrganizationRepositoryPolicyContribution",
-          "mode": "synchronous"
-        },
         {
           "context": "enterprises/enterprise-teams",
           "contract": "EnterpriseTeamPermissionContribution",
@@ -3467,9 +3891,9 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Issue lifecycle, assignment, hierarchy, dependency, transfer, and work tracking.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "Issue",
         "SubIssueRelation",
@@ -3648,7 +4072,11 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "create-issue",
+        "get-repository-issue",
+        "list-repository-issues"
+      ],
       "plannedRelationships": [
         {
           "context": "repositories/repositories",
@@ -3692,7 +4120,50 @@
           ]
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "issue-work-tracking",
+          "statement": "Repository issues track actionable ideas, feedback, tasks, and bugs with lifecycle, assignment, hierarchy, dependencies, issue type selection, and field values.",
+          "ownership": [
+            "Issue",
+            "SubIssueRelation",
+            "IssueDependency",
+            "IssueTypeSelection",
+            "IssueFieldValueSet"
+          ],
+          "events": [
+            "IssueCreated@1",
+            "IssueUpdated@1",
+            "IssueClosed@1",
+            "IssueReopened@1",
+            "IssueAssigned@1",
+            "IssueUnassigned@1",
+            "SubIssueAdded@1",
+            "SubIssueRemoved@1",
+            "IssueDependencyAdded@1",
+            "IssueDependencyRemoved@1",
+            "IssueFieldValueSet@1",
+            "IssueFieldValueCleared@1"
+          ],
+          "sourceIds": [
+            "collaboration-issues-source-01",
+            "collaboration-issues-source-02"
+          ]
+        },
+        {
+          "id": "issue-transfer-reconciliation",
+          "statement": "Issue transfer and repository transfer reconcile issue ownership metadata, assignees, and issue types at the repository boundary.",
+          "ownership": [
+            "IssueTransfer"
+          ],
+          "events": [
+            "IssueTransferred@1"
+          ],
+          "sourceIds": [
+            "collaboration-issues-source-03"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "collaboration",
@@ -3951,9 +4422,9 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Capability-constrained comments, discussion replies, reactions, mentions, revisions, and locks for a closed set of subjects.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "Conversation",
         "Comment",
@@ -4103,7 +4574,11 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "add-comment",
+        "add-reaction",
+        "list-conversation-comments"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/accounts",
@@ -4116,7 +4591,39 @@
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "capability-constrained-conversation",
+          "statement": "Supported issue and discussion subjects have capability-constrained conversations containing comments, threaded replies, reactions, mentions, revisions, and lock state.",
+          "ownership": [
+            "Conversation",
+            "Comment",
+            "Reply",
+            "Reaction",
+            "Mention",
+            "CommentRevision",
+            "ConversationSubjectKind",
+            "ConversationCapabilities"
+          ],
+          "events": [
+            "ConversationCreated@1",
+            "ConversationLocked@1",
+            "ConversationUnlocked@1",
+            "CommentAdded@1",
+            "CommentEdited@1",
+            "CommentDeleted@1",
+            "ReplyAdded@1",
+            "ReactionAdded@1",
+            "ReactionRemoved@1",
+            "MentionDetected@1"
+          ],
+          "sourceIds": [
+            "collaboration-conversations-source-01",
+            "collaboration-conversations-source-02",
+            "collaboration-conversations-source-03"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "collaboration",
@@ -4124,7 +4631,7 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Repository discussion forums and organization discussion spaces, source-repository binding, categories, sections, polls, answers, pins, and lifecycle.",
       "semanticStatus": "validated",
       "owns": [
@@ -4426,7 +4933,11 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "create-discussion",
+        "get-repository-discussion",
+        "list-repository-discussions"
+      ],
       "plannedRelationships": [
         {
           "context": "repositories/repositories",
@@ -4580,9 +5091,9 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Content reports, moderation cases, blocks, interaction limits, and visibility decisions.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "ContentReport",
         "ModerationCase",
@@ -4701,7 +5212,9 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "report-content"
+      ],
       "plannedRelationships": [
         {
           "context": "organizations/organizations",
@@ -4729,7 +5242,33 @@
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "community-content-moderation",
+          "statement": "Community moderation owns reports and cases, interaction limits, organization blocks, and visibility decisions used to review disruptive content and de-escalate conflict.",
+          "ownership": [
+            "ContentReport",
+            "ModerationCase",
+            "InteractionLimit",
+            "OrganizationBlock",
+            "ContentVisibilityDecision"
+          ],
+          "events": [
+            "ContentReported@1",
+            "ContentReportResolved@1",
+            "ContentReportReopened@1",
+            "InteractionLimitSet@1",
+            "InteractionLimitLifted@1",
+            "OrganizationBlocked@1",
+            "OrganizationUnblocked@1",
+            "ContentHidden@1",
+            "ContentUnhidden@1"
+          ],
+          "sourceIds": [
+            "collaboration-moderation-source-01"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "collaboration",
@@ -4737,9 +5276,9 @@
       "kind": "domain",
       "classification": "core",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "User- or organization-owned projects, items, draft issues, views, fields, workflows, charts, templates, and status updates.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "Project",
         "ProjectItem",
@@ -4894,7 +5433,11 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "list-account-projects",
+        "list-repository-projects",
+        "update-project-item-status"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/accounts",
@@ -4922,7 +5465,40 @@
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "projects-items-fields-and-status",
+          "statement": "User- and organization-owned projects organize items through configurable fields and views, can link repository resources without becoming repository-owned, and support status updates while workflows, charts, and templates remain separate capabilities.",
+          "ownership": [
+            "Project",
+            "ProjectItem",
+            "DraftIssue",
+            "ProjectView",
+            "ProjectField",
+            "ProjectWorkflow",
+            "ProjectChart",
+            "ProjectTemplate",
+            "ProjectStatusUpdate"
+          ],
+          "events": [
+            "ProjectCreated@1",
+            "ProjectUpdated@1",
+            "ProjectClosed@1",
+            "ProjectReopened@1",
+            "ProjectDeleted@1",
+            "ProjectItemAdded@1",
+            "ProjectItemUpdated@1",
+            "ProjectItemRemoved@1",
+            "ProjectViewChanged@1",
+            "ProjectFieldChanged@1",
+            "ProjectWorkflowChanged@1",
+            "ProjectStatusUpdated@1"
+          ],
+          "sourceIds": [
+            "collaboration-projects-source-01"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "engagement",
@@ -4930,9 +5506,9 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Repository starring and user-defined star lists for discovery and collection.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "RepositoryStar",
         "StarList",
@@ -5044,7 +5620,10 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "list-repository-stargazers",
+        "toggle-repository-star"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/accounts",
@@ -5073,7 +5652,31 @@
           ]
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "repository-stars-and-lists",
+          "statement": "Personal accounts can star accessible repositories, view stargazers, and organize starred repositories in lists; repository visibility changes can remove inaccessible stars while archived repositories remain starrable.",
+          "ownership": [
+            "RepositoryStar",
+            "StarList",
+            "StarListEntry"
+          ],
+          "events": [
+            "RepositoryStarred@1",
+            "RepositoryUnstarred@1",
+            "StarListCreated@1",
+            "StarListUpdated@1",
+            "StarListDeleted@1",
+            "StarListEntryAdded@1",
+            "StarListEntryRemoved@1"
+          ],
+          "sourceIds": [
+            "engagement-stars-source-01",
+            "engagement-stars-source-02",
+            "engagement-stars-source-03"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "engagement",
@@ -5081,9 +5684,9 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Repository watch preferences, conversation participation and manual subscriptions, ignore preferences, and notification-interest decisions.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "RepositoryWatchPreference",
         "RepositoryEventPreference",
@@ -5149,7 +5752,10 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "list-repository-subscribers",
+        "toggle-repository-subscription"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/accounts",
@@ -5183,7 +5789,28 @@
           ]
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "repository-and-conversation-subscriptions",
+          "statement": "Accounts may watch accessible repositories, customize repository event preferences, participate in or manually subscribe to conversations, and ignore updates; visibility changes remove inaccessible watchers.",
+          "ownership": [
+            "RepositoryWatchPreference",
+            "RepositoryEventPreference",
+            "ConversationParticipation",
+            "ManualConversationSubscription",
+            "IgnorePreference"
+          ],
+          "events": [
+            "RepositorySubscriptionChanged@1",
+            "ConversationSubscriptionChanged@1"
+          ],
+          "sourceIds": [
+            "engagement-subscriptions-source-01",
+            "engagement-subscriptions-source-02",
+            "engagement-subscriptions-source-03"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "engagement",
@@ -5191,9 +5818,9 @@
       "kind": "domain",
       "classification": "supporting",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "User notification records, inboxes, reasons, filters, and read, saved, or done state.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "Notification",
         "NotificationInbox",
@@ -5321,7 +5948,10 @@
           ]
         }
       ],
-      "activationScope": [],
+      "activationScope": [
+        "list-notifications",
+        "mark-notification-read"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/accounts",
@@ -5419,7 +6049,34 @@
           ]
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "notification-inbox-triage",
+          "statement": "Notifications are recipient-specific updates for subscribed activity, carry a reason, and can be triaged through read, saved, done, reopened, and filtered inbox states with delivery requested separately.",
+          "ownership": [
+            "Notification",
+            "NotificationInbox",
+            "NotificationReason",
+            "NotificationState",
+            "InboxFilter"
+          ],
+          "events": [
+            "NotificationCreated@1",
+            "NotificationRead@1",
+            "NotificationUnread@1",
+            "NotificationSaved@1",
+            "NotificationUnsaved@1",
+            "NotificationDone@1",
+            "NotificationReopened@1",
+            "InboxFilterChanged@1",
+            "NotificationDeliveryRequested@1"
+          ],
+          "sourceIds": [
+            "engagement-notifications-source-01",
+            "engagement-notifications-source-02"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "integrations",
@@ -5756,6 +6413,11 @@
       ],
       "activationScope": [],
       "plannedRelationships": [
+        {
+          "context": "organizations/organization-policies",
+          "contract": "GitHubAppInstallationPolicy",
+          "mode": "synchronous"
+        },
         {
           "context": "integrations/github-app-registrations",
           "contract": "GitHubAppRegistrationReference",
@@ -7413,9 +8075,9 @@
       "name": "search",
       "kind": "projection",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "Permission-filtered search projections across users, organizations, repositories, issues, discussions, and projects.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "SearchDocument",
         "SearchResultProjection"
@@ -7425,7 +8087,13 @@
         "AuthorizationSourceOfTruth",
         "CodeSearch"
       ],
-      "dependencies": [],
+      "dependencies": [
+        {
+          "context": "platform/search-index",
+          "contract": "SearchIndexPort",
+          "mode": "synchronous"
+        }
+      ],
       "officialSources": [
         {
           "id": "projections-search-source-01",
@@ -7441,7 +8109,9 @@
       ],
       "publishedEvents": [],
       "eventRationale": "Read-model context consumes versioned events and does not publish product facts.",
-      "activationScope": [],
+      "activationScope": [
+        "search-public-resources"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/accounts",
@@ -7671,14 +8341,22 @@
               "version": 1
             }
           ]
-        },
-        {
-          "context": "platform/search-index",
-          "contract": "SearchIndexPort",
-          "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "permission-filtered-resource-search",
+          "statement": "Search returns only indexed candidates allowed by coarse authorization keys and the presenting context must still enforce authoritative visibility; code search is excluded.",
+          "ownership": [
+            "SearchDocument",
+            "SearchResultProjection"
+          ],
+          "events": [],
+          "sourceIds": [
+            "projections-search-source-01"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "projections",
@@ -7794,9 +8472,9 @@
       "name": "activity-feed",
       "kind": "projection",
       "maturity": "stable",
-      "implementationStatus": "planned",
+      "implementationStatus": "active",
       "responsibility": "User-visible dashboard and resource activity projections.",
-      "semanticStatus": "candidate",
+      "semanticStatus": "validated",
       "owns": [
         "ActivityItem",
         "PersonalActivityFeed",
@@ -7823,7 +8501,9 @@
       ],
       "publishedEvents": [],
       "eventRationale": "Read-model context consumes versioned events and does not publish product facts.",
-      "activationScope": [],
+      "activationScope": [
+        "list-repository-activity"
+      ],
       "plannedRelationships": [
         {
           "context": "identity/social-graph",
@@ -7966,7 +8646,22 @@
           "mode": "synchronous"
         }
       ],
-      "semanticClaims": []
+      "semanticClaims": [
+        {
+          "id": "permission-filtered-product-activity",
+          "statement": "Activity items form personal, repository, and organization feeds from supported product activity, with followed public activity shown on the personal dashboard and inaccessible resources omitted.",
+          "ownership": [
+            "ActivityItem",
+            "PersonalActivityFeed",
+            "RepositoryActivityFeed",
+            "OrganizationActivityFeed"
+          ],
+          "events": [],
+          "sourceIds": [
+            "projections-activity-feed-source-01"
+          ]
+        }
+      ]
     },
     {
       "subdomain": "projections",
@@ -8405,6 +9100,580 @@
         "query-audit-records"
       ],
       "plannedRelationships": [],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "platform",
+      "name": "site-content",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Stable public product, documentation, accessibility, policy, and informational page content.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "SiteContentPage",
+        "SiteContentSlug",
+        "SitePolicyReference"
+      ],
+      "excludes": [
+        "RepositoryContent",
+        "UserGeneratedContent",
+        "LegalPolicyAuthorship"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "platform-site-content-source-01",
+          "url": "https://docs.github.com/en/site-policy",
+          "supports": [
+            "public policy navigation",
+            "stable site content routes"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Read-only site content does not publish domain events before activation.",
+      "activationScope": [],
+      "plannedRelationships": [],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "projections",
+      "name": "discovery",
+      "kind": "projection",
+      "maturity": "stable",
+      "implementationStatus": "active",
+      "responsibility": "Public discovery projections for explore feeds, curated collections, topics, and trending repositories.",
+      "semanticStatus": "validated",
+      "owns": [
+        "DiscoveryFeed",
+        "CuratedCollection",
+        "TopicListing",
+        "TrendingListing"
+      ],
+      "excludes": [
+        "RepositorySearch",
+        "RankingTelemetryOwnership",
+        "RepositoryContent"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "projections-discovery-source-01",
+          "url": "https://docs.github.com/en/get-started/exploring-projects-on-github/finding-ways-to-contribute-to-open-source-on-github",
+          "supports": [
+            "explore and discovery",
+            "topic navigation",
+            "trending discovery"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Discovery is a read-model context and does not publish product facts.",
+      "activationScope": [
+        "get-explore-feed"
+      ],
+      "plannedRelationships": [],
+      "semanticClaims": [
+        {
+          "id": "public-explore-feed",
+          "statement": "Explore presents public repository, topic, collection, and trending projections; Support uses deterministic fixture ordering and does not claim behavioral ranking telemetry.",
+          "ownership": [
+            "DiscoveryFeed",
+            "CuratedCollection",
+            "TopicListing",
+            "TrendingListing"
+          ],
+          "events": [],
+          "sourceIds": [
+            "projections-discovery-source-01"
+          ]
+        }
+      ]
+    },
+    {
+      "subdomain": "integrations",
+      "name": "marketplace-catalog",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Marketplace listing metadata, categories, publication state, and public discovery.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "MarketplaceListing",
+        "MarketplaceCategory",
+        "ListingPublicationState"
+      ],
+      "excludes": [
+        "EntitlementDecision",
+        "BillingTransaction",
+        "ApplicationInstallation"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "integrations-marketplace-catalog-source-01",
+          "url": "https://docs.github.com/en/apps/github-marketplace/github-marketplace-overview",
+          "supports": [
+            "marketplace listing catalog",
+            "listing discovery"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Catalog queries publish no events before listing administration is activated.",
+      "activationScope": [],
+      "plannedRelationships": [
+        {
+          "context": "commerce/entitlements",
+          "contract": "MarketplaceEntitlementReference",
+          "mode": "synchronous"
+        }
+      ],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "platform",
+      "name": "actions-route-compatibility",
+      "kind": "technical",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Canonical unavailable or redirect decisions for GitHub-style Actions URLs.",
+      "semanticStatus": "not-applicable",
+      "owns": [
+        "ActionsRouteDecision",
+        "CanonicalUnavailableRoute"
+      ],
+      "excludes": [
+        "WorkflowSource",
+        "WorkflowRun",
+        "JobExecution",
+        "GitTrigger"
+      ],
+      "dependencies": [],
+      "officialSources": [],
+      "publishedEvents": [],
+      "eventRationale": "Pure route-compatibility decisions do not publish technical events.",
+      "activationScope": [],
+      "plannedRelationships": [],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "platform",
+      "name": "repository-content-route-compatibility",
+      "kind": "technical",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Canonical unavailable or redirect decisions for tree, blob, raw, and source-archive URLs.",
+      "semanticStatus": "not-applicable",
+      "owns": [
+        "RepositoryContentRouteDecision",
+        "CanonicalUnavailableRoute"
+      ],
+      "excludes": [
+        "GitObject",
+        "RepositoryFile",
+        "RawBlob",
+        "SourceArchive"
+      ],
+      "dependencies": [],
+      "officialSources": [],
+      "publishedEvents": [],
+      "eventRationale": "Pure route-compatibility decisions do not publish technical events.",
+      "activationScope": [],
+      "plannedRelationships": [],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "platform",
+      "name": "repository-history-route-compatibility",
+      "kind": "technical",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Canonical unavailable or redirect decisions for commit, history, blame, compare, and Git-derived graph URLs.",
+      "semanticStatus": "not-applicable",
+      "owns": [
+        "RepositoryHistoryRouteDecision",
+        "CanonicalUnavailableRoute"
+      ],
+      "excludes": [
+        "Commit",
+        "GitHistory",
+        "BlameData",
+        "Diff",
+        "GitActivityMetric"
+      ],
+      "dependencies": [],
+      "officialSources": [],
+      "publishedEvents": [],
+      "eventRationale": "Pure route-compatibility decisions do not publish technical events.",
+      "activationScope": [],
+      "plannedRelationships": [],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "platform",
+      "name": "repository-reference-route-compatibility",
+      "kind": "technical",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Canonical unavailable or redirect decisions for branch and tag URLs.",
+      "semanticStatus": "not-applicable",
+      "owns": [
+        "RepositoryReferenceRouteDecision",
+        "CanonicalUnavailableRoute"
+      ],
+      "excludes": [
+        "GitBranch",
+        "GitTag",
+        "GitReference",
+        "CommitTarget"
+      ],
+      "dependencies": [],
+      "officialSources": [],
+      "publishedEvents": [],
+      "eventRationale": "Pure route-compatibility decisions do not publish technical events.",
+      "activationScope": [],
+      "plannedRelationships": [],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "platform",
+      "name": "pull-request-route-compatibility",
+      "kind": "technical",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Canonical unavailable or redirect decisions for pull-request URLs.",
+      "semanticStatus": "not-applicable",
+      "owns": [
+        "PullRequestRouteDecision",
+        "CanonicalUnavailableRoute"
+      ],
+      "excludes": [
+        "PullRequest",
+        "Diff",
+        "CommitLinkage",
+        "CodeReview"
+      ],
+      "dependencies": [],
+      "officialSources": [],
+      "publishedEvents": [],
+      "eventRationale": "Pure route-compatibility decisions do not publish technical events.",
+      "activationScope": [],
+      "plannedRelationships": [],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "commerce",
+      "name": "package-registry",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Repository-linked package metadata, versions, visibility, and catalog navigation without owning package payloads.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "PackageMetadata",
+        "PackageVersionMetadata",
+        "RepositoryPackageLink"
+      ],
+      "excludes": [
+        "PackagePayload",
+        "BuildArtifact",
+        "GitContent"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "commerce-package-registry-source-01",
+          "url": "https://docs.github.com/en/packages/learn-github-packages/viewing-packages",
+          "supports": [
+            "package metadata",
+            "repository package navigation"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Package metadata queries do not publish events before package administration is designed.",
+      "activationScope": [],
+      "plannedRelationships": [
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryReference",
+          "mode": "synchronous"
+        }
+      ],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "platform",
+      "name": "site-publishing",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "App-owned repository site publication metadata, domains, and publication status without Git-backed builds.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "SitePublication",
+        "PublicationStatus",
+        "PublicationDomain"
+      ],
+      "excludes": [
+        "GitSourceTree",
+        "SourceBuild",
+        "WorkflowJob",
+        "GitHubPagesBuild"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "platform-site-publishing-source-01",
+          "url": "https://docs.github.com/en/pages/getting-started-with-github-pages",
+          "supports": [
+            "repository site publication",
+            "publication status navigation"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Publication status queries do not publish events before publication commands are designed.",
+      "activationScope": [],
+      "plannedRelationships": [
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryReference",
+          "mode": "synchronous"
+        }
+      ],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "repositories",
+      "name": "repository-releases",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Repository release metadata, release tags as opaque labels, and release-asset references without owning Git tags.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "RepositoryRelease",
+        "ReleaseTagLabel",
+        "ReleaseAssetReference"
+      ],
+      "excludes": [
+        "GitTag",
+        "Commit",
+        "BinaryAssetStorage"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "repositories-repository-releases-source-01",
+          "url": "https://docs.github.com/en/repositories/releasing-projects-on-github/linking-to-releases",
+          "supports": [
+            "release list",
+            "latest release",
+            "tagged release",
+            "release asset links"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Release queries publish no events before release lifecycle commands are designed.",
+      "activationScope": [],
+      "plannedRelationships": [
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "platform/media-storage",
+          "contract": "ReleaseAssetStorageReference",
+          "mode": "synchronous"
+        }
+      ],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "repositories",
+      "name": "repository-forks",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Repository fork relationships and visibility metadata without provisioning or owning Git history.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "RepositoryForkRelationship",
+        "ForkNetworkReference",
+        "ForkVisibility"
+      ],
+      "excludes": [
+        "GitHistoryProvisioning",
+        "GitObjectCopy",
+        "TemplateProvisioning"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "repositories-repository-forks-source-01",
+          "url": "https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/about-permissions-and-visibility-of-forks",
+          "supports": [
+            "fork relationships",
+            "fork visibility"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Fork relationship queries publish no events before relationship commands are designed.",
+      "activationScope": [],
+      "plannedRelationships": [
+        {
+          "context": "repositories/repositories",
+          "contract": "RepositoryReference",
+          "mode": "synchronous"
+        }
+      ],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "collaboration",
+      "name": "community-profiles",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Structured, app-owned repository community profile metadata and contribution-health indicators.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "CommunityProfile",
+        "CommunityHealthIndicator",
+        "ContributionResourceLink"
+      ],
+      "excludes": [
+        "RepositoryFile",
+        "SourceTree",
+        "CommunityFileDiscovery"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "collaboration-community-profiles-source-01",
+          "url": "https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/accessing-a-projects-community-profile",
+          "supports": [
+            "repository community profile",
+            "community health indicators"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Community profile queries publish no events before profile commands are designed.",
+      "activationScope": [],
+      "plannedRelationships": [
+        {
+          "context": "repositories/repository-features",
+          "contract": "RepositoryFeatureReference",
+          "mode": "synchronous"
+        }
+      ],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "collaboration",
+      "name": "wikis",
+      "kind": "domain",
+      "classification": "supporting",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "App-owned repository wiki pages, names, navigation, and publication state without Git-backed storage.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "RepositoryWiki",
+        "WikiPage",
+        "WikiPageName"
+      ],
+      "excludes": [
+        "GitRepository",
+        "GitCommit",
+        "GitBackedWikiStorage"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "collaboration-wikis-source-01",
+          "url": "https://docs.github.com/en/communities/documenting-your-project-with-wikis/about-wikis",
+          "supports": [
+            "repository wiki navigation",
+            "wiki page semantics"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Wiki queries publish no events before wiki editing commands are designed.",
+      "activationScope": [],
+      "plannedRelationships": [
+        {
+          "context": "repositories/repository-features",
+          "contract": "RepositoryFeatureReference",
+          "mode": "synchronous"
+        }
+      ],
+      "semanticClaims": []
+    },
+    {
+      "subdomain": "projections",
+      "name": "repository-traffic",
+      "kind": "projection",
+      "maturity": "stable",
+      "implementationStatus": "planned",
+      "responsibility": "Privacy-bounded repository web traffic summaries derived from Support telemetry, not Git activity.",
+      "semanticStatus": "candidate",
+      "owns": [
+        "RepositoryTrafficSummary",
+        "TrafficViewMetric",
+        "TrafficCloneMetric"
+      ],
+      "excludes": [
+        "GitActivityMetric",
+        "ContributorCodeMetric",
+        "VisitorIdentity"
+      ],
+      "dependencies": [],
+      "officialSources": [
+        {
+          "id": "projections-repository-traffic-source-01",
+          "url": "https://docs.github.com/en/repositories/viewing-activity-and-data-for-your-repository/viewing-traffic-to-a-repository",
+          "supports": [
+            "repository traffic views",
+            "aggregate view and clone metrics"
+          ],
+          "verifiedOn": "2026-07-26"
+        }
+      ],
+      "publishedEvents": [],
+      "eventRationale": "Traffic is a read-model context and does not publish product facts.",
+      "activationScope": [],
+      "plannedRelationships": [
+        {
+          "context": "repositories/repository-access",
+          "contract": "EffectiveReadPermission",
+          "mode": "synchronous"
+        }
+      ],
       "semanticClaims": []
     }
   ]

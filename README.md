@@ -6,14 +6,17 @@ organizations, teams, repositories, issues, discussions, projects,
 notifications, permissions, governance, commerce, and integrations.
 
 Git storage and repository content, commits, branches, tags, diffs, merge,
-pull requests and code review, Actions, and other code products are outside the
-product boundary. See the generated
+pull requests and code review, Actions execution, source-backed package
+payloads, and source-backed site builds are outside the product boundary.
+Package metadata and app-owned site publication remain planned non-Git
+capabilities. See the generated
 [`docs/architecture/module-map.md`](docs/architecture/module-map.md) for the
 authoritative context catalog and deferred capabilities.
 
 The product application lives in `apps/web`. Its source has two roots only:
 
-- `apps/web/src/app` for Next.js delivery and route composition.
+- `apps/web/src/app` for Next.js delivery and route composition, governed by
+  [`apps/web/route-map.json`](apps/web/route-map.json).
 - `apps/web/src/modules/<subdomain>/<bounded-context>` for product and platform capabilities.
 
 Reusable repository configuration is owned by `packages/eslint-config`,
@@ -51,25 +54,13 @@ The current product runtime is intentionally in-memory:
 - Each bounded context owns its own versioned store. Cross-context reads use
   public contracts rather than a shared application database.
 - Browser authentication uses an opaque HttpOnly cookie. The deterministic
-  development sign-in fixtures use `octocat`, `hubot`, `carol_ACME`, and `bob`
-  with the non-secret fixture password `github`.
+  development sign-in form is prefilled with the non-secret `mock` / `123456`
+  fixture; additional fixtures remain owned by the authentication adapter.
 
-The implemented product slice currently includes multi-account sessions,
-personal and organization Dashboard contexts, enterprise administration,
-organization teams and predefined role assignments, personal and organization
-repositories, and source-attributed repository permission decisions. The
-active technical foundation also includes context-local event publication,
-search-index candidates, opaque media storage, and audit storage. Remaining
-catalog contexts stay `planned`; a catalog entry does not imply a completed
-runtime capability.
-
-Useful development pages include:
-
-- `/dashboard` and `/account`
-- `/enterprises/[slug]`
-- `/organizations/[login]/settings/teams`
-- `/organizations/[login]/settings/roles`
-- `/organizations/[login]/settings/repository-access/[repository]`
+Use [`docs/architecture/module-map.json`](docs/architecture/module-map.json)
+for current bounded-context status and
+[`apps/web/route-map.json`](apps/web/route-map.json) for route materialization.
+Do not infer implemented behavior from a directory, README, or dated report.
 
 Development authentication endpoints are disabled outside development or the
 explicit in-memory E2E runtime. Platform delivery adapters are simulated and
@@ -87,7 +78,8 @@ must not be treated as durable storage or external provider integrations.
 - `pnpm check:full` - add production build and E2E verification.
 - `pnpm check:affected` - run affected package checks for pull requests.
 - `pnpm turbo:dry-run` - inspect the package and task graph.
-- `pnpm architecture:docs` - regenerate the human-readable module map.
+- `pnpm architecture:docs` - regenerate the module map, per-URL route READMEs,
+  and typed route contracts.
 
 Vercel deployments use `VERCEL_PROJECT_PRODUCTION_URL` automatically so
 metadata routes emit the canonical production URL. Set `NEXT_PUBLIC_SITE_URL`

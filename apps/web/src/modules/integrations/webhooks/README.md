@@ -59,29 +59,12 @@ Repository, organization, and enterprise webhook configuration plus GitHub App w
 
 No approved use cases. Implementation remains blocked.
 
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `Webhook`
-- `WebhookEventSelection`
-- `WebhookSecretReference`
-- `GitHubAppWebhookEndpointProjection`
-- `WebhookDelivery`
-- `WebhookDeliveryAttempt`
-
-Precise definitions must be refined against the official sources before activation.
-
 ## Ownership and invariants
 
 This context owns `Webhook`, `WebhookEventSelection`, `WebhookSecretReference`, `GitHubAppWebhookEndpointProjection`, `WebhookDelivery`, `WebhookDeliveryAttempt`.
 It excludes `DomainEvent`, `ArbitraryDatabasePolling`, `RawSecretStorage`.
 
 No semantic claim is validated yet. Do not infer business invariants until the official sources are verified.
-
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
 
 ## Dependencies and consistency
 
@@ -104,32 +87,6 @@ None.
 - `collaboration/projects::PublishedEventContract` (event; events `ProjectCreated@1`, `ProjectUpdated@1`, `ProjectClosed@1`, `ProjectReopened@1`)
 - `engagement/stars::PublishedEventContract` (event; events `RepositoryStarred@1`, `RepositoryUnstarred@1`)
 - `integrations/github-app-installations::PublishedEventContract` (event; events `GitHubAppInstalled@1`, `GitHubAppInstallationSuspended@1`, `GitHubAppInstallationUnsuspended@1`, `GitHubAppUninstalled@1`)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `WebhookCreated@1` (domain, planned): webhook created. contract and ordering pending activation.
-- `WebhookUpdated@1` (domain, planned): webhook updated. contract and ordering pending activation.
-- `WebhookDeleted@1` (domain, planned): webhook deleted. contract and ordering pending activation.
-- `WebhookDeliveryQueued@1` (domain, planned): webhook delivery queued. contract and ordering pending activation.
-- `WebhookDeliverySucceeded@1` (domain, planned): webhook delivery succeeded. contract and ordering pending activation.
-- `WebhookDeliveryFailed@1` (domain, planned): webhook delivery failed. contract and ordering pending activation.
-- `WebhookRedelivered@1` (domain, planned): webhook redelivered. contract and ordering pending activation.
 
 ## Official sources
 

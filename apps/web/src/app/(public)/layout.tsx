@@ -25,7 +25,7 @@ export default function PublicLayout({
           <Link className="transition-colors hover:text-foreground" href="/docs">
             Docs
           </Link>
-          <Link className="transition-colors hover:text-foreground" href="/sign-in">
+          <Link className="transition-colors hover:text-foreground" href="/login">
             Sign in
           </Link>
         </nav>

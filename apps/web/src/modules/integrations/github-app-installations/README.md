@@ -27,6 +27,7 @@ GitHub App installation targets, selected repositories, granted permissions, sus
     - `github-app-installation-permission-approval`: A registration can request additional permissions, but an installation permission grant changes only after its owner approves; without approval the installation retains its current permissions.
     - `github-app-installation-suspension`: GitHub App installations can be suspended and unsuspended by authorized actors.
     - `github-app-installation-selection-and-removal`: Installation repository selection can change and installations can be removed.
+    - `organizations/organization-policies::GitHubAppInstallationPolicy`: when present, outside collaborators can be denied and owner-approval requirements are applied before additional permission grant changes.
   - Published events
     - `GitHubAppInstalled@1` [planned]: app installed.
     - `GitHubAppInstallationSuspended@1` [planned]: app suspended.
@@ -40,28 +41,19 @@ GitHub App installation targets, selected repositories, granted permissions, sus
     - `integrations/github-app-registrations::GitHubAppRegistrationReference` (synchronous)
     - `integrations/github-app-registrations::GitHubAppRegistrationLifecycleEvents` (event; events `GitHubAppDeleted@1`)
     - `identity/accounts::UserInstallationTarget` (synchronous)
+    - `organizations/organization-policies::GitHubAppInstallationPolicy` (synchronous)
     - `organizations/organizations::OrganizationInstallationTarget` (synchronous)
     - `repositories/repositories::InstallationRepositoryReference` (synchronous)
     - `repositories/repository-access::InstallationPermission` (synchronous)
 - Explicit exclusions
-  - `AppRegistration`
-  - `OAuthAuthorization`
-  - `RepositoryGrant`
+- `AppRegistration`
+- `OAuthAuthorization`
+- `RepositoryGrant`
+- `GitHubAppInstallationPolicy`
 
 ## Designed use cases
 
 No approved use cases. Implementation remains blocked.
-
-## Ubiquitous language
-
-The catalog reserves these terms for this context:
-
-- `AppInstallation`
-- `InstallationTargetReference`
-- `InstallationRepositorySelection`
-- `InstallationPermissionGrant`
-
-Precise definitions must be refined against the official sources before activation.
 
 ## Ownership and invariants
 
@@ -85,10 +77,6 @@ It excludes `AppRegistration`, `OAuthAuthorization`, `RepositoryGrant`.
   - Events: `GitHubAppUninstalled@1`, `GitHubAppInstallationRepositorySelectionChanged@1`
   - Sources: `integrations-github-app-installations-source-03`
 
-## Public capabilities
-
-None while planned. Activation requires at least one real use case and public consumer.
-
 ## Dependencies and consistency
 
 ### Runtime dependencies
@@ -103,31 +91,6 @@ None.
 - `organizations/organizations::OrganizationInstallationTarget` (synchronous)
 - `repositories/repositories::InstallationRepositoryReference` (synchronous)
 - `repositories/repository-access::InstallationPermission` (synchronous)
-
-## Authorization
-
-Authorization policy ownership and resource-scope rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Persistence and transactions
-
-Persistence ownership and transaction boundaries are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Data classification
-
-Sensitive-data classification and redaction rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Retention and erasure
-
-Retention, erasure, and tombstone rules are not defined while this context is planned. They must be decided and reviewed before activation.
-
-## Events and failure behavior
-
-- `GitHubAppInstalled@1` (domain, planned): app installed. contract and ordering pending activation.
-- `GitHubAppInstallationSuspended@1` (domain, planned): app suspended. contract and ordering pending activation.
-- `GitHubAppInstallationUnsuspended@1` (domain, planned): app unsuspended. contract and ordering pending activation.
-- `GitHubAppUninstalled@1` (domain, planned): app uninstalled. contract and ordering pending activation.
-- `GitHubAppInstallationRepositorySelectionChanged@1` (domain, planned): installation repository selection changed. contract and ordering pending activation.
-- `GitHubAppInstallationPermissionsChanged@1` (domain, planned): installation permission grant changed after the installation owner approved additional permissions. contract and ordering pending activation.
 
 ## Official sources
 
