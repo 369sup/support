@@ -33,6 +33,9 @@ only the evidence IDs and diagrams needed for the slice:
 | Commands, failures, events, notifications, or audit effects | [`06-core-sequences.md`](06-core-sequences.md) |
 | Module placement, consistency, or projection boundaries | [`07-reconstruction-architecture.md`](07-reconstruction-architecture.md) |
 | Reachability or presentation destinations | [`08-logical-navigation.md`](08-logical-navigation.md) |
+| Capability ownership, context status, or dependency mode | [`09-capability-context-map.md`](09-capability-context-map.md) plus the canonical [`module-map.json`](../architecture/module-map.json) |
+| Command atomicity, event publication, idempotency, or projection rebuild | [`10-command-event-projection-map.md`](10-command-event-projection-map.md) |
+| Cross-resource lifecycle effects, retention, erasure, or restoration | [`11-lifecycle-impact-retention.md`](11-lifecycle-impact-retention.md) |
 
 Stop once the affected actors, resources, states, authorization, paths, side
 effects, and unresolved variants are known.
@@ -54,6 +57,10 @@ effects, and unresolved variants are known.
   account-dependent, deployment-dependent, or plausibly changed.
 - When repository architecture cannot represent a verified behavior, record the
   mapping gap or unresolved decision instead of silently changing either model.
+- Treat `09-capability-context-map.md` as a validated view, never as a second
+  context catalog. Context ownership, relationships, event contracts, and
+  implementation status remain authoritative only in
+  [`module-map.json`](../architecture/module-map.json).
 
 ## Implementation handoff
 

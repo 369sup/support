@@ -8,7 +8,8 @@ the item is saved or done.
 Evidence: GH-AUTH-001, GH-ACCOUNT-001, GH-ORG-002, GH-ORG-003, GH-REPO-005,
 GH-REPO-007, GH-REPO-008, GH-ISSUE-002, GH-COMMUNITY-001,
 GH-DISCUSSION-002, GH-DISCUSSION-003, GH-PROJECT-003,
-GH-NOTIFICATION-001, and GH-NOTIFICATION-002.
+GH-PROJECT-004, GH-NOTIFICATION-001, GH-NOTIFICATION-002,
+GH-MODERATION-003 through GH-MODERATION-005, and GH-ORG-004.
 
 ```mermaid
 stateDiagram-v2
@@ -35,6 +36,14 @@ stateDiagram-v2
         [*] --> ActiveMember
         ActiveMember --> FormerMember: removed or leaves
         FormerMember --> ActiveMember: owner reinstates
+    }
+
+    state "Outside collaborator relationship" as OutsideCollaborator {
+        [*] --> PendingOutsideAccess
+        PendingOutsideAccess --> ActiveOutsideAccess: invitation accepted
+        PendingOutsideAccess --> CancelledOutsideAccess: invitation canceled
+        ActiveOutsideAccess --> FormerOutsideAccess: access removed
+        FormerOutsideAccess --> PendingOutsideAccess: owner invites with restore or fresh grants
     }
 
     state "Repository shell" as Repository {
@@ -75,6 +84,12 @@ stateDiagram-v2
         Answered --> Unanswered: unmark answer
     }
 
+    state "Discussion pin" as DiscussionPin {
+        [*] --> Unpinned
+        Unpinned --> Pinned: maintainer pins
+        Pinned --> Unpinned: maintainer unpins
+    }
+
     state "Discussion conversation" as DiscussionConversation {
         [*] --> DiscussionUnlocked
         DiscussionUnlocked --> DiscussionLocked: moderator locks
@@ -88,6 +103,15 @@ stateDiagram-v2
         OpenProject --> DeletedProject: permanently delete
         ClosedProject --> DeletedProject: permanently delete
         DeletedProject --> [*]
+    }
+
+    state "Project item" as ProjectItem {
+        [*] --> ActiveProjectItem
+        ActiveProjectItem --> ArchivedProjectItem: archive item
+        ArchivedProjectItem --> ActiveProjectItem: restore item
+        ActiveProjectItem --> DeletedProjectItem: delete item
+        ArchivedProjectItem --> DeletedProjectItem: delete item
+        DeletedProjectItem --> [*]
     }
 
     state "Notification read status" as NotificationRead {
@@ -109,6 +133,26 @@ stateDiagram-v2
         Subscribed --> Unsubscribed: unsubscribe or unwatch
         Unsubscribed --> Subscribed: subscribe or watch
     }
+
+    state "Personal block relationship" as PersonalBlock {
+        [*] --> PersonallyUnblocked
+        PersonallyUnblocked --> PersonallyBlocked: account owner blocks user
+        PersonallyBlocked --> PersonallyUnblocked: account owner unblocks user
+    }
+
+    state "Organization block relationship" as OrganizationBlock {
+        [*] --> OrganizationUnblocked
+        OrganizationUnblocked --> TimedOrganizationBlock: owner or moderator sets duration
+        OrganizationUnblocked --> IndefiniteOrganizationBlock: owner or moderator blocks indefinitely
+        TimedOrganizationBlock --> OrganizationUnblocked: duration expires or manual unblock
+        IndefiniteOrganizationBlock --> OrganizationUnblocked: manual unblock
+    }
+
+    state "Interaction limit" as InteractionLimit {
+        [*] --> InteractionLimitInactive
+        InteractionLimitInactive --> InteractionLimitActive: authorized actor selects cohort and duration
+        InteractionLimitActive --> InteractionLimitInactive: duration expires or actor disables limit
+    }
 ```
 
 ## Transition constraints
@@ -121,6 +165,15 @@ stateDiagram-v2
   be mutated until unarchived.
 - Issue close reason and discussion answer are domain facts, not cosmetic UI
   labels.
+- Project close/delete and project-item archive/delete are separate dimensions;
+  archiving one item neither closes the project nor changes the source issue.
 - `Saved` is not a read state. Implementations must not collapse
   `read_state` and `triage_state` into one enum.
+- A personal or organization block can remove existing relationships when it
+  is created. Unblocking does not imply that former follows, stars,
+  assignments, invitations, subscriptions, or access grants are restored.
+- Timed organization blocks and interaction limits require expiry processing.
+  A higher-scope personal or organization interaction limit can prevent a
+  repository-specific limit from being configured; precedence is an
+  authorization guard, not another lifecycle state.
 - Destructive terminal states require separate retention and audit decisions.

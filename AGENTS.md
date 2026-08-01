@@ -31,7 +31,7 @@ caches, or vendor docs. Root `README.md` is optional product/runtime context.
 - Support models GitHub-like non-code product capabilities. Git content,
   commits, diffs, pull requests, code review, and Actions remain excluded.
 - Before adding, changing, or reviewing GitHub-like product behavior, use the
-  [integrated GitHub non-code semantic model](docs/README.md)
+  [GitHub non-code product-semantics atlas](docs/github-non-code/README.md)
   and trace requirements through evidence, relationships, lifecycle,
   authorization, and interactions. Load architecture/navigation only for
   placement or presentation.

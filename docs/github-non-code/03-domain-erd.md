@@ -5,10 +5,13 @@ principal references, polymorphic owners, and the generic metadata/value fields
 must be refined into explicit implementation contracts before migration work.
 
 Evidence: GH-ACCOUNT-001, GH-ENTERPRISE-001, GH-ORG-001 through GH-ORG-003,
-GH-TEAM-001, GH-REPO-001 through GH-REPO-008, GH-ISSUE-001,
+GH-ORG-004, GH-TEAM-001, GH-REPO-001 through GH-REPO-008, GH-ISSUE-001,
+GH-ISSUE-003, GH-ISSUE-005,
 GH-DISCUSSION-001 through GH-DISCUSSION-003, GH-PROJECT-001,
+GH-PROJECT-005,
 GH-NOTIFICATION-001, GH-NOTIFICATION-002, GH-STAR-001, GH-FOLLOW-001,
-GH-MODERATION-001, and GH-AUDIT-001.
+GH-MODERATION-001, GH-MODERATION-003 through GH-MODERATION-005, and
+GH-AUDIT-001.
 
 ```mermaid
 erDiagram
@@ -26,6 +29,11 @@ erDiagram
     FOLLOW {
         string follower_id PK,FK
         string followed_id PK,FK
+    }
+    ACCOUNT_BLOCK {
+        string blocker_id PK,FK
+        string blocked_id PK,FK
+        string state
     }
     ENTERPRISE {
         string enterprise_id PK
@@ -62,6 +70,12 @@ erDiagram
         string principal_id FK
         string role
     }
+    ORGANIZATION_BLOCK {
+        string organization_id PK,FK
+        string blocked_account_id PK,FK
+        string state
+        datetime expires_at
+    }
     TEAM {
         string team_id PK
         string organization_id FK
@@ -93,9 +107,18 @@ erDiagram
         string enforcement_state
         string restriction_kind
     }
+    INTERACTION_LIMIT {
+        string interaction_limit_id PK
+        string scope_kind
+        string scope_id FK
+        string cohort
+        string state
+        datetime expires_at
+    }
     ISSUE {
         string issue_id PK
         string repository_id FK
+        string issue_type_id FK
         int number UK
         string state
         string state_reason
@@ -120,6 +143,24 @@ erDiagram
         string metadata_id PK
         string issue_id FK
         string kind
+        string value
+    }
+    ISSUE_TYPE {
+        string issue_type_id PK
+        string organization_id FK
+        string name
+        string state
+    }
+    ISSUE_FIELD {
+        string field_id PK
+        string organization_id FK
+        string name
+        string data_type
+        string visibility
+    }
+    ISSUE_FIELD_VALUE {
+        string issue_id PK,FK
+        string field_id PK,FK
         string value
     }
     DISCUSSION_CATEGORY {
@@ -148,6 +189,13 @@ erDiagram
         string visibility
         string lifecycle_state
     }
+    PROJECT_ACCESS_GRANT {
+        string grant_id PK
+        string project_id FK
+        string principal_id FK
+        string project_role
+        string source
+    }
     PROJECT_ITEM {
         string project_item_id PK
         string project_id FK
@@ -165,6 +213,19 @@ erDiagram
         string project_item_id PK,FK
         string field_id PK,FK
         string value
+    }
+    PROJECT_VIEW {
+        string view_id PK
+        string project_id FK
+        string layout
+        string filter
+    }
+    PROJECT_WORKFLOW {
+        string workflow_id PK
+        string project_id FK
+        string trigger_kind
+        string action_kind
+        string state
     }
     SUBSCRIPTION {
         string subscription_id PK
@@ -201,6 +262,7 @@ erDiagram
 
     PERSONAL_ACCOUNT ||--|| PROFILE : presents
     PERSONAL_ACCOUNT ||--o{ FOLLOW : follows
+    PERSONAL_ACCOUNT ||--o{ ACCOUNT_BLOCK : owns
     ENTERPRISE ||--o{ ORGANIZATION : governs
     ENTERPRISE ||--o{ ENTERPRISE_MEMBERSHIP : includes
     PERSONAL_ACCOUNT ||--o{ ENTERPRISE_MEMBERSHIP : holds
@@ -208,28 +270,41 @@ erDiagram
     PERSONAL_ACCOUNT ||--o{ ORGANIZATION_MEMBERSHIP : holds
     ORGANIZATION ||--o{ ORGANIZATION_INVITATION : issues
     ORGANIZATION ||--o{ ORGANIZATION_ROLE_ASSIGNMENT : defines
+    ORGANIZATION ||--o{ ORGANIZATION_BLOCK : enforces
     ORGANIZATION ||--o{ TEAM : owns
     TEAM o|--o{ TEAM : parent_of
     TEAM ||--o{ TEAM_MEMBERSHIP : includes
     PERSONAL_ACCOUNT ||--o{ TEAM_MEMBERSHIP : joins
+    PERSONAL_ACCOUNT ||--o{ REPOSITORY : owns
     ORGANIZATION ||--o{ REPOSITORY : owns
     REPOSITORY ||--o{ REPOSITORY_ACCESS_GRANT : grants
     REPOSITORY ||--o{ REPOSITORY_POLICY : constrained_by
+    PERSONAL_ACCOUNT ||--o{ INTERACTION_LIMIT : limits
+    ORGANIZATION ||--o{ INTERACTION_LIMIT : limits
+    REPOSITORY ||--o{ INTERACTION_LIMIT : limits
     REPOSITORY ||--o{ ISSUE : contains
     ISSUE ||--o{ ISSUE_COMMENT : has
     ISSUE ||--o{ ISSUE_RELATION : relates
     ISSUE ||--o{ ISSUE_ASSIGNEE : assigned
     ISSUE ||--o{ ISSUE_METADATA : describes
+    ORGANIZATION ||--o{ ISSUE_TYPE : defines
+    ISSUE_TYPE o|--o{ ISSUE : classifies
+    ORGANIZATION ||--o{ ISSUE_FIELD : defines
+    ISSUE ||--o{ ISSUE_FIELD_VALUE : has
+    ISSUE_FIELD ||--o{ ISSUE_FIELD_VALUE : receives
     REPOSITORY ||--o{ DISCUSSION_CATEGORY : hosts
     DISCUSSION_CATEGORY ||--o{ DISCUSSION : classifies
     DISCUSSION ||--o{ DISCUSSION_COMMENT : has
     PERSONAL_ACCOUNT ||--o{ PROJECT : owns
     ORGANIZATION ||--o{ PROJECT : owns
+    PROJECT ||--o{ PROJECT_ACCESS_GRANT : grants
     PROJECT ||--o{ PROJECT_ITEM : contains
     ISSUE o|--o{ PROJECT_ITEM : referenced_by
     PROJECT ||--o{ PROJECT_FIELD : defines
     PROJECT_ITEM ||--o{ PROJECT_FIELD_VALUE : has
     PROJECT_FIELD ||--o{ PROJECT_FIELD_VALUE : receives
+    PROJECT ||--o{ PROJECT_VIEW : presents
+    PROJECT ||--o{ PROJECT_WORKFLOW : automates
     PERSONAL_ACCOUNT ||--o{ SUBSCRIPTION : configures
     PERSONAL_ACCOUNT ||--o{ NOTIFICATION : receives
     PERSONAL_ACCOUNT ||--o{ STAR : creates
@@ -246,12 +321,27 @@ erDiagram
   parent and inherits repository access from parent teams.
 - A repository has exactly one owner account. An organization-owned repository
   can combine base permission, direct grants, team grants, and organization
-  roles under enterprise/organization policy.
+  roles under enterprise/organization policy. The two `owns` relationships are
+  an XOR: exactly one personal account or organization owns a repository.
+- Issue type and issue field definitions are organization-scoped. Labels,
+  milestones, assignees, and other fixed issue metadata remain distinct from
+  typed custom issue-field values; `ISSUE_METADATA.kind` must become an
+  explicit closed set in an implementation contract.
 - An organization discussion is exposed at organization scope but governed by
   the selected source repository. `DISCUSSION_CATEGORY.host_id` is conceptual
   until that dual scope receives a concrete schema.
 - A Project has exactly one owner, either a personal account or an
-  organization. This XOR constraint is not expressible in the diagram.
+  organization. This XOR constraint is not expressible in the diagram. Project
+  visibility never grants access to an item whose repository is not visible;
+  base, team, and individual project grants use independent read/write/admin
+  roles.
+- Personal blocks, organization blocks, and scoped interaction limits are
+  relationship or scope guards. Their creation can remove follows, stars,
+  assignments, invitations, subscriptions, and access grants; those cascades
+  must be commands/events, not implicit foreign-key deletion. An interaction
+  limit has exactly one personal-account, organization, or repository scope;
+  `scope_kind` and `scope_id` require a validated XOR contract.
 - Notification read status and triage status are independent projections.
-- `principal_id`, `owner_id`, `target_id`, `subject_id`, and generic values are
-  placeholders that must not become unvalidated polymorphic foreign keys.
+- `principal_id`, `owner_id`, `target_id`, `subject_id`, block targets, and
+  generic values are placeholders that must not become unvalidated polymorphic
+  foreign keys.
