@@ -1,0 +1,31 @@
+{
+  "name": "support-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.15.1",
+  "scripts": {
+    "dev": "turbo run dev --filter=@support/web",
+    "build": "turbo run build",
+    "start": "pnpm --filter @support/web start",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "architecture": "node scripts/check-architecture.mjs",
+    "architecture:docs": "node scripts/generate-module-map.mjs",
+    "serena:memories": "node scripts/generate-serena-memories.mjs",
+    "test": "pnpm run test:architecture && turbo run test",
+    "test:architecture": "vitest run --config vitest.config.ts",
+    "test:e2e": "turbo run test:e2e --filter=@support/web",
+    "check": "pnpm run architecture && pnpm run test:architecture && turbo run lint typecheck test",
+    "check:full": "pnpm run architecture && pnpm run test:architecture && turbo run lint typecheck test build test:e2e",
+    "check:affected": "pnpm run architecture && pnpm run test:architecture && turbo run lint typecheck test --affected",
+    "check:full:affected": "pnpm run architecture && pnpm run test:architecture && turbo run lint typecheck test build test:e2e --affected",
+    "turbo:dry-run": "turbo run lint typecheck test build test:e2e --dry-run"
+  },
+  "devDependencies": {
+    "@support/testing-config": "workspace:*",
+    "turbo": "^2.10.5",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

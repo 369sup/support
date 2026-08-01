@@ -1,0 +1,23 @@
+{
+  "name": "@support/eslint-config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./next": "./next.mjs",
+    "./react-library": "./react-library.mjs",
+    "./typescript-library": "./typescript-library.mjs"
+  },
+  "dependencies": {
+    "@eslint/js": "catalog:",
+    "@support/tooling": "workspace:*",
+    "eslint-config-next": "catalog:",
+    "typescript-eslint": "catalog:"
+  },
+  "devDependencies": {
+    "eslint": "catalog:"
+  },
+  "peerDependencies": {
+    "eslint": "^9.39.5"
+  }
+}

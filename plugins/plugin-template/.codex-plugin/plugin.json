@@ -1,0 +1,6 @@
+{
+  "name": "plugin-template",
+  "version": "0.1.0",
+  "description": "Uncataloged template for authoring a repository plugin.",
+  "skills": "./skills/"
+}

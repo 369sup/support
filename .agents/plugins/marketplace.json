@@ -1,0 +1,20 @@
+{
+  "name": "support-repository",
+  "interface": {
+    "displayName": "Support Repository"
+  },
+  "plugins": [
+    {
+      "name": "serena-jetbrains",
+      "source": {
+        "source": "local",
+        "path": "./plugins/serena-jetbrains"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

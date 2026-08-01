@@ -1,0 +1,28 @@
+{
+  "name": "serena-jetbrains",
+  "version": "0.2.0",
+  "description": "Guide Codex to use a separately configured Serena MCP server with the JetBrains language backend.",
+  "author": {
+    "name": "Support repository maintainers"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Serena JetBrains",
+    "shortDescription": "JetBrains-powered semantic coding with Serena.",
+    "longDescription": "Guides Codex through IDE-aware navigation, refactoring, inspections, and debugging with a separately configured Serena MCP server and the Serena JetBrains Plugin backend.",
+    "developerName": "Support repository maintainers",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://oraios.github.io/serena/02-usage/025_jetbrains_plugin.html",
+    "brandColor": "#7C3AED",
+    "defaultPrompt": [
+      "Initialize Serena safely for this workspace.",
+      "Analyze this code with JetBrains symbol tools.",
+      "Refactor this safely with Serena's JetBrains backend."
+    ]
+  }
+}
