@@ -3,8 +3,11 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-import { requiredProductionRuntimeEnvironmentNames } from "./production-runtime-configuration";
-import { resolveProductionRuntimeConfiguration } from "./production-runtime-configuration";
+import {
+  requiredProductionRuntimeEnvironmentNames,
+  resolveProductionDatabaseConfiguration,
+  resolveProductionRuntimeConfiguration,
+} from "./production-runtime-configuration";
 
 const completeEnvironment = {
   DATABASE_URL:
@@ -39,6 +42,28 @@ function hasEnvironmentAssignment(contents: string, name: string): boolean {
 }
 
 describe("production runtime configuration", () => {
+  it("does not require privileged Supabase credentials for PostgreSQL", () => {
+    expect(
+      resolveProductionDatabaseConfiguration({
+        DATABASE_URL: completeEnvironment.DATABASE_URL,
+        SUPABASE_POSTGRES_CONNECTION_MODE:
+          completeEnvironment.SUPABASE_POSTGRES_CONNECTION_MODE,
+      }),
+    ).toEqual({
+      provider: "supabase",
+      supabase: {
+        applicationName: "support-web",
+        connectionMode: "transaction-pooler",
+        connectionTimeoutMs: 5000,
+        databaseUrl: completeEnvironment.DATABASE_URL,
+        idleTimeoutMs: 10000,
+        poolMax: 10,
+        sslMode: "verify-full",
+        statementTimeoutMs: 30000,
+      },
+    });
+  });
+
   it("fails closed when the Supabase runtime is incomplete", () => {
     expect(() => resolveProductionRuntimeConfiguration({})).toThrow();
   });
@@ -58,7 +83,7 @@ describe("production runtime configuration", () => {
   );
 
   it("keeps documented, cached, and CI runtime inputs aligned", () => {
-    const environmentExample = readRepositoryFile(".env.example");
+    const environmentExample = readRepositoryFile("../../.env.example");
     const workflow = readRepositoryFile("../../.github/workflows/ci.yml");
     const turbo = turboConfigurationSchema.parse(
       JSON.parse(readRepositoryFile("../../turbo.json")),

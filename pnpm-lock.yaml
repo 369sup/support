@@ -113,6 +113,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@next/env':
+        specifier: 16.2.10
+        version: 16.2.10
       '@opentelemetry/api':
         specifier: 'catalog:'
         version: 1.9.1

@@ -55,8 +55,8 @@ production:
 - Unit tests inject isolated in-memory adapters directly. Environment variables
   never select those fixtures for the application runtime.
 
-Copy [`apps/web/.env.example`](apps/web/.env.example) to
-`apps/web/.env.local` and provide the required Supabase values. Production
+Copy [`.env.example`](.env.example) to `.env.local` at the repository root and
+provide the required Supabase values. Production
 adapters fail closed when their configuration is first resolved. Local
 development may target a local Supabase stack or an explicitly selected remote
 project, but it uses the same provider boundaries.
@@ -101,5 +101,5 @@ base HTTP endpoint of an OTLP collector to enable both signals. Standard
 `OTEL_SERVICE_NAME`, `OTEL_RESOURCE_ATTRIBUTES`, and
 `OTEL_EXPORTER_OTLP_HEADERS` variables are passed through to OpenTelemetry.
 With no endpoint, exporters are not loaded and structured logging remains
-active. Copy `apps/web/.env.example` for the supported variables; never commit
+active. Copy `.env.example` for the supported variables; never commit
 real collector credentials.

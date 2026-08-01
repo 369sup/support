@@ -48,7 +48,8 @@ TypeScript migration arrays, their runner, and the custom migration ledger are
 retired using expand-contract sequencing. First, the schema contract and the
 new runtime check are deployed. Only a later forward migration may drop
 `public.support_schema_migrations`, after no deployed application depends on
-it.
+it. `20260801144800_retire_legacy_migration_ledger.sql` records that final
+retirement after the hosted runtime and authenticated routes were verified.
 
 Every database change updates the design handoff and affected Mermaid diagrams,
 changes declarative SQL, reviews the generated migration, rebuilds an empty

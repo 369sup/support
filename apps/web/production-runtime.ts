@@ -11,8 +11,11 @@ import {
 import { createSupabasePostgresDatabase } from "@support/supabase/postgres";
 
 import { supportDatabaseSchemaContractVersion } from "./database-schema-contract";
-import { resolveProductionRuntimeConfiguration } from "./production-runtime-configuration";
-import type { ProductionRuntimeConfiguration } from "./production-runtime-configuration";
+import {
+  resolveProductionDatabaseConfiguration,
+  resolveProductionRuntimeConfiguration,
+  type ProductionRuntimeConfiguration,
+} from "./production-runtime-configuration";
 
 declare global {
   var __supportPostgresDatabaseV1: PostgresDatabase | undefined;
@@ -75,7 +78,7 @@ class DeferredPromise<Result> implements Promise<Result> {
 }
 
 function resolveProductionDatabase(): PostgresDatabase {
-  const configuration = resolveProductionRuntimeConfiguration();
+  const configuration = resolveProductionDatabaseConfiguration();
   globalThis.__supportPostgresDatabaseV1 ??=
     createSupabasePostgresDatabase(configuration.supabase);
   return globalThis.__supportPostgresDatabaseV1;
