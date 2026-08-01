@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-import { isInMemoryRuntimeEnabled } from "@/modules/identity/authentication/server-api";
 import { hasSameOrigin } from "@/modules/identity/authentication/server-api";
 import { getOptionalCurrentSession } from "@/modules/identity/authentication/server-api";
 import {
@@ -84,9 +83,6 @@ export async function PUT(
   request: Request,
   context: RouteContext,
 ): Promise<Response> {
-  if (!isInMemoryRuntimeEnabled()) {
-    return new NextResponse(null, { status: 404 });
-  }
   if (!hasSameOrigin(request)) {
     return NextResponse.json({ status: "invalid-origin" }, { status: 403 });
   }
@@ -114,9 +110,6 @@ export async function DELETE(
   request: Request,
   context: RouteContext,
 ): Promise<Response> {
-  if (!isInMemoryRuntimeEnabled()) {
-    return new NextResponse(null, { status: 404 });
-  }
   if (!hasSameOrigin(request)) {
     return NextResponse.json({ status: "invalid-origin" }, { status: 403 });
   }

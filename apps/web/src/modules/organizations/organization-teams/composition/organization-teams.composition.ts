@@ -1,7 +1,5 @@
 import { OrganizationMembershipAdapter } from "../adapters/outbound/integration/organization-membership.adapter";
 import { OrganizationReferenceAdapter } from "../adapters/outbound/integration/organization-reference.adapter";
-import { InMemoryOrganizationTeamAdapter } from "../adapters/outbound/persistence/in-memory-organization-team.adapter";
-import { InMemoryTeamIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-team-id-generator.adapter";
 import { NodeTeamIdGeneratorAdapter } from "../adapters/outbound/persistence/node-team-id-generator.adapter";
 import { PostgresOrganizationTeamAdapter } from "../adapters/outbound/persistence/postgres-organization-team.adapter";
 import { AddTeamMemberHandler } from "../application/commands/add-team-member.handler";
@@ -50,14 +48,10 @@ function composeOrganizationTeamsServerFacade(): OrganizationTeamsServerFacade {
   );
   registerEventSource(eventRecorder);
   const service = new OrganizationTeamService(
-    database === null
-      ? new InMemoryOrganizationTeamAdapter()
-      : new PostgresOrganizationTeamAdapter(database),
+    new PostgresOrganizationTeamAdapter(database),
     new OrganizationMembershipAdapter(),
     new OrganizationReferenceAdapter(),
-    database === null
-      ? new InMemoryTeamIdGeneratorAdapter()
-      : new NodeTeamIdGeneratorAdapter(),
+    new NodeTeamIdGeneratorAdapter(),
     eventRecorder,
   );
   const create = new CreateOrganizationTeamHandler(service);

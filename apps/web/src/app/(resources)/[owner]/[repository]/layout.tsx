@@ -1,4 +1,5 @@
 import { Bell, Star } from "lucide-react";
+import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
 import { redirect } from "next/navigation";
@@ -13,7 +14,10 @@ import {
   listRepositorySubscribers,
   toggleRepositorySubscription,
 } from "@/modules/engagement/subscriptions/server-api";
-import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
+import {
+  getOptionalCurrentSession,
+  requireCurrentSession,
+} from "@/modules/identity/authentication/server-api";
 import { RepositoryShell } from "@/modules/repositories/repositories/browser-ui";
 import { resolveRepositoryViewForActor } from "../../_repository-view";
 
@@ -71,11 +75,11 @@ export default async function RepositoryResourceLayout({
   params: Promise<{ owner: string; repository: string }>;
 }>) {
   const [session, routeParams] = await Promise.all([
-    requireCurrentSession(),
+    getOptionalCurrentSession(),
     params,
   ]);
   const repository = await resolveRepositoryViewForActor(
-    session.account.accountId,
+    session?.account.accountId ?? null,
     routeParams.owner,
     routeParams.repository,
   );
@@ -91,15 +95,25 @@ export default async function RepositoryResourceLayout({
   const subscribers =
     subscriberResult.status === "found" ? subscriberResult.subscribers : [];
   const isStarred = stargazers.some(
-    (stargazer) => stargazer.accountId === session.account.accountId,
+    (stargazer) =>
+      stargazer.accountId === session?.account.accountId,
   );
   const isWatching = subscribers.some(
-    (subscriber) => subscriber.accountId === session.account.accountId,
+    (subscriber) =>
+      subscriber.accountId === session?.account.accountId,
   );
   return (
     <>
       <RepositoryShell
         actions={
+          session === null ? (
+            <Link
+              className="inline-flex items-center rounded-md border border-border px-3 py-1.5 text-xs font-semibold hover:bg-muted"
+              href={`/login?returnTo=${encodeURIComponent(`/${routeParams.owner}/${routeParams.repository}`)}`}
+            >
+              Sign in to star or watch
+            </Link>
+          ) : (
           <>
             <form action={toggleStarAction}>
               <input name="owner" type="hidden" value={routeParams.owner} />
@@ -138,6 +152,7 @@ export default async function RepositoryResourceLayout({
               </button>
             </form>
           </>
+          )
         }
         repository={repository}
       />

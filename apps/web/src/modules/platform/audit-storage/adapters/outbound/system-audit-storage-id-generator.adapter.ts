@@ -8,6 +8,6 @@ export class SystemAuditStorageIdGeneratorAdapter
   implements AuditStorageIdGeneratorPort
 {
   nextExportId() {
-    return `audit_export_${randomUUID()}`;
+    return randomUUID();
   }
 }

@@ -48,40 +48,19 @@ export class PostgresExternalIdentityAdapter
 
   async isReady(): Promise<boolean> {
     try {
-      const result = await this.database.query<
-        SqlRow & Readonly<{ isSchemaReady: boolean }>
-      >(
-        `
-          select exists (
-            select 1
-            from support_schema_migrations
-            where migration_id = 'identity-authentication-supabase-0001'
-          ) as "isSchemaReady"
-        `,
+      await this.database.query(
+        `select 1
+           from support_identity_authentication.support_auth_identities
+          limit 0`,
       );
-      return result.rows[0]?.isSchemaReady === true;
+      return true;
     } catch {
       return false;
     }
   }
 
   async isExternalOnboardingReady(): Promise<boolean> {
-    try {
-      const result = await this.database.query<
-        SqlRow & Readonly<{ isSchemaReady: boolean }>
-      >(
-        `
-          select exists (
-            select 1
-            from support_schema_migrations
-            where migration_id = 'identity-authentication-supabase-0002'
-          ) as "isSchemaReady"
-        `,
-      );
-      return result.rows[0]?.isSchemaReady === true;
-    } catch {
-      return false;
-    }
+    return this.isReady();
   }
 
   async findBySubject(
@@ -100,8 +79,8 @@ export class PostgresExternalIdentityAdapter
           account.account_type,
           account.usage,
           account.lifecycle_state
-        from support_auth_identities as identity
-        inner join support_accounts as account
+        from support_identity_authentication.support_auth_identities as identity
+        inner join support_identity_accounts.support_accounts as account
           on account.account_id = identity.account_id
         where identity.provider = $1
           and identity.subject = $2
@@ -122,8 +101,8 @@ export class PostgresExternalIdentityAdapter
     >(
       `
         select identity.email
-        from support_accounts as account
-        inner join support_auth_identities as identity
+        from support_identity_accounts.support_accounts as account
+        inner join support_identity_authentication.support_auth_identities as identity
           on identity.account_id = account.account_id
           and identity.provider = 'supabase'
         where account.normalized_username = $1
@@ -142,7 +121,7 @@ export class PostgresExternalIdentityAdapter
       `
         select not exists (
           select 1
-          from support_accounts
+          from support_identity_accounts.support_accounts
           where normalized_username = $1
         ) as "isAvailable"
       `,

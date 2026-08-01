@@ -8,6 +8,6 @@ export class NodeOrganizationRoleIdGeneratorAdapter
   implements OrganizationRoleIdGeneratorPort
 {
   nextAssignmentId() {
-    return `organization_role_assignment_${randomUUID()}`;
+    return randomUUID();
   }
 }

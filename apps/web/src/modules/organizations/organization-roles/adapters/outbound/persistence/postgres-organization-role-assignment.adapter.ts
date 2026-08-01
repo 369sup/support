@@ -47,29 +47,14 @@ export class PostgresOrganizationRoleAssignmentAdapter
   implements OrganizationRoleAssignmentRepositoryPort
 {
   private readonly database: SqlExecutor;
-  private readonly isSchemaReady: Promise<void>;
 
   constructor(database: SqlExecutor) {
     this.database = database;
-    this.isSchemaReady = this.assertSchema();
-  }
-
-  private async assertSchema() {
-    const result = await this.database.query<{ isReady: boolean }>(
-      `select exists (
-         select 1 from support_schema_migrations
-         where migration_id = 'zz046_organizations_organization_roles'
-       ) as "isReady"`,
-    );
-    if (result.rows[0]?.isReady !== true) {
-      throw new Error("Organization role schema is unavailable.");
-    }
   }
 
   async listByOrganization(organizationId: string) {
-    await this.isSchemaReady;
     const result = await this.database.query<AssignmentRow>(
-      `select ${columns} from support_organization_role_assignments
+      `select ${columns} from support_organizations_organization_roles.support_organization_role_assignments
         where organization_id = $1 order by assignment_id`,
       [organizationId],
     );
@@ -77,9 +62,8 @@ export class PostgresOrganizationRoleAssignmentAdapter
   }
 
   async findById(assignmentId: string) {
-    await this.isSchemaReady;
     const result = await this.database.query<AssignmentRow>(
-      `select ${columns} from support_organization_role_assignments
+      `select ${columns} from support_organizations_organization_roles.support_organization_role_assignments
         where assignment_id = $1`,
       [assignmentId],
     );
@@ -93,13 +77,12 @@ export class PostgresOrganizationRoleAssignmentAdapter
     subjectKey: string,
     roleKey: string,
   ) {
-    await this.isSchemaReady;
     const subject = parseSubjectKey(subjectKey);
     if (subject === null) {
       return null;
     }
     const result = await this.database.query<AssignmentRow>(
-      `select ${columns} from support_organization_role_assignments
+      `select ${columns} from support_organizations_organization_roles.support_organization_role_assignments
         where organization_id = $1
           and subject_kind = $2
           and subject_id = $3
@@ -113,13 +96,12 @@ export class PostgresOrganizationRoleAssignmentAdapter
   }
 
   async save(assignment: OrganizationRoleAssignmentReference) {
-    await this.isSchemaReady;
     const subject =
       assignment.subject.kind === "account"
         ? { kind: "account", id: assignment.subject.accountId }
         : { kind: "team", id: assignment.subject.teamId };
     await this.database.query(
-      `insert into support_organization_role_assignments (
+      `insert into support_organizations_organization_roles.support_organization_role_assignments (
          assignment_id, organization_id, role_key, subject_kind, subject_id, state
        ) values ($1, $2, $3, $4, $5, $6)
        on conflict (organization_id, subject_kind, subject_id, role_key)

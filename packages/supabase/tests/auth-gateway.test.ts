@@ -8,10 +8,20 @@ import {
 } from "vitest";
 
 const doubles = vi.hoisted(() => {
+  const mfa = {
+    challenge: vi.fn(),
+    enroll: vi.fn(),
+    getAuthenticatorAssuranceLevel: vi.fn(),
+    listFactors: vi.fn(),
+    unenroll: vi.fn(),
+    verify: vi.fn(),
+  };
   const auth = {
     exchangeCodeForSession: vi.fn(),
     getClaims: vi.fn(),
     getUser: vi.fn(),
+    mfa,
+    reauthenticate: vi.fn(),
     resetPasswordForEmail: vi.fn(),
     signInWithOAuth: vi.fn(),
     signInWithPassword: vi.fn(),
@@ -78,6 +88,7 @@ const user = {
 };
 
 const claims = {
+  aal: "aal1",
   exp: 2_000_000_000,
   iat: 1_900_000_000,
   session_id: "session-1",
@@ -164,6 +175,7 @@ describe("createSupabaseAuthGateway", () => {
     ).resolves.toEqual({
       data: {
         claims: {
+          aal: "aal1",
           expiresAt: claims.exp,
           issuedAt: claims.iat,
           sessionId: claims.session_id,
@@ -310,6 +322,54 @@ describe("createSupabaseAuthGateway", () => {
       "oauth-code",
       { flowId: "flow-1" },
     );
+  });
+
+  it("normalizes the Supabase TOTP enrollment and verification flow", async () => {
+    doubles.auth.mfa.enroll.mockResolvedValue({
+      data: {
+        id: "factor-1",
+        totp: {
+          qr_code: "<svg />",
+          secret: "secret",
+          uri: "otpauth://totp/support",
+        },
+        type: "totp",
+      },
+      error: null,
+    });
+    doubles.auth.mfa.challenge.mockResolvedValue({
+      data: { expires_at: 1_800_000_000, id: "challenge-1" },
+      error: null,
+    });
+    doubles.auth.mfa.verify.mockResolvedValue({ data: {}, error: null });
+    const gateway = createSupabaseAuthGateway({
+      configuration,
+      cookies: createCookieBridge(),
+    });
+
+    await expect(gateway.enrollTotp("Support account")).resolves.toMatchObject({
+      data: {
+        factorId: "factor-1",
+        qrCode: "<svg />",
+        secret: "secret",
+        uri: "otpauth://totp/support",
+      },
+      error: null,
+    });
+    await expect(gateway.challengeMfa("factor-1")).resolves.toEqual({
+      data: {
+        challengeId: "challenge-1",
+        expiresAt: 1_800_000_000,
+      },
+      error: null,
+    });
+    await expect(
+      gateway.verifyMfa({
+        challengeId: "challenge-1",
+        code: "123456",
+        factorId: "factor-1",
+      }),
+    ).resolves.toEqual({ data: null, error: null });
   });
 
   it("returns stable failures without provider error messages", async () => {

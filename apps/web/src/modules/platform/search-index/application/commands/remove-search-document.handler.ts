@@ -27,7 +27,10 @@ export class RemoveSearchDocumentHandler
         currentVersion: current.version,
       };
     }
-    await this.repository.remove(command.documentId);
+    await this.repository.remove(
+      command.documentId,
+      command.expectedVersion,
+    );
     return { status: "removed" };
   }
 }

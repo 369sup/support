@@ -1,9 +1,10 @@
-import { InMemoryActivityFeedAdapter } from "../adapters/outbound/persistence/in-memory-activity-feed.adapter";
+import { getProductionDatabase } from "../../../../../production-runtime";
+import { PostgresActivityFeedAdapter } from "../adapters/outbound/persistence/postgres-activity-feed.adapter";
 import type { ListRepositoryActivityUseCase } from "../application/ports/inbound/list-repository-activity.use-case";
 import { ListRepositoryActivityHandler } from "../application/queries/list-repository-activity.handler";
 
 const listRepositoryActivity = new ListRepositoryActivityHandler(
-  new InMemoryActivityFeedAdapter(),
+  new PostgresActivityFeedAdapter(getProductionDatabase()),
 );
 
 export const activityFeedServerFacade: Readonly<{

@@ -53,10 +53,37 @@ export type SupabaseAuthResult<T> =
   | Readonly<{ data: null; error: SupabaseAuthFailure }>;
 
 export type SupabaseAuthClaims = Readonly<{
+  aal: "aal1" | "aal2" | null;
   expiresAt: number | null;
   issuedAt: number | null;
   sessionId: string | null;
   subject: string;
+}>;
+
+export type SupabaseMfaFactor = Readonly<{
+  createdAt: string;
+  factorId: string;
+  friendlyName: string | null;
+  status: "unverified" | "verified";
+  updatedAt: string;
+}>;
+
+export type SupabaseMfaEnrollment = Readonly<{
+  factorId: string;
+  friendlyName: string | null;
+  qrCode: string;
+  secret: string;
+  uri: string;
+}>;
+
+export type SupabaseMfaChallenge = Readonly<{
+  challengeId: string;
+  expiresAt: number;
+}>;
+
+export type SupabaseAuthenticatorAssurance = Readonly<{
+  currentLevel: "aal1" | "aal2" | null;
+  nextLevel: "aal1" | "aal2" | null;
 }>;
 
 export type SupabaseAuthUser = Readonly<{
@@ -88,12 +115,25 @@ type SupabaseConfirmationResult = Readonly<{
 }>;
 
 export interface SupabaseAuthGateway {
+  challengeMfa: (
+    factorId: string,
+  ) => Promise<SupabaseAuthResult<SupabaseMfaChallenge>>;
+  enrollTotp: (
+    friendlyName?: string,
+  ) => Promise<SupabaseAuthResult<SupabaseMfaEnrollment>>;
   exchangeCodeForSession: (
     code: string,
     flowId?: string,
   ) => Promise<SupabaseAuthResult<SupabaseAuthenticatedResult>>;
   getClaims: () => Promise<SupabaseAuthResult<SupabaseAuthClaims>>;
   getCurrentUser: () => Promise<SupabaseAuthResult<SupabaseAuthUser>>;
+  getAuthenticatorAssuranceLevel: () => Promise<
+    SupabaseAuthResult<SupabaseAuthenticatorAssurance>
+  >;
+  listMfaFactors: () => Promise<
+    SupabaseAuthResult<readonly SupabaseMfaFactor[]>
+  >;
+  reauthenticate: () => Promise<SupabaseAuthResult<null>>;
   refreshSession: () => Promise<SupabaseAuthResult<SupabaseAuthClaims>>;
   requestPasswordReset: (input: {
     email: string;
@@ -126,6 +166,14 @@ export interface SupabaseAuthGateway {
     tokenHash: string;
     type: SupabaseEmailOtpType;
   }) => Promise<SupabaseAuthResult<SupabaseConfirmationResult>>;
+  unenrollMfa: (
+    factorId: string,
+  ) => Promise<SupabaseAuthResult<null>>;
+  verifyMfa: (input: {
+    challengeId: string;
+    code: string;
+    factorId: string;
+  }) => Promise<SupabaseAuthResult<null>>;
 }
 
 function failure(
@@ -160,6 +208,13 @@ function resultFromError<T>(
     : { data: null, error: mapAuthError(error, fallbackCode) };
 }
 
+function normalizeAal(value: unknown): "aal1" | "aal2" | null {
+  if (value === "aal1") {
+    return "aal1";
+  }
+  return value === "aal2" ? "aal2" : null;
+}
+
 function mapClaims(claims: JwtPayload): SupabaseAuthClaims | null {
   const subject =
     typeof claims.sub === "string" ? claims.sub.trim() : "";
@@ -167,6 +222,7 @@ function mapClaims(claims: JwtPayload): SupabaseAuthClaims | null {
     return null;
   }
   return {
+    aal: normalizeAal(claims.aal),
     expiresAt:
       typeof claims.exp === "number" && Number.isFinite(claims.exp)
         ? claims.exp
@@ -387,6 +443,73 @@ export function createSupabaseAuthGateway(input: {
   }
 
   return {
+    challengeMfa: async (factorId) => {
+      const normalizedFactorId = normalizeRequired(factorId);
+      if (normalizedFactorId === null) {
+        return failure("invalid-factor");
+      }
+      try {
+        const { data, error } = await client.auth.mfa.challenge({
+          factorId: normalizedFactorId,
+        });
+        const mappedError = resultFromError<SupabaseMfaChallenge>(
+          error,
+          "mfa-challenge-failed",
+        );
+        if (mappedError !== null) {
+          return mappedError;
+        }
+        return data === null
+          ? failure("invalid-auth-response")
+          : {
+              data: {
+                challengeId: data.id,
+                expiresAt: data.expires_at,
+              },
+              error: null,
+            };
+      } catch {
+        return failure("service-unavailable");
+      }
+    },
+    enrollTotp: async (friendlyName) => {
+      const normalizedFriendlyName =
+        friendlyName === undefined
+          ? undefined
+          : normalizeRequired(friendlyName);
+      if (normalizedFriendlyName === null) {
+        return failure("invalid-factor-name");
+      }
+      try {
+        const { data, error } = await client.auth.mfa.enroll({
+          factorType: "totp",
+          ...(normalizedFriendlyName === undefined
+            ? {}
+            : { friendlyName: normalizedFriendlyName }),
+        });
+        const mappedError = resultFromError<SupabaseMfaEnrollment>(
+          error,
+          "mfa-enrollment-failed",
+        );
+        if (mappedError !== null) {
+          return mappedError;
+        }
+        return data === null
+          ? failure("invalid-auth-response")
+          : {
+              data: {
+                factorId: data.id,
+                friendlyName: data.friendly_name ?? null,
+                qrCode: data.totp.qr_code,
+                secret: data.totp.secret,
+                uri: data.totp.uri,
+              },
+              error: null,
+            };
+      } catch {
+        return failure("service-unavailable");
+      }
+    },
     exchangeCodeForSession: async (code, flowId) => {
       const normalizedCode = normalizeRequired(code);
       if (normalizedCode === null) {
@@ -426,6 +549,69 @@ export function createSupabaseAuthGateway(input: {
     },
     getClaims: () => getClaimsForToken(),
     getCurrentUser,
+    getAuthenticatorAssuranceLevel: async () => {
+      try {
+        const { data, error } =
+          await client.auth.mfa.getAuthenticatorAssuranceLevel();
+        const mappedError =
+          resultFromError<SupabaseAuthenticatorAssurance>(
+            error,
+            "aal-unavailable",
+          );
+        if (mappedError !== null) {
+          return mappedError;
+        }
+        if (data === null) {
+          return failure("invalid-auth-response");
+        }
+        const currentLevel = normalizeAal(data.currentLevel);
+        const nextLevel = normalizeAal(data.nextLevel);
+        return {
+          data: { currentLevel, nextLevel },
+          error: null,
+        };
+      } catch {
+        return failure("service-unavailable");
+      }
+    },
+    listMfaFactors: async () => {
+      try {
+        const { data, error } = await client.auth.mfa.listFactors();
+        const mappedError = resultFromError<
+          readonly SupabaseMfaFactor[]
+        >(error, "mfa-factors-unavailable");
+        if (mappedError !== null) {
+          return mappedError;
+        }
+        return data === null
+          ? failure("invalid-auth-response")
+          : {
+              data: data.totp.map((factor) => ({
+            createdAt: factor.created_at,
+            factorId: factor.id,
+            friendlyName: factor.friendly_name ?? null,
+            status: factor.status,
+            updatedAt: factor.updated_at,
+              })),
+              error: null,
+            };
+      } catch {
+        return failure("service-unavailable");
+      }
+    },
+    reauthenticate: async () => {
+      try {
+        const { error } = await client.auth.reauthenticate();
+        return (
+          resultFromError<null>(error, "reauthentication-failed") ?? {
+            data: null,
+            error: null,
+          }
+        );
+      } catch {
+        return failure("service-unavailable");
+      }
+    },
     refreshSession: () => getClaimsForToken(),
     requestPasswordReset: async ({ email, redirectTo }) => {
       const normalizedEmail = normalizeRequired(email);
@@ -668,6 +854,52 @@ export function createSupabaseAuthGateway(input: {
           },
           error: null,
         };
+      } catch {
+        return failure("service-unavailable");
+      }
+    },
+    unenrollMfa: async (factorId) => {
+      const normalizedFactorId = normalizeRequired(factorId);
+      if (normalizedFactorId === null) {
+        return failure("invalid-factor");
+      }
+      try {
+        const { error } = await client.auth.mfa.unenroll({
+          factorId: normalizedFactorId,
+        });
+        return (
+          resultFromError<null>(error, "mfa-unenrollment-failed") ?? {
+            data: null,
+            error: null,
+          }
+        );
+      } catch {
+        return failure("service-unavailable");
+      }
+    },
+    verifyMfa: async ({ challengeId, code, factorId }) => {
+      const normalizedChallengeId = normalizeRequired(challengeId);
+      const normalizedCode = normalizeRequired(code);
+      const normalizedFactorId = normalizeRequired(factorId);
+      if (
+        normalizedChallengeId === null ||
+        normalizedCode === null ||
+        normalizedFactorId === null
+      ) {
+        return failure("invalid-mfa-verification");
+      }
+      try {
+        const { error } = await client.auth.mfa.verify({
+          challengeId: normalizedChallengeId,
+          code: normalizedCode,
+          factorId: normalizedFactorId,
+        });
+        return (
+          resultFromError<null>(error, "mfa-verification-failed") ?? {
+            data: null,
+            error: null,
+          }
+        );
       } catch {
         return failure("service-unavailable");
       }

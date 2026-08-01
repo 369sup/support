@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Handles GET, POST requests for `/api/organizations/{login}/teams` through `getOptionalCurrentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`, `getOrganizationByLogin`, `createOrganizationTeam`, `listOrganizationTeams`.
+Handles GET, POST requests for `/api/organizations/{login}/teams` through `getOptionalCurrentSession`, `hasSameOrigin`, `getOrganizationByLogin`, `createOrganizationTeam`, `listOrganizationTeams`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -25,7 +25,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 ## Module contracts
 
 - - **owner:** `organizations/organization-teams` — use cases: `create-organization-team`, `list-organization-teams`; functions: `createOrganizationTeam`, `listOrganizationTeams`
-- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`, `hasSameOrigin`
 - - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.

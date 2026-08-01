@@ -1,5 +1,4 @@
 import { getProductionDatabase } from "../../../../../production-runtime";
-import { InMemoryCustomPropertyAdapter } from "../adapters/outbound/persistence/in-memory-custom-property.adapter";
 import { NodeCustomPropertyIdGeneratorAdapter } from "../adapters/outbound/persistence/node-custom-property-id-generator.adapter";
 import { PostgresCustomPropertyAdapter } from "../adapters/outbound/persistence/postgres-custom-property.adapter";
 import { CustomPropertyService } from "../application/services/custom-property.service";
@@ -9,10 +8,7 @@ import { ListOrganizationRepositoryPropertiesHandler } from "../application/quer
 import { SearchRepositoriesByPropertyHandler } from "../application/queries/search-repositories-by-property.handler";
 
 const database = getProductionDatabase();
-const repository =
-  database === null
-    ? new InMemoryCustomPropertyAdapter()
-    : new PostgresCustomPropertyAdapter(database);
+const repository = new PostgresCustomPropertyAdapter(database);
 const service = new CustomPropertyService(
   repository,
   new NodeCustomPropertyIdGeneratorAdapter(),

@@ -228,6 +228,35 @@ export function validateSourceCycles(rootDir, graph, errors) {
   }
 }
 
+export function validateProductionMemoryBoundaries(
+  rootDir,
+  graph,
+  errors,
+) {
+  for (const [filePath, dependencies] of graph) {
+    const relativePath = projectRelative(rootDir, filePath);
+    const isTestBoundary =
+      relativePath.includes("/tests/") ||
+      /\.(?:test|spec)\.[cm]?[jt]sx?$/.test(relativePath) ||
+      relativePath.includes("/fixtures/");
+    const isMemoryAdapter =
+      /\/in-memory-[^/]+\.adapter\.[cm]?[jt]s$/.test(relativePath);
+    if (isTestBoundary || isMemoryAdapter) {
+      continue;
+    }
+    for (const dependency of dependencies) {
+      const dependencyPath = projectRelative(rootDir, dependency);
+      if (
+        /\/in-memory-[^/]+\.adapter\.[cm]?[jt]s$/.test(dependencyPath)
+      ) {
+        errors.push(
+          `[ARCH-SRC-002] ${relativePath} imports test-only in-memory adapter ${dependencyPath}. Production composition must use a durable adapter.`,
+        );
+      }
+    }
+  }
+}
+
 export function validateServerOnlyMarkers(rootDir, metadata, errors) {
   for (const [filePath, fileMetadata] of metadata) {
     const importsServerOnly =

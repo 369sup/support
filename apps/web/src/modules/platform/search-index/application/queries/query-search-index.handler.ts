@@ -17,6 +17,20 @@ export class QuerySearchIndexHandler implements QuerySearchIndexUseCase {
     query: QuerySearchIndexQuery,
   ): Promise<QuerySearchIndexResult> {
     const normalizedQuery = query.query.trim().toLocaleLowerCase("en-US");
+    const limit = Math.min(100, Math.max(1, query.limit ?? 20));
+    if (normalizedQuery !== "" && this.repository.query !== undefined) {
+      return {
+        status: "found",
+        candidates: await this.repository.query({
+          ...(query.authorizationKey === undefined
+            ? {}
+            : { authorizationKey: query.authorizationKey }),
+          ...(query.kind === undefined ? {} : { kind: query.kind }),
+          limit,
+          text: normalizedQuery,
+        }),
+      };
+    }
     const candidates =
       normalizedQuery === ""
         ? []
@@ -46,7 +60,7 @@ export class QuerySearchIndexHandler implements QuerySearchIndexUseCase {
                 ? scoreDifference
                 : left.title.localeCompare(right.title);
             })
-            .slice(0, Math.min(100, Math.max(1, query.limit ?? 20)));
+            .slice(0, limit);
     return { status: "found", candidates };
   }
 }

@@ -52,6 +52,10 @@ next-env.d.ts
 # package-manager cache created by sandboxed validation
 .pnpm-store/
 
+# Supabase CLI local state and generated secrets
+supabase/.branches/
+supabase/.temp/
+
 
 # repomix generated artifacts
 repomix-output.xml

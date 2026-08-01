@@ -2,8 +2,8 @@ import Link from "next/link";
 import { ArrowRight, CircleCheck, LockKeyhole, ShieldCheck } from "lucide-react";
 
 const privacyFacts = [
-  "Session data is stored as in-memory identity context and browser session tokens.",
-  "Session cookies are HttpOnly and scoped to Support routes.",
+  "Supabase Auth owns credential, MFA, and browser-session state.",
+  "Supabase SSR session cookies are HttpOnly and scoped to Support routes.",
   "Role and ownership references are minimized to what each page needs.",
   "Activity surfaces expose only bounded-context information for current ownership.",
 ];

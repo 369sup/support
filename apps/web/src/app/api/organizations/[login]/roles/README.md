@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Handles GET requests for `/api/organizations/{login}/roles` through `getOptionalCurrentSession`, `isInMemoryRuntimeEnabled`, `listPredefinedOrganizationRoles`, `getOrganizationByLogin`.
+Handles GET requests for `/api/organizations/{login}/roles` through `getOptionalCurrentSession`, `listPredefinedOrganizationRoles`, `getOrganizationByLogin`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -24,7 +24,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 ## Module contracts
 
 - - **owner:** `organizations/organization-roles` — use cases: `list-predefined-organization-roles`; functions: `listPredefinedOrganizationRoles`
-- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`, `isInMemoryRuntimeEnabled`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`
 - - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.

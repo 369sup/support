@@ -1,4 +1,5 @@
-import { InMemoryIssueAdapter } from "../adapters/outbound/persistence/in-memory-issue.adapter";
+import { getProductionDatabase } from "../../../../../production-runtime";
+import { PostgresIssueAdapter } from "../adapters/outbound/persistence/postgres-issue.adapter";
 import { CreateIssueHandler } from "../application/commands/create-issue.handler";
 import type { CreateIssueUseCase } from "../application/ports/inbound/create-issue.use-case";
 import type { GetRepositoryIssueUseCase } from "../application/ports/inbound/get-repository-issue.use-case";
@@ -13,7 +14,7 @@ export type IssuesServerFacade = Readonly<{
 }>;
 
 function composeIssuesServerFacade(): IssuesServerFacade {
-  const issues = new InMemoryIssueAdapter();
+  const issues = new PostgresIssueAdapter(getProductionDatabase());
   const createIssue = new CreateIssueHandler(issues);
   const getRepositoryIssue = new GetRepositoryIssueHandler(issues);
   const listRepositoryIssues = new ListRepositoryIssuesHandler(issues);

@@ -1,7 +1,5 @@
 import { OrganizationMembershipAdapter } from "../adapters/outbound/integration/organization-membership.adapter";
 import { OrganizationTeamAdapter } from "../adapters/outbound/integration/organization-team.adapter";
-import { InMemoryOrganizationRoleAssignmentAdapter } from "../adapters/outbound/persistence/in-memory-organization-role-assignment.adapter";
-import { InMemoryOrganizationRoleIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-organization-role-id-generator.adapter";
 import { NodeOrganizationRoleIdGeneratorAdapter } from "../adapters/outbound/persistence/node-organization-role-id-generator.adapter";
 import { PostgresOrganizationRoleAssignmentAdapter } from "../adapters/outbound/persistence/postgres-organization-role-assignment.adapter";
 import { AssignOrganizationRoleHandler } from "../application/commands/assign-organization-role.handler";
@@ -32,14 +30,10 @@ function composeOrganizationRolesServerFacade(): OrganizationRolesServerFacade {
   );
   registerEventSource(eventRecorder);
   const service = new OrganizationRoleService(
-    database === null
-      ? new InMemoryOrganizationRoleAssignmentAdapter()
-      : new PostgresOrganizationRoleAssignmentAdapter(database),
+    new PostgresOrganizationRoleAssignmentAdapter(database),
     new OrganizationMembershipAdapter(),
     new OrganizationTeamAdapter(),
-    database === null
-      ? new InMemoryOrganizationRoleIdGeneratorAdapter()
-      : new NodeOrganizationRoleIdGeneratorAdapter(),
+    new NodeOrganizationRoleIdGeneratorAdapter(),
     eventRecorder,
   );
   const listDefinitions =

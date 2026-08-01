@@ -38,10 +38,13 @@ function createIdentityRepository(
 
 function createGateway(): SupabaseAuthGateway {
   return {
+    challengeMfa: vi.fn(),
+    enrollTotp: vi.fn(),
     exchangeCodeForSession: vi.fn(),
     getClaims: vi.fn(() =>
       Promise.resolve({
         data: {
+          aal: "aal1" as const,
           expiresAt: 2_000_000_000,
           issuedAt: 1_900_000_000,
           sessionId: "session-1",
@@ -51,12 +54,16 @@ function createGateway(): SupabaseAuthGateway {
       }),
     ),
     getCurrentUser: vi.fn(),
+    getAuthenticatorAssuranceLevel: vi.fn(),
+    listMfaFactors: vi.fn(),
+    reauthenticate: vi.fn(),
     refreshSession: vi.fn(),
     requestPasswordReset: vi.fn(),
     signInWithPassword: vi.fn(() =>
       Promise.resolve({
         data: {
           claims: {
+            aal: "aal1" as const,
             expiresAt: 2_000_000_000,
             issuedAt: 1_900_000_000,
             sessionId: "session-1",
@@ -80,6 +87,8 @@ function createGateway(): SupabaseAuthGateway {
     startOAuthSignIn: vi.fn(),
     updatePassword: vi.fn(),
     updateUserMetadata: vi.fn(),
+    unenrollMfa: vi.fn(),
+    verifyMfa: vi.fn(),
     verifyOtp: vi.fn(),
   };
 }
@@ -219,6 +228,7 @@ describe("SupabaseAuthenticationAdapter", () => {
     vi.mocked(gateway.exchangeCodeForSession).mockResolvedValue({
       data: {
         claims: {
+          aal: "aal1" as const,
           expiresAt: 2_000_000_000,
           issuedAt: 1_900_000_000,
           sessionId: "session-1",
@@ -257,6 +267,7 @@ describe("SupabaseAuthenticationAdapter", () => {
     vi.mocked(gateway.exchangeCodeForSession).mockResolvedValue({
       data: {
         claims: {
+          aal: "aal1" as const,
           expiresAt: 2_000_000_000,
           issuedAt: 1_900_000_000,
           sessionId: "session-1",

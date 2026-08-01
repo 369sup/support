@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { resolveRepositoryViewForActor } from "@/app/(resources)/_repository-view";
 import { listRepositoryStargazers } from "@/modules/engagement/stars/server-api";
-import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
+import { getOptionalCurrentSession } from "@/modules/identity/authentication/server-api";
 import { getRepositoryForViewing } from "@/modules/repositories/repositories/server-api";
 
 export default async function StargazersPage({
@@ -12,9 +12,9 @@ export default async function StargazersPage({
   params: Promise<{ owner: string; repository: string }>;
 }>) {
   const routeParams = await params;
-  const session = await requireCurrentSession();
+  const session = await getOptionalCurrentSession();
   const repository = await resolveRepositoryViewForActor(
-    session.account.accountId,
+    session?.account.accountId ?? null,
     routeParams.owner,
     routeParams.repository,
     getRepositoryForViewing,

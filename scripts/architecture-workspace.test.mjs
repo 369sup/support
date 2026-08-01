@@ -1,4 +1,4 @@
-import { strict as assert } from "node:assert";
+import { strict } from "node:assert";
 import {
   mkdtempSync,
   mkdirSync,
@@ -65,7 +65,7 @@ test("accepts one recognized provider for an exclusive dependency capability", (
     const errors = [];
     validateWorkspacePackages(repositoryRoot, errors);
 
-    assert.deepEqual(errors, []);
+    strict.deepEqual(errors, []);
   } finally {
     rmSync(repositoryRoot, { force: true, recursive: true });
   }
@@ -81,7 +81,7 @@ test("rejects overlapping providers for an exclusive dependency capability", () 
     const errors = [];
     validateWorkspacePackages(repositoryRoot, errors);
 
-    assert.deepEqual(errors, [
+    strict.deepEqual(errors, [
       "[ARCH-PKG-009] form capability has overlapping providers: formik (@support/web/dependencies); react-hook-form (@support/web/dependencies). Keep one provider across the workspace.",
     ]);
   } finally {
@@ -106,7 +106,7 @@ test("rejects an unpinned supply-chain baseline", () => {
     const errors = [];
     validateWorkspacePackages(repositoryRoot, errors);
 
-    assert.deepEqual(errors, [
+    strict.deepEqual(errors, [
       "[ARCH-PKG-010] Pin an exact pnpm packageManager version, commit pnpm-lock.yaml, declare allowBuilds, and install with --frozen-lockfile in CI.",
     ]);
   } finally {

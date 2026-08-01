@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { getPersonalAccountByUsername } from "@/modules/identity/accounts/server-api";
 import { listActivePublicRepositoriesForPersonalOwner } from "@/modules/repositories/repositories/server-api";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   _request: Request,
   context: { params: Promise<{ username: string }> },

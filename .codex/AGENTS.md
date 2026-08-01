@@ -6,10 +6,17 @@ loads for a trusted checkout.
 
 ## Active surfaces
 
-- [`config.toml`](config.toml) registers one project-specific review agent,
+- [`config.toml`](config.toml) registers three project-specific agents,
   Context7, and Mermaid Chart.
+- [`agents/requirements.toml`](agents/requirements.toml) defines a read-only
+  requirements contract before implementation.
 - [`agents/reviewer.toml`](agents/reviewer.toml) adds Support-specific review
-  priorities. Codex built-ins cover general exploration and implementation.
+  priorities.
+- [`agents/verifier.toml`](agents/verifier.toml) verifies delegated changes
+  without implementing fixes. Codex built-ins cover general exploration and
+  implementation.
+- [`rules/validation.rules`](rules/validation.rules) allows only canonical
+  repository validation scripts outside the sandbox for trusted checkouts.
 - [`environments/environment.toml`](environments/environment.toml) defines the
   Codex Desktop worktree setup check and dependency-install action.
 - [`hooks.json`](hooks.json) registers only the repository guard described
@@ -33,6 +40,9 @@ credentials belong in user configuration.
   defaults without a demonstrated shared requirement and security review.
 - Use one hook representation per config layer. This repository uses
   [`hooks.json`](hooks.json), not inline `[hooks]`.
+- Keep command-rule prefixes limited to canonical validation scripts. Include
+  positive and negative examples, and do not pre-authorize installation,
+  arbitrary package execution, development servers, deployment, or Git writes.
 - Context7 uses `https://mcp.context7.com/mcp`. Its optional
   `CONTEXT7_API_KEY` value comes from the contributor's environment through
   `env_http_headers`; never replace it with a literal secret.
@@ -45,9 +55,10 @@ built-in agent or a one-off prompt. Every agent file requires `name`,
 repository convention. Omit model and reasoning overrides unless evidence
 shows the role needs them.
 
-The current reviewer is read-only and reports actionable correctness,
-security, architecture, regression, and verification risks. It must not edit,
-commit, push, or expand the delegated scope.
+The requirements analyst and reviewer are read-only. The verifier inherits the
+parent sandbox so repository checks can run, but it must not implement fixes or
+modify source and configuration files. None of these roles may commit, push,
+deploy, publish, or expand the delegated scope.
 
 ## Hook boundary
 
@@ -68,7 +79,7 @@ trust, permissions, network, portability, secret handling, and startup impact.
 
 After a change:
 
-1. Parse TOML and JSON and resolve every referenced path.
+1. Parse TOML, JSON, and command rules and resolve every referenced path.
 2. Run `pnpm test:hooks` when hook definitions or implementations changed.
 3. Inspect the actual diff and confirm no personal or secret state is tracked.
 4. Start a fresh trusted Codex Desktop task and verify configuration discovery.

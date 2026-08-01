@@ -1,7 +1,7 @@
 import type { RepositoryListItem } from "./repository-view.types";
 
 export type ListVisibleRepositoriesForOwnerQuery = Readonly<{
-  actorAccountId: string;
+  actorAccountId: string | null;
   ownerId: string;
 }>;
 

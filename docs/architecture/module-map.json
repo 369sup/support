@@ -223,13 +223,12 @@
       "classification": "core",
       "maturity": "stable",
       "implementationStatus": "active",
-      "responsibility": "Credentials, browser session sets, active account-session selection, two-factor authentication, recovery, and external login binding.",
+    "responsibility": "Supabase Auth session normalization, password and OAuth sign-in, provider-owned password recovery, reauthentication, TOTP assurance, and external identity binding.",
       "semanticStatus": "validated",
       "owns": [
-        "Credential",
-        "Session",
-        "TwoFactorConfiguration",
-        "ExternalLoginBinding"
+      "Session",
+      "TwoFactorConfiguration",
+      "ExternalLoginBinding"
       ],
       "excludes": [
         "AccountLifecycle",
@@ -241,12 +240,7 @@
           "context": "identity/accounts",
           "contract": "AccountReference",
           "mode": "synchronous"
-        },
-        {
-          "context": "platform/notification-channels",
-          "contract": "EmailDelivery",
-          "mode": "synchronous"
-        }
+      }
       ],
       "officialSources": [
         {
@@ -341,30 +335,23 @@
           ]
         }
       ],
-      "activationScope": [
-        "apply-password-credential-transaction",
-        "change-password",
-        "configure-totp",
-        "enter-sudo-mode",
-        "get-current-authenticated-session",
-        "list-browser-account-sessions",
-        "manage-passkey",
-        "recover-two-factor",
-        "remove-account-session",
-        "request-password-reset",
-        "reset-password",
-        "sign-out-all-sessions",
-        "switch-active-account-session",
-        "verify-additional-factor"
+    "activationScope": [
+      "enroll-totp",
+      "get-current-authenticated-session",
+      "reauthenticate",
+      "request-supabase-password-reset",
+      "sign-out-all-sessions",
+      "update-supabase-password",
+      "verify-mfa",
+      "verify-supabase-otp"
       ],
       "plannedRelationships": [],
       "semanticClaims": [
         {
           "id": "authentication-session-lifecycle",
-          "statement": "A browser can retain multiple account sessions, selects one active session, and requires reauthentication before an expired managed-user session can be activated.",
-          "ownership": [
-            "Credential",
-            "Session"
+        "statement": "Supabase Auth owns browser session issuance and revocation while Support normalizes one current session and requires provider reauthentication for sensitive operations.",
+        "ownership": [
+          "Session"
           ],
           "events": [
             "SessionCreated@1",
@@ -510,9 +497,10 @@
           ]
         }
       ],
-      "activationScope": [
-        "add-account-email",
-        "list-account-emails",
+    "activationScope": [
+      "add-account-email",
+      "get-verified-account-id-by-email",
+      "list-account-emails",
         "update-account-email-settings",
         "verify-account-email"
       ],
@@ -560,7 +548,7 @@
       "classification": "supporting",
       "maturity": "stable",
       "implementationStatus": "active",
-      "responsibility": "Coordinate personal account registration and username changes so account identity and password credentials never remain half-complete.",
+    "responsibility": "Coordinate Support username changes while Supabase Auth owns sign-up credentials and session issuance.",
       "semanticStatus": "validated",
       "owns": [
         "AccountCredentialTransaction",
@@ -616,9 +604,8 @@
       ],
       "publishedEvents": [],
       "eventRationale": "The coordinator owns transaction consistency rather than a product fact; account and credential event publication remains with their owning contexts.",
-      "activationScope": [
-        "change-personal-account-username",
-        "register-personal-account"
+    "activationScope": [
+      "change-personal-account-username"
       ],
       "plannedRelationships": [],
       "semanticClaims": [
@@ -2098,6 +2085,11 @@
         {
           "context": "identity/accounts",
           "contract": "AccountReference",
+          "mode": "synchronous"
+        },
+        {
+          "context": "identity/account-emails",
+          "contract": "VerifiedAccountEmailLookup",
           "mode": "synchronous"
         }
       ],

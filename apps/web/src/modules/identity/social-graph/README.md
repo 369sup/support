@@ -27,7 +27,7 @@ Own following relationships between accounts and organizations.
 - **Success result:** `updated` with current following state.
 - **Expected rejections:** `invalid-follow`, `self-follow-not-allowed`
 - **Authorization:** Delivery supplies the authenticated follower account ID.
-- **Transaction:** Add or remove one process-local relation.
+- **Transaction:** Add or remove one durable PostgreSQL relation.
 - **Idempotency:** Not idempotent; each call toggles the relation.
 - **Dependencies:** `none`
 - **Published events:** `none`
@@ -58,7 +58,7 @@ The authenticated account can mutate only its own outgoing relationship.
 
 ## Persistence and transactions
 
-Relations are process-local and non-durable.
+Production relations are stored in PostgreSQL with a unique directional key.
 
 ## Data classification
 
@@ -67,7 +67,7 @@ presentation.
 
 ## Retention and erasure
 
-Relations live for the process lifetime. Durable account erasure remains planned.
+Relations cascade when either participating account is erased.
 
 ## Events and failure behavior
 

@@ -20,7 +20,6 @@
         "DATABASE_CONNECTION_TIMEOUT_MS",
         "DATABASE_IDLE_TIMEOUT_MS",
         "DATABASE_POOL_MAX",
-        "DATABASE_PROVIDER",
         "DATABASE_SSL_MODE",
         "DATABASE_STATEMENT_TIMEOUT_MS",
         "DATABASE_URL",
@@ -49,9 +48,10 @@
         "STRIPE_SECRET_KEY",
         "STRIPE_SUBSCRIPTION_PRICE_ID",
         "STRIPE_WEBHOOK_SECRET",
-        "SUPPORT_RUNTIME_MODE",
         "SUPABASE_PUBLISHABLE_KEY",
         "SUPABASE_POSTGRES_CONNECTION_MODE",
+        "SUPABASE_SECRET_KEY",
+        "SUPABASE_STORAGE_BUCKET",
         "SUPABASE_URL",
         "VERCEL_PROJECT_PRODUCTION_URL",
         "WEBAUTHN_ORIGIN",
@@ -72,15 +72,15 @@
     "test:e2e": {
       "dependsOn": ["build"],
       "env": [
-        "DATABASE_PROVIDER",
         "DATABASE_SSL_MODE",
         "DATABASE_URL",
-        "SUPPORT_RUNTIME_MODE",
         "SUPABASE_E2E_EMAIL",
         "SUPABASE_E2E_ENABLED",
         "SUPABASE_E2E_PASSWORD",
         "SUPABASE_POSTGRES_CONNECTION_MODE",
         "SUPABASE_PUBLISHABLE_KEY",
+        "SUPABASE_SECRET_KEY",
+        "SUPABASE_STORAGE_BUCKET",
         "SUPABASE_URL"
       ],
       "outputs": ["playwright-report/**", "test-results/**"]

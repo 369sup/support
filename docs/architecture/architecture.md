@@ -360,7 +360,9 @@ rollback requirement; it does not describe only the final structure.
 ## Data ownership and transactions
 
 - Each bounded context owns its persistence records, storage namespace,
-  migrations, persistence adapters, and data lifecycle.
+  persistence adapters, and data lifecycle. The database-design handoff maps
+  those owners into the single declarative schema and migration authority
+  defined by ADR-0007.
 - A context never reads or writes another context's tables through its own
   repository. Cross-context foreign keys and product-code joins across
   context-owned storage are prohibited.
@@ -453,6 +455,10 @@ rollback requirement; it does not describe only the final structure.
 - Dependencies cross application and adapter boundaries as explicit
   constructor, function, or factory inputs. Domain and application code never
   read framework globals or dependency containers.
+- Production composition has one provider: Supabase Auth, PostgreSQL, and
+  Storage. Required URL, publishable key, server-only secret, database
+  transaction-pooler mode, and TLS configuration fail closed; production code
+  never falls back to an in-memory product runtime.
 
 ## Next.js App Router delivery
 
@@ -593,28 +599,35 @@ identity, effect safety, and related React compiler diagnostics.
 
 ## Database runtime ownership
 
-- `@support/database` owns the business-free PostgreSQL pool, transaction, and
-  migration runtime. It does not own product tables, repositories, retention,
+- `@support/database` owns the business-free PostgreSQL pool and transaction
+  runtime. It does not execute or verify migrations and does not own product
+  tables, repositories, retention,
   authorization, tenant rules, or cross-context transactions.
 - `@support/supabase` owns the business-free Supabase SDK boundary. Its
   `postgres` subpath validates PostgreSQL endpoints, connection modes, and TLS
   before constructing `@support/database`; its `auth` subpath validates Auth
   configuration, constructs request-scoped server clients, bridges
   framework-provided cookies, removes provider tokens, and normalizes SDK
-  results into package-owned types. It does not own Next.js request or response
-  objects, application environment parsing, Support account or username
-  lifecycle, authorization, product tables, migrations, RLS policies, or the
-  browser Data API.
+  results into package-owned types. Its server-only `auth/admin` subpath owns
+  required Auth administration, and `storage` owns private bucket/object
+  operations and provider-neutral references. It does not own Next.js request
+  or response objects, application environment parsing, Support account or
+  username lifecycle, authorization, product tables, migrations, RLS policies,
+  or the browser Data API.
 - Only `@support/supabase` may declare or import `@supabase/*` dependencies.
   Consumers declare `@support/supabase` and use an explicit exported subpath;
   new Supabase product integrations begin by adding a server-only package
   subpath rather than importing an SDK from an application or another package.
-- Each bounded context owns its schema namespace, migrations, persistence
-  adapters, optimistic-concurrency rules, and data lifecycle.
+- Each bounded context owns its schema namespace, persistence adapters,
+  optimistic-concurrency rules, and data lifecycle. Declarative SQL and forward
+  migration history follow ADR-0007 and
+  [`data-model/README.md`](data-model/README.md).
 - A transaction uses one checked-out connection for its complete lifetime and
   performs no provider or network work while holding database locks.
-- Application composition selects PostgreSQL or in-memory adapters. The choice
-  changes durability and deployment requirements, not domain behavior.
+- Production application composition always selects durable Supabase
+  PostgreSQL and Storage adapters. Explicitly injected in-memory fakes are
+  permitted only in test boundaries and cannot be reachable from production
+  compositions, routes, or server entrypoints.
 
 ## Security and data protection
 

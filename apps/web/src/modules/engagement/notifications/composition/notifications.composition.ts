@@ -1,10 +1,13 @@
-import { InMemoryNotificationAdapter } from "../adapters/outbound/persistence/in-memory-notification.adapter";
+import { getProductionDatabase } from "../../../../../production-runtime";
+import { PostgresNotificationAdapter } from "../adapters/outbound/persistence/postgres-notification.adapter";
 import { MarkNotificationReadHandler } from "../application/commands/mark-notification-read.handler";
 import type { ListNotificationsUseCase } from "../application/ports/inbound/list-notifications.use-case";
 import type { MarkNotificationReadUseCase } from "../application/ports/inbound/mark-notification-read.use-case";
 import { ListNotificationsHandler } from "../application/queries/list-notifications.handler";
 
-const notifications = new InMemoryNotificationAdapter();
+const notifications = new PostgresNotificationAdapter(
+  getProductionDatabase(),
+);
 const listNotifications = new ListNotificationsHandler(notifications);
 const markNotificationRead = new MarkNotificationReadHandler(notifications);
 

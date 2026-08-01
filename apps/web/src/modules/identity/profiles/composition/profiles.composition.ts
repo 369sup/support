@@ -1,4 +1,5 @@
-import { InMemoryProfileAdapter } from "../adapters/outbound/persistence/in-memory-profile.adapter";
+import { getProductionDatabase } from "../../../../../production-runtime";
+import { PostgresProfileAdapter } from "../adapters/outbound/persistence/postgres-profile.adapter";
 import { UpdateUserProfileHandler } from "../application/commands/update-user-profile.handler";
 import type { GetUserProfileUseCase } from "../application/ports/inbound/get-user-profile.use-case";
 import type { UpdateUserProfileUseCase } from "../application/ports/inbound/update-user-profile.use-case";
@@ -10,7 +11,7 @@ export type ProfilesServerFacade = Readonly<{
 }>;
 
 function composeProfilesServerFacade(): ProfilesServerFacade {
-  const profiles = new InMemoryProfileAdapter();
+  const profiles = new PostgresProfileAdapter(getProductionDatabase());
   const getUserProfile = new GetUserProfileHandler(profiles);
   const updateUserProfile = new UpdateUserProfileHandler(profiles);
 

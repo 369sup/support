@@ -8,14 +8,14 @@ export class SystemPublicationIdGeneratorAdapter
   implements PublicationIdGeneratorPort
 {
   nextAttemptId() {
-    return `publication_attempt_${randomUUID()}`;
+    return randomUUID();
   }
 
   nextDeadLetterId() {
-    return `dead_letter_${randomUUID()}`;
+    return randomUUID();
   }
 
   nextEventId() {
-    return `event_${randomUUID()}`;
+    return randomUUID();
   }
 }

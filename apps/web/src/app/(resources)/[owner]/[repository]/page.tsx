@@ -1,7 +1,7 @@
 ﻿import { FolderKanban, FolderLock, ShieldCheck } from "lucide-react";
 import { notFound } from "next/navigation";
 
-import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
+import { getOptionalCurrentSession } from "@/modules/identity/authentication/server-api";
 import { getRepositoryForViewing } from "@/modules/repositories/repositories/server-api";
 import { resolveOwnerIdByLogin } from "../../_repository-view";
 
@@ -17,18 +17,18 @@ function isManageable(permission: PermissionLevel | null): boolean {
 }
 
 async function resolveRepositoryForActor(ownerLogin: string, repositoryName: string) {
-  const session = await requireCurrentSession();
+  const session = await getOptionalCurrentSession();
   const ownerId = await resolveOwnerIdByLogin(ownerLogin);
   if (ownerId === null) {
     return null;
   }
   const result = await getRepositoryForViewing({
-    actorAccountId: session.account.accountId,
+    actorAccountId: session?.account.accountId ?? null,
     ownerId,
     name: repositoryName,
   });
   return result.status === "found"
-    ? { repository: result.repository, session }
+    ? result.repository
     : null;
 }
 
@@ -46,7 +46,7 @@ export default async function RepositoryPage({
     notFound();
   }
 
-  const { repository } = access;
+  const repository = access;
   const canManage = isManageable(repository.permission);
 
   return (

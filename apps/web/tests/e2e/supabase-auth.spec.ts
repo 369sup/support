@@ -7,6 +7,8 @@ const requiredEnvironmentNames = [
   "SUPABASE_E2E_EMAIL",
   "SUPABASE_E2E_PASSWORD",
   "SUPABASE_PUBLISHABLE_KEY",
+  "SUPABASE_SECRET_KEY",
+  "SUPABASE_STORAGE_BUCKET",
   "SUPABASE_URL",
 ] as const;
 
@@ -26,8 +28,6 @@ test.beforeAll(() => {
   for (const name of requiredEnvironmentNames) {
     readRequiredEnvironment(name);
   }
-  expect(process.env["SUPPORT_RUNTIME_MODE"]).toBe("postgres");
-  expect(process.env["DATABASE_PROVIDER"]).toBe("supabase");
   expect(process.env["DATABASE_URL"]).toMatch(/^postgres(?:ql)?:\/\//u);
   expect(process.env["SUPABASE_URL"]).toMatch(/^https:\/\//u);
   expect(process.env["SUPABASE_PUBLISHABLE_KEY"]).toMatch(

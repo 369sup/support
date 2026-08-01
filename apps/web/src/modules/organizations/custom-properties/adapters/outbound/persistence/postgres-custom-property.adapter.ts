@@ -64,29 +64,14 @@ export class PostgresCustomPropertyAdapter
   implements CustomPropertyRepositoryPort
 {
   private readonly database: TransactionalSqlExecutor;
-  private readonly isSchemaReady: Promise<void>;
 
   constructor(database: TransactionalSqlExecutor) {
     this.database = database;
-    this.isSchemaReady = this.assertSchema();
-  }
-
-  private async assertSchema(): Promise<void> {
-    const result = await this.database.query<{ isReady: boolean }>(
-      `select exists (
-         select 1 from support_schema_migrations
-         where migration_id = 'zz070_organizations_custom_properties'
-       ) as "isReady"`,
-    );
-    if (result.rows[0]?.isReady !== true) {
-      throw new Error("Custom property schema is unavailable.");
-    }
   }
 
   async define(definition: OrganizationRepositoryPropertyDefinition) {
-    await this.isSchemaReady;
     const result = await this.database.query(
-      `insert into support_organization_repository_properties (
+      `insert into support_organizations_custom_properties.support_organization_repository_properties (
          property_id, organization_id, name, normalized_name, description,
          value_type, allowed_values, default_value, required,
          require_explicit_value, repository_actors_can_set
@@ -111,7 +96,6 @@ export class PostgresCustomPropertyAdapter
   }
 
   async listDefinitions(organizationId: string) {
-    await this.isSchemaReady;
     const result = await this.database.query<DefinitionRow>(
       `select property_id, organization_id, name, description, value_type,
               allowed_values::text as allowed_values_json,
@@ -119,7 +103,7 @@ export class PostgresCustomPropertyAdapter
               required as "isRequired",
               require_explicit_value as "isExplicitValueRequired",
               repository_actors_can_set as "canRepositoryActorsSet"
-         from support_organization_repository_properties
+         from support_organizations_custom_properties.support_organization_repository_properties
         where organization_id = $1 order by name, property_id`,
       [organizationId],
     );
@@ -131,7 +115,6 @@ export class PostgresCustomPropertyAdapter
     values: readonly RepositoryPropertyValue[],
     actorAccountId: string,
   ) {
-    await this.isSchemaReady;
     const repositoryIdSet = new Set(repositoryIds);
     await this.database.transaction(async (connection) => {
       for (const value of values) {
@@ -139,7 +122,7 @@ export class PostgresCustomPropertyAdapter
           throw new Error("Repository value is outside the requested batch.");
         }
         await connection.query(
-          `insert into support_repository_property_values (
+          `insert into support_organizations_custom_properties.support_repository_property_values (
              repository_id, property_id, value, source,
              updated_by_account_id, updated_at
            ) values ($1, $2, $3::jsonb, $4, $5, now())
@@ -165,14 +148,13 @@ export class PostgresCustomPropertyAdapter
     propertyName: string,
     value: string,
   ) {
-    await this.isSchemaReady;
     const encoded = JSON.stringify(value);
     const result = await this.database.query<{ repository_id: string }>(
       `select distinct values.repository_id
-         from support_repository_property_values values
-         join support_organization_repository_properties definitions
+         from support_organizations_custom_properties.support_repository_property_values values
+         join support_organizations_custom_properties.support_organization_repository_properties definitions
            on definitions.property_id = values.property_id
-         join support_repositories repositories
+         join support_repositories_repositories.support_repositories repositories
            on repositories.repository_id = values.repository_id
         where definitions.organization_id = $1
           and definitions.normalized_name = lower($2)

@@ -78,29 +78,14 @@ export class PostgresEnterpriseTeamAdapter
   implements EnterpriseTeamRepositoryPort
 {
   private readonly database: SqlExecutor;
-  private readonly isSchemaReady: Promise<void>;
 
   constructor(database: SqlExecutor) {
     this.database = database;
-    this.isSchemaReady = this.assertSchema();
-  }
-
-  private async assertSchema() {
-    const result = await this.database.query<{ isReady: boolean }>(
-      `select exists (
-         select 1 from support_schema_migrations
-         where migration_id = 'zz045_enterprises_enterprise_teams'
-       ) as "isReady"`,
-    );
-    if (result.rows[0]?.isReady !== true) {
-      throw new Error("Enterprise team schema is unavailable.");
-    }
   }
 
   async countActiveTeamsByEnterprise(enterpriseId: string) {
-    await this.isSchemaReady;
     const result = await this.database.query<{ count: string }>(
-      `select count(*)::text as count from support_enterprise_teams
+      `select count(*)::text as count from support_enterprises_enterprise_teams.support_enterprise_teams
         where enterprise_id = $1 and lifecycle_state = 'active'`,
       [enterpriseId],
     );
@@ -108,18 +93,16 @@ export class PostgresEnterpriseTeamAdapter
   }
 
   async findTeamById(teamId: string) {
-    await this.isSchemaReady;
     const result = await this.database.query<TeamRow>(
-      `select ${teamColumns} from support_enterprise_teams where team_id = $1`,
+      `select ${teamColumns} from support_enterprises_enterprise_teams.support_enterprise_teams where team_id = $1`,
       [teamId],
     );
     return result.rows[0] === undefined ? null : mapTeam(result.rows[0]);
   }
 
   async findTeamByEnterpriseAndSlug(enterpriseId: string, slug: string) {
-    await this.isSchemaReady;
     const result = await this.database.query<TeamRow>(
-      `select ${teamColumns} from support_enterprise_teams
+      `select ${teamColumns} from support_enterprises_enterprise_teams.support_enterprise_teams
         where enterprise_id = $1 and normalized_slug = lower($2)`,
       [enterpriseId, slug],
     );
@@ -127,9 +110,8 @@ export class PostgresEnterpriseTeamAdapter
   }
 
   async listActiveTeamsByEnterprise(enterpriseId: string, limit: number) {
-    await this.isSchemaReady;
     const result = await this.database.query<TeamRow>(
-      `select ${teamColumns} from support_enterprise_teams
+      `select ${teamColumns} from support_enterprises_enterprise_teams.support_enterprise_teams
         where enterprise_id = $1 and lifecycle_state = 'active'
         order by name, team_id limit $2`,
       [enterpriseId, limit],
@@ -138,9 +120,8 @@ export class PostgresEnterpriseTeamAdapter
   }
 
   async saveTeam(team: EnterpriseTeamReference) {
-    await this.isSchemaReady;
     await this.database.query(
-      `insert into support_enterprise_teams (
+      `insert into support_enterprises_enterprise_teams.support_enterprise_teams (
          team_id, enterprise_id, name, slug, normalized_slug, description, lifecycle_state
        ) values ($1, $2, $3, $4, lower($4), $5, $6)
        on conflict (team_id) do update set
@@ -162,9 +143,8 @@ export class PostgresEnterpriseTeamAdapter
   }
 
   async countActiveMembershipsByTeam(teamId: string) {
-    await this.isSchemaReady;
     const result = await this.database.query<{ count: string }>(
-      `select count(*)::text as count from support_enterprise_team_memberships
+      `select count(*)::text as count from support_enterprises_enterprise_teams.support_enterprise_team_memberships
         where team_id = $1 and state = 'active'`,
       [teamId],
     );
@@ -172,9 +152,8 @@ export class PostgresEnterpriseTeamAdapter
   }
 
   async findActiveMembership(teamId: string, accountId: string) {
-    await this.isSchemaReady;
     const result = await this.database.query<MembershipRow>(
-      `select ${membershipColumns} from support_enterprise_team_memberships
+      `select ${membershipColumns} from support_enterprises_enterprise_teams.support_enterprise_team_memberships
         where team_id = $1 and account_id = $2 and state = 'active'`,
       [teamId, accountId],
     );
@@ -184,9 +163,8 @@ export class PostgresEnterpriseTeamAdapter
   }
 
   async listActiveMembershipsByTeam(teamId: string, limit: number) {
-    await this.isSchemaReady;
     const result = await this.database.query<MembershipRow>(
-      `select ${membershipColumns} from support_enterprise_team_memberships
+      `select ${membershipColumns} from support_enterprises_enterprise_teams.support_enterprise_team_memberships
         where team_id = $1 and state = 'active'
         order by account_id limit $2`,
       [teamId, limit],
@@ -195,9 +173,8 @@ export class PostgresEnterpriseTeamAdapter
   }
 
   async saveMembership(membership: EnterpriseTeamMembershipReference) {
-    await this.isSchemaReady;
     await this.database.query(
-      `insert into support_enterprise_team_memberships (
+      `insert into support_enterprises_enterprise_teams.support_enterprise_team_memberships (
          team_membership_id, team_id, enterprise_id, account_id, state
        ) values ($1, $2, $3, $4, $5)
        on conflict (team_id, account_id) do update set
@@ -215,10 +192,9 @@ export class PostgresEnterpriseTeamAdapter
   }
 
   async countActiveOrganizationGrantsByTeam(teamId: string) {
-    await this.isSchemaReady;
     const result = await this.database.query<{ count: string }>(
       `select count(*)::text as count
-         from support_enterprise_team_organization_grants
+         from support_enterprises_enterprise_teams.support_enterprise_team_organization_grants
         where team_id = $1 and state = 'active'`,
       [teamId],
     );
@@ -226,10 +202,9 @@ export class PostgresEnterpriseTeamAdapter
   }
 
   async findActiveOrganizationGrant(teamId: string, organizationId: string) {
-    await this.isSchemaReady;
     const result = await this.database.query<OrganizationGrantRow>(
       `select ${organizationGrantColumns}
-         from support_enterprise_team_organization_grants
+         from support_enterprises_enterprise_teams.support_enterprise_team_organization_grants
         where team_id = $1 and organization_id = $2 and state = 'active'`,
       [teamId, organizationId],
     );
@@ -239,10 +214,9 @@ export class PostgresEnterpriseTeamAdapter
   }
 
   async listActiveOrganizationGrantsByTeam(teamId: string) {
-    await this.isSchemaReady;
     const result = await this.database.query<OrganizationGrantRow>(
       `select ${organizationGrantColumns}
-         from support_enterprise_team_organization_grants
+         from support_enterprises_enterprise_teams.support_enterprise_team_organization_grants
         where team_id = $1 and state = 'active'
         order by organization_id`,
       [teamId],
@@ -253,9 +227,8 @@ export class PostgresEnterpriseTeamAdapter
   async saveOrganizationGrant(
     grant: EnterpriseTeamOrganizationGrantReference,
   ) {
-    await this.isSchemaReady;
     await this.database.query(
-      `insert into support_enterprise_team_organization_grants (
+      `insert into support_enterprises_enterprise_teams.support_enterprise_team_organization_grants (
          grant_id, team_id, enterprise_id, organization_id, state
        ) values ($1, $2, $3, $4, $5)
        on conflict (team_id, organization_id) do update set

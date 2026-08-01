@@ -6,7 +6,6 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint . --max-warnings=0",
-    "migrate": "tsx database-migrate.ts",
     "start": "next start",
     "start:e2e": "next start --port 3100",
     "test": "vitest run --config vitest.config.ts",
@@ -48,7 +47,6 @@
     "eslint": "catalog:",
     "tailwindcss": "^4",
     "typescript": "catalog:",
-    "tsx": "catalog:",
     "vitest": "catalog:"
   }
 }

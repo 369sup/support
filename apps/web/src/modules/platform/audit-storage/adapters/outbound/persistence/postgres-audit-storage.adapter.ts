@@ -1,7 +1,6 @@
 import "server-only";
 
 import {
-  assertPostgresMigrationsApplied,
   type SqlRow,
   type TransactionalSqlExecutor,
 } from "@support/database/postgres";
@@ -13,7 +12,6 @@ import type {
   AuditStorageRecord,
   RetentionExecution,
 } from "../../../domain/audit-storage-record";
-import { postgresAuditStorageMigrations } from "./postgres-audit-storage.migrations";
 
 const metadataValueSchema = z.union([
   z.string(),
@@ -60,22 +58,16 @@ export class PostgresAuditStorageAdapter
   implements AuditStorageRepositoryPort
 {
   private readonly database: TransactionalSqlExecutor;
-  private readonly ready: Promise<void>;
 
   constructor(database: TransactionalSqlExecutor) {
     this.database = database;
-    this.ready = assertPostgresMigrationsApplied(
-      database,
-      postgresAuditStorageMigrations,
-    );
   }
 
   async findExport(exportId: string): Promise<AuditExportJob | null> {
-    await this.ready;
     const result = await this.database.query<AuditExportRow>(
       `
         select export_record
-        from support_audit_exports
+        from support_platform_audit_storage.support_audit_exports
         where export_id = $1
       `,
       [exportId],
@@ -87,11 +79,10 @@ export class PostgresAuditStorageAdapter
   }
 
   async findRecord(recordId: string): Promise<AuditStorageRecord | null> {
-    await this.ready;
     const result = await this.database.query<AuditRecordRow>(
       `
         select record
-        from support_audit_records
+        from support_platform_audit_storage.support_audit_records
         where record_id = $1
       `,
       [recordId],
@@ -105,11 +96,10 @@ export class PostgresAuditStorageAdapter
   async findRetentionExecution(
     executionId: string,
   ): Promise<RetentionExecution | null> {
-    await this.ready;
     const result = await this.database.query<RetentionExecutionRow>(
       `
         select execution_record
-        from support_audit_retention_executions
+        from support_platform_audit_storage.support_audit_retention_executions
         where execution_id = $1
       `,
       [executionId],
@@ -121,20 +111,18 @@ export class PostgresAuditStorageAdapter
   }
 
   async listRecords(): Promise<readonly AuditStorageRecord[]> {
-    await this.ready;
     const result = await this.database.query<AuditRecordRow>(`
       select record
-      from support_audit_records
+      from support_platform_audit_storage.support_audit_records
       order by occurred_at, record_id
     `);
     return result.rows.map((row) => auditRecordSchema.parse(row.record));
   }
 
   async removeRecordsBefore(cutoff: string): Promise<number> {
-    await this.ready;
     const result = await this.database.query(
       `
-        delete from support_audit_records
+        delete from support_platform_audit_storage.support_audit_records
         where occurred_at < $1
       `,
       [cutoff],
@@ -143,10 +131,9 @@ export class PostgresAuditStorageAdapter
   }
 
   async saveExport(job: AuditExportJob): Promise<void> {
-    await this.ready;
     await this.database.query(
       `
-        insert into support_audit_exports (
+        insert into support_platform_audit_storage.support_audit_exports (
           export_id, completed_at, export_record, version
         ) values ($1, $2, $3::jsonb, $4)
         on conflict (export_id) do nothing
@@ -161,10 +148,9 @@ export class PostgresAuditStorageAdapter
   }
 
   async saveRecord(record: AuditStorageRecord): Promise<void> {
-    await this.ready;
     await this.database.query(
       `
-        insert into support_audit_records (
+        insert into support_platform_audit_storage.support_audit_records (
           record_id, scope_kind, scope_id, actor_id, target_id,
           occurred_at, record, version
         ) values ($1, $2, $3, $4, $5, $6, $7::jsonb, $8)
@@ -186,10 +172,9 @@ export class PostgresAuditStorageAdapter
   async saveRetentionExecution(
     execution: RetentionExecution,
   ): Promise<void> {
-    await this.ready;
     await this.database.query(
       `
-        insert into support_audit_retention_executions (
+        insert into support_platform_audit_storage.support_audit_retention_executions (
           execution_id, cutoff, execution_record, version
         ) values ($1, $2, $3::jsonb, $4)
         on conflict (execution_id) do nothing

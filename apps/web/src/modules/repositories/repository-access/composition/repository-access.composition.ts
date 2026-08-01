@@ -8,8 +8,6 @@ import { OrganizationMembershipAdapter } from "../adapters/outbound/integration/
 import { OrganizationPolicyAdapter } from "../adapters/outbound/integration/organization-policy.adapter";
 import { OrganizationRoleAdapter } from "../adapters/outbound/integration/organization-role.adapter";
 import { OrganizationTeamAdapter } from "../adapters/outbound/integration/organization-team.adapter";
-import { InMemoryRepositoryGrantAdapter } from "../adapters/outbound/persistence/in-memory-repository-grant.adapter";
-import { InMemoryTeamRepositoryGrantIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-team-repository-grant-id-generator.adapter";
 import { NodeTeamRepositoryGrantIdGeneratorAdapter } from "../adapters/outbound/persistence/node-team-repository-grant-id-generator.adapter";
 import { PostgresRepositoryGrantAdapter } from "../adapters/outbound/persistence/postgres-repository-grant.adapter";
 import { ChangeTeamRepositoryAccessHandler } from "../application/commands/change-team-repository-access.handler";
@@ -97,10 +95,7 @@ function mapRepository(repository: RepositoryAccessTarget) {
 
 function composeRepositoryAccessServerFacade(): RepositoryAccessServerFacade {
   const database = getProductionDatabase();
-  const grantAdapter =
-    database === null
-      ? new InMemoryRepositoryGrantAdapter()
-      : new PostgresRepositoryGrantAdapter(database);
+  const grantAdapter = new PostgresRepositoryGrantAdapter(database);
   const eventRecorder = createContextEventSource(
     "repositories/repository-access",
   );
@@ -118,9 +113,7 @@ function composeRepositoryAccessServerFacade(): RepositoryAccessServerFacade {
     grantAdapter,
     teamAdapter,
     resolver,
-    database === null
-      ? new InMemoryTeamRepositoryGrantIdGeneratorAdapter()
-      : new NodeTeamRepositoryGrantIdGeneratorAdapter(),
+    new NodeTeamRepositoryGrantIdGeneratorAdapter(),
     eventRecorder,
   );
   const grant = new GrantTeamRepositoryAccessHandler(teamAccessService);

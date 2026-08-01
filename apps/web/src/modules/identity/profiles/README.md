@@ -3,8 +3,8 @@
 ## Purpose
 
 Own user-controlled personal profile presentation. The active slice reads a
-profile and lets its owning account update public profile fields without
-claiming durable persistence.
+profile and lets its owning account update public profile fields through the
+production PostgreSQL runtime.
 
 ## Context content tree
 
@@ -60,7 +60,7 @@ claiming durable persistence.
 - **Success result:** `updated` with the stored `UserProfile`.
 - **Expected rejections:** `forbidden`, `invalid-profile`, `profile-not-found`
 - **Authorization:** Owner-only policy in the application handler.
-- **Transaction:** One process-local profile record replacement.
+- **Transaction:** One durable profile record replacement.
 - **Idempotency:** Replacing a profile with identical normalized values is idempotent.
 - **Dependencies:** `none`
 - **Published events:** `none`
@@ -104,9 +104,9 @@ performed by the inbound delivery boundary before invoking the command.
 
 ## Persistence and transactions
 
-The active adapter is a context-local process store initialized with
-development fixtures. A single update replaces one record atomically within
-that process. It is not durable or cross-instance consistent.
+The production adapter stores one profile per account in PostgreSQL. Existing
+personal human accounts receive an additive default profile during migration;
+fixtures remain test-only and are never imported into production data.
 
 ## Data classification
 
@@ -116,14 +116,15 @@ email, credential, token, private contact data, or inaccessible event link.
 
 ## Retention and erasure
 
-Fixtures live for the process lifetime. Durable retention, export, and erasure
-remain blocked on the account lifecycle and persistence design.
+Profiles cascade with account erasure. Export behavior remains blocked on the
+account-lifecycle design.
 
 ## Events and failure behavior
 
-Catalog profile events remain planned because this process-local slice has no
-transactional event publisher. Expected validation, authorization, and absence
-results are discriminated values; unexpected adapter failures propagate.
+Catalog profile events remain planned until the profile command and event
+publisher share an explicit transaction boundary. Expected validation,
+authorization, and absence results are discriminated values; unexpected
+adapter failures propagate.
 
 ## Official sources
 

@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Handles DELETE requests for `/api/organizations/{login}/roles/assignments/{assignmentId}` through `getOptionalCurrentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`, `revokeOrganizationRole`, `getOrganizationByLogin`.
+Handles DELETE requests for `/api/organizations/{login}/roles/assignments/{assignmentId}` through `getOptionalCurrentSession`, `hasSameOrigin`, `revokeOrganizationRole`, `getOrganizationByLogin`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -24,7 +24,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 ## Module contracts
 
 - - **owner:** `organizations/organization-roles` — use cases: `revoke-organization-role`; functions: `revokeOrganizationRole`
-- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`, `hasSameOrigin`
 - - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.

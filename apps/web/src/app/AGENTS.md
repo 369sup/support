@@ -7,6 +7,12 @@ general source directory.
 
 - Use only supported App Router or metadata file conventions plus local
   `AGENTS.md`/`README.md` documentation.
+- Next.js requires default component/function exports from its documented
+  `page`, `layout`, `template`, `default`, loading/error, not-found, and metadata
+  convention files. This exception is limited to those framework entrypoints;
+  it does not publish a renameable application API. Named-only exports are not
+  discovered by the router. Keep the shared ESLint filename allowlist narrow and
+  verify it with route-contract tests and the production build.
 - Route files bind params, search params, cookies, headers, forms, and transport
   results to module public entrypoints. Business rules, persistence, provider
   calls, and reusable product UI remain in the owning context.

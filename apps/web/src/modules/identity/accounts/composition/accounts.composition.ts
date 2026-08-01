@@ -1,4 +1,9 @@
-import { getProductionDatabase } from "../../../../../production-runtime";
+import { createSupabaseAuthAdminGateway } from "@support/supabase/auth/admin";
+
+import {
+  getProductionDatabase,
+  getProductionSupabaseConfiguration,
+} from "../../../../../production-runtime";
 import {
   createGetAccountCandidateByUsernameAdapter,
   type GetAccountCandidateByUsernameAdapter,
@@ -7,8 +12,9 @@ import {
   createGetPersonalAccountByUsernameAdapter,
   type GetPersonalAccountByUsernameAdapter,
 } from "../adapters/inbound/server/get-personal-account-by-username.adapter";
-import { InMemoryAccountQueryAdapter } from "../adapters/outbound/persistence/in-memory-account-query.adapter";
 import { PostgresAccountAdapter } from "../adapters/outbound/persistence/postgres-account.adapter";
+import { PostgresAccountDeletionPrerequisiteAdapter } from "../adapters/outbound/persistence/postgres-account-deletion-prerequisite.adapter";
+import { SupabaseAuthenticationAdminAdapter } from "../adapters/outbound/integration/supabase-authentication-admin.adapter";
 import {
   createGetAccountReferenceByIdAdapter,
   type GetAccountReferenceByIdAdapter,
@@ -31,28 +37,37 @@ export interface AccountsServerFacade {
 
 function composeAccountsServerFacade(): AccountsServerFacade {
   const database = getProductionDatabase();
-  const accountQueryRepository =
-    database === null
-      ? new InMemoryAccountQueryAdapter()
-      : new PostgresAccountAdapter(database);
+  const accountQueryRepository = new PostgresAccountAdapter(database);
   const getAccountCandidateByUsernameHandler =
     new GetAccountCandidateByUsernameHandler(accountQueryRepository);
   const getAccountReferenceByIdHandler =
     new GetAccountReferenceByIdHandler(accountQueryRepository);
   const getPersonalAccountByUsernameHandler =
     new GetPersonalAccountByUsernameHandler(accountQueryRepository);
-  const deletePersonalAccountHandler =
-    new DeletePersonalAccountHandler(accountQueryRepository);
+  let deletePersonalAccountHandler: DeletePersonalAccountHandler | undefined;
+  const resolveDeletePersonalAccountHandler =
+    (): DeletePersonalAccountHandler => {
+      const supabase = getProductionSupabaseConfiguration();
+      deletePersonalAccountHandler ??= new DeletePersonalAccountHandler(
+        accountQueryRepository,
+        new PostgresAccountDeletionPrerequisiteAdapter(database),
+        new SupabaseAuthenticationAdminAdapter(
+          createSupabaseAuthAdminGateway({
+            secretKey: supabase.secretKey,
+            url: supabase.url,
+          }),
+        ),
+      );
+      return deletePersonalAccountHandler;
+    };
   const applyIdentityTransaction =
     new ApplyAccountIdentityTransactionHandler(accountQueryRepository);
 
   return {
     applyAccountIdentityTransaction: (command) =>
       applyIdentityTransaction.applyAccountIdentityTransaction(command),
-    deletePersonalAccount:
-      deletePersonalAccountHandler.deletePersonalAccount.bind(
-        deletePersonalAccountHandler,
-      ),
+    deletePersonalAccount: (command) =>
+      resolveDeletePersonalAccountHandler().deletePersonalAccount(command),
     getAccountCandidateByUsername:
       createGetAccountCandidateByUsernameAdapter(
         getAccountCandidateByUsernameHandler,

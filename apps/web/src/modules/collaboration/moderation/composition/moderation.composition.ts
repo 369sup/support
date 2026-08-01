@@ -1,4 +1,5 @@
-import { InMemoryContentReportAdapter } from "../adapters/outbound/persistence/in-memory-content-report.adapter";
+import { getProductionDatabase } from "../../../../../production-runtime";
+import { PostgresContentReportAdapter } from "../adapters/outbound/persistence/postgres-content-report.adapter";
 import { ReportContentHandler } from "../application/commands/report-content.handler";
 import type { ReportContentUseCase } from "../application/ports/inbound/report-content.use-case";
 
@@ -8,7 +9,7 @@ export type ModerationServerFacade = Readonly<{
 
 function composeModerationServerFacade(): ModerationServerFacade {
   const reportContent = new ReportContentHandler(
-    new InMemoryContentReportAdapter(),
+    new PostgresContentReportAdapter(getProductionDatabase()),
   );
   return {
     reportContent: reportContent.reportContent.bind(reportContent),

@@ -7,7 +7,17 @@ import { typescriptClarityPlugin } from "@support/tooling/eslint-rules/typescrip
 
 export function createTypeScriptLibraryConfig({ tsconfigRootDir }) {
   const typedFiles = ["**/*.{ts,tsx,mts,cts}"];
-  const sourceFiles = ["src/**/*.{js,mjs,cjs,ts,tsx,mts,cts}"];
+  const moduleFiles = ["**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}"];
+  /*
+   * Loader exception: ESLint and the named framework/test tools consume a
+   * default configuration export. Scope is limited to these config filenames;
+   * application and library modules remain protected. Named exports are not a
+   * portable loader contract, and lint plus tool startup/build checks contain
+   * the operational and maintenance impact.
+   */
+  const loaderConfigFiles = [
+    "**/{eslint,next,playwright,postcss,vitest}.config.{js,mjs,cjs,ts,mts,cts}",
+  ];
   const explicitBoundaryFiles = [
     "src/modules/**/{server-api,server-actions,integration-contracts}.{ts,tsx,mts,cts}",
     "src/modules/**/*.use-case.{ts,tsx,mts,cts}",
@@ -175,7 +185,7 @@ export function createTypeScriptLibraryConfig({ tsconfigRootDir }) {
       },
     },
     {
-      files: sourceFiles,
+      files: moduleFiles,
       plugins: {
         architecture: architectureBoundariesPlugin,
         clarity: typescriptClarityPlugin,
@@ -241,6 +251,12 @@ export function createTypeScriptLibraryConfig({ tsconfigRootDir }) {
             message: "Use standard ESM named exports instead of module.exports.",
           },
         ],
+      },
+    },
+    {
+      files: loaderConfigFiles,
+      rules: {
+        "clarity/no-default-export": "off",
       },
     },
     globalIgnores(["build/**", "coverage/**", "dist/**"]),

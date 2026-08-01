@@ -69,7 +69,7 @@ async function upsertMembership(
   membership: OrganizationMembershipQuerySnapshot,
 ): Promise<void> {
   await database.query(
-    `insert into support_organization_memberships (
+    `insert into support_organizations_organization_memberships.support_organization_memberships (
        membership_id, organization_id, account_id, role, state, source
      ) values ($1, $2, $3, $4, $5, $6)
      on conflict (organization_id, account_id) do update set
@@ -92,29 +92,14 @@ export class PostgresOrganizationMembershipAdapter
   implements OrganizationMembershipQueryRepositoryPort
 {
   private readonly database: TransactionalSqlExecutor;
-  private readonly isSchemaReady: Promise<void>;
 
   constructor(database: TransactionalSqlExecutor) {
     this.database = database;
-    this.isSchemaReady = this.assertSchema();
-  }
-
-  private async assertSchema(): Promise<void> {
-    const result = await this.database.query<{ isReady: boolean }>(
-      `select exists (
-         select 1 from support_schema_migrations
-         where migration_id = 'zz030_organizations_organization_memberships'
-       ) as "isReady"`,
-    );
-    if (result.rows[0]?.isReady !== true) {
-      throw new Error("Organization membership schema is unavailable.");
-    }
   }
 
   private async memberships(where: string, values: readonly string[]) {
-    await this.isSchemaReady;
     const result = await this.database.query<MembershipRow>(
-      `select ${membershipColumns} from support_organization_memberships ${where}`,
+      `select ${membershipColumns} from support_organizations_organization_memberships.support_organization_memberships ${where}`,
       values,
     );
     return result.rows.map(mapMembership);
@@ -149,10 +134,9 @@ export class PostgresOrganizationMembershipAdapter
   }
 
   async countActiveOwnersByOrganization(organizationId: string) {
-    await this.isSchemaReady;
     const result = await this.database.query<{ owner_count: string | number }>(
       `select count(*) as owner_count
-         from support_organization_memberships
+         from support_organizations_organization_memberships.support_organization_memberships
         where organization_id = $1 and role = 'owner' and state = 'active'`,
       [organizationId],
     );
@@ -160,14 +144,12 @@ export class PostgresOrganizationMembershipAdapter
   }
 
   async saveMembership(membership: OrganizationMembershipQuerySnapshot) {
-    await this.isSchemaReady;
     await upsertMembership(this.database, membership);
   }
 
   private async invitations(where: string, values: readonly string[]) {
-    await this.isSchemaReady;
     const result = await this.database.query<InvitationRow>(
-      `select ${invitationColumns} from support_organization_invitations ${where}`,
+      `select ${invitationColumns} from support_organizations_organization_memberships.support_organization_invitations ${where}`,
       values,
     );
     return result.rows.map(mapInvitation);
@@ -208,11 +190,10 @@ export class PostgresOrganizationMembershipAdapter
     invitation: OrganizationInvitationSnapshot,
     membership: OrganizationMembershipQuerySnapshot,
   ) {
-    await this.isSchemaReady;
     await this.database.transaction(async (connection) => {
       await upsertMembership(connection, membership);
       await connection.query(
-        `insert into support_organization_invitations (
+        `insert into support_organizations_organization_memberships.support_organization_invitations (
            invitation_id, membership_id, organization_id, account_id,
            inviter_account_id, role, state, created_at, expires_at, decided_at
          ) values (
@@ -243,7 +224,6 @@ export class PostgresOrganizationMembershipAdapter
   async synchronizeEnterpriseTeamAssignment(
     synchronization: EnterpriseTeamOrganizationMembershipSynchronization,
   ) {
-    await this.isSchemaReady;
     return this.database.transaction(async (connection) => {
       await connection.query(
         "select pg_advisory_xact_lock(hashtext($1))",
@@ -258,7 +238,7 @@ export class PostgresOrganizationMembershipAdapter
       const desiredMembershipIds: string[] = [];
       for (const accountId of synchronization.accountIds) {
         const existing = await connection.query<MembershipRow>(
-          `select ${membershipColumns} from support_organization_memberships
+          `select ${membershipColumns} from support_organizations_organization_memberships.support_organization_memberships
             where organization_id = $1 and account_id = $2 for update`,
           [synchronization.organizationId, accountId],
         );
@@ -284,13 +264,13 @@ export class PostgresOrganizationMembershipAdapter
           });
         }
         await connection.query(
-          `insert into support_enterprise_team_membership_assignments (
+          `insert into support_organizations_organization_memberships.support_enterprise_team_membership_assignments (
              assignment_id, membership_id
            ) values ($1, $2) on conflict do nothing`,
           [synchronization.assignmentId, membershipId],
         );
         await connection.query(
-          `update support_organization_invitations
+          `update support_organizations_organization_memberships.support_organization_invitations
               set state = 'canceled', decided_at = $3::timestamptz
             where account_id = $1 and organization_id = $2 and state = 'pending'`,
           [
@@ -306,7 +286,7 @@ export class PostgresOrganizationMembershipAdapter
         (_, index) => `$${index + 2}`,
       );
       const removed = await connection.query<{ membership_id: string }>(
-        `delete from support_enterprise_team_membership_assignments
+        `delete from support_organizations_organization_memberships.support_enterprise_team_membership_assignments
           where assignment_id = $1
             ${
               desiredPlaceholders.length === 0
@@ -318,12 +298,12 @@ export class PostgresOrganizationMembershipAdapter
       );
       for (const row of removed.rows) {
         await connection.query(
-          `update support_organization_memberships m
+          `update support_organizations_organization_memberships.support_organization_memberships m
               set state = 'removed'
             where m.membership_id = $1
               and m.source = 'enterprise-managed'
               and not exists (
-                select 1 from support_enterprise_team_membership_assignments a
+                select 1 from support_organizations_organization_memberships.support_enterprise_team_membership_assignments a
                  where a.membership_id = m.membership_id
               )`,
           [row.membership_id],
@@ -334,7 +314,7 @@ export class PostgresOrganizationMembershipAdapter
         return [];
       }
       const result = await connection.query<MembershipRow>(
-        `select ${membershipColumns} from support_organization_memberships
+        `select ${membershipColumns} from support_organizations_organization_memberships.support_organization_memberships
           where membership_id in (${desiredMembershipIds
             .map((_, index) => `$${index + 1}`)
             .join(", ")})

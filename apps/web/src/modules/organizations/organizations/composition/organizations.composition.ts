@@ -1,4 +1,3 @@
-import { InMemoryOrganizationQueryAdapter } from "../adapters/outbound/persistence/in-memory-organization-query.adapter";
 import { NodeOrganizationIdGeneratorAdapter } from "../adapters/outbound/persistence/node-organization-id-generator.adapter";
 import { PostgresOrganizationQueryAdapter } from "../adapters/outbound/persistence/postgres-organization-query.adapter";
 import { CreateOrganizationHandler } from "../application/commands/create-organization.handler";
@@ -18,10 +17,7 @@ export interface OrganizationsServerFacade {
 
 function composeOrganizationsServerFacade(): OrganizationsServerFacade {
   const database = getProductionDatabase();
-  const repository =
-    database === null
-      ? new InMemoryOrganizationQueryAdapter()
-      : new PostgresOrganizationQueryAdapter(database);
+  const repository = new PostgresOrganizationQueryAdapter(database);
   const getByLogin = new GetOrganizationByLoginHandler(repository);
   const getById = new GetOrganizationReferenceByIdHandler(repository);
   const create = new CreateOrganizationHandler(

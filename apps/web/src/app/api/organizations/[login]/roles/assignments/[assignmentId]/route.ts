@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-import { isInMemoryRuntimeEnabled } from "@/modules/identity/authentication/server-api";
 import { hasSameOrigin } from "@/modules/identity/authentication/server-api";
 import { getOptionalCurrentSession } from "@/modules/identity/authentication/server-api";
 import { revokeOrganizationRole } from "@/modules/organizations/organization-roles/server-api";
@@ -28,9 +27,6 @@ export async function DELETE(
     params: Promise<{ login: string; assignmentId: string }>;
   },
 ): Promise<Response> {
-  if (!isInMemoryRuntimeEnabled()) {
-    return new NextResponse(null, { status: 404 });
-  }
   if (!hasSameOrigin(request)) {
     return NextResponse.json({ status: "invalid-origin" }, { status: 403 });
   }

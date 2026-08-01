@@ -1,139 +1,149 @@
-import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 
+import { describe, expect, it } from "vitest";
+import { z } from "zod";
+
+import { requiredProductionRuntimeEnvironmentNames } from "./production-runtime-configuration";
 import { resolveProductionRuntimeConfiguration } from "./production-runtime-configuration";
 
+const completeEnvironment = {
+  DATABASE_URL:
+    "postgres://support:secret@aws-0-us-east-1.pooler.supabase.com:6543/postgres",
+  SUPABASE_POSTGRES_CONNECTION_MODE: "transaction-pooler",
+  SUPABASE_PUBLISHABLE_KEY: "sb_publishable_example",
+  SUPABASE_SECRET_KEY: "sb_secret_example",
+  SUPABASE_STORAGE_BUCKET: "support-media",
+  SUPABASE_URL: "https://project.supabase.co",
+} as const;
+
+const deprecatedRuntimeSelectorNames = [
+  "DATABASE_PROVIDER",
+  "SUPPORT_RUNTIME_MODE",
+] as const;
+
+const turboConfigurationSchema = z.object({
+  tasks: z.record(
+    z.string(),
+    z.looseObject({
+      env: z.array(z.string()).optional(),
+    }),
+  ),
+});
+
+function readRepositoryFile(relativePath: string): string {
+  return readFileSync(new URL(relativePath, import.meta.url), "utf8");
+}
+
+function hasEnvironmentAssignment(contents: string, name: string): boolean {
+  return new RegExp(`^\\s*${name}(?:=|:)`, "mu").test(contents);
+}
+
 describe("production runtime configuration", () => {
-  it("defaults to the non-durable development runtime", () => {
-    expect(resolveProductionRuntimeConfiguration({})).toEqual({
-      mode: "memory",
-    });
+  it("fails closed when the Supabase runtime is incomplete", () => {
+    expect(() => resolveProductionRuntimeConfiguration({})).toThrow();
   });
 
-  it("requires a database URL for postgres mode", () => {
-    expect(() =>
-      resolveProductionRuntimeConfiguration({
-        SUPPORT_RUNTIME_MODE: "postgres",
-      }),
-    ).toThrow("DATABASE_URL is required");
+  it.each(requiredProductionRuntimeEnvironmentNames)(
+    "fails closed without required environment variable %s",
+    (missingName) => {
+      const incompleteEnvironment = Object.fromEntries(
+        Object.entries(completeEnvironment).filter(
+          ([name]) => name !== missingName,
+        ),
+      );
+      expect(() =>
+        resolveProductionRuntimeConfiguration(incompleteEnvironment),
+      ).toThrow();
+    },
+  );
+
+  it("keeps documented, cached, and CI runtime inputs aligned", () => {
+    const environmentExample = readRepositoryFile(".env.example");
+    const workflow = readRepositoryFile("../../.github/workflows/ci.yml");
+    const turbo = turboConfigurationSchema.parse(
+      JSON.parse(readRepositoryFile("../../turbo.json")),
+    );
+    const buildEnvironment = turbo.tasks["@support/web#build"]?.env ?? [];
+    const endToEndEnvironment = turbo.tasks["test:e2e"]?.env ?? [];
+
+    for (const name of requiredProductionRuntimeEnvironmentNames) {
+      expect(hasEnvironmentAssignment(environmentExample, name)).toBe(true);
+      expect(buildEnvironment).toContain(name);
+      expect(endToEndEnvironment).toContain(name);
+      expect(hasEnvironmentAssignment(workflow, name)).toBe(true);
+    }
+
+    for (const name of deprecatedRuntimeSelectorNames) {
+      expect(buildEnvironment).not.toContain(name);
+      expect(endToEndEnvironment).not.toContain(name);
+      expect(hasEnvironmentAssignment(workflow, name)).toBe(false);
+    }
   });
 
-  it("normalizes a complete postgres configuration", () => {
+  it("normalizes the single Supabase production configuration", () => {
     expect(
       resolveProductionRuntimeConfiguration({
+        ...completeEnvironment,
         DATABASE_CONNECTION_TIMEOUT_MS: "2500",
         DATABASE_IDLE_TIMEOUT_MS: "9000",
         DATABASE_POOL_MAX: "12",
         DATABASE_SSL_MODE: "require",
         DATABASE_STATEMENT_TIMEOUT_MS: "15000",
-        DATABASE_URL: " postgres://support:secret@db/support ",
-        SUPPORT_RUNTIME_MODE: "postgres",
       }),
     ).toEqual({
-      mode: "postgres",
-      provider: "postgres",
-      postgres: {
+      provider: "supabase",
+      supabase: {
         applicationName: "support-web",
+        connectionMode: "transaction-pooler",
         connectionTimeoutMs: 2500,
-        databaseUrl: "postgres://support:secret@db/support",
+        databaseUrl: completeEnvironment.DATABASE_URL,
         idleTimeoutMs: 9000,
         poolMax: 12,
+        publishableKey: "sb_publishable_example",
+        secretKey: "sb_secret_example",
         sslMode: "require",
         statementTimeoutMs: 15000,
+        storageBucket: "support-media",
+        url: "https://project.supabase.co",
       },
     });
   });
 
-  it.each([
-    [
-      "session-pooler",
-      "postgres://support:secret@aws-0-us-east-1.pooler.supabase.com:5432/postgres",
-    ],
-    [
-      "transaction-pooler",
-      "postgres://support:secret@aws-0-us-east-1.pooler.supabase.com:6543/postgres",
-    ],
-  ] as const)(
-    "normalizes a Supabase %s configuration",
-    (connectionMode, databaseUrl) => {
-      expect(
-        resolveProductionRuntimeConfiguration({
-          DATABASE_PROVIDER: "supabase",
-          DATABASE_URL: databaseUrl,
-          SUPABASE_POSTGRES_CONNECTION_MODE: connectionMode,
-          SUPPORT_RUNTIME_MODE: "postgres",
-        }),
-      ).toEqual({
-        mode: "postgres",
-        provider: "supabase",
-        supabase: {
-          applicationName: "support-web",
-          connectionMode,
-          connectionTimeoutMs: 5000,
-          databaseUrl,
-          idleTimeoutMs: 10_000,
-          poolMax: 10,
-          sslMode: "verify-full",
-          statementTimeoutMs: 30_000,
-        },
-      });
-    },
-  );
-
-  it("requires an explicit Supabase connection mode", () => {
+  it("rejects a publishable key in the server secret slot", () => {
     expect(() =>
       resolveProductionRuntimeConfiguration({
-        DATABASE_PROVIDER: "supabase",
-        DATABASE_URL:
-          "postgres://support:secret@aws-0-us-east-1.pooler.supabase.com:5432/postgres",
-        SUPPORT_RUNTIME_MODE: "postgres",
+        ...completeEnvironment,
+        SUPABASE_SECRET_KEY: "sb_publishable_wrong",
       }),
-    ).toThrow("SUPABASE_POSTGRES_CONNECTION_MODE is required");
+    ).toThrow("secret key");
   });
 
-  it("rejects disabled TLS for Supabase", () => {
+  it("rejects disabled TLS", () => {
     expect(() =>
       resolveProductionRuntimeConfiguration({
-        DATABASE_PROVIDER: "supabase",
+        ...completeEnvironment,
         DATABASE_SSL_MODE: "disable",
-        DATABASE_URL:
-          "postgres://support:secret@aws-0-us-east-1.pooler.supabase.com:5432/postgres",
-        SUPABASE_POSTGRES_CONNECTION_MODE: "session-pooler",
-        SUPPORT_RUNTIME_MODE: "postgres",
       }),
-    ).toThrow("Supabase PostgreSQL connections require TLS");
+    ).toThrow();
   });
 
-  it("rejects a Supabase pooler URL on the wrong port", () => {
+  it("rejects a pooler URL on the wrong port without leaking credentials", () => {
+    const databaseUrl =
+      "postgres://support:do-not-leak@aws-0-us-east-1.pooler.supabase.com:5432/postgres";
     expect(() =>
       resolveProductionRuntimeConfiguration({
-        DATABASE_PROVIDER: "supabase",
-        DATABASE_URL:
-          "postgres://support:do-not-leak@aws-0-us-east-1.pooler.supabase.com:5432/postgres",
-        SUPABASE_POSTGRES_CONNECTION_MODE: "transaction-pooler",
-        SUPPORT_RUNTIME_MODE: "postgres",
+        ...completeEnvironment,
+        DATABASE_URL: databaseUrl,
       }),
     ).toThrow("port 6543");
 
     try {
       resolveProductionRuntimeConfiguration({
-        DATABASE_PROVIDER: "supabase",
-        DATABASE_URL:
-          "postgres://support:do-not-leak@aws-0-us-east-1.pooler.supabase.com:5432/postgres",
-        SUPABASE_POSTGRES_CONNECTION_MODE: "transaction-pooler",
-        SUPPORT_RUNTIME_MODE: "postgres",
+        ...completeEnvironment,
+        DATABASE_URL: databaseUrl,
       });
     } catch (error) {
       expect(String(error)).not.toContain("do-not-leak");
     }
-  });
-
-  it("rejects invalid pool and timeout values", () => {
-    expect(() =>
-      resolveProductionRuntimeConfiguration({
-        DATABASE_POOL_MAX: "0",
-        DATABASE_URL: "postgres://db/support",
-        SUPPORT_RUNTIME_MODE: "postgres",
-      }),
-    ).toThrow();
   });
 });

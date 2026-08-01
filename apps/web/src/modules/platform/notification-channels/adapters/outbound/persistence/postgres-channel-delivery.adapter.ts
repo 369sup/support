@@ -1,7 +1,6 @@
 import "server-only";
 
 import {
-  assertPostgresMigrationsApplied,
   type SqlRow,
   type TransactionalSqlExecutor,
 } from "@support/database/postgres";
@@ -11,7 +10,6 @@ import type {
   ChannelDelivery,
   ChannelDeliveryState,
 } from "../../../domain/channel-delivery";
-import { postgresChannelDeliveryMigrations } from "./postgres-channel-delivery.migrations";
 
 type ChannelDeliveryRow = SqlRow & {
   attempt_count: number;
@@ -58,24 +56,18 @@ export class PostgresChannelDeliveryAdapter
   implements ChannelDeliveryRepositoryPort
 {
   private readonly database: TransactionalSqlExecutor;
-  private readonly ready: Promise<void>;
 
   constructor(database: TransactionalSqlExecutor) {
     this.database = database;
-    this.ready = assertPostgresMigrationsApplied(
-      database,
-      postgresChannelDeliveryMigrations,
-    );
   }
 
   async findById(
     deliveryId: string,
   ): Promise<ChannelDelivery | null> {
-    await this.ready;
     const result = await this.database.query<ChannelDeliveryRow>(
       `
         select ${returningColumns}
-        from support_channel_deliveries
+        from support_platform_notification_channels.support_channel_deliveries
         where delivery_id = $1
       `,
       [deliveryId],
@@ -87,11 +79,10 @@ export class PostgresChannelDeliveryAdapter
   async findByIdempotencyKey(
     idempotencyKey: string,
   ): Promise<ChannelDelivery | null> {
-    await this.ready;
     const result = await this.database.query<ChannelDeliveryRow>(
       `
         select ${returningColumns}
-        from support_channel_deliveries
+        from support_platform_notification_channels.support_channel_deliveries
         where idempotency_key = $1
       `,
       [idempotencyKey],
@@ -101,10 +92,9 @@ export class PostgresChannelDeliveryAdapter
   }
 
   async save(delivery: ChannelDelivery): Promise<void> {
-    await this.ready;
     await this.database.query(
       `
-        insert into support_channel_deliveries (
+        insert into support_platform_notification_channels.support_channel_deliveries (
           delivery_id, idempotency_key, channel, recipient, state,
           attempt_count, provider_reference, failure_code,
           created_at, updated_at

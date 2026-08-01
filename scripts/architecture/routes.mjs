@@ -135,14 +135,19 @@ export function discoverAppRoutes(repositoryRoot) {
 
 function parameterSchemaFromPattern(pattern) {
   return [...pattern.matchAll(/\{(\?\*)?(\*)?([A-Za-z][A-Za-z0-9]*)\}/g)].map(
-    (match) => ({
-      name: match[3],
-      kind: match[1] !== undefined
-        ? "optional-catch-all"
-        : match[2] !== undefined
-          ? "catch-all"
-          : "scalar",
-    }),
+    (match) => {
+      let kind = "scalar";
+      if (match[1] !== undefined) {
+        kind = "optional-catch-all";
+      } else if (match[2] !== undefined) {
+        kind = "catch-all";
+      }
+
+      return {
+        name: match[3],
+        kind,
+      };
+    },
   );
 }
 
@@ -302,12 +307,15 @@ function renderTypeProperties(parameters, valueType) {
 
   const properties = parameters.map((parameter) => {
     const optional = parameter.required === false ? "?" : "";
-    const type = parameter.repeatable === true
-      ? `readonly ${valueType}[]`
-      : parameter.kind === "catch-all" ||
-          parameter.kind === "optional-catch-all"
-        ? `readonly ${valueType}[]`
-        : valueType;
+    let type = valueType;
+    if (
+      parameter.repeatable === true ||
+      parameter.kind === "catch-all" ||
+      parameter.kind === "optional-catch-all"
+    ) {
+      type = `readonly ${valueType}[]`;
+    }
+
     return `readonly ${JSON.stringify(parameter.name)}${optional}: ${type};`;
   });
 

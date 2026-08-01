@@ -1,7 +1,6 @@
 import "server-only";
 
 import {
-  assertPostgresMigrationsApplied,
   type SqlRow,
   type TransactionalSqlExecutor,
 } from "@support/database/postgres";
@@ -16,7 +15,6 @@ import type {
 } from "../../../contracts/domain-event-envelope";
 import type { EventRecorderPort } from "../../../contracts/event-recorder";
 import type { PublicationEventEnvelope } from "../../../domain/publication-record";
-import { postgresEventPublicationMigrations } from "./postgres-event-publication.migrations";
 
 const leaseDurationMilliseconds = 60_000;
 
@@ -46,7 +44,6 @@ export class PostgresContextOutboxAdapter
   private readonly database: TransactionalSqlExecutor;
   private readonly idGenerator: PublicationIdGeneratorPort;
   private readonly clock: PublicationClockPort;
-  private readonly ready: Promise<void>;
 
   constructor(
     sourceId: string,
@@ -58,16 +55,11 @@ export class PostgresContextOutboxAdapter
     this.database = database;
     this.idGenerator = idGenerator;
     this.clock = clock;
-    this.ready = assertPostgresMigrationsApplied(
-      database,
-      postgresEventPublicationMigrations,
-    );
   }
 
   async record<Payload>(
     input: RecordDomainEventInput<Payload>,
   ): Promise<DomainEventEnvelope<Payload>> {
-    await this.ready;
     const envelope: DomainEventEnvelope<Payload> = {
       ...input,
       eventId: this.idGenerator.nextEventId(),
@@ -76,7 +68,7 @@ export class PostgresContextOutboxAdapter
     };
     await this.database.query(
       `
-        insert into support_event_outbox (
+        insert into support_platform_event_publication.support_event_outbox (
           event_id, source_id, occurred_at, envelope, state, version
         ) values ($1, $2, $3, $4::jsonb, 'pending', 1)
       `,
@@ -91,9 +83,8 @@ export class PostgresContextOutboxAdapter
   }
 
   async acknowledge(eventId: string): Promise<void> {
-    await this.ready;
     await this.database.query(
-      "delete from support_event_outbox where event_id = $1 and source_id = $2",
+      "delete from support_platform_event_publication.support_event_outbox where event_id = $1 and source_id = $2",
       [eventId, this.sourceId],
     );
   }
@@ -102,7 +93,6 @@ export class PostgresContextOutboxAdapter
     claimedAt: string;
     limit: number;
   }): Promise<readonly PublicationEventEnvelope[]> {
-    await this.ready;
     const leaseUntil = new Date(
       Date.parse(input.claimedAt) + leaseDurationMilliseconds,
     ).toISOString();
@@ -111,7 +101,7 @@ export class PostgresContextOutboxAdapter
         `
           with candidates as (
             select event_id
-            from support_event_outbox
+            from support_platform_event_publication.support_event_outbox
             where source_id = $1
               and (
                 state = 'pending'
@@ -121,7 +111,7 @@ export class PostgresContextOutboxAdapter
             limit $3
             for update skip locked
           )
-          update support_event_outbox as outbox
+          update support_platform_event_publication.support_event_outbox as outbox
           set state = 'leased',
               lease_until = $4,
               version = outbox.version + 1
@@ -136,10 +126,9 @@ export class PostgresContextOutboxAdapter
   }
 
   async deadLetter(eventId: string): Promise<void> {
-    await this.ready;
     await this.database.query(
       `
-        update support_event_outbox
+        update support_platform_event_publication.support_event_outbox
         set state = 'dead-lettered',
             lease_until = null,
             version = version + 1
@@ -150,11 +139,10 @@ export class PostgresContextOutboxAdapter
   }
 
   async getOldestPendingOccurredAt(): Promise<string | null> {
-    await this.ready;
     const result = await this.database.query<OldestRow>(
       `
         select min(occurred_at)::text as occurred_at
-        from support_event_outbox
+        from support_platform_event_publication.support_event_outbox
         where source_id = $1 and state = 'pending'
       `,
       [this.sourceId],
@@ -163,10 +151,9 @@ export class PostgresContextOutboxAdapter
   }
 
   async release(eventId: string): Promise<void> {
-    await this.ready;
     await this.database.query(
       `
-        update support_event_outbox
+        update support_platform_event_publication.support_event_outbox
         set state = 'pending',
             lease_until = null,
             version = version + 1

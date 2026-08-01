@@ -24,7 +24,7 @@ export class PostgresEnterpriseRoleAssignmentAdapter
   async findByAccountAndEnterprise(accountId: string, enterpriseId: string) {
     const result = await this.database.query<EnterpriseRoleRow>(
       `select assignment_id, enterprise_id, account_id, role_name, permissions
-         from support_enterprise_role_assignments
+         from support_enterprises_enterprise_roles.support_enterprise_role_assignments
         where account_id = $1 and enterprise_id = $2
         order by role_name`,
       [accountId, enterpriseId],

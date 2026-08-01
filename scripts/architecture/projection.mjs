@@ -179,13 +179,19 @@ export function renderContextReadme(context) {
   for (const concept of context.owns) {
     lines.push(`- \`${concept}\``);
   }
+  let ubiquitousLanguageGuidance =
+    "Precise definitions must be refined against the official sources before activation.";
+  if (context.implementationStatus === "active") {
+    ubiquitousLanguageGuidance =
+      "Implemented definitions and use-case terminology are refined in this README.";
+  } else if (context.semanticStatus === "not-applicable") {
+    ubiquitousLanguageGuidance =
+      "Precise definitions must be refined against technical contracts before activation.";
+  }
+
   lines.push(
     "",
-    context.implementationStatus === "active"
-      ? "Implemented definitions and use-case terminology are refined in this README."
-      : context.semanticStatus === "not-applicable"
-        ? "Precise definitions must be refined against technical contracts before activation."
-        : "Precise definitions must be refined against the official sources before activation.",
+    ubiquitousLanguageGuidance,
     "",
     "## Ownership and invariants",
     "",
@@ -409,21 +415,24 @@ export function renderModuleMap(catalog) {
             return `${event.name}@${event.version} (${event.kind}; ${event.implementationStatus}; ${contract})`;
           })
           .join(", ");
-    const semanticClaims = context.semanticClaims.length === 0
-      ? context.semanticStatus === "not-applicable"
+    let semanticClaims;
+    if (context.semanticClaims.length === 0) {
+      semanticClaims = context.semanticStatus === "not-applicable"
         ? "Not applicable to technical capabilities."
-        : "None while product semantics remain candidate."
-      : context.semanticClaims
-          .map((semanticClaim) => {
-            const ownership = semanticClaim.ownership.length === 0
-              ? "no ownership entries"
-              : `owns ${semanticClaim.ownership.join(", ")}`;
-            const claimedEvents = semanticClaim.events.length === 0
-              ? "no events"
-              : `events ${semanticClaim.events.join(", ")}`;
-            return `${semanticClaim.id} (${ownership}; ${claimedEvents}; sources ${semanticClaim.sourceIds.join(", ")})`;
-          })
-          .join("; ");
+        : "None while product semantics remain candidate.";
+    } else {
+      semanticClaims = context.semanticClaims
+        .map((semanticClaim) => {
+          const ownership = semanticClaim.ownership.length === 0
+            ? "no ownership entries"
+            : `owns ${semanticClaim.ownership.join(", ")}`;
+          const claimedEvents = semanticClaim.events.length === 0
+            ? "no events"
+            : `events ${semanticClaim.events.join(", ")}`;
+          return `${semanticClaim.id} (${ownership}; ${claimedEvents}; sources ${semanticClaim.sourceIds.join(", ")})`;
+        })
+        .join("; ");
+    }
 
     lines.push(
       `### [${contextPath}](../../apps/web/src/modules/${contextPath}/README.md)`,
@@ -448,4 +457,3 @@ export function renderModuleMap(catalog) {
 
   return lines.join("\n");
 }
-

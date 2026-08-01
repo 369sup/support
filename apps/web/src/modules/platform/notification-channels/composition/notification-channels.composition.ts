@@ -2,7 +2,6 @@ import "server-only";
 
 import { getProductionDatabase } from "../../../../../production-runtime";
 import { NodeChannelRuntimeAdapter } from "../adapters/outbound/node-channel-runtime.adapter";
-import { InMemoryChannelDeliveryAdapter } from "../adapters/outbound/persistence/in-memory-channel-delivery.adapter";
 import { PostgresChannelDeliveryAdapter } from "../adapters/outbound/persistence/postgres-channel-delivery.adapter";
 import { SmtpEmailDeliveryAdapter } from "../adapters/outbound/smtp-email-delivery.adapter";
 import { UnavailableEmailDeliveryAdapter } from "../adapters/outbound/unavailable-email-delivery.adapter";
@@ -25,10 +24,7 @@ function readSmtpPort(): number {
 }
 
 const database = getProductionDatabase();
-const repository =
-  database === null
-    ? new InMemoryChannelDeliveryAdapter()
-    : new PostgresChannelDeliveryAdapter(database);
+const repository = new PostgresChannelDeliveryAdapter(database);
 const smtpHost = optionalNonEmpty(process.env["SMTP_HOST"]);
 const smtpFromAddress = optionalNonEmpty(
   process.env["SMTP_FROM_ADDRESS"],

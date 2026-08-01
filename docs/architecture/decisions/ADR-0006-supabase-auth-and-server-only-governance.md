@@ -1,9 +1,9 @@
 # ADR-0006: Use Supabase Auth with server-only governance data
 
-- **Status:** Accepted
+- **Status:** Superseded
 - **Decision date:** 2026-07-28
 - **Supersedes:** ADR-0005
-- **Superseded by:** none
+- **Superseded by:** ADR-0007
 
 ## Context
 

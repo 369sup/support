@@ -1,7 +1,9 @@
 import type { AccountReference } from "@/modules/identity/accounts/integration-contracts";
 
 export type AuthenticatedSessionReference = Readonly<{
+  aal: "aal1" | "aal2" | null;
   sessionId: string;
+  supabaseUserId: string;
   account: AccountReference;
   status: "active" | "expired" | "revoked";
   authenticatedAt: string;

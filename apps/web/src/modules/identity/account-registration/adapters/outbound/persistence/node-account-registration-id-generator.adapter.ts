@@ -8,10 +8,10 @@ export class NodeAccountRegistrationIdGeneratorAdapter
   implements AccountRegistrationIdGeneratorPort
 {
   nextAccountId(): string {
-    return `account_${randomUUID()}`;
+    return randomUUID();
   }
 
   nextTransactionId(): string {
-    return `account_identity_transaction_${randomUUID()}`;
+    return randomUUID();
   }
 }

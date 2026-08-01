@@ -6,7 +6,7 @@ import type { MediaIdGeneratorPort } from "../../application/ports/outbound/medi
 
 export class SystemMediaIdGeneratorAdapter implements MediaIdGeneratorPort {
   nextMediaId() {
-    return `media_${randomUUID()}`;
+    return randomUUID();
   }
 
   storageKey(mediaId: string) {

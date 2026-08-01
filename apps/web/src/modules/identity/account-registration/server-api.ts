@@ -2,5 +2,3 @@ import { accountRegistrationServerFacade } from "./composition/account-registrat
 
 export const changePersonalAccountUsername =
   accountRegistrationServerFacade.changePersonalAccountUsername;
-export const registerPersonalAccount =
-  accountRegistrationServerFacade.registerPersonalAccount;

@@ -1,7 +1,7 @@
 import type { RepositoryViewReference } from "./repository-view.types";
 
 export type GetRepositoryForViewingQuery = Readonly<{
-  actorAccountId: string;
+  actorAccountId: string | null;
   ownerId: string;
   name: string;
 }>;

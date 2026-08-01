@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Handles DELETE, GET, PATCH requests for `/api/organizations/{login}/teams/{teamSlug}` through `getOptionalCurrentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`, `getOrganizationByLogin`, `deleteOrganizationTeam`, `getOrganizationTeam`, `updateOrganizationTeam`.
+Handles DELETE, GET, PATCH requests for `/api/organizations/{login}/teams/{teamSlug}` through `getOptionalCurrentSession`, `hasSameOrigin`, `getOrganizationByLogin`, `deleteOrganizationTeam`, `getOrganizationTeam`, `updateOrganizationTeam`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -26,7 +26,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 ## Module contracts
 
 - - **owner:** `organizations/organization-teams` — use cases: `delete-organization-team`, `get-organization-team`, `update-organization-team`; functions: `deleteOrganizationTeam`, `getOrganizationTeam`, `updateOrganizationTeam`
-- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`, `hasSameOrigin`
 - - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.

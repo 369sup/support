@@ -1,37 +1,23 @@
-import { getProductionDatabase } from "../../../../../production-runtime";
 import { AccountIdentityAdapter } from "../adapters/outbound/integration/account-identity.adapter";
-import { PasswordCredentialAdapter } from "../adapters/outbound/integration/password-credential.adapter";
-import { InMemoryAccountRegistrationIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-account-registration-id-generator.adapter";
 import { NodeAccountRegistrationIdGeneratorAdapter } from "../adapters/outbound/persistence/node-account-registration-id-generator.adapter";
 import { ChangePersonalAccountUsernameHandler } from "../application/commands/change-personal-account-username.handler";
-import { RegisterPersonalAccountHandler } from "../application/commands/register-personal-account.handler";
 import type { ChangePersonalAccountUsernameUseCase } from "../application/ports/inbound/change-personal-account-username.use-case";
-import type { RegisterPersonalAccountUseCase } from "../application/ports/inbound/register-personal-account.use-case";
-import { AccountRegistrationService } from "../application/services/account-registration.service";
+import { PersonalAccountUsernameService } from "../application/services/personal-account-username.service";
 
 export interface AccountRegistrationServerFacade {
   changePersonalAccountUsername: ChangePersonalAccountUsernameUseCase["changePersonalAccountUsername"];
-  registerPersonalAccount: RegisterPersonalAccountUseCase["registerPersonalAccount"];
 }
 
 function composeAccountRegistrationServerFacade(): AccountRegistrationServerFacade {
-  const idGenerator =
-    getProductionDatabase() === null
-      ? new InMemoryAccountRegistrationIdGeneratorAdapter()
-      : new NodeAccountRegistrationIdGeneratorAdapter();
-  const service = new AccountRegistrationService(
+  const service = new PersonalAccountUsernameService(
     new AccountIdentityAdapter(),
-    new PasswordCredentialAdapter(),
-    idGenerator,
+    new NodeAccountRegistrationIdGeneratorAdapter(),
   );
   const changeUsername = new ChangePersonalAccountUsernameHandler(service);
-  const register = new RegisterPersonalAccountHandler(service);
 
   return {
     changePersonalAccountUsername: (command) =>
       changeUsername.changePersonalAccountUsername(command),
-    registerPersonalAccount: (command) =>
-      register.registerPersonalAccount(command),
   };
 }
 

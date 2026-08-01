@@ -1,5 +1,11 @@
 "use client"
 
+/*
+ * Import-alias exception: this module publishes its own Select wrapper, so the
+ * upstream Select would collide. Scope is this import only; the public wrapper
+ * API stays stable. Namespace/default imports are noncompliant alternatives,
+ * and the centralized alias allowlist plus lint and typecheck contain it.
+ */
 import { Select as SelectPrimitive } from "@base-ui/react/select"
 import type { ComponentProps } from "react"
 

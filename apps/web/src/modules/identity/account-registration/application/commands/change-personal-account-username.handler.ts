@@ -3,14 +3,14 @@ import type {
   ChangePersonalAccountUsernameResult,
   ChangePersonalAccountUsernameUseCase,
 } from "../ports/inbound/change-personal-account-username.use-case";
-import type { AccountRegistrationService } from "../services/account-registration.service";
+import type { PersonalAccountUsernameService } from "../services/personal-account-username.service";
 
 export class ChangePersonalAccountUsernameHandler
   implements ChangePersonalAccountUsernameUseCase
 {
-  private readonly service: AccountRegistrationService;
+  private readonly service: PersonalAccountUsernameService;
 
-  constructor(service: AccountRegistrationService) {
+  constructor(service: PersonalAccountUsernameService) {
     this.service = service;
   }
 

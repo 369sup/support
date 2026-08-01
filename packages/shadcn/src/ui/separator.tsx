@@ -1,5 +1,11 @@
 "use client";
 
+/*
+ * Import-alias exception: this module publishes its own Separator wrapper, so
+ * the upstream Separator would collide. Scope is this import only; the public
+ * wrapper API stays stable. Namespace/default imports are noncompliant
+ * alternatives, and the centralized allowlist plus lint and typecheck contain it.
+ */
 import { Separator as SeparatorPrimitive } from "@base-ui/react/separator";
 
 import { cn } from "../lib/class-names";

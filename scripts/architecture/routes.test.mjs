@@ -1,4 +1,4 @@
-import { strict as assert } from "node:assert";
+import { strict } from "node:assert";
 import {
   mkdtempSync,
   mkdirSync,
@@ -116,13 +116,13 @@ function validate(rootDir) {
 }
 
 test("derives App Router paths and excludes parallel-slot fallbacks", () => {
-  assert.equal(
+  strict.equal(
     deriveSupportPath(
       "apps/web/src/app/(resources)/[owner]/[repository]/tree/[...path]/page.tsx",
     ),
     "/{owner}/{repository}/tree/{*path}",
   );
-  assert.equal(
+  strict.equal(
     deriveSupportPath(
       "apps/web/src/app/(resources)/@modal/[...catchAll]/page.tsx",
     ),
@@ -134,15 +134,15 @@ test("accepts a complete deterministic route catalog", () => {
   const rootDir = createValidFixture();
 
   try {
-    assert.deepEqual(discoverAppRoutes(rootDir), [
+    strict.deepEqual(discoverAppRoutes(rootDir), [
       "apps/web/src/app/example/[id]/page.tsx",
     ]);
-    assert.deepEqual(validate(rootDir), { errors: [], generatedErrors: [] });
+    strict.deepEqual(validate(rootDir), { errors: [], generatedErrors: [] });
 
     const catalog = JSON.parse(
       readFileSync(join(rootDir, "apps", "web", "route-map.json"), "utf8"),
     );
-    assert.equal(
+    strict.equal(
       readFileSync(
         join(
           rootDir,
@@ -191,19 +191,19 @@ test("rejects missing coverage, function drift, and generated drift", () => {
     );
 
     const result = validate(rootDir);
-    assert.equal(
+    strict.equal(
       result.errors.some((error) => error.includes("[ARCH-ROUTE-001]")),
       true,
     );
-    assert.equal(
+    strict.equal(
       result.errors.some((error) => error.includes("[ARCH-ROUTE-004]")),
       true,
     );
-    assert.equal(
+    strict.equal(
       result.errors.some((error) => error.includes("[ARCH-ROUTE-005]")),
       true,
     );
-    assert.equal(
+    strict.equal(
       result.generatedErrors.some((error) =>
         error.includes("[ARCH-ROUTE-008]")
       ),
@@ -251,7 +251,7 @@ test("rejects a documented-only route that gains delivery code", () => {
       "export default function DocumentedPage(): null { return null; }\n",
     );
 
-    assert.equal(
+    strict.equal(
       validate(rootDir).errors.some((error) =>
         error.includes("[ARCH-ROUTE-004]")
       ),

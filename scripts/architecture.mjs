@@ -43,6 +43,7 @@ import {
   buildSourceGraph,
   validateClientGraphs,
   validateDeclaredContextDependencies,
+  validateProductionMemoryBoundaries,
   validateServerOnlyMarkers,
   validateSourceCycles,
 } from "./architecture/source.mjs";
@@ -1702,6 +1703,11 @@ export function runArchitectureChecks({
 
   const { graph, metadata } = buildSourceGraph(applicationRoot, sourceFiles);
   validateSourceCycles(applicationRoot, graph, requiredErrors);
+  validateProductionMemoryBoundaries(
+    applicationRoot,
+    graph,
+    requiredErrors,
+  );
   validateServerOnlyMarkers(applicationRoot, metadata, requiredErrors);
   validateClientGraphs(applicationRoot, graph, metadata, requiredErrors);
   validateDeclaredContextDependencies(

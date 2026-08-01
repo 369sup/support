@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-import { isInMemoryRuntimeEnabled } from "@/modules/identity/authentication/server-api";
 import { getOptionalCurrentSession } from "@/modules/identity/authentication/server-api";
 import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
 import {
@@ -35,13 +34,12 @@ async function resolveTeamRouteContext(
     : { status: "team-not-found" as const };
 }
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   _request: Request,
   context: { params: Promise<{ login: string; teamSlug: string }> },
 ): Promise<Response> {
-  if (!isInMemoryRuntimeEnabled()) {
-    return new NextResponse(null, { status: 404 });
-  }
   const params = await context.params;
   const resolved = await resolveTeamRouteContext(
     params.login,

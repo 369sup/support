@@ -6,7 +6,9 @@
   "sideEffects": false,
   "exports": {
     "./auth": "./src/auth.ts",
-    "./postgres": "./src/postgres.ts"
+    "./auth/admin": "./src/auth/admin.ts",
+    "./postgres": "./src/postgres.ts",
+    "./storage": "./src/storage.ts"
   },
   "scripts": {
     "lint": "eslint . --max-warnings=0",

@@ -18,7 +18,7 @@ describe("App Router route catalog", () => {
       .flatMap((route) => "file" in route ? [route.file] : [])
       .sort();
 
-    expect(files).toHaveLength(140);
+    expect(files).toHaveLength(138);
     expect(catalogFiles).toEqual(files);
     expect(catalogFiles.some((file) => file.includes("/@"))).toBe(false);
   });

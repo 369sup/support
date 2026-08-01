@@ -4,7 +4,10 @@ import { notFound } from "next/navigation";
 import { redirect } from "next/navigation";
 
 import { readFormString } from "@/app/_route-contracts/read-form-string";
-import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
+import {
+  getOptionalCurrentSession,
+  requireCurrentSession,
+} from "@/modules/identity/authentication/server-api";
 import { getPersonalAccountByUsername } from "@/modules/identity/accounts/server-api";
 import { getUserProfile } from "@/modules/identity/profiles/server-api";
 import { toggleUserFollow } from "@/modules/identity/social-graph/server-api";
@@ -70,7 +73,7 @@ export default async function OwnerPage({
 }>) {
   const routeParams = await params;
   const [session, owner] = await Promise.all([
-    requireCurrentSession(),
+    getOptionalCurrentSession(),
     resolveOwnerByLogin(routeParams.owner),
   ]);
 
@@ -80,13 +83,13 @@ export default async function OwnerPage({
 
   const [repositories, profileResult] = await Promise.all([
     listVisibleRepositoriesForOwner({
-      actorAccountId: session.account.accountId,
+      actorAccountId: session?.account.accountId ?? null,
       ownerId: owner.id,
     }),
     owner.kind === "account"
       ? getUserProfile({
           accountId: owner.id,
-          isOwner: session.account.accountId === owner.id,
+          isOwner: session?.account.accountId === owner.id,
         })
       : Promise.resolve({ status: "profile-not-found" } as const),
   ]);
@@ -113,7 +116,7 @@ export default async function OwnerPage({
             </h1>
             <p className="mt-4 max-w-3xl leading-7 text-slate-400">
               {profile?.bio === "" || profile === null
-                ? "Repositories visible to the current session for"
+                ? "Public repositories and profile information for"
                 : profile.bio}{" "}
               <span className="font-semibold text-white">@{owner.login}</span>
             </p>
@@ -129,6 +132,7 @@ export default async function OwnerPage({
               </div>
             )}
             {owner.kind === "account" &&
+            session !== null &&
             owner.id !== session.account.accountId ? (
               <form action={toggleFollowAction} className="mt-5">
                 <input name="owner" type="hidden" value={owner.login} />
@@ -179,7 +183,7 @@ export default async function OwnerPage({
             </h2>
           </div>
           <RepositoryList
-            emptyMessage="No repositories are visible to your current session."
+            emptyMessage="No repositories are visible."
             repositories={repositories}
           />
         </div>

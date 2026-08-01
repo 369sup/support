@@ -1,4 +1,3 @@
-import { InMemoryAuditStorageAdapter } from "../adapters/outbound/persistence/in-memory-audit-storage.adapter";
 import { PostgresAuditStorageAdapter } from "../adapters/outbound/persistence/postgres-audit-storage.adapter";
 import { SystemAuditStorageClockAdapter } from "../adapters/outbound/system-audit-storage-clock.adapter";
 import { SystemAuditStorageExporterAdapter } from "../adapters/outbound/system-audit-storage-exporter.adapter";
@@ -10,10 +9,7 @@ import { QueryAuditRecordsHandler } from "../application/queries/query-audit-rec
 import { getProductionDatabase } from "../../../../../production-runtime";
 
 const database = getProductionDatabase();
-const repository =
-  database === null
-    ? new InMemoryAuditStorageAdapter()
-    : new PostgresAuditStorageAdapter(database);
+const repository = new PostgresAuditStorageAdapter(database);
 const appendHandler = new AppendAuditRecordHandler(repository);
 const queryHandler = new QueryAuditRecordsHandler(repository);
 const exportHandler = new CreateAuditExportHandler(

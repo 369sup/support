@@ -1,9 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import {
-  assertPostgresMigrationsApplied,
   PostgresDatabase,
-  runPostgresMigrations,
   type PostgresClientPort,
   type PostgresPoolPort,
   type SqlQueryResult,
@@ -83,51 +81,4 @@ describe("PostgresDatabase", () => {
     expect(pool.client.isReleased).toBe(true);
   });
 
-  it("runs unapplied migrations once in stable order", async () => {
-    const pool = new FakePool();
-    const database = new PostgresDatabase(pool);
-    await runPostgresMigrations(database, [
-      { id: "002_second", sql: "select 2" },
-      { id: "001_first", sql: "select 1" },
-    ]);
-
-    const texts = pool.client.calls.map((call) => call.text);
-    expect(texts.indexOf("select 1")).toBeLessThan(
-      texts.indexOf("select 2"),
-    );
-    expect(
-      texts.filter((text) =>
-        text.startsWith("insert into support_schema_migrations"),
-      ),
-    ).toHaveLength(2);
-  });
-
-  it("rejects duplicate migration identifiers before connecting", async () => {
-    const pool = new FakePool();
-    const database = new PostgresDatabase(pool);
-
-    await expect(
-      runPostgresMigrations(database, [
-        { id: "001_duplicate", sql: "select 1" },
-        { id: "001_duplicate", sql: "select 2" },
-      ]),
-    ).rejects.toThrow("Duplicate migration id");
-    expect(pool.client.calls).toHaveLength(0);
-  });
-});
-
-describe("assertPostgresMigrationsApplied", () => {
-  it("fails closed when a required migration is absent", async () => {
-    const database = {
-      query: vi.fn(() =>
-        Promise.resolve({ rowCount: 0, rows: [] }),
-      ),
-    };
-
-    await expect(
-      assertPostgresMigrationsApplied(database, [
-        { id: "required-001", sql: "select 1" },
-      ]),
-    ).rejects.toThrow("Database schema is not at the required version.");
-  });
 });

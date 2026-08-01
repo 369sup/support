@@ -4,9 +4,21 @@ import {
   resolveSupabasePostgresConfiguration,
   type SupabasePostgresConnectionMode,
 } from "@support/supabase/postgres";
+import { resolveSupabaseAuthConfiguration } from "@support/supabase/auth";
+import {
+  resolveSupabaseServerConfiguration,
+} from "@support/supabase/storage";
 import { z } from "zod";
 
 const positiveInteger = z.coerce.number().int().positive();
+
+export const requiredProductionRuntimeEnvironmentNames = [
+  "DATABASE_URL",
+  "SUPABASE_PUBLISHABLE_KEY",
+  "SUPABASE_SECRET_KEY",
+  "SUPABASE_STORAGE_BUCKET",
+  "SUPABASE_URL",
+] as const;
 
 const productionRuntimeSchema = z
   .object({
@@ -14,86 +26,47 @@ const productionRuntimeSchema = z
     DATABASE_CONNECTION_TIMEOUT_MS: positiveInteger.default(5000),
     DATABASE_IDLE_TIMEOUT_MS: positiveInteger.default(10_000),
     DATABASE_POOL_MAX: positiveInteger.max(100).default(10),
-    DATABASE_PROVIDER: z.enum(["postgres", "supabase"]).default("postgres"),
     DATABASE_SSL_MODE: z
-      .enum(["disable", "require", "verify-full"])
+      .enum(["require", "verify-full"])
       .default("verify-full"),
     DATABASE_STATEMENT_TIMEOUT_MS: positiveInteger.default(30_000),
-    DATABASE_URL: z.string().trim().optional(),
+    DATABASE_URL: z.string().trim().min(1),
+    SUPABASE_PUBLISHABLE_KEY: z.string().trim().min(1),
     SUPABASE_POSTGRES_CONNECTION_MODE: z
       .enum(["direct", "session-pooler", "transaction-pooler"])
-      .optional(),
-    SUPPORT_RUNTIME_MODE: z.enum(["memory", "postgres"]).default("memory"),
+      .default("transaction-pooler"),
+    SUPABASE_SECRET_KEY: z.string().trim().min(1),
+    SUPABASE_STORAGE_BUCKET: z.string().trim().min(1),
+    SUPABASE_URL: z.string().trim().min(1),
   })
   .superRefine((configuration, context) => {
-    if (
-      configuration.SUPPORT_RUNTIME_MODE === "postgres" &&
-      (configuration.DATABASE_URL === undefined ||
-        configuration.DATABASE_URL === "")
-    ) {
+    if (configuration.DATABASE_URL.trim() === "") {
       context.addIssue({
         code: "custom",
-        message:
-          "DATABASE_URL is required when SUPPORT_RUNTIME_MODE is postgres.",
+        message: "DATABASE_URL is required for the Supabase runtime.",
         path: ["DATABASE_URL"],
-      });
-    }
-    if (
-      configuration.SUPPORT_RUNTIME_MODE === "postgres" &&
-      configuration.DATABASE_PROVIDER === "supabase" &&
-      configuration.SUPABASE_POSTGRES_CONNECTION_MODE === undefined
-    ) {
-      context.addIssue({
-        code: "custom",
-        message:
-          "SUPABASE_POSTGRES_CONNECTION_MODE is required when DATABASE_PROVIDER is supabase.",
-        path: ["SUPABASE_POSTGRES_CONNECTION_MODE"],
-      });
-    }
-    if (
-      configuration.SUPPORT_RUNTIME_MODE === "postgres" &&
-      configuration.DATABASE_PROVIDER === "supabase" &&
-      configuration.DATABASE_SSL_MODE === "disable"
-    ) {
-      context.addIssue({
-        code: "custom",
-        message: "Supabase PostgreSQL connections require TLS.",
-        path: ["DATABASE_SSL_MODE"],
       });
     }
   });
 
-export type ProductionRuntimeConfiguration =
-  | Readonly<{ mode: "memory" }>
-  | Readonly<{
-      mode: "postgres";
-      provider: "postgres";
-      postgres: {
-        applicationName: string;
-        caCertificate?: string;
-        connectionTimeoutMs: number;
-        databaseUrl: string;
-        idleTimeoutMs: number;
-        poolMax: number;
-        sslMode: "disable" | "require" | "verify-full";
-        statementTimeoutMs: number;
-      };
-    }>
-  | Readonly<{
-      mode: "postgres";
-      provider: "supabase";
-      supabase: {
-        applicationName: string;
-        caCertificate?: string;
-        connectionMode: SupabasePostgresConnectionMode;
-        connectionTimeoutMs: number;
-        databaseUrl: string;
-        idleTimeoutMs: number;
-        poolMax: number;
-        sslMode: "require" | "verify-full";
-        statementTimeoutMs: number;
-      };
-    }>;
+export type ProductionRuntimeConfiguration = Readonly<{
+  provider: "supabase";
+  supabase: {
+    applicationName: string;
+    caCertificate?: string;
+    connectionMode: SupabasePostgresConnectionMode;
+    connectionTimeoutMs: number;
+    databaseUrl: string;
+    idleTimeoutMs: number;
+    poolMax: number;
+    publishableKey: string;
+    secretKey: string;
+    sslMode: "require" | "verify-full";
+    statementTimeoutMs: number;
+    storageBucket: string;
+    url: string;
+  };
+}>;
 
 function optionalNonEmpty(value: string | undefined): string | undefined {
   const normalized = value?.trim();
@@ -106,15 +79,9 @@ export function resolveProductionRuntimeConfiguration(
   environment: Readonly<Record<string, string | undefined>> = process.env,
 ): ProductionRuntimeConfiguration {
   const parsed = productionRuntimeSchema.parse(environment);
-  if (parsed.SUPPORT_RUNTIME_MODE === "memory") {
-    return { mode: "memory" };
-  }
-
   const databaseUrl = optionalNonEmpty(parsed.DATABASE_URL);
   if (databaseUrl === undefined) {
-    throw new Error(
-      "DATABASE_URL is required when SUPPORT_RUNTIME_MODE is postgres.",
-    );
+    throw new Error("DATABASE_URL is required for the Supabase runtime.");
   }
   const caCertificate = optionalNonEmpty(
     parsed.DATABASE_CA_CERTIFICATE,
@@ -128,32 +95,30 @@ export function resolveProductionRuntimeConfiguration(
     poolMax: parsed.DATABASE_POOL_MAX,
     statementTimeoutMs: parsed.DATABASE_STATEMENT_TIMEOUT_MS,
   };
-  if (parsed.DATABASE_PROVIDER === "supabase") {
-    const connectionMode = parsed.SUPABASE_POSTGRES_CONNECTION_MODE;
-    if (connectionMode === undefined || parsed.DATABASE_SSL_MODE === "disable") {
-      throw new Error("Supabase PostgreSQL configuration is incomplete.");
-    }
-    resolveSupabasePostgresConfiguration({
+  const connectionMode = parsed.SUPABASE_POSTGRES_CONNECTION_MODE;
+  const authConfiguration = resolveSupabaseAuthConfiguration({
+    publishableKey: parsed.SUPABASE_PUBLISHABLE_KEY,
+    url: parsed.SUPABASE_URL,
+  });
+  const serverConfiguration = resolveSupabaseServerConfiguration({
+    secretKey: parsed.SUPABASE_SECRET_KEY,
+    url: parsed.SUPABASE_URL,
+  });
+  resolveSupabasePostgresConfiguration({
+    ...common,
+    connectionMode,
+    sslMode: parsed.DATABASE_SSL_MODE,
+  });
+  return {
+    provider: "supabase",
+    supabase: {
       ...common,
       connectionMode,
+      publishableKey: authConfiguration.publishableKey,
+      secretKey: serverConfiguration.secretKey,
       sslMode: parsed.DATABASE_SSL_MODE,
-    });
-    return {
-      mode: "postgres",
-      provider: "supabase",
-      supabase: {
-        ...common,
-        connectionMode,
-        sslMode: parsed.DATABASE_SSL_MODE,
-      },
-    };
-  }
-  return {
-    mode: "postgres",
-    provider: "postgres",
-    postgres: {
-      ...common,
-      sslMode: parsed.DATABASE_SSL_MODE,
+      storageBucket: parsed.SUPABASE_STORAGE_BUCKET,
+      url: authConfiguration.url,
     },
   };
 }

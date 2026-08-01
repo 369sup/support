@@ -1,6 +1,5 @@
 import { getProductionDatabase } from "../../../../../production-runtime";
 import { SystemScheduledCommandClockAdapter } from "../adapters/outbound/system-scheduled-command-clock.adapter";
-import { InMemoryScheduledCommandAdapter } from "../adapters/outbound/persistence/in-memory-scheduled-command.adapter";
 import { PostgresScheduledCommandAdapter } from "../adapters/outbound/persistence/postgres-scheduled-command.adapter";
 import { ClaimDueScheduledCommandsHandler } from "../application/commands/claim-due-scheduled-commands.handler";
 import { CompleteScheduledCommandHandler } from "../application/commands/complete-scheduled-command.handler";
@@ -10,10 +9,7 @@ import { ScheduleCommandHandler } from "../application/commands/schedule-command
 import { ScheduledCommandService } from "../application/services/scheduled-command.service";
 
 const database = getProductionDatabase();
-const repository =
-  database === null
-    ? new InMemoryScheduledCommandAdapter()
-    : new PostgresScheduledCommandAdapter(database);
+const repository = new PostgresScheduledCommandAdapter(database);
 const service = new ScheduledCommandService(
   repository,
   new SystemScheduledCommandClockAdapter(),

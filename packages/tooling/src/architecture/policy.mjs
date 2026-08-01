@@ -256,6 +256,7 @@ const ruleEntries = [
   rule("ARCH-ROUTE-008", "generated", "generated", "checker", "Generated route READMEs and TypeScript contracts are current."),
   rule("ARCH-SERVER-001", "dependency", "required", "checker", "Modules that use server capabilities carry an explicit server-only marker."),
   rule("ARCH-SRC-001", "structure", "required", "checker", "Application source roots are restricted."),
+  rule("ARCH-SRC-002", "structure", "required", "checker", "Production source does not depend on in-memory adapters."),
   rule("ARCH-STRUCT-001", "structure", "required", "checker", "Context roots contain canonical entries."),
   rule("ARCH-STRUCT-002", "structure", "required", "checker", "Subdomain roots contain bounded contexts only."),
   rule("ARCH-STRUCT-003", "structure", "required", "checker", "Module roots follow their documented shape."),

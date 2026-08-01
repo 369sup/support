@@ -4,8 +4,6 @@ import { EnterpriseReferenceAdapter } from "../adapters/outbound/integration/ent
 import { OrganizationMembershipAdapter } from "../adapters/outbound/integration/organization-membership.adapter";
 import { OrganizationPolicyAdapter } from "../adapters/outbound/integration/organization-policy.adapter";
 import { OrganizationReferenceAdapter } from "../adapters/outbound/integration/organization-reference.adapter";
-import { InMemoryEnterpriseTeamAdapter } from "../adapters/outbound/persistence/in-memory-enterprise-team.adapter";
-import { InMemoryEnterpriseTeamIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-enterprise-team-id-generator.adapter";
 import { NodeEnterpriseTeamIdGeneratorAdapter } from "../adapters/outbound/persistence/node-enterprise-team-id-generator.adapter";
 import { PostgresEnterpriseTeamAdapter } from "../adapters/outbound/persistence/postgres-enterprise-team.adapter";
 import { AddEnterpriseTeamMemberHandler } from "../application/commands/add-enterprise-team-member.handler";
@@ -47,18 +45,14 @@ export interface EnterpriseTeamsServerFacade {
 function composeEnterpriseTeamsServerFacade(): EnterpriseTeamsServerFacade {
   const database = getProductionDatabase();
   const service = new EnterpriseTeamService(
-    database === null
-      ? new InMemoryEnterpriseTeamAdapter()
-      : new PostgresEnterpriseTeamAdapter(database),
+    new PostgresEnterpriseTeamAdapter(database),
     new EnterpriseReferenceAdapter(),
     new EnterpriseAdministrationAdapter(),
     new AccountReferenceAdapter(),
     new OrganizationReferenceAdapter(),
     new OrganizationMembershipAdapter(),
     new OrganizationPolicyAdapter(),
-    database === null
-      ? new InMemoryEnterpriseTeamIdGeneratorAdapter()
-      : new NodeEnterpriseTeamIdGeneratorAdapter(),
+    new NodeEnterpriseTeamIdGeneratorAdapter(),
   );
   const addMember = new AddEnterpriseTeamMemberHandler(service);
   const assignOrganization =

@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Delivers `/settings/sessions` through `listBrowserAccountSessions`, `readBrowserSessionToken`, `requireCurrentSession`.
+Delivers `/settings/sessions` through `getAuthenticatorAssuranceLevel`, `listMfaFactors`, `reauthenticate`, `requireCurrentSession`, `signOutAllSessions`, `signOutOtherSessions`, `unenrollMfa`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -23,7 +23,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 
 ## Module contracts
 
-- - **owner:** `identity/authentication` — use cases: `list-browser-account-sessions`; functions: `listBrowserAccountSessions`, `readBrowserSessionToken`, `requireCurrentSession`
+- - **owner:** `identity/authentication` — use cases: `reauthenticate`, `sign-out-all-sessions`; functions: `getAuthenticatorAssuranceLevel`, `listMfaFactors`, `reauthenticate`, `requireCurrentSession`, `signOutAllSessions`, `signOutOtherSessions`, `unenrollMfa`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

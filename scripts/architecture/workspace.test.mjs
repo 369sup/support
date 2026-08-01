@@ -1,4 +1,4 @@
-import { strict as assert } from "node:assert";
+import { strict } from "node:assert";
 import {
   mkdtempSync,
   mkdirSync,
@@ -97,7 +97,7 @@ test("accepts the canonical workspace package graph", () => {
       'import "@support/observability/public";\n',
     );
 
-    assert.deepEqual(validate(rootDir), []);
+    strict.deepEqual(validate(rootDir), []);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -120,8 +120,8 @@ test("rejects package-to-app dependencies and invalid dependency sections", () =
     writeManifest(rootDir, "apps/web", web);
 
     const errors = validate(rootDir);
-    assert.equal(includesRule(errors, "ARCH-PKG-003"), true);
-    assert.equal(includesRule(errors, "ARCH-PKG-004"), true);
+    strict.equal(includesRule(errors, "ARCH-PKG-003"), true);
+    strict.equal(includesRule(errors, "ARCH-PKG-004"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -145,8 +145,8 @@ test("rejects duplicate internal dependencies and missing export targets", () =>
     writeManifest(rootDir, "packages/observability", observability);
 
     const errors = validate(rootDir);
-    assert.equal(includesRule(errors, "ARCH-PKG-002"), true);
-    assert.equal(includesRule(errors, "ARCH-PKG-008"), true);
+    strict.equal(includesRule(errors, "ARCH-PKG-002"), true);
+    strict.equal(includesRule(errors, "ARCH-PKG-008"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -174,8 +174,8 @@ test("rejects undeclared and unexported internal imports", () => {
     );
 
     const errors = validate(rootDir);
-    assert.equal(includesRule(errors, "ARCH-PKG-005"), true);
-    assert.equal(includesRule(errors, "ARCH-PKG-006"), true);
+    strict.equal(includesRule(errors, "ARCH-PKG-005"), true);
+    strict.equal(includesRule(errors, "ARCH-PKG-006"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -191,7 +191,7 @@ test("rejects cross-package relative imports", () => {
       'import "../../observability/src/public";\n',
     );
 
-    assert.equal(includesRule(validate(rootDir), "ARCH-PKG-007"), true);
+    strict.equal(includesRule(validate(rootDir), "ARCH-PKG-007"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -212,7 +212,7 @@ test("allows Supabase SDK dependencies and imports inside the Supabase package",
       'import { createServerClient } from "@supabase/ssr";\n',
     );
 
-    assert.equal(includesRule(validate(rootDir), "ARCH-PKG-011"), false);
+    strict.equal(includesRule(validate(rootDir), "ARCH-PKG-011"), false);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -236,8 +236,8 @@ test.each([
       writeManifest(rootDir, "apps/web", web);
 
       const errors = validate(rootDir);
-      assert.equal(includesRule(errors, "ARCH-PKG-011"), true);
-      assert.equal(
+      strict.equal(includesRule(errors, "ARCH-PKG-011"), true);
+      strict.equal(
         errors.some(
           (error) =>
             error.includes(
@@ -266,8 +266,8 @@ test("rejects direct Supabase SDK imports outside the Supabase package", () => {
     );
 
     const errors = validate(rootDir);
-    assert.equal(includesRule(errors, "ARCH-PKG-011"), true);
-    assert.equal(
+    strict.equal(includesRule(errors, "ARCH-PKG-011"), true);
+    strict.equal(
       errors.some((error) =>
         error.includes(
           "Depend on @support/supabase and use an exported subpath instead.",
@@ -296,7 +296,7 @@ test("rejects workspace package cycles", () => {
     };
     writeManifest(rootDir, "packages/tooling", tooling);
 
-    assert.equal(includesRule(validate(rootDir), "ARCH-PKG-008"), true);
+    strict.equal(includesRule(validate(rootDir), "ARCH-PKG-008"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }

@@ -1,4 +1,4 @@
-import { posix as path } from "node:path";
+import { posix } from "node:path";
 
 import { publicEntrypointBasenames } from "../architecture/policy.mjs";
 
@@ -26,7 +26,7 @@ function resolveProjectImport(currentPath, source) {
 
   if (source.startsWith(".")) {
     return normalizeFilename(
-      path.normalize(path.join(path.dirname(currentPath), source)),
+      posix.normalize(posix.join(posix.dirname(currentPath), source)),
     );
   }
 

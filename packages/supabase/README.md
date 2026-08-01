@@ -1,8 +1,9 @@
 # `@support/supabase`
 
 This server-only runtime package is the single Supabase SDK boundary for the
-workspace. It exposes explicit `@support/supabase/auth` and
-`@support/supabase/postgres` subpaths so browser and server dependency graphs
+workspace. It exposes explicit `@support/supabase/auth`,
+`@support/supabase/auth/admin`, `@support/supabase/postgres`, and
+`@support/supabase/storage` subpaths so browser and server dependency graphs
 remain separate.
 
 Only this package may declare or import `@supabase/*` dependencies. Workspace
@@ -18,9 +19,12 @@ It owns:
 - password, OTP, PKCE, session refresh, and Google OAuth SDK operations;
 - removal of provider access and refresh tokens before session persistence;
 - normalization of Supabase SDK results into package-owned types;
+- server-only Auth administration for account erasure;
 - Supabase direct, session-pooler, and transaction-pooler endpoint validation;
 - TLS policy for Supabase PostgreSQL connections; and
-- construction of the existing `PostgresDatabase`.
+- construction of the existing `PostgresDatabase`;
+- server-only Storage upload, download, and object removal; and
+- normalization of Storage references and failures.
 
 It does not own Next.js request/response objects, Support accounts, usernames,
 authorization, product tables, migrations, RLS policies, or provider secrets.

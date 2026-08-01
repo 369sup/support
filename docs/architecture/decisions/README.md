@@ -29,7 +29,8 @@ four-digit number. Add each record to the table below.
 | [ADR-0003](ADR-0003-in-memory-event-and-policy-runtime.md) | Accepted | Define context-local outbox publication, grant-policy-entitlement ordering, simulated integrations, and acyclic custom-property orchestration. |
 | [ADR-0004](ADR-0004-production-runtime-adapters.md) | Accepted | Add provider-neutral production persistence and integration adapters beside the in-memory development runtime. |
 | [ADR-0005](ADR-0005-supabase-managed-postgres.md) | Superseded | Use Supabase only as managed PostgreSQL behind the provider-neutral database runtime. |
-| [ADR-0006](ADR-0006-supabase-auth-and-server-only-governance.md) | Accepted | Use Supabase Auth while keeping governance data behind server-only bounded-context adapters. |
+| [ADR-0006](ADR-0006-supabase-auth-and-server-only-governance.md) | Superseded | Use Supabase Auth while keeping governance data behind server-only bounded-context adapters. |
+| [ADR-0007](ADR-0007-declarative-database-schema.md) | Accepted | Make declarative SQL the physical target, Supabase migrations the forward history, and one schema contract the runtime gate. |
 
 ## Template
 

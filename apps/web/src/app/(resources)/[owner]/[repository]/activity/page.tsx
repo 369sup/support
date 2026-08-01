@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { resolveRepositoryViewForActor } from "@/app/(resources)/_repository-view";
-import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
+import { getOptionalCurrentSession } from "@/modules/identity/authentication/server-api";
 import { listRepositoryActivity } from "@/modules/projections/activity-feed/server-api";
 import { getRepositoryForViewing } from "@/modules/repositories/repositories/server-api";
 
@@ -11,9 +11,9 @@ export default async function RepositoryActivityPage({
   params: Promise<{ owner: string; repository: string }>;
 }>) {
   const routeParams = await params;
-  const session = await requireCurrentSession();
+  const session = await getOptionalCurrentSession();
   const repository = await resolveRepositoryViewForActor(
-    session.account.accountId,
+    session?.account.accountId ?? null,
     routeParams.owner,
     routeParams.repository,
     getRepositoryForViewing,

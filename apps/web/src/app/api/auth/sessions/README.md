@@ -19,11 +19,12 @@ The filesystem route is active. Its business behavior remains owned by the refer
 
 ## Delivery functions
 
+- `DELETE`: `DELETE` — Processes the DELETE transport contract without moving business policy into the route.
 - `POST`: `POST` — Processes the POST transport contract without moving business policy into the route.
 
 ## Module contracts
 
-- - **owner:** `identity/authentication` — use cases: no route-level use-case reference; functions: `hasSameOrigin`, `isPasswordAuthenticationEnabled`, `signInWithPassword`
+- - **owner:** `identity/authentication` — use cases: no route-level use-case reference; functions: `hasSameOrigin`, `isPasswordAuthenticationEnabled`, `signInWithPassword`, `signOutCurrentSession`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

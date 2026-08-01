@@ -5,8 +5,6 @@ import { readFormString } from "@/app/_route-contracts/read-form-string";
 import { changePersonalAccountUsername } from "@/modules/identity/account-registration/server-api";
 import { deletePersonalAccount } from "@/modules/identity/accounts/server-api";
 import {
-  clearBrowserSessionToken,
-  readBrowserSessionToken,
   requireCurrentSession,
   signOutAllSessions,
 } from "@/modules/identity/authentication/server-api";
@@ -51,16 +49,13 @@ async function deleteAccountAction(formData: FormData): Promise<never> {
   const result = await deletePersonalAccount({
     actorAccountId: session.account.accountId,
     accountId: session.account.accountId,
+    supabaseUserId: session.supabaseUserId,
   });
   if (result.status !== "deleted") {
     redirect(`/account?account=${result.status}`);
   }
 
-  const browserToken = await readBrowserSessionToken();
-  if (browserToken !== null) {
-    await signOutAllSessions(browserToken);
-  }
-  await clearBrowserSessionToken();
+  await signOutAllSessions();
   redirect("/login");
 }
 
@@ -134,8 +129,7 @@ export default async function AccountPage({
             Public profile
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
-            Profile details are stored in this development process. They reset
-            when the server restarts.
+            Profile details are stored durably in the Support database.
           </p>
 
           {query.profile === "updated" ? (
@@ -218,9 +212,8 @@ export default async function AccountPage({
           <section className="mt-12 border-t border-border pt-8">
             <h2 className="text-xl font-semibold">Change username</h2>
             <p className="mt-2 max-w-2xl text-sm leading-7 text-muted-foreground">
-              The account namespace and password credential change through one
-              compensatable transaction. Existing sessions remain attached to
-              the stable account ID.
+              The public account namespace changes without replacing the
+              stable Support account or Supabase Auth identity.
             </p>
             {query.account === "changed" ? (
               <p
@@ -279,9 +272,8 @@ export default async function AccountPage({
           <section className="mt-12 border-t border-red-400/20 pt-8">
             <h2 className="text-xl font-semibold text-red-200">Danger zone</h2>
             <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-400">
-              This development-only action marks the process-local personal
-              account deleted and signs out every browser session in this set.
-              The fixture returns after a server restart.
+              Deleting a personal account is permanent after the ownership
+              prerequisites pass. Every Supabase Auth session is signed out.
             </p>
             {query.account === "confirmation-required" ? (
               <p

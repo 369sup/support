@@ -17,6 +17,7 @@ managed-user ownership, reuse quarantine, and organization notification routes.
 - Account email lifecycle [active]
   - `add-account-email`
   - `list-account-emails`
+  - `get-verified-account-id-by-email`
   - `verify-account-email`
   - `update-account-email-settings`
   - Owned: `AccountEmail`, `EmailVerification`, `EmailReuseQuarantine`
@@ -33,6 +34,22 @@ managed-user ownership, reuse quarantine, and organization notification routes.
     `VerifiedDomainLifecycle`
 
 ## Designed use cases
+
+### `get-verified-account-id-by-email` [active]
+
+- **Type:** `query`
+- **Application boundary:** `GetVerifiedAccountIdByEmailUseCase.getVerifiedAccountIdByEmail()`
+- **Public entrypoint:** `server-api.ts#getVerifiedAccountIdByEmail`
+- **Input:** Normalized email address from a trusted server integration.
+- **Success result:** `found` with the owning Support account ID.
+- **Expected rejections:** `email-not-found`
+- **Authorization:** Server-only integration; browser callers cannot use this query as an account-enumeration endpoint.
+- **Transaction:** Read-only verified-email lookup.
+- **Idempotency:** Stable for an unchanged email record.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `identity-account-emails-source-03`
+- **Local policy:** Missing and unverified addresses share `email-not-found`.
 
 ### `add-account-email` [active]
 

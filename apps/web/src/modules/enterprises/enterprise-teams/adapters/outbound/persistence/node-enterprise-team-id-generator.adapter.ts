@@ -8,6 +8,11 @@ export class NodeEnterpriseTeamIdGeneratorAdapter
   implements EnterpriseTeamIdGeneratorPort
 {
   nextId(kind: "team" | "membership" | "organization-grant") {
-    return `enterprise_team_${kind}_${randomUUID()}`;
+    switch (kind) {
+      case "team":
+      case "membership":
+      case "organization-grant":
+        return randomUUID();
+    }
   }
 }

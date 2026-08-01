@@ -198,6 +198,32 @@ export class InMemoryRepositoryQueryAdapter
     );
   }
 
+  restoreDeleted(
+    tombstoneRepositoryId: string,
+    repository: RepositoryQuerySnapshot,
+  ): Promise<"restored" | "tombstone-not-found"> {
+    const tombstone = this.store.byId.get(tombstoneRepositoryId);
+    if (
+      tombstone === undefined ||
+      tombstone.lifecycleState !== "deleted"
+    ) {
+      return Promise.resolve("tombstone-not-found");
+    }
+    this.store.byId.delete(tombstoneRepositoryId);
+    this.store.idByOwnerAndName.delete(
+      ownerAndNameKey(tombstone.owner.id, tombstone.name),
+    );
+    const ownerIds =
+      this.store.idsByOwnerId.get(tombstone.owner.id) ?? [];
+    this.store.idsByOwnerId.set(
+      tombstone.owner.id,
+      ownerIds.filter(
+        (repositoryId) => repositoryId !== tombstoneRepositoryId,
+      ),
+    );
+    return this.save(repository).then(() => "restored");
+  }
+
   save(repository: RepositoryQuerySnapshot): Promise<void> {
     const previous = this.store.byId.get(repository.repositoryId);
     if (previous !== undefined) {

@@ -94,6 +94,12 @@ export async function registerNodeObservability(): Promise<void> {
     return;
   }
 
+  /*
+   * Dynamic-import exception: load these fixed exporter modules only when OTLP
+   * is enabled. Scope is this optional Node registration path; eager imports
+   * would add inactive providers to startup. Static alternatives lose deferred
+   * loading, while lint, instrumentation tests, and the build contain the path.
+   */
   const [{ OTLPMetricExporter }, { PeriodicExportingMetricReader }, { registerOTel }] =
     await Promise.all([
       import("@opentelemetry/exporter-metrics-otlp-http"),

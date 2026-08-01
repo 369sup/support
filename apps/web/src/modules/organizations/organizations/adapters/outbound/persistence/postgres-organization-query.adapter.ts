@@ -29,40 +29,24 @@ export class PostgresOrganizationQueryAdapter
   implements OrganizationQueryRepositoryPort
 {
   private readonly database: TransactionalSqlExecutor;
-  private readonly isSchemaReady: Promise<void>;
 
   constructor(database: TransactionalSqlExecutor) {
     this.database = database;
-    this.isSchemaReady = this.assertSchema();
-  }
-
-  private async assertSchema(): Promise<void> {
-    const result = await this.database.query<{ isReady: boolean }>(
-      `select exists (
-         select 1 from support_schema_migrations
-         where migration_id = 'zz010_organizations_organizations'
-       ) as "isReady"`,
-    );
-    if (result.rows[0]?.isReady !== true) {
-      throw new Error("Organization schema is unavailable.");
-    }
   }
 
   async findById(organizationId: string) {
-    await this.isSchemaReady;
     const result = await this.database.query<OrganizationRow>(
       `select organization_id, login, display_name, lifecycle_state
-         from support_organizations where organization_id = $1`,
+         from support_organizations_organizations.support_organizations where organization_id = $1`,
       [organizationId],
     );
     return result.rows[0] === undefined ? null : mapRow(result.rows[0]);
   }
 
   async findByLogin(login: string) {
-    await this.isSchemaReady;
     const result = await this.database.query<OrganizationRow>(
       `select organization_id, login, display_name, lifecycle_state
-         from support_organizations where normalized_login = lower($1)`,
+         from support_organizations_organizations.support_organizations where normalized_login = lower($1)`,
       [login],
     );
     return result.rows[0] === undefined ? null : mapRow(result.rows[0]);
@@ -72,10 +56,9 @@ export class PostgresOrganizationQueryAdapter
     organization: OrganizationQuerySnapshot,
     ownerAccountId: string,
   ): Promise<"created" | "conflict"> {
-    await this.isSchemaReady;
     return this.database.transaction(async (connection) => {
       const inserted = await connection.query(
-        `insert into support_organizations (
+        `insert into support_organizations_organizations.support_organizations (
            organization_id, login, normalized_login, display_name, lifecycle_state
          ) values ($1, $2, lower($2), $3, $4)
          on conflict (normalized_login) do nothing`,
@@ -90,7 +73,7 @@ export class PostgresOrganizationQueryAdapter
         return "conflict";
       }
       await connection.query(
-        `insert into support_organization_memberships (
+        `insert into support_organizations_organization_memberships.support_organization_memberships (
            membership_id, organization_id, account_id, role, state, source
          ) values ($1, $2, $3, 'owner', 'active', 'direct')`,
         [randomUUID(), organization.organizationId, ownerAccountId],

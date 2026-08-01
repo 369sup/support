@@ -91,10 +91,7 @@ function denyGeneratedModuleMapEdit() {
 }
 
 async function runRepositoryArchitectureChecks() {
-  const checkerUrl = pathToFileURL(
-    join(repositoryRoot, "scripts", "architecture.mjs"),
-  ).href;
-  const checker = await import(checkerUrl);
+  const checker = await import("../../scripts/architecture.mjs");
 
   if (typeof checker.runArchitectureChecks !== "function") {
     throw new Error("scripts/architecture.mjs has no runArchitectureChecks export.");

@@ -7,6 +7,9 @@ export type OrganizationInvitationAccountSnapshot = Readonly<{
 }>;
 
 export interface OrganizationInvitationAccountGatewayPort {
+  getActiveAccountByEmail(
+    email: string,
+  ): Promise<OrganizationInvitationAccountSnapshot | null>;
   getActiveAccountByUsername(
     username: string,
   ): Promise<OrganizationInvitationAccountSnapshot | null>;

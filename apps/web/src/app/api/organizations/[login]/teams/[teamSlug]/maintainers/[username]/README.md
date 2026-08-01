@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Handles DELETE, PUT requests for `/api/organizations/{login}/teams/{teamSlug}/maintainers/{username}` through `getOptionalCurrentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`, `getAccountReferenceById`, `getPersonalAccountByUsername`, `getOrganizationByLogin`, `assignTeamMaintainer`, `getOrganizationTeam`, `revokeTeamMaintainer`.
+Handles DELETE, PUT requests for `/api/organizations/{login}/teams/{teamSlug}/maintainers/{username}` through `getOptionalCurrentSession`, `hasSameOrigin`, `getAccountReferenceById`, `getPersonalAccountByUsername`, `getOrganizationByLogin`, `assignTeamMaintainer`, `getOrganizationTeam`, `revokeTeamMaintainer`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -25,7 +25,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 ## Module contracts
 
 - - **owner:** `organizations/organization-teams` — use cases: `assign-team-maintainer`, `get-organization-team`, `revoke-team-maintainer`; functions: `assignTeamMaintainer`, `getOrganizationTeam`, `revokeTeamMaintainer`
-- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`, `hasSameOrigin`
 - - **collaborator:** `identity/accounts` — use cases: `get-account-reference-by-id`, `get-personal-account-by-username`; functions: `getAccountReferenceById`, `getPersonalAccountByUsername`
 - - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`
 

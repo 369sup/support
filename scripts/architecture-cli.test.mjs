@@ -1,4 +1,4 @@
-import { strict as assert } from "node:assert";
+import { strict } from "node:assert";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { test } from "vitest";
@@ -16,8 +16,8 @@ test("exits with configuration status for an invalid profile", () => {
     },
   );
 
-  assert.equal(result.status, 2);
-  assert.match(
+  strict.equal(result.status, 2);
+  strict.match(
     result.stderr,
     /Architecture check configuration failed: Invalid architecture profile unsupported/,
   );

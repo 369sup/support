@@ -30,6 +30,13 @@ export class ListVisibleRepositoriesForOwnerHandler
       if (repository.lifecycleState === "deleted") {
         continue;
       }
+      if (repository.visibility === "public") {
+        visible.push(mapRepositoryView(repository, "read"));
+        continue;
+      }
+      if (query.actorAccountId === null) {
+        continue;
+      }
       const permission =
         await this.authorization.resolveRepositoryPermission({
           actorAccountId: query.actorAccountId,

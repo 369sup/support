@@ -1,20 +1,10 @@
 import Link from "next/link";
-import type { LucideIcon } from "lucide-react";
-import {
-  Building2,
-  FolderKanban,
-  Landmark,
-  LayoutDashboard,
-  ShieldCheck,
-  UsersRound,
-} from "lucide-react";
 
+import { ConsoleNavigation } from "../_route-contracts/console-navigation";
 import { AccountMenu } from "@/modules/identity/authentication/browser-ui";
-import { readBrowserSessionToken } from "@/modules/identity/authentication/server-api";
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
 import { DashboardContextSwitcher } from "@/modules/projections/dashboard/browser-ui";
 import { authorizeEnterpriseAdministration } from "@/modules/enterprises/enterprise-roles/server-api";
-import { listBrowserAccountSessions } from "@/modules/identity/authentication/server-api";
 import {
   listAvailableDashboardContexts,
   restoreLastValidDashboardContext,
@@ -22,35 +12,6 @@ import {
 import { buildLinkHref } from "../_route-contracts/route-contract";
 
 export const dynamic = "force-dynamic";
-
-const consoleNavigation = [
-  {
-    href: buildLinkHref("page-dashboard", {}),
-    label: "Dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    href: buildLinkHref("page-repositories", {}),
-    label: "Repositories",
-    icon: FolderKanban,
-  },
-  {
-    href: buildLinkHref("page-organizations", {}),
-    label: "Organizations",
-    icon: Building2,
-  },
-  {
-    href: buildLinkHref("page-enterprises", {}),
-    label: "Enterprises",
-    icon: Landmark,
-  },
-] satisfies readonly ConsoleNavigationItem[];
-
-type ConsoleNavigationItem = Readonly<{
-  href: ReturnType<typeof buildLinkHref>;
-  label: string;
-  icon: LucideIcon;
-}>;
 
 export default async function ConsoleLayout({
   children,
@@ -66,9 +27,8 @@ export default async function ConsoleLayout({
   modal?: React.ReactNode;
 }>) {
   const session = await requireCurrentSession();
-  const [sessionsResult, availableContexts, selectedContext, enterpriseAccess] =
+  const [availableContexts, selectedContext, enterpriseAccess] =
     await Promise.all([
-      listBrowserAccountSessionsFromCookie(),
       listAvailableDashboardContexts(session),
       restoreLastValidDashboardContext(session),
       authorizeEnterpriseAdministration({
@@ -76,26 +36,10 @@ export default async function ConsoleLayout({
         enterpriseId: "enterprise_acme",
       }),
     ]);
-  const navigation =
+  const organizationLogin =
     selectedContext.context.kind === "organization"
-      ? [
-          ...consoleNavigation,
-          {
-            href: buildLinkHref("page-organizations-login-settings-teams", {
-              login: selectedContext.context.login,
-            }),
-            label: "Teams",
-            icon: UsersRound,
-          },
-          {
-            href: buildLinkHref("page-organizations-login-settings-roles", {
-              login: selectedContext.context.login,
-            }),
-            label: "Roles",
-            icon: ShieldCheck,
-          },
-        ]
-      : consoleNavigation;
+      ? selectedContext.context.login
+      : undefined;
 
   return (
     <div className="flex min-h-dvh flex-col bg-[#0d1117] text-slate-100">
@@ -124,10 +68,9 @@ export default async function ConsoleLayout({
             enterpriseAccess.status === "allowed"
               ? buildLinkHref("page-enterprises-slug", {
                   slug: "acme-enterprise",
-                })
+              })
               : null
           }
-          sessions={sessionsResult}
         />
       </header>
       <div className="flex min-h-0 flex-1">
@@ -135,8 +78,10 @@ export default async function ConsoleLayout({
           {sidebar}
           <ConsoleNavigation
             ariaLabel="Console"
-            navigation={navigation}
             navigationSlot={navigationSlot}
+            {...(organizationLogin === undefined
+              ? {}
+              : { organizationLogin })}
           />
         </aside>
         <div className="flex min-w-0 flex-1 flex-col">
@@ -144,8 +89,10 @@ export default async function ConsoleLayout({
             <ConsoleNavigation
               ariaLabel="Console mobile"
               isHorizontal
-              navigation={navigation}
               navigationSlot={navigationSlot}
+              {...(organizationLogin === undefined
+                ? {}
+                : { organizationLogin })}
             />
           </div>
           {children}
@@ -154,56 +101,4 @@ export default async function ConsoleLayout({
       {modal}
     </div>
   );
-}
-
-function ConsoleNavigation({
-  ariaLabel,
-  isHorizontal = false,
-  navigation,
-  navigationSlot,
-}: Readonly<{
-  ariaLabel: string;
-  isHorizontal?: boolean;
-  navigation: readonly ConsoleNavigationItem[];
-  navigationSlot?: React.ReactNode;
-}>) {
-  return (
-    <nav
-      aria-label={ariaLabel}
-      className={
-        isHorizontal
-          ? "flex gap-2 overflow-x-auto"
-          : "grid gap-1 text-sm"
-      }
-    >
-      {navigationSlot}
-      {navigation.map((item) => {
-        const Icon = item.icon;
-
-        return (
-          <Link
-            className={
-              isHorizontal
-                ? "inline-flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-400 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-                : "flex items-center gap-3 rounded-md px-3 py-2.5 text-slate-400 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-            }
-            href={item.href}
-            key={item.href}
-          >
-            <Icon aria-hidden="true" className="size-4" />
-            {item.label}
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
-
-async function listBrowserAccountSessionsFromCookie() {
-  const browserToken = await readBrowserSessionToken();
-  if (browserToken === null) {
-    return [];
-  }
-  const result = await listBrowserAccountSessions(browserToken);
-  return result.status === "found" ? result.sessions : [];
 }

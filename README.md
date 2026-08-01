@@ -43,28 +43,32 @@ pnpm dev
 
 Open <http://localhost:3000>.
 
-### Development runtime
+### Runtime composition
 
-The current product runtime is intentionally in-memory:
+Support has one application composition for development, preview, and
+production:
 
-- Development enables it automatically. Production-mode E2E enables it with
-  `SUPPORT_IN_MEMORY_RUNTIME=enabled`.
-- State is process-local, non-durable, single-instance, and invalidated by a
-  process restart. It is not a production persistence or session guarantee.
-- Each bounded context owns its own versioned store. Cross-context reads use
-  public contracts rather than a shared application database.
-- Browser authentication uses an opaque HttpOnly cookie. The deterministic
-  development sign-in form is prefilled with the non-secret `mock` / `123456`
-  fixture; additional fixtures remain owned by the authentication adapter.
+- Supabase Auth owns credentials, MFA, and browser sessions through SSR
+  cookies.
+- Supabase PostgreSQL owns durable product state.
+- Supabase Storage owns media objects while PostgreSQL owns their metadata.
+- Unit tests inject isolated in-memory adapters directly. Environment variables
+  never select those fixtures for the application runtime.
+
+Copy [`apps/web/.env.example`](apps/web/.env.example) to
+`apps/web/.env.local` and provide the required Supabase values. Production
+adapters fail closed when their configuration is first resolved. Local
+development may target a local Supabase stack or an explicitly selected remote
+project, but it uses the same provider boundaries.
 
 Use [`docs/architecture/module-map.json`](docs/architecture/module-map.json)
 for current bounded-context status and
 [`apps/web/route-map.json`](apps/web/route-map.json) for route materialization.
 Do not infer implemented behavior from a directory, README, or dated report.
 
-Development authentication endpoints are disabled outside development or the
-explicit in-memory E2E runtime. Platform delivery adapters are simulated and
-must not be treated as durable storage or external provider integrations.
+Authentication routes use Supabase sessions in every environment. Test-only
+fixtures and in-memory adapters must not be treated as durable storage or
+external provider integrations.
 
 ## Commands
 

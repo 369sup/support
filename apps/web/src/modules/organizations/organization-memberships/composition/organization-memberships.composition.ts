@@ -1,6 +1,4 @@
 import { OrganizationInvitationAccountAdapter } from "../adapters/outbound/integration/organization-invitation-account.adapter";
-import { InMemoryOrganizationMembershipAdapter } from "../adapters/outbound/persistence/in-memory-organization-membership.adapter";
-import { InMemoryOrganizationMembershipIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-organization-membership-id-generator.adapter";
 import { NodeOrganizationMembershipIdGeneratorAdapter } from "../adapters/outbound/persistence/node-organization-membership-id-generator.adapter";
 import { PostgresOrganizationMembershipAdapter } from "../adapters/outbound/persistence/postgres-organization-membership.adapter";
 import { SystemOrganizationMembershipClockAdapter } from "../adapters/outbound/persistence/system-organization-membership-clock.adapter";
@@ -59,16 +57,11 @@ export interface OrganizationMembershipsServerFacade {
 
 function composeOrganizationMembershipsServerFacade(): OrganizationMembershipsServerFacade {
   const database = getProductionDatabase();
-  const repository =
-    database === null
-      ? new InMemoryOrganizationMembershipAdapter()
-      : new PostgresOrganizationMembershipAdapter(database);
+  const repository = new PostgresOrganizationMembershipAdapter(database);
   const service = new OrganizationMembershipService(
     repository,
     new OrganizationInvitationAccountAdapter(),
-    database === null
-      ? new InMemoryOrganizationMembershipIdGeneratorAdapter()
-      : new NodeOrganizationMembershipIdGeneratorAdapter(),
+    new NodeOrganizationMembershipIdGeneratorAdapter(),
     new SystemOrganizationMembershipClockAdapter(),
   );
   const acceptInvitation =

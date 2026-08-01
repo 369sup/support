@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Handles GET requests for `/api/contexts` through `getOptionalCurrentSession`, `isInMemoryRuntimeEnabled`, `listAvailableDashboardContexts`.
+Handles GET requests for `/api/contexts` through `getOptionalCurrentSession`, `listAvailableDashboardContexts`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -24,7 +24,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 ## Module contracts
 
 - - **owner:** `projections/dashboard` — use cases: `list-available-dashboard-contexts`; functions: `listAvailableDashboardContexts`
-- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`, `isInMemoryRuntimeEnabled`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

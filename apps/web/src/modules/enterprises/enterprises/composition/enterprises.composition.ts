@@ -1,5 +1,4 @@
 import { OrganizationReferenceAdapter } from "../adapters/outbound/integration/organization-reference.adapter";
-import { InMemoryEnterpriseQueryAdapter } from "../adapters/outbound/persistence/in-memory-enterprise-query.adapter";
 import { NodeEnterpriseIdGeneratorAdapter } from "../adapters/outbound/persistence/node-enterprise-id-generator.adapter";
 import { PostgresEnterpriseQueryAdapter } from "../adapters/outbound/persistence/postgres-enterprise-query.adapter";
 import { CreateEnterpriseHandler } from "../application/commands/create-enterprise.handler";
@@ -29,10 +28,7 @@ export interface EnterprisesServerFacade {
 
 function composeEnterprisesServerFacade(): EnterprisesServerFacade {
   const database = getProductionDatabase();
-  const repository =
-    database === null
-      ? new InMemoryEnterpriseQueryAdapter()
-      : new PostgresEnterpriseQueryAdapter(database);
+  const repository = new PostgresEnterpriseQueryAdapter(database);
   const organizationGateway = new OrganizationReferenceAdapter();
   const create = new CreateEnterpriseHandler(
     repository,

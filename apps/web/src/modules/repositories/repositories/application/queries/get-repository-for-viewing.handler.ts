@@ -31,6 +31,15 @@ export class GetRepositoryForViewingHandler
     if (repository === null || repository.lifecycleState === "deleted") {
       return { status: "repository-not-found" };
     }
+    if (repository.visibility === "public") {
+      return {
+        repository: mapRepositoryView(repository, "read"),
+        status: "found",
+      };
+    }
+    if (query.actorAccountId === null) {
+      return { status: "repository-not-found" };
+    }
     const permission =
       await this.authorization.resolveRepositoryPermission({
         actorAccountId: query.actorAccountId,

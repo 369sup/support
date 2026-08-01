@@ -1,7 +1,6 @@
 import "server-only";
 
 import {
-  assertPostgresMigrationsApplied,
   type SqlRow,
   type TransactionalSqlExecutor,
 } from "@support/database/postgres";
@@ -13,7 +12,6 @@ import type {
   PublicationAttempt,
   PublicationReceipt,
 } from "../../../domain/publication-record";
-import { postgresEventPublicationMigrations } from "./postgres-event-publication.migrations";
 
 const deadLetterSchema = z.object({
   deadLetterId: z.string(),
@@ -53,24 +51,18 @@ export class PostgresPublicationStateAdapter
   implements PublicationStateRepositoryPort
 {
   private readonly database: TransactionalSqlExecutor;
-  private readonly ready: Promise<void>;
 
   constructor(database: TransactionalSqlExecutor) {
     this.database = database;
-    this.ready = assertPostgresMigrationsApplied(
-      database,
-      postgresEventPublicationMigrations,
-    );
   }
 
   async findDeadLetter(
     deadLetterId: string,
   ): Promise<DeadLetterRecord | null> {
-    await this.ready;
     const result = await this.database.query<DeadLetterRow>(
       `
         select record
-        from support_event_publication_dead_letters
+        from support_platform_event_publication.support_event_publication_dead_letters
         where dead_letter_id = $1
       `,
       [deadLetterId],
@@ -80,11 +72,10 @@ export class PostgresPublicationStateAdapter
   }
 
   async getFailureCount(eventId: string): Promise<number> {
-    await this.ready;
     const result = await this.database.query<FailureCountRow>(
       `
         select count(*)::text as failure_count
-        from support_event_publication_attempts
+        from support_platform_event_publication.support_event_publication_attempts
         where event_id = $1 and outcome = 'failed'
       `,
       [eventId],
@@ -93,18 +84,17 @@ export class PostgresPublicationStateAdapter
   }
 
   async getCounts() {
-    await this.ready;
     const result = await this.database.query<CountRow>(`
       select
-        (select count(*) from support_event_publication_attempts)::text
+        (select count(*) from support_platform_event_publication.support_event_publication_attempts)::text
           as attempts,
-        (select count(*) from support_event_publication_dead_letters)::text
+        (select count(*) from support_platform_event_publication.support_event_publication_dead_letters)::text
           as dead_letters,
-        (select count(*) from support_event_publication_attempts
+        (select count(*) from support_platform_event_publication.support_event_publication_attempts
           where outcome = 'delivered')::text as delivered_attempts,
-        (select count(*) from support_event_publication_attempts
+        (select count(*) from support_platform_event_publication.support_event_publication_attempts
           where outcome = 'failed')::text as failed_attempts,
-        (select count(*) from support_event_publication_receipts)::text
+        (select count(*) from support_platform_event_publication.support_event_publication_receipts)::text
           as receipts
     `);
     const row = result.rows[0];
@@ -118,11 +108,10 @@ export class PostgresPublicationStateAdapter
   }
 
   async hasReceipt(eventId: string): Promise<boolean> {
-    await this.ready;
     const result = await this.database.query<ReceiptRow>(
       `
         select 1 as found
-        from support_event_publication_receipts
+        from support_platform_event_publication.support_event_publication_receipts
         where event_id = $1
       `,
       [eventId],
@@ -133,18 +122,17 @@ export class PostgresPublicationStateAdapter
   async listDeadLetters(
     sourceContext?: string,
   ): Promise<readonly DeadLetterRecord[]> {
-    await this.ready;
     const result =
       sourceContext === undefined
         ? await this.database.query<DeadLetterRow>(`
             select record
-            from support_event_publication_dead_letters
+            from support_platform_event_publication.support_event_publication_dead_letters
             order by failed_at, dead_letter_id
           `)
         : await this.database.query<DeadLetterRow>(
             `
               select record
-              from support_event_publication_dead_letters
+              from support_platform_event_publication.support_event_publication_dead_letters
               where source_context = $1
               order by failed_at, dead_letter_id
             `,
@@ -154,10 +142,9 @@ export class PostgresPublicationStateAdapter
   }
 
   async recordAttempt(attempt: PublicationAttempt): Promise<void> {
-    await this.ready;
     await this.database.query(
       `
-        insert into support_event_publication_attempts (
+        insert into support_platform_event_publication.support_event_publication_attempts (
           attempt_id, attempted_at, error_code, event_id, outcome,
           source_context, version
         ) values ($1, $2, $3, $4, $5, $6, $7)
@@ -176,10 +163,9 @@ export class PostgresPublicationStateAdapter
   }
 
   async removeDeadLetter(deadLetterId: string): Promise<void> {
-    await this.ready;
     await this.database.query(
       `
-        delete from support_event_publication_dead_letters
+        delete from support_platform_event_publication.support_event_publication_dead_letters
         where dead_letter_id = $1
       `,
       [deadLetterId],
@@ -187,10 +173,9 @@ export class PostgresPublicationStateAdapter
   }
 
   async saveDeadLetter(record: DeadLetterRecord): Promise<void> {
-    await this.ready;
     await this.database.query(
       `
-        insert into support_event_publication_dead_letters (
+        insert into support_platform_event_publication.support_event_publication_dead_letters (
           dead_letter_id, event_id, source_context, failed_at, record, version
         ) values ($1, $2, $3, $4, $5::jsonb, $6)
         on conflict (dead_letter_id) do update
@@ -210,10 +195,9 @@ export class PostgresPublicationStateAdapter
   }
 
   async saveReceipt(receipt: PublicationReceipt): Promise<void> {
-    await this.ready;
     await this.database.query(
       `
-        insert into support_event_publication_receipts (
+        insert into support_platform_event_publication.support_event_publication_receipts (
           event_id, delivered_at, version
         ) values ($1, $2, $3)
         on conflict (event_id) do nothing

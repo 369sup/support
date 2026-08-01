@@ -1,0 +1,59 @@
+# Allow only the repository's canonical validation scripts to run outside the
+# sandbox. These rules load only when the project configuration layer is
+# trusted.
+
+prefix_rule(
+    pattern = [
+        "pnpm",
+        [
+            "typecheck",
+            "lint",
+            "architecture",
+            "test",
+            "build",
+            "check",
+            "test:hooks",
+        ],
+    ],
+    decision = "allow",
+    justification = "Allow canonical repository validation scripts outside the sandbox.",
+    match = [
+        "pnpm typecheck",
+        "pnpm check",
+        "pnpm test:hooks",
+    ],
+    not_match = [
+        "pnpm install",
+        "pnpm exec vitest",
+        "pnpm run dev",
+        "pnpm test:e2e",
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "pnpm.cmd",
+        [
+            "typecheck",
+            "lint",
+            "architecture",
+            "test",
+            "build",
+            "check",
+            "test:hooks",
+        ],
+    ],
+    decision = "allow",
+    justification = "Allow canonical Windows repository validation scripts outside the sandbox.",
+    match = [
+        "pnpm.cmd typecheck",
+        "pnpm.cmd check",
+        "pnpm.cmd test:hooks",
+    ],
+    not_match = [
+        "pnpm.cmd install",
+        "pnpm.cmd exec vitest",
+        "pnpm.cmd run dev",
+        "pnpm.cmd test:e2e",
+    ],
+)

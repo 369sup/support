@@ -1,7 +1,6 @@
 import "server-only";
 
 import {
-  assertPostgresMigrationsApplied,
   type SqlExecutor,
   type SqlRow,
   type TransactionalSqlExecutor,
@@ -17,7 +16,6 @@ import type {
   AccountQueryRepositoryPort,
   AccountQuerySnapshot,
 } from "../../../application/ports/outbound/account-query.repository.port";
-import { postgresAccountMigrations } from "./postgres-account.migrations";
 
 type AccountRow = SqlRow & {
   account_id: string;
@@ -153,24 +151,18 @@ export class PostgresAccountAdapter
     AccountIdentityTransactionRepositoryPort
 {
   private readonly database: TransactionalSqlExecutor;
-  private readonly ready: Promise<void>;
 
   constructor(database: TransactionalSqlExecutor) {
     this.database = database;
-    this.ready = assertPostgresMigrationsApplied(
-      database,
-      postgresAccountMigrations,
-    );
   }
 
   async findByUsername(
     username: string,
   ): Promise<AccountQuerySnapshot | null> {
-    await this.ready;
     const result = await this.database.query<AccountRow>(
       `
         select ${accountColumns}
-        from support_accounts
+        from support_identity_accounts.support_accounts
         where normalized_username = $1
       `,
       [normalizeUsername(username)],
@@ -188,11 +180,10 @@ export class PostgresAccountAdapter
   async findById(
     accountId: string,
   ): Promise<AccountQuerySnapshot | null> {
-    await this.ready;
     const result = await this.database.query<AccountRow>(
       `
         select ${accountColumns}
-        from support_accounts
+        from support_identity_accounts.support_accounts
         where account_id = $1
       `,
       [accountId],
@@ -202,10 +193,9 @@ export class PostgresAccountAdapter
   }
 
   async markDeleted(accountId: string): Promise<void> {
-    await this.ready;
     await this.database.query(
       `
-        update support_accounts
+        update support_identity_accounts.support_accounts
         set lifecycle_state = 'deleted', updated_at = now()
         where account_id = $1
       `,
@@ -216,7 +206,6 @@ export class PostgresAccountAdapter
   async apply(
     command: AccountIdentityTransactionCommand,
   ): Promise<AccountIdentityTransactionResult> {
-    await this.ready;
     if (command.action === "prepare-registration") {
       return this.prepareRegistration(command);
     }
@@ -262,7 +251,7 @@ export class PostgresAccountAdapter
         }
         await connection.query(
           `
-            insert into support_account_identity_transactions (
+            insert into support_identity_accounts.support_account_identity_transactions (
               transaction_id, kind, state, account_id,
               pending_username, pending_normalized_username,
               pending_display_name, pending_account_type, pending_usage,
@@ -309,7 +298,7 @@ export class PostgresAccountAdapter
         const result = await connection.query<AccountRow>(
           `
             select ${accountColumns}
-            from support_accounts
+            from support_identity_accounts.support_accounts
             where account_id = $1 and lifecycle_state = 'active'
             for update
           `,
@@ -339,7 +328,7 @@ export class PostgresAccountAdapter
         };
         await connection.query(
           `
-            insert into support_account_identity_transactions (
+            insert into support_identity_accounts.support_account_identity_transactions (
               transaction_id, kind, state, account_id,
               pending_username, pending_normalized_username,
               pending_display_name, pending_account_type, pending_usage,
@@ -401,7 +390,7 @@ export class PostgresAccountAdapter
       if (transaction.kind === "registration") {
         await connection.query(
           `
-            insert into support_accounts (
+            insert into support_identity_accounts.support_accounts (
               account_id, username, normalized_username, display_name,
               account_type, usage, lifecycle_state
             ) values ($1, $2, $3, $4, $5, $6, 'active')
@@ -426,7 +415,7 @@ export class PostgresAccountAdapter
       } else {
         await connection.query(
           `
-            update support_accounts
+            update support_identity_accounts.support_accounts
             set username = $2,
                 normalized_username = $3,
                 lifecycle_state = 'active',
@@ -442,7 +431,7 @@ export class PostgresAccountAdapter
       }
       await connection.query(
         `
-          update support_account_identity_transactions
+          update support_identity_accounts.support_account_identity_transactions
           set state = 'committed'
           where transaction_id = $1
         `,
@@ -476,13 +465,13 @@ export class PostgresAccountAdapter
         const previous = previousAccount(transaction);
         if (transaction.kind === "registration") {
           await connection.query(
-            "delete from support_accounts where account_id = $1",
+            "delete from support_identity_accounts.support_accounts where account_id = $1",
             [transaction.account_id],
           );
         } else if (previous !== null) {
           await connection.query(
             `
-              update support_accounts
+              update support_identity_accounts.support_accounts
               set username = $2,
                   normalized_username = $3,
                   display_name = $4,
@@ -506,7 +495,7 @@ export class PostgresAccountAdapter
       }
       await connection.query(
         `
-          delete from support_account_identity_transactions
+          delete from support_identity_accounts.support_account_identity_transactions
           where transaction_id = $1
         `,
         [transactionId],
@@ -531,7 +520,7 @@ export class PostgresAccountAdapter
       }
       await connection.query(
         `
-          delete from support_account_identity_transactions
+          delete from support_identity_accounts.support_account_identity_transactions
           where transaction_id = $1
         `,
         [transactionId],
@@ -550,7 +539,7 @@ export class PostgresAccountAdapter
     const result = await connection.query<AccountTransactionRow>(
       `
         select ${transactionColumns}
-        from support_account_identity_transactions
+        from support_identity_accounts.support_account_identity_transactions
         where transaction_id = $1
         for update
       `,
@@ -570,7 +559,7 @@ export class PostgresAccountAdapter
         select (
           (
             select count(*)
-            from support_accounts
+            from support_identity_accounts.support_accounts
             where (
               account_id = $1 and $3 = false
             ) or (
@@ -578,7 +567,7 @@ export class PostgresAccountAdapter
             )
           ) + (
             select count(*)
-            from support_account_identity_transactions
+            from support_identity_accounts.support_account_identity_transactions
             where account_id = $1 or pending_normalized_username = $2
           )
         )::text as count

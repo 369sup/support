@@ -2,6 +2,8 @@ import { accountEmailsServerFacade } from "./composition/account-emails.composit
 
 export const addAccountEmail =
   accountEmailsServerFacade.addAccountEmail;
+export const getVerifiedAccountIdByEmail =
+  accountEmailsServerFacade.getVerifiedAccountIdByEmail;
 export const listAccountEmails =
   accountEmailsServerFacade.listAccountEmails;
 export const updateAccountEmailSettings =

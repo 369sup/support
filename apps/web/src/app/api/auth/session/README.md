@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Handles GET requests for `/api/auth/session` through `getCurrentAuthenticatedSession`, `isInMemoryRuntimeEnabled`, `readBrowserSessionToken`.
+Handles GET requests for `/api/auth/session` through `getCurrentAuthenticatedSession`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -23,7 +23,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 
 ## Module contracts
 
-- - **owner:** `identity/authentication` — use cases: `get-current-authenticated-session`; functions: `getCurrentAuthenticatedSession`, `isInMemoryRuntimeEnabled`, `readBrowserSessionToken`
+- - **owner:** `identity/authentication` — use cases: `get-current-authenticated-session`; functions: `getCurrentAuthenticatedSession`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

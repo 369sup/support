@@ -1,5 +1,4 @@
 import type { AppAccessPolicyDecision, AppAccessRequest } from "../contracts/app-access-policy-decision";
-import { InMemoryOrganizationAppAccessPolicyQueryAdapter } from "../adapters/outbound/persistence/in-memory-organization-app-access-policy-query.adapter";
 import { PostgresOrganizationPolicyQueryAdapter } from "../adapters/outbound/persistence/postgres-organization-policy-query.adapter";
 import type { GetOrganizationBaseRepositoryPermissionUseCase } from "../application/ports/inbound/get-organization-base-repository-permission.use-case";
 import { GetOrganizationBaseRepositoryPermissionHandler } from "../application/queries/get-organization-base-repository-permission.handler";
@@ -15,12 +14,7 @@ export interface OrganizationPoliciesServerFacade {
 
 function composeOrganizationPoliciesServerFacade(): OrganizationPoliciesServerFacade {
   const database = getProductionDatabase();
-  const policyRepository =
-    database === null
-      ? new InMemoryOrganizationAppAccessPolicyQueryAdapter(
-          InMemoryOrganizationAppAccessPolicyQueryAdapter.createDevelopmentState(),
-        )
-      : new PostgresOrganizationPolicyQueryAdapter(database);
+  const policyRepository = new PostgresOrganizationPolicyQueryAdapter(database);
   const basePermission =
     new GetOrganizationBaseRepositoryPermissionHandler(policyRepository);
   const handler = new ResolveAppAccessDecisionHandler(policyRepository);

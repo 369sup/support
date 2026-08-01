@@ -14,17 +14,20 @@ import {
   reportContent,
   type ContentReportReason,
 } from "@/modules/collaboration/moderation/server-api";
-import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
+import {
+  getOptionalCurrentSession,
+  requireCurrentSession,
+} from "@/modules/identity/authentication/server-api";
 import { getRepositoryForViewing } from "@/modules/repositories/repositories/server-api";
 
-async function resolveIssueAccess(
+async function resolveIssueView(
+  actorAccountId: string | null,
   owner: string,
   repositoryName: string,
   number: number,
 ) {
-  const session = await requireCurrentSession();
   const repository = await resolveRepositoryViewForActor(
-    session.account.accountId,
+    actorAccountId,
     owner,
     repositoryName,
     getRepositoryForViewing,
@@ -39,7 +42,7 @@ async function resolveIssueAccess(
   if (issueResult.status !== "found") {
     notFound();
   }
-  return { session, repository, issue: issueResult.issue };
+  return { repository, issue: issueResult.issue };
 }
 
 function readIssueActionTarget(formData: FormData) {
@@ -54,7 +57,9 @@ async function addCommentAction(formData: FormData): Promise<never> {
   "use server";
 
   const target = readIssueActionTarget(formData);
-  const { session, repository, issue } = await resolveIssueAccess(
+  const session = await requireCurrentSession();
+  const { repository, issue } = await resolveIssueView(
+    session.account.accountId,
     target.owner,
     target.repository,
     target.number,
@@ -88,7 +93,9 @@ async function addReactionAction(formData: FormData): Promise<never> {
   "use server";
 
   const target = readIssueActionTarget(formData);
-  const { session, repository, issue } = await resolveIssueAccess(
+  const session = await requireCurrentSession();
+  const { repository, issue } = await resolveIssueView(
+    session.account.accountId,
     target.owner,
     target.repository,
     target.number,
@@ -124,7 +131,9 @@ async function reportIssueAction(formData: FormData): Promise<never> {
   "use server";
 
   const target = readIssueActionTarget(formData);
-  const { session, issue } = await resolveIssueAccess(
+  const session = await requireCurrentSession();
+  const { issue } = await resolveIssueView(
+    session.account.accountId,
     target.owner,
     target.repository,
     target.number,
@@ -173,12 +182,15 @@ export default async function IssuePage({
 }>) {
   const [routeParams, query] = await Promise.all([params, searchParams]);
   const number = Number(routeParams.number);
-  const { issue, repository } = await resolveIssueAccess(
+  const session = await getOptionalCurrentSession();
+  const { issue, repository } = await resolveIssueView(
+    session?.account.accountId ?? null,
     routeParams.owner,
     routeParams.repository,
     number,
   );
   const isReadOnly = repository.lifecycleState === "archived";
+  const canInteract = session !== null && !isReadOnly;
   const commentsResult = await listConversationComments({
     subjectKind: "issue",
     subjectId: issue.issueId,
@@ -257,7 +269,7 @@ export default async function IssuePage({
                   />
                   <button
                     className="rounded-md border border-white/15 px-2.5 py-1 text-xs text-slate-300 hover:border-emerald-400/50"
-                    disabled={isReadOnly}
+                    disabled={!canInteract}
                     name="reaction"
                     type="submit"
                     value="thumbs-up"
@@ -280,14 +292,14 @@ export default async function IssuePage({
             </label>
             <textarea
               className="min-h-32 resize-y rounded-lg border border-white/15 bg-[#08111d] px-3 py-2.5 outline-none focus:border-emerald-400"
-              disabled={isReadOnly}
+              disabled={!canInteract}
               id="issue-comment"
               name="body"
               required
             />
             <button
               className="w-fit rounded-lg bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-300"
-              disabled={isReadOnly}
+              disabled={!canInteract}
               type="submit"
             >
               Comment
@@ -296,6 +308,11 @@ export default async function IssuePage({
               <p className="text-sm text-amber-200">
                 Archived repositories are read-only. Existing issues remain
                 available for reference.
+              </p>
+            ) : null}
+            {!isReadOnly && session === null ? (
+              <p className="text-sm text-slate-400">
+                Sign in to comment or react.
               </p>
             ) : null}
           </form>
@@ -313,6 +330,7 @@ export default async function IssuePage({
             />
             <select
               className="rounded-lg border border-white/15 bg-[#08111d] px-3 py-2 text-sm"
+              disabled={session === null}
               name="reason"
             >
               <option value="abuse">Abuse</option>
@@ -321,6 +339,7 @@ export default async function IssuePage({
             </select>
             <button
               className="rounded-lg border border-red-400/30 px-3 py-2 text-sm text-red-200 hover:bg-red-400/10"
+              disabled={session === null}
               type="submit"
             >
               Submit report

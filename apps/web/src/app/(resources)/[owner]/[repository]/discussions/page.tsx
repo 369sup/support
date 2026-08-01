@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { resolveRepositoryViewForActor } from "@/app/(resources)/_repository-view";
 import { listRepositoryDiscussions } from "@/modules/collaboration/discussions/server-api";
-import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
+import { getOptionalCurrentSession } from "@/modules/identity/authentication/server-api";
 import { getRepositoryForViewing } from "@/modules/repositories/repositories/server-api";
 
 export default async function DiscussionsPage({
@@ -12,9 +12,9 @@ export default async function DiscussionsPage({
   params: Promise<{ owner: string; repository: string }>;
 }>) {
   const routeParams = await params;
-  const session = await requireCurrentSession();
+  const session = await getOptionalCurrentSession();
   const repository = await resolveRepositoryViewForActor(
-    session.account.accountId,
+    session?.account.accountId ?? null,
     routeParams.owner,
     routeParams.repository,
     getRepositoryForViewing,
@@ -35,7 +35,7 @@ export default async function DiscussionsPage({
               Discussions
             </h1>
           </div>
-          {repository.lifecycleState === "active" ? (
+          {repository.lifecycleState === "active" && session !== null ? (
             <Link
               className="rounded-lg bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-300"
               href={`/${routeParams.owner}/${routeParams.repository}/discussions/new`}

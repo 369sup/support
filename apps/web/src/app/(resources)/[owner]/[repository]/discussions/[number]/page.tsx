@@ -12,17 +12,20 @@ import {
   reportContent,
   type ContentReportReason,
 } from "@/modules/collaboration/moderation/server-api";
-import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
+import {
+  getOptionalCurrentSession,
+  requireCurrentSession,
+} from "@/modules/identity/authentication/server-api";
 import { getRepositoryForViewing } from "@/modules/repositories/repositories/server-api";
 
-async function resolveDiscussionAccess(
+async function resolveDiscussionView(
+  actorAccountId: string | null,
   owner: string,
   repositoryName: string,
   number: number,
 ) {
-  const session = await requireCurrentSession();
   const repository = await resolveRepositoryViewForActor(
-    session.account.accountId,
+    actorAccountId,
     owner,
     repositoryName,
     getRepositoryForViewing,
@@ -37,7 +40,7 @@ async function resolveDiscussionAccess(
   if (discussionResult.status !== "found") {
     notFound();
   }
-  return { discussion: discussionResult.discussion, repository, session };
+  return { discussion: discussionResult.discussion, repository };
 }
 
 function readTarget(formData: FormData) {
@@ -52,7 +55,9 @@ async function addCommentAction(formData: FormData): Promise<never> {
   "use server";
 
   const target = readTarget(formData);
-  const { discussion, repository, session } = await resolveDiscussionAccess(
+  const session = await requireCurrentSession();
+  const { discussion, repository } = await resolveDiscussionView(
+    session.account.accountId,
     target.owner,
     target.repository,
     target.number,
@@ -81,7 +86,9 @@ async function reportCommentAction(formData: FormData): Promise<never> {
   "use server";
 
   const target = readTarget(formData);
-  const { session } = await resolveDiscussionAccess(
+  const session = await requireCurrentSession();
+  await resolveDiscussionView(
+    session.account.accountId,
     target.owner,
     target.repository,
     target.number,
@@ -124,12 +131,15 @@ export default async function DiscussionPage({
 }>) {
   const routeParams = await params;
   const number = Number(routeParams.number);
-  const { discussion, repository } = await resolveDiscussionAccess(
+  const session = await getOptionalCurrentSession();
+  const { discussion, repository } = await resolveDiscussionView(
+    session?.account.accountId ?? null,
     routeParams.owner,
     routeParams.repository,
     number,
   );
   const isReadOnly = repository.lifecycleState === "archived";
+  const canComment = session !== null && !isReadOnly;
   const commentsResult = await listConversationComments({
     subjectId: discussion.discussionId,
     subjectKind: "discussion",
@@ -186,13 +196,18 @@ export default async function DiscussionPage({
                   />
                   <select
                     className="rounded-md border border-white/10 bg-[#08111d] px-2 py-1 text-xs"
+                    disabled={session === null}
                     name="reason"
                   >
                     <option value="spam">Spam</option>
                     <option value="abuse">Abuse</option>
                     <option value="off-topic">Off-topic</option>
                   </select>
-                  <button className="text-xs text-slate-400" type="submit">
+                  <button
+                    className="text-xs text-slate-400"
+                    disabled={session === null}
+                    type="submit"
+                  >
                     Report
                   </button>
                 </form>
@@ -209,14 +224,14 @@ export default async function DiscussionPage({
               Add a comment
               <textarea
                 className="min-h-32 rounded-lg border border-white/15 bg-[#08111d] px-3 py-2.5"
-                disabled={isReadOnly}
+                disabled={!canComment}
                 name="body"
                 required
               />
             </label>
             <button
               className="w-fit rounded-lg bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-slate-950"
-              disabled={isReadOnly}
+              disabled={!canComment}
               type="submit"
             >
               Comment
@@ -225,6 +240,11 @@ export default async function DiscussionPage({
               <p className="text-sm text-amber-200">
                 Archived repositories are read-only. Existing discussions
                 remain available for reference.
+              </p>
+            ) : null}
+            {!isReadOnly && session === null ? (
+              <p className="text-sm text-slate-400">
+                Sign in to join the discussion.
               </p>
             ) : null}
           </form>

@@ -23,5 +23,9 @@ export interface RepositoryQueryRepositoryPort {
     ownerId: string,
     name: string,
   ): Promise<RepositoryQuerySnapshot | null>;
+  restoreDeleted(
+    tombstoneRepositoryId: string,
+    repository: RepositoryQuerySnapshot,
+  ): Promise<"restored" | "tombstone-not-found">;
   save(repository: RepositoryQuerySnapshot): Promise<void>;
 }

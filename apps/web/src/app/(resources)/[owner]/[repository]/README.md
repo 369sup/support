@@ -24,7 +24,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 ## Module contracts
 
 - - **owner:** `repositories/repositories` — use cases: `get-repository-for-viewing`; functions: `getRepositoryForViewing`
-- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

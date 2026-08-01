@@ -46,33 +46,18 @@ export class PostgresRepositoryGrantAdapter
   implements RepositoryGrantRepositoryPort, TeamRepositoryGrantRepositoryPort
 {
   private readonly database: SqlExecutor;
-  private readonly isSchemaReady: Promise<void>;
 
   constructor(database: SqlExecutor) {
     this.database = database;
-    this.isSchemaReady = this.assertSchema();
-  }
-
-  private async assertSchema(): Promise<void> {
-    const result = await this.database.query<{ isReady: boolean }>(
-      `select exists (
-         select 1 from support_schema_migrations
-         where migration_id = 'zz060_repositories_repository_access'
-       ) as "isReady"`,
-    );
-    if (result.rows[0]?.isReady !== true) {
-      throw new Error("Repository access schema is unavailable.");
-    }
   }
 
   async findActiveByRepositoryAndAccount(
     repositoryId: string,
     accountId: string,
   ) {
-    await this.isSchemaReady;
     const result = await this.database.query<DirectGrantRow>(
       `select grant_id, repository_id, account_id, permission, state
-         from support_repository_account_grants
+         from support_repositories_repository_access.support_repository_account_grants
         where repository_id = $1 and account_id = $2 and state = 'active'`,
       [repositoryId, accountId],
     );
@@ -80,10 +65,9 @@ export class PostgresRepositoryGrantAdapter
   }
 
   async findActiveByRepository(repositoryId: string) {
-    await this.isSchemaReady;
     const result = await this.database.query<TeamGrantRow>(
       `select grant_id, repository_id, organization_id, team_id, permission, state
-         from support_repository_team_grants
+         from support_repositories_repository_access.support_repository_team_grants
         where repository_id = $1 and state = 'active'
         order by team_id`,
       [repositoryId],
@@ -92,10 +76,9 @@ export class PostgresRepositoryGrantAdapter
   }
 
   async findActiveByRepositoryAndTeam(repositoryId: string, teamId: string) {
-    await this.isSchemaReady;
     const result = await this.database.query<TeamGrantRow>(
       `select grant_id, repository_id, organization_id, team_id, permission, state
-         from support_repository_team_grants
+         from support_repositories_repository_access.support_repository_team_grants
         where repository_id = $1 and team_id = $2 and state = 'active'`,
       [repositoryId, teamId],
     );
@@ -103,9 +86,8 @@ export class PostgresRepositoryGrantAdapter
   }
 
   async saveTeamGrant(grant: TeamRepositoryGrantReference) {
-    await this.isSchemaReady;
     await this.database.query(
-      `insert into support_repository_team_grants (
+      `insert into support_repositories_repository_access.support_repository_team_grants (
          grant_id, repository_id, organization_id, team_id, permission, state
        ) values ($1, $2, $3, $4, $5, $6)
        on conflict (repository_id, team_id) do update set

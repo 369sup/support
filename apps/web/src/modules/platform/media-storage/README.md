@@ -27,7 +27,8 @@ quarantine, deletion, checksum, and classification state.
   - `MediaStored@1` [planned]
   - `MediaDeleted@1` [planned]
   - `MediaQuarantined@1` [planned]
-- Runtime dependencies: none.
+- Runtime dependencies: `@support/supabase/storage`,
+  `@support/supabase/postgres`.
 - Explicit exclusions
   - `RepositoryContent`
   - `ReleaseAsset`
@@ -44,7 +45,8 @@ quarantine, deletion, checksum, and classification state.
 - **Success result:** `stored` with a metadata-only `MediaReference`.
 - **Expected rejections:** `none`
 - **Authorization:** Internal owning-context command only; no public upload route is active.
-- **Transaction:** One media object insert.
+- **Transaction:** Upload bytes to Supabase Storage, then insert durable
+  PostgreSQL metadata; a failed metadata insert compensates by removing bytes.
 - **Idempotency:** Callers must supply command idempotency before a future transport is activated.
 - **Dependencies:** `none`
 - **Published events:** `none`
@@ -92,7 +94,8 @@ quarantine, deletion, checksum, and classification state.
 - **Success result:** `deleted`.
 - **Expected rejections:** `media-not-found`, `version-conflict`
 - **Authorization:** The owning product context authorizes deletion.
-- **Transaction:** One media lifecycle update and byte erasure.
+- **Transaction:** One version-checked metadata tombstone and durable Storage
+  removal operation; pending removals are retried during runtime composition.
 - **Idempotency:** Repeated deletion returns `media-not-found`.
 - **Dependencies:** `none`
 - **Published events:** `none`
@@ -127,8 +130,9 @@ technical context.
 
 ## Persistence and transactions
 
-The adapter is a versioned, injectable, process-local Map. Mutable commands
-require an expected version.
+Production stores bytes in a private Supabase Storage bucket and metadata in
+PostgreSQL. Mutable commands use version-checked writes. In-memory adapters are
+test-only fakes.
 
 ## Data classification
 
@@ -137,8 +141,8 @@ keys must not be logged together.
 
 ## Retention and erasure
 
-Delete clears bytes immediately and retains only a process-local tombstone.
-Process restart erases all data.
+Delete creates a durable tombstone and removes the Storage object. Failed
+external removals remain pending and are retried after runtime restart.
 
 ## Events and failure behavior
 
@@ -152,4 +156,4 @@ Not applicable; this is a technical capability governed by
 
 ## Exceptions
 
-There is no external object store, CDN, malware scanner, or durable retention.
+There is no CDN or malware scanner.

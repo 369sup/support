@@ -5,10 +5,6 @@ import { resolveWebAuthenticationConfiguration } from "./supabase-auth-configura
 
 export async function proxy(request: NextRequest) {
   const configuration = resolveWebAuthenticationConfiguration();
-  if (configuration.provider !== "supabase") {
-    return NextResponse.next({ request });
-  }
-
   let response = NextResponse.next({ request });
   const supabase = createSupabaseAuthGateway({
     configuration: configuration.supabase,

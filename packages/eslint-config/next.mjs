@@ -27,6 +27,13 @@ function promoteWarningsToErrors(config) {
 }
 
 export function createNextConfig({ tsconfigRootDir }) {
+  /*
+   * Framework exception: Next.js discovers these App Router and metadata files
+   * through a required default export. Scope is restricted to the documented
+   * convention filenames, so ordinary modules keep stable named exports. A
+   * named-only alternative is not discovered by Next.js; lint, route-contract
+   * tests, and the production build verify and contain this exception.
+   */
   const nextDefaultExportFiles = [
     "src/app/**/{page,layout,template,default,loading,error,global-error,not-found}.{ts,tsx}",
     "src/app/{manifest,robots,sitemap}.{ts,tsx}",

@@ -1,6 +1,6 @@
 import type {
-  SqlExecutor,
   SqlRow,
+  TransactionalSqlExecutor,
 } from "@support/database/postgres";
 import type {
   RepositoryQueryRepositoryPort,
@@ -56,35 +56,20 @@ function mapRow(row: RepositoryRow): RepositoryQuerySnapshot {
 export class PostgresRepositoryQueryAdapter
   implements RepositoryQueryRepositoryPort
 {
-  private readonly database: SqlExecutor;
-  private readonly isSchemaReady: Promise<void>;
+  private readonly database: TransactionalSqlExecutor;
 
-  constructor(database: SqlExecutor) {
+  constructor(database: TransactionalSqlExecutor) {
     this.database = database;
-    this.isSchemaReady = this.assertSchema();
-  }
-
-  private async assertSchema(): Promise<void> {
-    const result = await this.database.query<{ isReady: boolean }>(
-      `select exists (
-         select 1 from support_schema_migrations
-         where migration_id = 'zz050_repositories_repositories'
-       ) as "isReady"`,
-    );
-    if (result.rows[0]?.isReady !== true) {
-      throw new Error("Repository schema is unavailable.");
-    }
   }
 
   async findByOwnerId(
     ownerId: string,
   ): Promise<readonly RepositoryQuerySnapshot[]> {
-    await this.isSchemaReady;
     const result = await this.database.query<RepositoryRow>(
       `select repository_id, owner_kind, owner_id, owner_username, name,
               description, homepage, visibility, lifecycle_state, version,
               created_at, updated_at, deleted_at, restore_until
-         from support_repositories
+         from support_repositories_repositories.support_repositories
         where owner_id = $1
         order by updated_at desc, repository_id`,
       [ownerId],
@@ -96,12 +81,11 @@ export class PostgresRepositoryQueryAdapter
     ownerId: string,
     name: string,
   ): Promise<RepositoryQuerySnapshot | null> {
-    await this.isSchemaReady;
     const result = await this.database.query<RepositoryRow>(
       `select repository_id, owner_kind, owner_id, owner_username, name,
               description, homepage, visibility, lifecycle_state, version,
               created_at, updated_at, deleted_at, restore_until
-         from support_repositories
+         from support_repositories_repositories.support_repositories
         where owner_id = $1 and normalized_name = lower($2)
         limit 1`,
       [ownerId, name],
@@ -110,9 +94,8 @@ export class PostgresRepositoryQueryAdapter
   }
 
   async save(repository: RepositoryQuerySnapshot): Promise<void> {
-    await this.isSchemaReady;
     await this.database.query(
-      `insert into support_repositories (
+      `insert into support_repositories_repositories.support_repositories (
          repository_id, owner_kind, owner_id, owner_username, normalized_name,
          name, description, homepage, visibility, lifecycle_state, version,
          created_at, updated_at, deleted_at, restore_until
@@ -151,5 +134,67 @@ export class PostgresRepositoryQueryAdapter
         repository.restoreUntil,
       ],
     );
+  }
+
+  async restoreDeleted(
+    tombstoneRepositoryId: string,
+    repository: RepositoryQuerySnapshot,
+  ): Promise<"restored" | "tombstone-not-found"> {
+    return this.database.transaction(async (connection) => {
+      const tombstone = await connection.query<{ repository_id: string }>(
+        `select repository_id
+           from support_repositories_repositories.support_repositories
+          where repository_id = $1
+            and lifecycle_state = 'deleted'
+            and restore_until >= $2::timestamptz
+          for update`,
+        [tombstoneRepositoryId, repository.updatedAt],
+      );
+      if (tombstone.rows[0] === undefined) {
+        return "tombstone-not-found";
+      }
+
+      await connection.query(
+        `delete from support_repositories_repository_access.support_repository_account_grants
+          where repository_id = $1`,
+        [tombstoneRepositoryId],
+      );
+      await connection.query(
+        `delete from support_repositories_repository_access.support_repository_team_grants
+          where repository_id = $1`,
+        [tombstoneRepositoryId],
+      );
+      await connection.query(
+        `delete from support_repositories_repositories.support_repositories
+          where repository_id = $1`,
+        [tombstoneRepositoryId],
+      );
+      await connection.query(
+        `insert into support_repositories_repositories.support_repositories (
+           repository_id, owner_kind, owner_id, owner_username,
+           normalized_name, name, description, homepage, visibility,
+           lifecycle_state, version, created_at, updated_at, deleted_at,
+           restore_until
+         ) values (
+           $1, $2, $3, $4, lower($5), $5, $6, $7, $8, $9, $10,
+           $11::timestamptz, $12::timestamptz, null, null
+         )`,
+        [
+          repository.repositoryId,
+          repository.owner.kind,
+          repository.owner.id,
+          repository.owner.username,
+          repository.name,
+          repository.description,
+          repository.homepage,
+          repository.visibility,
+          repository.lifecycleState,
+          repository.version,
+          repository.createdAt,
+          repository.updatedAt,
+        ],
+      );
+      return "restored";
+    });
   }
 }

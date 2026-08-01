@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Handles GET, POST requests for `/api/organizations/{login}/roles/assignments` through `getOptionalCurrentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`, `getAccountReferenceById`, `assignOrganizationRole`, `listOrganizationRoleAssignments`, `getOrganizationTeam`, `getOrganizationByLogin`.
+Handles GET, POST requests for `/api/organizations/{login}/roles/assignments` through `getOptionalCurrentSession`, `hasSameOrigin`, `getAccountReferenceById`, `assignOrganizationRole`, `listOrganizationRoleAssignments`, `getOrganizationTeam`, `getOrganizationByLogin`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -25,7 +25,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 ## Module contracts
 
 - - **owner:** `organizations/organization-roles` — use cases: `assign-organization-role`, `list-organization-role-assignments`; functions: `assignOrganizationRole`, `listOrganizationRoleAssignments`
-- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`, `hasSameOrigin`
 - - **collaborator:** `identity/accounts` — use cases: `get-account-reference-by-id`; functions: `getAccountReferenceById`
 - - **collaborator:** `organizations/organization-teams` — use cases: `get-organization-team`; functions: `getOrganizationTeam`
 - - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`

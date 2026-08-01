@@ -22,8 +22,8 @@ membership source.
   - `accept-organization-invitation`
   - `decline-organization-invitation`
   - Owned: `OrganizationInvitation`
-  - Invitations target personal accounts by username and expire after seven
-    days; managed users are supplied through SCIM.
+  - Invitations target active personal accounts by username or verified email
+    and expire after seven days; managed users are supplied through SCIM.
 - Direct member lifecycle [active]
   - `change-organization-member-role`
   - `remove-organization-member`
@@ -131,7 +131,7 @@ membership source.
 - **Type:** `command`
 - **Application boundary:** `InviteOrganizationMemberUseCase.inviteOrganizationMember()`
 - **Public entrypoint:** `server-api.ts#inviteOrganizationMember`
-- **Input:** Authenticated owner account ID, organization ID, personal-account username, and member or owner role.
+- **Input:** Authenticated owner account ID, organization ID, personal-account username or verified email, and member or owner role.
 - **Success result:** Pending direct membership and invitation expiring exactly seven days after creation.
 - **Expected rejections:** `account-not-found`, `already-member`, `invalid-role`, `invitation-already-pending`, `managed-account-requires-scim`, `permission-denied`
 - **Authorization:** An active owner of the target organization must authorize the invitation.
@@ -140,7 +140,7 @@ membership source.
 - **Dependencies:** `organizations/organizations::OrganizationReference`, `identity/accounts::AccountReference`
 - **Published events:** `none`
 - **Official evidence:** `organizations-organization-memberships-source-02`
-- **Local policy:** Version one resolves username only, accepts active personal human accounts only, and sends no email.
+- **Local policy:** Missing and unverified email targets share `account-not-found`; only active personal human accounts are accepted, and managed users remain SCIM-owned.
 
 ### `list-active-organization-memberships-for-account` [active]
 

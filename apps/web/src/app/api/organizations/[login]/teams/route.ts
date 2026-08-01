@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { isInMemoryRuntimeEnabled } from "@/modules/identity/authentication/server-api";
 import { hasSameOrigin } from "@/modules/identity/authentication/server-api";
 import { getOptionalCurrentSession } from "@/modules/identity/authentication/server-api";
 import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
@@ -39,13 +38,12 @@ async function resolveOrganizationRouteContext(login: string) {
   };
 }
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   _request: Request,
   context: { params: Promise<{ login: string }> },
 ): Promise<Response> {
-  if (!isInMemoryRuntimeEnabled()) {
-    return new NextResponse(null, { status: 404 });
-  }
   const resolved = await resolveOrganizationRouteContext(
     (await context.params).login,
   );
@@ -68,9 +66,6 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ login: string }> },
 ): Promise<Response> {
-  if (!isInMemoryRuntimeEnabled()) {
-    return new NextResponse(null, { status: 404 });
-  }
   if (!hasSameOrigin(request)) {
     return NextResponse.json({ status: "invalid-origin" }, { status: 403 });
   }

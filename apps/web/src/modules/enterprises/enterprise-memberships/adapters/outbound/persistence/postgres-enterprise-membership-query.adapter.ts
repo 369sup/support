@@ -24,7 +24,7 @@ export class PostgresEnterpriseMembershipQueryAdapter
   async findByAccountId(accountId: string) {
     const result = await this.database.query<EnterpriseMembershipRow>(
       `select membership_id, enterprise_id, account_id, affiliation, state
-         from support_enterprise_memberships
+         from support_enterprises_enterprise_memberships.support_enterprise_memberships
         where account_id = $1 order by enterprise_id`,
       [accountId],
     );

@@ -24,7 +24,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 ## Module contracts
 
 - - **owner:** `repositories/repositories` — use cases: `list-visible-repositories-for-owner`; functions: `listVisibleRepositoriesForOwner`
-- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`, `requireCurrentSession`
 - - **collaborator:** `identity/accounts` — use cases: `get-personal-account-by-username`; functions: `getPersonalAccountByUsername`
 - - **collaborator:** `identity/profiles` — use cases: `get-user-profile`; functions: `getUserProfile`
 - - **collaborator:** `identity/social-graph` — use cases: `toggle-user-follow`; functions: `toggleUserFollow`

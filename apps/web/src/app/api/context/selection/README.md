@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Handles POST requests for `/api/context/selection` through `getOptionalCurrentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`, `selectDashboardContext`.
+Handles POST requests for `/api/context/selection` through `getOptionalCurrentSession`, `hasSameOrigin`, `selectDashboardContext`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -24,7 +24,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 ## Module contracts
 
 - - **owner:** `projections/dashboard` — use cases: `select-dashboard-context`; functions: `selectDashboardContext`
-- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`, `hasSameOrigin`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

@@ -4,8 +4,6 @@ import {
 } from "../adapters/inbound/server/list-active-public-repositories-for-personal-owner.adapter";
 import { RepositoryAdministrationAuthorizationAdapter } from "../adapters/outbound/integration/repository-administration-authorization.adapter";
 import { RepositoryViewAuthorizationAdapter } from "../adapters/outbound/integration/repository-view-authorization.adapter";
-import { InMemoryRepositoryQueryAdapter } from "../adapters/outbound/persistence/in-memory-repository-query.adapter";
-import { InMemoryRepositoryIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-repository-id-generator.adapter";
 import { NodeRepositoryIdGeneratorAdapter } from "../adapters/outbound/persistence/node-repository-id-generator.adapter";
 import { PostgresRepositoryQueryAdapter } from "../adapters/outbound/persistence/postgres-repository-query.adapter";
 import { SystemRepositoryClockAdapter } from "../adapters/outbound/persistence/system-repository-clock.adapter";
@@ -105,10 +103,7 @@ function mapCandidate(
 
 function composeRepositoriesServerFacade(): RepositoriesServerFacade {
   const database = getProductionDatabase();
-  const repository =
-    database === null
-      ? new InMemoryRepositoryQueryAdapter()
-      : new PostgresRepositoryQueryAdapter(database);
+  const repository = new PostgresRepositoryQueryAdapter(database);
   const eventRecorder = createContextEventSource(
     "repositories/repositories",
   );
@@ -141,9 +136,7 @@ function composeRepositoriesServerFacade(): RepositoriesServerFacade {
     repository,
     ownerAuthorization,
     new RepositoryAdministrationAuthorizationAdapter(),
-    database === null
-      ? new InMemoryRepositoryIdGeneratorAdapter()
-      : new NodeRepositoryIdGeneratorAdapter(),
+    new NodeRepositoryIdGeneratorAdapter(),
     clock,
     eventRecorder,
   );

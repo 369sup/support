@@ -1,10 +1,13 @@
-import { InMemoryRepositorySubscriptionAdapter } from "../adapters/outbound/persistence/in-memory-repository-subscription.adapter";
+import { getProductionDatabase } from "../../../../../production-runtime";
+import { PostgresRepositorySubscriptionAdapter } from "../adapters/outbound/persistence/postgres-repository-subscription.adapter";
 import { ToggleRepositorySubscriptionHandler } from "../application/commands/toggle-repository-subscription.handler";
 import type { ListRepositorySubscribersUseCase } from "../application/ports/inbound/list-repository-subscribers.use-case";
 import type { ToggleRepositorySubscriptionUseCase } from "../application/ports/inbound/toggle-repository-subscription.use-case";
 import { ListRepositorySubscribersHandler } from "../application/queries/list-repository-subscribers.handler";
 
-const subscriptions = new InMemoryRepositorySubscriptionAdapter();
+const subscriptions = new PostgresRepositorySubscriptionAdapter(
+  getProductionDatabase(),
+);
 const toggleRepositorySubscription =
   new ToggleRepositorySubscriptionHandler(subscriptions);
 const listRepositorySubscribers =

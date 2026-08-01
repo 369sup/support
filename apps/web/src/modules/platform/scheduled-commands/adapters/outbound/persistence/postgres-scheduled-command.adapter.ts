@@ -1,7 +1,6 @@
 import "server-only";
 
 import {
-  assertPostgresMigrationsApplied,
   type SqlExecutor,
   type SqlRow,
   type TransactionalSqlExecutor,
@@ -16,7 +15,6 @@ import type {
   ScheduledCommand,
   ScheduledCommandState,
 } from "../../../domain/scheduled-command";
-import { postgresScheduledCommandMigrations } from "./postgres-scheduled-command.migrations";
 
 type ScheduledCommandRow = SqlRow & {
   attempt_count: number;
@@ -60,14 +58,9 @@ export class PostgresScheduledCommandAdapter
   implements ScheduledCommandRepositoryPort
 {
   private readonly database: TransactionalSqlExecutor;
-  private readonly ready: Promise<void>;
 
   constructor(database: TransactionalSqlExecutor) {
     this.database = database;
-    this.ready = assertPostgresMigrationsApplied(
-      database,
-      postgresScheduledCommandMigrations,
-    );
   }
 
   async claimDue(input: {
@@ -76,19 +69,18 @@ export class PostgresScheduledCommandAdapter
     limit: number;
     workerId: string;
   }): Promise<readonly ScheduledCommand[]> {
-    await this.ready;
     return this.database.transaction(async (connection) => {
       const result = await connection.query<ScheduledCommandRow>(
         `
           with candidates as (
             select command_id
-            from support_scheduled_commands
+            from support_platform_scheduled_commands.support_scheduled_commands
             where state = 'pending' and due_at <= $1
             order by due_at, command_id
             limit $2
             for update skip locked
           )
-          update support_scheduled_commands as command
+          update support_platform_scheduled_commands.support_scheduled_commands as command
           set state = 'leased',
               worker_id = $3,
               lease_until = $4,
@@ -109,10 +101,9 @@ export class PostgresScheduledCommandAdapter
     expectedVersion: number;
     workerId: string;
   }): Promise<LeaseMutationResult> {
-    await this.ready;
     const result = await this.database.query<ScheduledCommandRow>(
       `
-        update support_scheduled_commands
+        update support_platform_scheduled_commands.support_scheduled_commands
         set state = 'completed',
             worker_id = null,
             lease_until = null,
@@ -138,10 +129,9 @@ export class PostgresScheduledCommandAdapter
     retryAt: string;
     workerId: string;
   }): Promise<LeaseMutationResult> {
-    await this.ready;
     const result = await this.database.query<ScheduledCommandRow>(
       `
-        update support_scheduled_commands
+        update support_platform_scheduled_commands.support_scheduled_commands
         set state = case
               when attempt_count >= max_attempts
                 then 'dead-lettered'
@@ -176,19 +166,18 @@ export class PostgresScheduledCommandAdapter
     limit: number;
     now: string;
   }): Promise<Readonly<{ deadLettered: number; reset: number }>> {
-    await this.ready;
     return this.database.transaction(async (connection) => {
       const result = await connection.query<ScheduledCommandRow>(
         `
           with candidates as (
             select command_id
-            from support_scheduled_commands
+            from support_platform_scheduled_commands.support_scheduled_commands
             where state = 'leased' and lease_until <= $1
             order by lease_until, command_id
             limit $2
             for update skip locked
           )
-          update support_scheduled_commands as command
+          update support_platform_scheduled_commands.support_scheduled_commands as command
           set state = case
                 when command.attempt_count >= command.max_attempts
                   then 'dead-lettered'
@@ -215,10 +204,9 @@ export class PostgresScheduledCommandAdapter
   async save(
     command: ScheduledCommand,
   ): Promise<SaveScheduledCommandResult> {
-    await this.ready;
     const result = await this.database.query<ScheduledCommandRow>(
       `
-        insert into support_scheduled_commands (
+        insert into support_platform_scheduled_commands.support_scheduled_commands (
           command_id, owner_context, command_name, payload, due_at, state,
           attempt_count, max_attempts, worker_id, lease_until,
           last_error_code, version
@@ -261,7 +249,7 @@ export class PostgresScheduledCommandAdapter
     const result = await connection.query<ScheduledCommandRow>(
       `
         select ${returningColumns}
-        from support_scheduled_commands
+        from support_platform_scheduled_commands.support_scheduled_commands
         where command_id = $1
       `,
       [commandId],

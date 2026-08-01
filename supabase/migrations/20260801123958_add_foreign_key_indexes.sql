@@ -1,0 +1,21 @@
+-- Migration unit 1: schema_changes
+-- Transaction mode: transactional
+-- Boundary reason: default
+
+CREATE INDEX support_conversation_comments_author_fk_idx ON support_collaboration_conversations.support_conversation_comments (author_account_id);
+
+CREATE INDEX support_repository_discussions_author_fk_idx ON support_collaboration_discussions.support_repository_discussions (author_account_id);
+
+CREATE INDEX support_repository_issues_author_fk_idx ON support_collaboration_issues.support_repository_issues (author_account_id);
+
+CREATE INDEX support_notifications_repository_fk_idx ON support_engagement_notifications.support_notifications (repository_id);
+
+CREATE INDEX support_organization_team_maintainers_organization_fk_idx ON support_organizations_organization_teams.support_organization_team_maintainers (organization_id);
+
+CREATE INDEX support_organization_team_memberships_organization_fk_idx ON support_organizations_organization_teams.support_organization_team_memberships (organization_id);
+
+CREATE INDEX support_dashboard_selections_account_fk_idx ON support_projections_dashboard.support_dashboard_selections (account_id);
+
+CREATE INDEX support_dashboard_selections_organization_fk_idx ON support_projections_dashboard.support_dashboard_selections (organization_id);
+
+CREATE INDEX support_repository_team_grants_organization_fk_idx ON support_repositories_repository_access.support_repository_team_grants (organization_id);

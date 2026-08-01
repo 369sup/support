@@ -1,7 +1,8 @@
 import type { AuthenticatedSessionReference } from "@/modules/identity/authentication/integration-contracts";
 
+import { getProductionDatabase } from "../../../../../production-runtime";
 import { DashboardSourceAdapter } from "../adapters/outbound/integration/dashboard-source.adapter";
-import { InMemoryDashboardSelectionAdapter } from "../adapters/outbound/persistence/in-memory-dashboard-selection.adapter";
+import { PostgresDashboardSelectionAdapter } from "../adapters/outbound/persistence/postgres-dashboard-selection.adapter";
 import { RestoreLastValidDashboardContextHandler } from "../application/commands/restore-last-valid-dashboard-context.handler";
 import { SelectDashboardContextHandler } from "../application/commands/select-dashboard-context.handler";
 import { GetDashboardRepositoryViewHandler } from "../application/queries/get-dashboard-repository-view.handler";
@@ -48,7 +49,9 @@ function actorFromSession(session: AuthenticatedSessionReference) {
 }
 
 function composeDashboardServerFacade(): DashboardServerFacade {
-  const selectionRepository = new InMemoryDashboardSelectionAdapter();
+  const selectionRepository = new PostgresDashboardSelectionAdapter(
+    getProductionDatabase(),
+  );
   const sourceGateway = new DashboardSourceAdapter();
   const restore = new RestoreLastValidDashboardContextHandler(
     selectionRepository,

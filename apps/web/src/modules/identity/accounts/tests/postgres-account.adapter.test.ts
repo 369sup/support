@@ -4,14 +4,10 @@ import type {
   SqlValue,
   TransactionalSqlExecutor,
 } from "@support/database/postgres";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import type { AccountQuerySnapshot } from "../application/ports/outbound/account-query.repository.port";
 import { PostgresAccountAdapter } from "../adapters/outbound/persistence/postgres-account.adapter";
-
-vi.mock("@support/database/postgres", () => ({
-  assertPostgresMigrationsApplied: vi.fn(() => Promise.resolve()),
-}));
 
 type ScriptStep = Readonly<{
   contains: string;
@@ -99,12 +95,12 @@ describe("PostgresAccountAdapter", () => {
     const database = new ScriptedDatabase([
       { contains: "pg_advisory_xact_lock" },
       {
-        contains: "from support_accounts",
+        contains: "from support_identity_accounts.support_accounts",
         result: queryResult({ count: "0" }),
         values: ["account-1", "octocat", false],
       },
       {
-        contains: "insert into support_account_identity_transactions",
+        contains: "insert into support_identity_accounts.support_account_identity_transactions",
         values: [
           "transaction-1",
           "account-1",
@@ -133,11 +129,11 @@ describe("PostgresAccountAdapter", () => {
     const database = new ScriptedDatabase([
       { contains: "pg_advisory_xact_lock" },
       {
-        contains: "from support_accounts",
+        contains: "from support_identity_accounts.support_accounts",
         result: queryResult({ count: "0" }),
       },
       {
-        contains: "insert into support_account_identity_transactions",
+        contains: "insert into support_identity_accounts.support_account_identity_transactions",
         error: Object.assign(new Error("unique violation"), {
           code: "23505",
         }),
@@ -158,11 +154,11 @@ describe("PostgresAccountAdapter", () => {
   it("commits a prepared registration as an active account", async () => {
     const database = new ScriptedDatabase([
       {
-        contains: "from support_account_identity_transactions",
+        contains: "from support_identity_accounts.support_account_identity_transactions",
         result: queryResult(registrationTransaction),
       },
       { contains: "pg_advisory_xact_lock" },
-      { contains: "insert into support_accounts" },
+      { contains: "insert into support_identity_accounts.support_accounts" },
       { contains: "set state = 'committed'" },
     ]);
     const adapter = new PostgresAccountAdapter(database);
@@ -195,12 +191,12 @@ describe("PostgresAccountAdapter", () => {
         result: queryResult(activeAccountRow),
       },
       {
-        contains: "from support_accounts",
+        contains: "from support_identity_accounts.support_accounts",
         result: queryResult({ count: "0" }),
         values: ["account-1", "newname", true],
       },
       {
-        contains: "insert into support_account_identity_transactions",
+        contains: "insert into support_identity_accounts.support_account_identity_transactions",
       },
     ]);
     const prepareAdapter = new PostgresAccountAdapter(prepareDatabase);
@@ -244,14 +240,14 @@ describe("PostgresAccountAdapter", () => {
     } as const;
     const rollbackDatabase = new ScriptedDatabase([
       {
-        contains: "from support_account_identity_transactions",
+        contains: "from support_identity_accounts.support_account_identity_transactions",
         result: queryResult(transaction),
       },
       { contains: "pg_advisory_xact_lock" },
       { contains: "pg_advisory_xact_lock" },
-      { contains: "update support_accounts" },
+      { contains: "update support_identity_accounts.support_accounts" },
       {
-        contains: "delete from support_account_identity_transactions",
+        contains: "delete from support_identity_accounts.support_account_identity_transactions",
       },
     ]);
     const rollbackAdapter = new PostgresAccountAdapter(rollbackDatabase);
@@ -277,12 +273,12 @@ describe("PostgresAccountAdapter", () => {
   it("rolls back and finalizes identity transactions reversibly", async () => {
     const rollbackDatabase = new ScriptedDatabase([
       {
-        contains: "from support_account_identity_transactions",
+        contains: "from support_identity_accounts.support_account_identity_transactions",
         result: queryResult(registrationTransaction),
       },
       { contains: "pg_advisory_xact_lock" },
       {
-        contains: "delete from support_account_identity_transactions",
+        contains: "delete from support_identity_accounts.support_account_identity_transactions",
       },
     ]);
     const rollbackAdapter = new PostgresAccountAdapter(rollbackDatabase);
@@ -299,14 +295,14 @@ describe("PostgresAccountAdapter", () => {
 
     const finalizeDatabase = new ScriptedDatabase([
       {
-        contains: "from support_account_identity_transactions",
+        contains: "from support_identity_accounts.support_account_identity_transactions",
         result: queryResult({
           ...registrationTransaction,
           state: "committed",
         }),
       },
       {
-        contains: "delete from support_account_identity_transactions",
+        contains: "delete from support_identity_accounts.support_account_identity_transactions",
       },
     ]);
     const finalizeAdapter = new PostgresAccountAdapter(finalizeDatabase);

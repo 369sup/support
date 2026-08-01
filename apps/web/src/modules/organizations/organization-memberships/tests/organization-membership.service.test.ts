@@ -39,6 +39,9 @@ function createService(
 ) {
   const repository = new InMemoryOrganizationMembershipAdapter(seed);
   const accountGateway: OrganizationInvitationAccountGatewayPort = {
+    getActiveAccountByEmail(email) {
+      return Promise.resolve(accounts[email.toLowerCase()] ?? null);
+    },
     getActiveAccountByUsername(username) {
       return Promise.resolve(accounts[username] ?? null);
     },
@@ -102,6 +105,30 @@ describe("OrganizationMembershipService", () => {
     ).resolves.toMatchObject({
       membershipId: result.membership.membershipId,
       state: "pending",
+    });
+  });
+
+  it("resolves an invitation target by verified email", async () => {
+    const { service } = createService(undefined, {
+      "invitee@example.com": {
+        accountId: "account_invitee",
+        username: "invitee",
+        displayName: "Invitee",
+        accountType: "personal",
+        usage: "human",
+      },
+    });
+
+    await expect(
+      service.invite({
+        actorAccountId: "account_owner",
+        organizationId: "organization_test",
+        username: "Invitee@Example.com",
+        role: "member",
+      }),
+    ).resolves.toMatchObject({
+      status: "invited",
+      invitation: { accountId: "account_invitee" },
     });
   });
 

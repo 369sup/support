@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Handles DELETE, PATCH, PUT requests for `/api/organizations/{login}/repositories/{repository}/teams/{teamSlug}` through `getOptionalCurrentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`, `getOrganizationTeam`, `getOrganizationByLogin`, `getRepositoryByOwnerAndName`, `changeTeamRepositoryAccess`, `grantTeamRepositoryAccess`, `revokeTeamRepositoryAccess`.
+Handles DELETE, PATCH, PUT requests for `/api/organizations/{login}/repositories/{repository}/teams/{teamSlug}` through `getOptionalCurrentSession`, `hasSameOrigin`, `getOrganizationTeam`, `getOrganizationByLogin`, `getRepositoryByOwnerAndName`, `changeTeamRepositoryAccess`, `grantTeamRepositoryAccess`, `revokeTeamRepositoryAccess`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -26,7 +26,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 ## Module contracts
 
 - - **owner:** `repositories/repository-access` — use cases: `change-team-repository-access`, `grant-team-repository-access`, `revoke-team-repository-access`; functions: `changeTeamRepositoryAccess`, `grantTeamRepositoryAccess`, `revokeTeamRepositoryAccess`
-- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`, `hasSameOrigin`
 - - **collaborator:** `organizations/organization-teams` — use cases: `get-organization-team`; functions: `getOrganizationTeam`
 - - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`
 - - **collaborator:** `repositories/repositories` — use cases: `get-repository-by-owner-and-name`; functions: `getRepositoryByOwnerAndName`

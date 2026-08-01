@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { isInMemoryRuntimeEnabled } from "@/modules/identity/authentication/server-api";
 import { hasSameOrigin } from "@/modules/identity/authentication/server-api";
 import { getOptionalCurrentSession } from "@/modules/identity/authentication/server-api";
 import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
@@ -65,13 +64,12 @@ function unresolvedResponse(status: string) {
   );
 }
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   _request: Request,
   context: { params: Promise<{ login: string; teamSlug: string }> },
 ): Promise<Response> {
-  if (!isInMemoryRuntimeEnabled()) {
-    return new NextResponse(null, { status: 404 });
-  }
   const params = await context.params;
   const resolved = await resolveTeam(params.login, params.teamSlug);
   return resolved.status === "resolved"
@@ -83,9 +81,6 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ login: string; teamSlug: string }> },
 ): Promise<Response> {
-  if (!isInMemoryRuntimeEnabled()) {
-    return new NextResponse(null, { status: 404 });
-  }
   if (!hasSameOrigin(request)) {
     return NextResponse.json({ status: "invalid-origin" }, { status: 403 });
   }
@@ -128,9 +123,6 @@ export async function DELETE(
   request: Request,
   context: { params: Promise<{ login: string; teamSlug: string }> },
 ): Promise<Response> {
-  if (!isInMemoryRuntimeEnabled()) {
-    return new NextResponse(null, { status: 404 });
-  }
   if (!hasSameOrigin(request)) {
     return NextResponse.json({ status: "invalid-origin" }, { status: 403 });
   }

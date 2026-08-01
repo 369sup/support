@@ -43,7 +43,7 @@ import { Separator } from "@support/shadcn/ui/separator";
 
 const invitationStatusMessages: Readonly<Record<string, string>> = {
   "account-not-found":
-    "No active personal account matches that username.",
+    "No active personal account matches that username or verified email.",
   "already-member": "That account is already an organization member.",
   canceled: "Organization invitation canceled.",
   "invalid-role": "Choose member or owner as the organization role.",
@@ -269,7 +269,7 @@ export default async function OrganizationPeoplePage({
               Organization people
             </h1>
             <p className="mt-4 max-w-3xl leading-7 text-muted-foreground">
-              Invite personal accounts by username and manage direct
+              Invite personal accounts by username or verified email and manage direct
               organization membership. Invitations expire after seven days.
             </p>
           </div>
@@ -309,7 +309,7 @@ export default async function OrganizationPeoplePage({
               <div>
                 <h2 className="text-lg font-semibold">Invite a member</h2>
                 <p className="text-sm text-muted-foreground">
-                  Version one accepts a personal-account username only.
+                  Use a personal-account username or verified email.
                 </p>
               </div>
             </div>
@@ -323,18 +323,17 @@ export default async function OrganizationPeoplePage({
                 <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_12rem]">
                   <Field>
                     <FieldLabel htmlFor="invitation-username">
-                      Account username
+                      Username or verified email
                     </FieldLabel>
                     <Input
                       autoComplete="off"
                       id="invitation-username"
                       name="username"
-                      placeholder="octocat"
+                      placeholder="octocat or octocat@example.com"
                       required
                     />
                     <FieldDescription>
-                      Email invitations and managed-user invitations are not
-                      available in this slice.
+                      Managed-user invitations continue through SCIM.
                     </FieldDescription>
                   </Field>
                   <Field>

@@ -1,0 +1,311 @@
+{
+  "contractVersion": "2026-08-01.v1",
+  "active": [
+    {
+      "context": "identity/accounts",
+      "schema": "support_identity_accounts",
+      "objects": [
+        "support_accounts",
+        "support_account_identity_transactions"
+      ]
+    },
+    {
+      "context": "identity/account-emails",
+      "schema": "support_identity_account_emails",
+      "objects": [
+        "support_account_emails",
+        "support_released_account_emails",
+        "support_email_verifications"
+      ]
+    },
+    {
+      "context": "identity/account-registration",
+      "schema": "support_identity_account_registration",
+      "objects": []
+    },
+    {
+      "context": "identity/authentication",
+      "schema": "support_identity_authentication",
+      "objects": [
+        "support_auth_identities"
+      ]
+    },
+    {
+      "context": "identity/profiles",
+      "schema": "support_identity_profiles",
+      "objects": [
+        "support_profiles"
+      ]
+    },
+    {
+      "context": "identity/social-graph",
+      "schema": "support_identity_social_graph",
+      "objects": [
+        "support_user_follows"
+      ]
+    },
+    {
+      "context": "enterprises/enterprises",
+      "schema": "support_enterprises_enterprises",
+      "objects": [
+        "support_enterprises",
+        "support_enterprise_organizations"
+      ]
+    },
+    {
+      "context": "enterprises/enterprise-memberships",
+      "schema": "support_enterprises_enterprise_memberships",
+      "objects": [
+        "support_enterprise_memberships"
+      ]
+    },
+    {
+      "context": "enterprises/enterprise-roles",
+      "schema": "support_enterprises_enterprise_roles",
+      "objects": [
+        "support_enterprise_role_assignments"
+      ]
+    },
+    {
+      "context": "enterprises/enterprise-teams",
+      "schema": "support_enterprises_enterprise_teams",
+      "objects": [
+        "support_enterprise_teams",
+        "support_enterprise_team_memberships",
+        "support_enterprise_team_organization_grants"
+      ]
+    },
+    {
+      "context": "organizations/organizations",
+      "schema": "support_organizations_organizations",
+      "objects": [
+        "support_organizations"
+      ]
+    },
+    {
+      "context": "organizations/organization-memberships",
+      "schema": "support_organizations_organization_memberships",
+      "objects": [
+        "support_organization_memberships",
+        "support_organization_invitations",
+        "support_enterprise_team_membership_assignments",
+        "support_organization_notification_routes"
+      ]
+    },
+    {
+      "context": "organizations/organization-teams",
+      "schema": "support_organizations_organization_teams",
+      "objects": [
+        "support_organization_teams",
+        "support_organization_team_memberships",
+        "support_organization_team_maintainers"
+      ]
+    },
+    {
+      "context": "organizations/organization-roles",
+      "schema": "support_organizations_organization_roles",
+      "objects": [
+        "support_organization_role_assignments"
+      ]
+    },
+    {
+      "context": "organizations/organization-policies",
+      "schema": "support_organizations_organization_policies",
+      "objects": [
+        "support_organization_policies"
+      ]
+    },
+    {
+      "context": "organizations/custom-properties",
+      "schema": "support_organizations_custom_properties",
+      "objects": [
+        "support_organization_repository_properties",
+        "support_repository_property_values"
+      ]
+    },
+    {
+      "context": "repositories/repositories",
+      "schema": "support_repositories_repositories",
+      "objects": [
+        "support_repositories"
+      ]
+    },
+    {
+      "context": "repositories/repository-access",
+      "schema": "support_repositories_repository_access",
+      "objects": [
+        "support_repository_account_grants",
+        "support_repository_team_grants"
+      ]
+    },
+    {
+      "context": "collaboration/conversations",
+      "schema": "support_collaboration_conversations",
+      "objects": [
+        "support_conversation_subjects",
+        "support_conversation_comments",
+        "support_conversation_reactions"
+      ]
+    },
+    {
+      "context": "collaboration/discussions",
+      "schema": "support_collaboration_discussions",
+      "objects": [
+        "support_repository_discussion_counters",
+        "support_repository_discussions"
+      ]
+    },
+    {
+      "context": "collaboration/issues",
+      "schema": "support_collaboration_issues",
+      "objects": [
+        "support_repository_issue_counters",
+        "support_repository_issues"
+      ]
+    },
+    {
+      "context": "collaboration/moderation",
+      "schema": "support_collaboration_moderation",
+      "objects": [
+        "support_content_reports"
+      ]
+    },
+    {
+      "context": "collaboration/projects",
+      "schema": "support_collaboration_projects",
+      "objects": [
+        "support_collaboration_projects",
+        "support_project_repositories",
+        "support_project_items"
+      ]
+    },
+    {
+      "context": "engagement/notifications",
+      "schema": "support_engagement_notifications",
+      "objects": [
+        "support_notifications"
+      ]
+    },
+    {
+      "context": "engagement/stars",
+      "schema": "support_engagement_stars",
+      "objects": [
+        "support_repository_stars"
+      ]
+    },
+    {
+      "context": "engagement/subscriptions",
+      "schema": "support_engagement_subscriptions",
+      "objects": [
+        "support_repository_subscriptions"
+      ]
+    },
+    {
+      "context": "platform/audit-storage",
+      "schema": "support_platform_audit_storage",
+      "objects": [
+        "support_audit_records",
+        "support_audit_exports",
+        "support_audit_retention_executions"
+      ]
+    },
+    {
+      "context": "platform/event-publication",
+      "schema": "support_platform_event_publication",
+      "objects": [
+        "support_event_outbox",
+        "support_event_publication_attempts",
+        "support_event_publication_receipts",
+        "support_event_publication_dead_letters"
+      ]
+    },
+    {
+      "context": "platform/notification-channels",
+      "schema": "support_platform_notification_channels",
+      "objects": [
+        "support_channel_deliveries"
+      ]
+    },
+    {
+      "context": "platform/scheduled-commands",
+      "schema": "support_platform_scheduled_commands",
+      "objects": [
+        "support_scheduled_commands"
+      ]
+    },
+    {
+      "context": "platform/media-storage",
+      "schema": "support_platform_media_storage",
+      "objects": [
+        "support_media_objects",
+        "support_media_storage_operations"
+      ]
+    },
+    {
+      "context": "platform/search-index",
+      "schema": "support_platform_search_index",
+      "objects": [
+        "support_search_documents"
+      ]
+    },
+    {
+      "context": "projections/dashboard",
+      "schema": "support_projections_dashboard",
+      "objects": [
+        "support_dashboard_selections"
+      ]
+    },
+    {
+      "context": "projections/activity-feed",
+      "schema": "support_projections_activity_feed",
+      "objects": [
+        "support_repository_activity_feed"
+      ]
+    },
+    {
+      "context": "projections/discovery",
+      "schema": "support_projections_discovery",
+      "objects": [
+        "support_public_repository_discovery"
+      ]
+    },
+    {
+      "context": "projections/search",
+      "schema": "support_projections_search",
+      "objects": []
+    }
+  ],
+  "plannedContexts": [
+    "enterprises/enterprise-iam",
+    "enterprises/enterprise-policies",
+    "enterprises/custom-properties",
+    "repositories/repository-features",
+    "repositories/repository-metadata",
+    "collaboration/issue-schema",
+    "collaboration/labels-and-milestones",
+    "integrations/github-app-registrations",
+    "integrations/github-app-installations",
+    "integrations/oauth-app-registrations",
+    "integrations/oauth-authorizations",
+    "integrations/repository-autolinks",
+    "integrations/webhooks",
+    "commerce/billing",
+    "commerce/entitlements",
+    "governance/audit-logs",
+    "projections/repository-insights",
+    "platform/site-content",
+    "integrations/marketplace-catalog",
+    "platform/actions-route-compatibility",
+    "platform/repository-content-route-compatibility",
+    "platform/repository-history-route-compatibility",
+    "platform/repository-reference-route-compatibility",
+    "platform/pull-request-route-compatibility",
+    "commerce/package-registry",
+    "platform/site-publishing",
+    "repositories/repository-releases",
+    "repositories/repository-forks",
+    "collaboration/community-profiles",
+    "collaboration/wikis",
+    "projections/repository-traffic"
+  ]
+}

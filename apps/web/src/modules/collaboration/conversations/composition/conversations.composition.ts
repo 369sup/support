@@ -1,4 +1,5 @@
-import { InMemoryConversationAdapter } from "../adapters/outbound/persistence/in-memory-conversation.adapter";
+import { getProductionDatabase } from "../../../../../production-runtime";
+import { PostgresConversationAdapter } from "../adapters/outbound/persistence/postgres-conversation.adapter";
 import { AddCommentHandler } from "../application/commands/add-comment.handler";
 import { AddReactionHandler } from "../application/commands/add-reaction.handler";
 import type { AddCommentUseCase } from "../application/ports/inbound/add-comment.use-case";
@@ -14,7 +15,9 @@ export type ConversationsServerFacade = Readonly<{
 }>;
 
 function composeConversationsServerFacade(): ConversationsServerFacade {
-  const conversations = new InMemoryConversationAdapter();
+  const conversations = new PostgresConversationAdapter(
+    getProductionDatabase(),
+  );
   const addComment = new AddCommentHandler(conversations);
   const addReaction = new AddReactionHandler(conversations);
   const listConversationComments =

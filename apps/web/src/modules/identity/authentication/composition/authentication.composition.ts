@@ -1,57 +1,18 @@
 import "server-only";
 
-import { browserSessionCookie } from "../adapters/inbound/next/browser-session-cookie.adapter";
-import { createCurrentSessionAdapter } from "../adapters/inbound/next/current-session.adapter";
 import { createRequiredCurrentSessionAdapter } from "../adapters/inbound/next/required-current-session.adapter";
 import { createSupabaseServerAuthGateway } from "../adapters/inbound/next/supabase-auth-gateway.adapter";
-import { AccountReferenceAdapter } from "../adapters/outbound/integration/account-reference.adapter";
 import { SupabaseAuthenticationAdapter } from "../adapters/outbound/integration/supabase-authentication.adapter";
-import { InMemoryBrowserSessionSetAdapter } from "../adapters/outbound/persistence/in-memory-browser-session-set.adapter";
 import { PostgresExternalIdentityAdapter } from "../adapters/outbound/persistence/postgres-external-identity.adapter";
-import { PostgresBrowserSessionSetAdapter } from "../adapters/outbound/persistence/postgres-browser-session-set.adapter";
-import { PostgresCredentialAdapter } from "../adapters/outbound/persistence/postgres-credential.adapter";
-import { InMemoryAccountSecurityAdapter } from "../adapters/outbound/persistence/in-memory-account-security.adapter";
-import { PostgresAccountSecurityAdapter } from "../adapters/outbound/persistence/postgres-account-security.adapter";
-import { PostgresPasswordMaintenanceAdapter } from "../adapters/outbound/persistence/postgres-password-maintenance.adapter";
-import { UnavailablePasswordMaintenanceAdapter } from "../adapters/outbound/persistence/unavailable-password-maintenance.adapter";
-import { UnavailablePasswordCredentialTransactionAdapter } from "../adapters/outbound/persistence/unavailable-password-credential-transaction.adapter";
-import { NotificationChannelPasswordRecoveryAdapter } from "../adapters/outbound/integration/notification-channel-password-recovery.adapter";
-import { NodePasswordMaintenanceRuntimeAdapter } from "../adapters/outbound/runtime/node-password-maintenance-runtime.adapter";
-import { NodeSessionRuntimeAdapter } from "../adapters/outbound/runtime/node-session-runtime.adapter";
-import { NodeSecurityRuntimeAdapter } from "../adapters/outbound/runtime/node-security-runtime.adapter";
-import { OtpauthTotpAdapter } from "../adapters/outbound/runtime/otpauth-totp.adapter";
-import { SimpleWebAuthnAdapter } from "../adapters/outbound/runtime/simple-webauthn.adapter";
-import { ChangePasswordHandler } from "../application/commands/change-password.handler";
-import { ApplyPasswordCredentialTransactionHandler } from "../application/commands/apply-password-credential-transaction.handler";
-import { RequestPasswordResetHandler } from "../application/commands/request-password-reset.handler";
-import { ResetPasswordHandler } from "../application/commands/reset-password.handler";
-import type { ApplyPasswordCredentialTransactionUseCase } from "../application/ports/inbound/apply-password-credential-transaction.use-case";
-import type { ChangePasswordUseCase } from "../application/ports/inbound/change-password.use-case";
-import type { RequestPasswordResetUseCase } from "../application/ports/inbound/request-password-reset.use-case";
-import type { ResetPasswordUseCase } from "../application/ports/inbound/reset-password.use-case";
-import { ConfigureTotpHandler } from "../application/commands/configure-totp.handler";
-import { EnterSudoModeHandler } from "../application/commands/enter-sudo-mode.handler";
-import { ManagePasskeyHandler } from "../application/commands/manage-passkey.handler";
-import { RecoverTwoFactorHandler } from "../application/commands/recover-two-factor.handler";
-import { VerifyAdditionalFactorHandler } from "../application/commands/verify-additional-factor.handler";
-import type { ConfigureTotpUseCase } from "../application/ports/inbound/configure-totp.use-case";
-import type { EnterSudoModeUseCase } from "../application/ports/inbound/enter-sudo-mode.use-case";
-import type { ManagePasskeyUseCase } from "../application/ports/inbound/manage-passkey.use-case";
-import type { RecoverTwoFactorUseCase } from "../application/ports/inbound/recover-two-factor.use-case";
-import type { VerifyAdditionalFactorUseCase } from "../application/ports/inbound/verify-additional-factor.use-case";
-import { AccountSecurityService } from "../application/services/account-security.service";
-import { PasswordMaintenanceService } from "../application/services/password-maintenance.service";
-import { RemoveAccountSessionHandler } from "../application/commands/remove-account-session.handler";
-import { SignOutAllSessionsHandler } from "../application/commands/sign-out-all-sessions.handler";
-import { SwitchActiveAccountSessionHandler } from "../application/commands/switch-active-account-session.handler";
-import { GetCurrentAuthenticatedSessionHandler } from "../application/queries/get-current-authenticated-session.handler";
-import { ListBrowserAccountSessionsHandler } from "../application/queries/list-browser-account-sessions.handler";
+import { EnrollTotpHandler } from "../application/commands/enroll-totp.handler";
+import { ReauthenticateHandler } from "../application/commands/reauthenticate.handler";
+import { RequestSupabasePasswordResetHandler } from "../application/commands/request-supabase-password-reset.handler";
+import { UpdateSupabasePasswordHandler } from "../application/commands/update-supabase-password.handler";
+import { VerifyMfaHandler } from "../application/commands/verify-mfa.handler";
+import { VerifySupabaseOtpHandler } from "../application/commands/verify-supabase-otp.handler";
 import type {
   AuthenticatedSessionReference,
   CurrentSessionResult,
-  ListBrowserAccountSessionsResult,
-  RemoveAccountSessionResult,
-  SwitchAccountSessionResult,
 } from "../contracts/authenticated-session-reference";
 import type {
   ExternalAccountProvisioningResult,
@@ -63,8 +24,14 @@ import type {
   SupabasePasswordSignInResult,
   SupabasePasswordSignUpResult,
 } from "../contracts/supabase-authentication";
+import type {
+  MfaAssuranceResult,
+  MfaChallengeResult,
+  MfaFactorsResult,
+  MfaMutationResult,
+  TotpEnrollmentResult,
+} from "../contracts/supabase-mfa";
 import { getProductionDatabase } from "../../../../../production-runtime";
-import { resolveWebAuthenticationConfiguration } from "../../../../../supabase-auth-configuration";
 
 type EmailConfirmationType =
   | "email"
@@ -75,9 +42,7 @@ type EmailConfirmationType =
   | "signup";
 
 export interface AuthenticationServerFacade {
-  applyPasswordCredentialTransaction: ApplyPasswordCredentialTransactionUseCase["applyPasswordCredentialTransaction"];
-  changePassword: ChangePasswordUseCase["changePassword"];
-  configureTotp: ConfigureTotpUseCase["configureTotp"];
+  challengeMfa: (factorId: string) => Promise<MfaChallengeResult>;
   completeExternalAccountProvisioning: (input: {
     username: string;
   }) => Promise<ExternalAccountProvisioningResult>;
@@ -85,263 +50,115 @@ export interface AuthenticationServerFacade {
     code: string;
     flowId?: string;
   }) => Promise<ExternalSignInCompletionResult>;
-  clearBrowserSessionToken: () => Promise<void>;
-  enterSudoMode: EnterSudoModeUseCase["enterSudoMode"];
-  getCurrentAuthenticatedSession: (
-    browserToken: string,
-  ) => Promise<CurrentSessionResult>;
-  getOptionalCurrentSession: () => Promise<AuthenticatedSessionReference | null>;
+  enrollTotp: (friendlyName?: string) => Promise<TotpEnrollmentResult>;
+  getAuthenticatorAssuranceLevel: () => Promise<MfaAssuranceResult>;
+  getCurrentAuthenticatedSession: () => Promise<CurrentSessionResult>;
   getExternalAccountProvisioningState: () => Promise<ExternalAccountProvisioningState>;
-  isInMemoryRuntimeEnabled: () => boolean;
+  getOptionalCurrentSession: () => Promise<AuthenticatedSessionReference | null>;
   isPasswordAuthenticationEnabled: () => boolean;
   isSupabaseAuthenticationEnabled: () => boolean;
-  listBrowserAccountSessions: (
-    browserToken: string,
-  ) => Promise<ListBrowserAccountSessionsResult>;
-  managePasskey: ManagePasskeyUseCase["managePasskey"];
-  recoverTwoFactor: RecoverTwoFactorUseCase["recoverTwoFactor"];
-  removeAccountSession: (input: {
-    browserToken: string;
-    sessionId: string;
-  }) => Promise<RemoveAccountSessionResult>;
-  requestPasswordReset: RequestPasswordResetUseCase["requestPasswordReset"];
+  listMfaFactors: () => Promise<MfaFactorsResult>;
+  reauthenticate: () => Promise<MfaMutationResult>;
   requestSupabasePasswordReset: (input: {
     email: string;
     redirectTo: string;
   }) => Promise<void>;
-  resetPassword: ResetPasswordUseCase["resetPassword"];
+  requireCurrentSession: () => Promise<AuthenticatedSessionReference>;
   signInWithPassword: (input: {
     identifier: string;
     password: string;
   }) => Promise<SupabasePasswordSignInResult>;
-  startExternalSignIn: (input: {
-    provider: ExternalAuthenticationProvider;
-    redirectTo: string;
-  }) => Promise<ExternalSignInStartResult>;
-  signOutCurrentSession: () => Promise<void>;
+  signOutAllSessions: () => Promise<boolean>;
+  signOutCurrentSession: () => Promise<boolean>;
+  signOutOtherSessions: () => Promise<boolean>;
+  signOut: (scope: "global" | "local" | "others") => Promise<boolean>;
   signUpWithPassword: (input: {
     email: string;
     emailRedirectTo: string;
     password: string;
     username: string;
   }) => Promise<SupabasePasswordSignUpResult>;
-  signOutAllSessions: (
-    browserToken: string,
-  ) => Promise<
-    | { status: "signed-out" }
-    | { status: "browser-session-not-found" }
-  >;
-  switchActiveAccountSession: (input: {
-    browserToken: string;
-    sessionId: string;
-  }) => Promise<SwitchAccountSessionResult>;
-  readBrowserSessionToken: () => Promise<string | null>;
-  requireCurrentSession: () => Promise<AuthenticatedSessionReference>;
-  writeBrowserSessionToken: (browserToken: string) => Promise<void>;
+  startExternalSignIn: (input: {
+    provider: ExternalAuthenticationProvider;
+    redirectTo: string;
+  }) => Promise<ExternalSignInStartResult>;
+  unenrollMfa: (factorId: string) => Promise<MfaMutationResult>;
   updateSupabasePassword: (password: string) => Promise<boolean>;
+  verifyMfa: (input: {
+    challengeId: string;
+    code: string;
+    factorId: string;
+  }) => Promise<MfaMutationResult>;
   verifySupabaseOtp: (input: {
     tokenHash: string;
     type: EmailConfirmationType;
   }) => Promise<SupabaseConfirmationResult>;
-  verifyAdditionalFactor: VerifyAdditionalFactorUseCase["verifyAdditionalFactor"];
 }
 
 function composeAuthenticationServerFacade(): AuthenticationServerFacade {
-  const database = getProductionDatabase();
-  const authenticationConfiguration =
-    resolveWebAuthenticationConfiguration();
-  const legacyDatabase =
-    authenticationConfiguration.provider === "unavailable"
-      ? database
-      : null;
-  const sessionRepository =
-    legacyDatabase === null
-      ? new InMemoryBrowserSessionSetAdapter()
-      : new PostgresBrowserSessionSetAdapter(legacyDatabase);
-  const credentialTransactionRepository =
-    legacyDatabase === null
-      ? new UnavailablePasswordCredentialTransactionAdapter()
-      : new PostgresCredentialAdapter(legacyDatabase);
-  const factorEncryptionKey =
-    process.env["AUTH_FACTOR_ENCRYPTION_KEY"];
-  if (
-    legacyDatabase !== null &&
-    (factorEncryptionKey === undefined ||
-      factorEncryptionKey.trim() === "")
-  ) {
-    throw new Error(
-      "AUTH_FACTOR_ENCRYPTION_KEY is required in PostgreSQL mode.",
-    );
-  }
-  const securityRepository =
-    legacyDatabase === null
-      ? new InMemoryAccountSecurityAdapter()
-      : new PostgresAccountSecurityAdapter(legacyDatabase);
-  const securityRuntime = new NodeSecurityRuntimeAdapter(
-    factorEncryptionKey,
+  const supabaseAuthentication = new SupabaseAuthenticationAdapter(
+    new PostgresExternalIdentityAdapter(getProductionDatabase()),
+    createSupabaseServerAuthGateway,
   );
-  const securityService = new AccountSecurityService(
-    securityRepository,
-    new OtpauthTotpAdapter(),
-    new SimpleWebAuthnAdapter({
-      origin:
-        process.env["WEBAUTHN_ORIGIN"] ?? "http://localhost:3000",
-      rpId: process.env["WEBAUTHN_RP_ID"] ?? "localhost",
-      rpName: process.env["WEBAUTHN_RP_NAME"] ?? "Support",
-    }),
-    securityRuntime,
+  const currentSession = createRequiredCurrentSessionAdapter(() =>
+    supabaseAuthentication.getOptionalCurrentSession(),
   );
-  const configureTotpHandler = new ConfigureTotpHandler(securityService);
-  const enterSudoModeHandler = new EnterSudoModeHandler(securityService);
-  const managePasskeyHandler = new ManagePasskeyHandler(securityService);
-  const recoverTwoFactorHandler = new RecoverTwoFactorHandler(
-    securityService,
+  const enrollTotp = new EnrollTotpHandler(supabaseAuthentication);
+  const reauthenticate = new ReauthenticateHandler(supabaseAuthentication);
+  const requestPasswordReset = new RequestSupabasePasswordResetHandler(
+    supabaseAuthentication,
   );
-  const verifyAdditionalFactorHandler =
-    new VerifyAdditionalFactorHandler(securityService);
-  const passwordMaintenanceRepository =
-    legacyDatabase === null
-      ? new UnavailablePasswordMaintenanceAdapter()
-      : new PostgresPasswordMaintenanceAdapter(legacyDatabase);
-  const passwordMaintenanceService = new PasswordMaintenanceService(
-    passwordMaintenanceRepository,
-    sessionRepository,
-    new NodePasswordMaintenanceRuntimeAdapter(),
-    new NotificationChannelPasswordRecoveryAdapter(),
+  const updatePassword = new UpdateSupabasePasswordHandler(
+    supabaseAuthentication,
   );
-  const changePasswordHandler = new ChangePasswordHandler(
-    passwordMaintenanceService,
-  );
-  const requestPasswordResetHandler = new RequestPasswordResetHandler(
-    passwordMaintenanceService,
-  );
-  const resetPasswordHandler = new ResetPasswordHandler(
-    passwordMaintenanceService,
-  );
-  const applyCredentialTransaction =
-    new ApplyPasswordCredentialTransactionHandler(
-      credentialTransactionRepository,
-    );
-  const accountGateway = new AccountReferenceAdapter();
-  const runtime = new NodeSessionRuntimeAdapter();
-
-  const current = new GetCurrentAuthenticatedSessionHandler(
-    sessionRepository,
-    accountGateway,
-    runtime,
-  );
-  const list = new ListBrowserAccountSessionsHandler(
-    sessionRepository,
-    accountGateway,
-    runtime,
-  );
-  const switchSession = new SwitchActiveAccountSessionHandler(
-    sessionRepository,
-    accountGateway,
-    runtime,
-  );
-  const remove = new RemoveAccountSessionHandler(
-    sessionRepository,
-    accountGateway,
-  );
-  const signOut = new SignOutAllSessionsHandler(sessionRepository);
-  const currentSession = createCurrentSessionAdapter({
-    readBrowserSessionToken: browserSessionCookie.read,
-    getCurrentAuthenticatedSession: (browserToken) =>
-      current.getCurrentAuthenticatedSession({ browserToken }),
-  });
-  const supabaseAuthentication =
-    authenticationConfiguration.provider === "supabase" && database !== null
-      ? new SupabaseAuthenticationAdapter(
-          new PostgresExternalIdentityAdapter(database),
-          createSupabaseServerAuthGateway,
-        )
-      : null;
-  const resolvedCurrentSession = createRequiredCurrentSessionAdapter(() =>
-    supabaseAuthentication === null
-      ? currentSession.getOptionalCurrentSession()
-      : supabaseAuthentication.getOptionalCurrentSession(),
-  );
+  const verifyMfa = new VerifyMfaHandler(supabaseAuthentication);
+  const verifyOtp = new VerifySupabaseOtpHandler(supabaseAuthentication);
 
   return {
-    applyPasswordCredentialTransaction: (command) =>
-      applyCredentialTransaction.applyPasswordCredentialTransaction(command),
-    changePassword: (command) =>
-      changePasswordHandler.changePassword(command),
-    clearBrowserSessionToken: browserSessionCookie.clear,
+    challengeMfa: (factorId) =>
+      supabaseAuthentication.challengeMfa(factorId),
     completeExternalAccountProvisioning: (input) =>
-      supabaseAuthentication?.completeExternalAccountProvisioning(input) ??
-      Promise.resolve({ status: "service-unavailable" }),
+      supabaseAuthentication.completeExternalAccountProvisioning(input),
     completeExternalSignIn: (input) =>
-      supabaseAuthentication?.completeExternalSignIn(input) ??
-      Promise.resolve({ status: "service-unavailable" }),
-    configureTotp: (command) =>
-      configureTotpHandler.configureTotp(command),
-    enterSudoMode: (command) =>
-      enterSudoModeHandler.enterSudoMode(command),
-    getCurrentAuthenticatedSession: (browserToken) =>
-      current.getCurrentAuthenticatedSession({ browserToken }),
-    getExternalAccountProvisioningState: () =>
-      supabaseAuthentication?.getExternalAccountProvisioningState() ??
-      Promise.resolve({ status: "unavailable" }),
-    getOptionalCurrentSession:
-      resolvedCurrentSession.getOptionalCurrentSession,
-    isInMemoryRuntimeEnabled:
-      browserSessionCookie.isInMemoryRuntimeEnabled,
-    isPasswordAuthenticationEnabled: () => supabaseAuthentication !== null,
-    isSupabaseAuthenticationEnabled: () =>
-      supabaseAuthentication !== null,
-    listBrowserAccountSessions: (browserToken) =>
-      list.listBrowserAccountSessions({ browserToken }),
-    managePasskey: (command) =>
-      managePasskeyHandler.managePasskey(command),
-    recoverTwoFactor: (command) =>
-      recoverTwoFactorHandler.recoverTwoFactor(command),
-    removeAccountSession: (input) => remove.removeAccountSession(input),
-    requestPasswordReset: (command) =>
-      requestPasswordResetHandler.requestPasswordReset(command),
-    requestSupabasePasswordReset: (input) =>
-      supabaseAuthentication?.requestPasswordReset(input) ??
-      Promise.resolve(),
-    resetPassword: (command) =>
-      resetPasswordHandler.resetPassword(command),
-    signInWithPassword: (input) =>
-      supabaseAuthentication?.signInWithPassword(input) ??
-      Promise.resolve({ status: "service-unavailable" }),
-    startExternalSignIn: (input) =>
-      supabaseAuthentication?.startExternalSignIn(input) ??
-      Promise.resolve({ status: "service-unavailable" }),
-    signOutCurrentSession: async () => {
-      if (supabaseAuthentication !== null) {
-        await supabaseAuthentication.signOut();
-        return;
-      }
-      const browserToken = await browserSessionCookie.read();
-      if (browserToken !== null) {
-        await signOut.signOutAllSessions({ browserToken });
-        await browserSessionCookie.clear();
-      }
+      supabaseAuthentication.completeExternalSignIn(input),
+    enrollTotp: (friendlyName) => enrollTotp.enrollTotp(friendlyName),
+    getAuthenticatorAssuranceLevel: () =>
+      supabaseAuthentication.getAuthenticatorAssuranceLevel(),
+    getCurrentAuthenticatedSession: async () => {
+      const session =
+        await supabaseAuthentication.getOptionalCurrentSession();
+      return session === null
+        ? { status: "authentication-required" }
+        : { session, status: "authenticated" };
     },
+    getExternalAccountProvisioningState: () =>
+      supabaseAuthentication.getExternalAccountProvisioningState(),
+    getOptionalCurrentSession: currentSession.getOptionalCurrentSession,
+    isPasswordAuthenticationEnabled: () => true,
+    isSupabaseAuthenticationEnabled: () => true,
+    listMfaFactors: () => supabaseAuthentication.listMfaFactors(),
+    reauthenticate: () => reauthenticate.reauthenticate(),
+    requestSupabasePasswordReset: async (input) => {
+      await requestPasswordReset.requestSupabasePasswordReset(input);
+    },
+    requireCurrentSession: currentSession.requireCurrentSession,
+    signInWithPassword: (input) =>
+      supabaseAuthentication.signInWithPassword(input),
+    signOutAllSessions: () => supabaseAuthentication.signOut("global"),
+    signOutCurrentSession: () => supabaseAuthentication.signOut("local"),
+    signOutOtherSessions: () => supabaseAuthentication.signOut("others"),
+    signOut: (scope) => supabaseAuthentication.signOut(scope),
     signUpWithPassword: (input) =>
-      supabaseAuthentication?.signUpWithPassword(input) ??
-      Promise.resolve({ status: "service-unavailable" }),
-    signOutAllSessions: (browserToken) =>
-      signOut.signOutAllSessions({ browserToken }),
-    switchActiveAccountSession: (input) =>
-      switchSession.switchActiveAccountSession(input),
-    readBrowserSessionToken: browserSessionCookie.read,
-    requireCurrentSession: resolvedCurrentSession.requireCurrentSession,
-    updateSupabasePassword: (password) =>
-      supabaseAuthentication?.updatePassword(password) ??
-      Promise.resolve(false),
-    verifySupabaseOtp: (input) =>
-      supabaseAuthentication?.verifyOtp({
-        tokenHash: input.tokenHash,
-        type: input.type,
-      }) ?? Promise.resolve({ status: "service-unavailable" }),
-    writeBrowserSessionToken: browserSessionCookie.write,
-    verifyAdditionalFactor: (command) =>
-      verifyAdditionalFactorHandler.verifyAdditionalFactor(command),
+      supabaseAuthentication.signUpWithPassword(input),
+    startExternalSignIn: (input) =>
+      supabaseAuthentication.startExternalSignIn(input),
+    unenrollMfa: (factorId) =>
+      supabaseAuthentication.unenrollMfa(factorId),
+    updateSupabasePassword: async (password) =>
+      (await updatePassword.updateSupabasePassword(password)).status ===
+      "changed",
+    verifyMfa: (input) => verifyMfa.verifyMfa(input),
+    verifySupabaseOtp: (input) => verifyOtp.verifySupabaseOtp(input),
   };
 }
 

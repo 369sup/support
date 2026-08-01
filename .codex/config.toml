@@ -3,9 +3,20 @@
 # Codex loads this layer only when the repository is trusted. Keep personal
 # preferences and credentials in ~/.codex.
 
+[agents]
+max_concurrent_threads_per_session = 3
+
+[agents.requirements]
+config_file = "agents/requirements.toml"
+description = "Define objective, deliverables, success criteria, constraints, and verification boundaries."
+
 [agents.reviewer]
 config_file = "agents/reviewer.toml"
 description = "Review changes for correctness, security, architecture, and regression risks."
+
+[agents.verifier]
+config_file = "agents/verifier.toml"
+description = "Verify a delegated change and report evidence, gaps, and residual risks without fixing it."
 
 # ------------------------------------------------------------
 # Context7
@@ -20,9 +31,7 @@ required = false
 
 startup_timeout_sec = 20
 tool_timeout_sec = 120
-env_http_headers = {
-  CONTEXT7_API_KEY = "CONTEXT7_API_KEY"
-}
+env_http_headers = { CONTEXT7_API_KEY = "CONTEXT7_API_KEY" }
 
 
 # ------------------------------------------------------------

@@ -16,7 +16,7 @@ export const resolveOwnerIdByLogin = cache(async function resolveOwnerIdByLogin(
 
 export const resolveRepositoryViewForActor = cache(
   async function resolveRepositoryViewForActor(
-    actorAccountId: string,
+    actorAccountId: string | null,
     ownerLogin: string,
     repositoryName: string,
     repositoryQuery = getRepositoryForViewing,

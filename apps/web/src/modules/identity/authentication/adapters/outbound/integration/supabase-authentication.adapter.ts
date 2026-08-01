@@ -19,6 +19,13 @@ import type {
   SupabasePasswordSignInResult,
   SupabasePasswordSignUpResult,
 } from "../../../contracts/supabase-authentication";
+import type {
+  MfaAssuranceResult,
+  MfaChallengeResult,
+  MfaFactorsResult,
+  MfaMutationResult,
+  TotpEnrollmentResult,
+} from "../../../contracts/supabase-mfa";
 
 type SupabaseAuthGatewayFactory = () => Promise<SupabaseAuthGateway>;
 
@@ -258,12 +265,116 @@ export class SupabaseAuthenticationAdapter {
     }
   }
 
-  async signOut(): Promise<void> {
+  async signOut(scope: "global" | "local" | "others"): Promise<boolean> {
     try {
       const gateway = await this.createGateway();
-      await gateway.signOut("global");
+      const result = await gateway.signOut(scope);
+      return result.error === null;
     } catch {
-      // Logout remains idempotent even if the provider is unavailable.
+      return false;
+    }
+  }
+
+  async getAuthenticatorAssuranceLevel(): Promise<MfaAssuranceResult> {
+    try {
+      const gateway = await this.createGateway();
+      const result = await gateway.getAuthenticatorAssuranceLevel();
+      return result.error === null
+        ? { ...result.data, status: "found" }
+        : { status: "service-unavailable" };
+    } catch {
+      return { status: "service-unavailable" };
+    }
+  }
+
+  async listMfaFactors(): Promise<MfaFactorsResult> {
+    try {
+      const gateway = await this.createGateway();
+      const result = await gateway.listMfaFactors();
+      return result.error === null
+        ? { factors: result.data, status: "found" }
+        : { status: "service-unavailable" };
+    } catch {
+      return { status: "service-unavailable" };
+    }
+  }
+
+  async enrollTotp(friendlyName?: string): Promise<TotpEnrollmentResult> {
+    try {
+      const gateway = await this.createGateway();
+      const result = await gateway.enrollTotp(friendlyName);
+      return result.error === null
+        ? { ...result.data, status: "enrolled" }
+        : {
+            status:
+              result.error.code === "invalid-factor-name"
+                ? "invalid-factor"
+                : "service-unavailable",
+          };
+    } catch {
+      return { status: "service-unavailable" };
+    }
+  }
+
+  async challengeMfa(factorId: string): Promise<MfaChallengeResult> {
+    try {
+      const gateway = await this.createGateway();
+      const result = await gateway.challengeMfa(factorId);
+      return result.error === null
+        ? { ...result.data, status: "challenged" }
+        : {
+            status:
+              result.error.code === "invalid-factor"
+                ? "invalid-factor"
+                : "service-unavailable",
+          };
+    } catch {
+      return { status: "service-unavailable" };
+    }
+  }
+
+  async verifyMfa(input: {
+    challengeId: string;
+    code: string;
+    factorId: string;
+  }): Promise<MfaMutationResult> {
+    try {
+      const gateway = await this.createGateway();
+      const result = await gateway.verifyMfa(input);
+      return result.error === null
+        ? { status: "updated" }
+        : { status: "invalid-verification" };
+    } catch {
+      return { status: "service-unavailable" };
+    }
+  }
+
+  async unenrollMfa(factorId: string): Promise<MfaMutationResult> {
+    try {
+      const gateway = await this.createGateway();
+      const result = await gateway.unenrollMfa(factorId);
+      return result.error === null
+        ? { status: "updated" }
+        : {
+            status:
+              result.error.code === "invalid-factor"
+                ? "invalid-factor"
+                : "service-unavailable",
+          };
+    } catch {
+      return { status: "service-unavailable" };
+    }
+  }
+
+  async reauthenticate(): Promise<MfaMutationResult> {
+    try {
+      const gateway = await this.createGateway();
+      const result = await gateway.reauthenticate();
+      return result.error === null
+        ? { status: "updated" }
+        : { status: "service-unavailable" };
+    } catch {
+      return { status: "service-unavailable" };
     }
   }
 
@@ -319,6 +430,7 @@ export class SupabaseAuthenticationAdapter {
       return null;
     }
     return {
+      aal: claims.aal,
       account: identity.account,
       authenticatedAt:
         claims.issuedAt === null
@@ -330,6 +442,7 @@ export class SupabaseAuthenticationAdapter {
           : new Date(claims.expiresAt * 1000).toISOString(),
       sessionId: claims.sessionId ?? subject,
       status: "active",
+      supabaseUserId: subject,
     };
   }
 

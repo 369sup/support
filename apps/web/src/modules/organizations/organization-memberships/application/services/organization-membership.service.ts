@@ -86,9 +86,10 @@ export class OrganizationMembershipService {
       return { status: "invalid-role" };
     }
 
-    const account = await this.accountGateway.getActiveAccountByUsername(
-      command.username.trim(),
-    );
+    const invitee = command.username.trim();
+    const account = invitee.includes("@")
+      ? await this.accountGateway.getActiveAccountByEmail(invitee)
+      : await this.accountGateway.getActiveAccountByUsername(invitee);
     if (account === null || account.usage !== "human") {
       return { status: "account-not-found" };
     }

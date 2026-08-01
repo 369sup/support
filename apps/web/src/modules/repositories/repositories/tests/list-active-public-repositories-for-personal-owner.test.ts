@@ -23,6 +23,10 @@ class RepositoryQueryRepositoryFake
     return Promise.resolve(null);
   }
 
+  restoreDeleted() {
+    return Promise.resolve("tombstone-not-found" as const);
+  }
+
   save() {
     return Promise.resolve();
   }

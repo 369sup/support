@@ -28,29 +28,14 @@ export class PostgresOrganizationPolicyQueryAdapter
   implements OrganizationAppAccessPolicyQueryRepositoryPort
 {
   private readonly database: SqlExecutor;
-  private readonly isSchemaReady: Promise<void>;
 
   constructor(database: SqlExecutor) {
     this.database = database;
-    this.isSchemaReady = this.assertSchema();
-  }
-
-  private async assertSchema() {
-    const result = await this.database.query<{ isReady: boolean }>(
-      `select exists (
-         select 1 from support_schema_migrations
-         where migration_id = 'zz047_organizations_organization_policies'
-       ) as "isReady"`,
-    );
-    if (result.rows[0]?.isReady !== true) {
-      throw new Error("Organization policy schema is unavailable.");
-    }
   }
 
   private async lookup(organizationId: string) {
-    await this.isSchemaReady;
     const result = await this.database.query<PolicyRow>(
-      `select ${columns} from support_organization_policies
+      `select ${columns} from support_organizations_organization_policies.support_organization_policies
         where organization_id = $1`,
       [organizationId],
     );

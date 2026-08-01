@@ -9,6 +9,8 @@ import {
 } from "@/modules/enterprises/enterprises/server-api";
 import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   _request: Request,
   context: { params: Promise<{ slug: string }> },

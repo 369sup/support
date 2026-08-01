@@ -1,11 +1,7 @@
 import { SimulatedPublicationDeliveryAdapter } from "../adapters/outbound/simulated-publication-delivery.adapter";
 import { SystemPublicationClockAdapter } from "../adapters/outbound/system-publication-clock.adapter";
 import { SystemPublicationIdGeneratorAdapter } from "../adapters/outbound/system-publication-id-generator.adapter";
-import { InMemoryContextOutboxAdapter } from "../adapters/outbound/persistence/in-memory-context-outbox.adapter";
-import { InMemoryEventSourceRegistryAdapter } from "../adapters/outbound/persistence/in-memory-event-source-registry.adapter";
-import {
-  InMemoryPublicationStateAdapter,
-} from "../adapters/outbound/persistence/in-memory-publication-state.adapter";
+import { ConfiguredEventSourceRegistryAdapter } from "../adapters/outbound/persistence/configured-event-source-registry.adapter";
 import { PostgresContextOutboxAdapter } from "../adapters/outbound/persistence/postgres-context-outbox.adapter";
 import { PostgresPublicationStateAdapter } from "../adapters/outbound/persistence/postgres-publication-state.adapter";
 import { PublishPendingEventsHandler } from "../application/commands/publish-pending-events.handler";
@@ -17,12 +13,9 @@ import { ListDeadLettersHandler } from "../application/queries/list-dead-letters
 import type { EventRecorderPort } from "../contracts/event-recorder";
 import { getProductionDatabase } from "../../../../../production-runtime";
 
-const registry = new InMemoryEventSourceRegistryAdapter();
+const registry = new ConfiguredEventSourceRegistryAdapter();
 const database = getProductionDatabase();
-const stateRepository =
-  database === null
-    ? new InMemoryPublicationStateAdapter()
-    : new PostgresPublicationStateAdapter(database);
+const stateRepository = new PostgresPublicationStateAdapter(database);
 const delivery = new SimulatedPublicationDeliveryAdapter();
 const clock = new SystemPublicationClockAdapter();
 const idGenerator = new SystemPublicationIdGeneratorAdapter();
@@ -51,14 +44,12 @@ const registrationHandler = new RegisterEventSourceHandler(registry);
 type ContextEventSource = EventRecorderPort & CommittedEventSourcePort;
 
 function createContextEventSource(sourceId: string): ContextEventSource {
-  return database === null
-    ? new InMemoryContextOutboxAdapter(sourceId, idGenerator, clock)
-    : new PostgresContextOutboxAdapter(
-        sourceId,
-        database,
-        idGenerator,
-        clock,
-      );
+  return new PostgresContextOutboxAdapter(
+    sourceId,
+    database,
+    idGenerator,
+    clock,
+  );
 }
 
 export const eventPublicationServerFacade = {
@@ -75,8 +66,5 @@ export const eventPublicationServerFacade = {
   },
   resetDevelopmentState: () => {
     registry.reset();
-    if (stateRepository instanceof InMemoryPublicationStateAdapter) {
-      stateRepository.reset();
-    }
   },
 };

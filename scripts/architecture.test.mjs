@@ -1,4 +1,4 @@
-import { strict as assert } from "node:assert";
+import { strict } from "node:assert";
 import {
   existsSync,
   mkdtempSync,
@@ -251,8 +251,8 @@ test("accepts the canonical bounded-context fixture", () => {
   const rootDir = createValidFixture();
 
   try {
-    assert.deepEqual(check(rootDir), []);
-    assert.deepEqual(check(rootDir, "knowledge"), []);
+    strict.deepEqual(check(rootDir), []);
+    strict.deepEqual(check(rootDir, "knowledge"), []);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -265,13 +265,13 @@ test("returns structured violations and rejects invalid profiles", () => {
     writeFixture(rootDir, "src/lib/forbidden.ts", "export {};\n");
     const [violation] = check(rootDir);
 
-    assert.deepEqual(
+    strict.deepEqual(
       Object.keys(violation).sort(),
       ["category", "gate", "message", "ruleId"],
     );
-    assert.equal(violation.ruleId, "ARCH-SRC-001");
-    assert.equal(violation.gate, "required");
-    assert.throws(
+    strict.equal(violation.ruleId, "ARCH-SRC-001");
+    strict.equal(violation.gate, "required");
+    strict.throws(
       () => check(rootDir, "unsupported"),
       /Invalid architecture profile unsupported/,
     );
@@ -291,8 +291,8 @@ test("rejects an invalid v6 catalog shape and source policy", () => {
     writeCatalog(rootDir, catalog);
 
     const errors = check(rootDir);
-    assert.equal(includesRule(errors, "ARCH-MAP-013"), true);
-    assert.equal(includesRule(errors, "ARCH-MAP-014"), true);
+    strict.equal(includesRule(errors, "ARCH-MAP-013"), true);
+    strict.equal(includesRule(errors, "ARCH-MAP-014"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -310,7 +310,7 @@ test("rejects invalid catalog dependencies", () => {
     });
     writeCatalog(rootDir, catalog);
 
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-015"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-015"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -323,20 +323,20 @@ test("separates required source validity from knowledge freshness", () => {
     const catalog = validCatalog();
     catalog.contexts[0].officialSources[0].verifiedOn = null;
     writeCatalog(rootDir, catalog);
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-017"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-017"), true);
 
     catalog.contexts[0].officialSources[0].verifiedOn = "2027-01-01";
     writeCatalog(rootDir, catalog);
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-017"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-017"), true);
 
     catalog.contexts[0].officialSources[0].verifiedOn = "2024-01-01";
     writeCatalog(rootDir, catalog);
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-017"), false);
-    assert.equal(
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-017"), false);
+    strict.equal(
       includesRule(check(rootDir, "knowledge"), "ARCH-KNOWLEDGE-001"),
       true,
     );
-    assert.equal(
+    strict.equal(
       includesRule(check(rootDir, "all"), "ARCH-KNOWLEDGE-001"),
       true,
     );
@@ -349,18 +349,18 @@ test("renders independent source freshness and semantic status", () => {
   const catalog = validCatalog();
   let markdown = renderModuleMap(catalog);
 
-  assert.match(markdown, /\| active \| fresh \| validated \|/);
-  assert.doesNotMatch(markdown, /verified 2026/);
-  assert.match(markdown, /checked 2026-07-20/);
+  strict.match(markdown, /\| active \| fresh \| validated \|/);
+  strict.doesNotMatch(markdown, /verified 2026/);
+  strict.match(markdown, /checked 2026-07-20/);
 
   catalog.contexts[0].officialSources[0].verifiedOn = null;
   markdown = renderModuleMap(catalog);
-  assert.match(markdown, /\| active \| unverified \| validated \|/);
-  assert.match(markdown, /, unverified\)/);
+  strict.match(markdown, /\| active \| unverified \| validated \|/);
+  strict.match(markdown, /, unverified\)/);
 
   catalog.contexts[0].officialSources[0].verifiedOn = "2024-01-01";
   markdown = renderModuleMap(catalog);
-  assert.match(markdown, /\| active \| stale \| validated \|/);
+  strict.match(markdown, /\| active \| stale \| validated \|/);
 
   catalog.contexts.push({
     subdomain: "platform",
@@ -382,7 +382,7 @@ test("renders independent source freshness and semantic status", () => {
     eventRationale: "Technical infrastructure does not publish product events.",
   });
   markdown = renderModuleMap(catalog);
-  assert.match(markdown, /\| planned \| not-applicable \| not-applicable \|/);
+  strict.match(markdown, /\| planned \| not-applicable \| not-applicable \|/);
 });
 
 test("requires validated semantics before activating a product context", () => {
@@ -393,7 +393,7 @@ test("requires validated semantics before activating a product context", () => {
     catalog.contexts[0].semanticStatus = "candidate";
     writeCatalog(rootDir, catalog);
 
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-021"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-021"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -406,12 +406,12 @@ test("requires activation scope only for active contexts", () => {
     const catalog = validCatalog();
     catalog.contexts[0].activationScope = [];
     writeCatalog(rootDir, catalog);
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-023"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-023"), true);
 
     catalog.contexts[0].implementationStatus = "planned";
     catalog.contexts[0].activationScope = ["create-repository"];
     writeCatalog(rootDir, catalog);
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-023"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-023"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -448,7 +448,7 @@ test("requires runtime dependency targets to be active", () => {
     });
     writeCatalog(rootDir, catalog);
 
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-022"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-022"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -461,17 +461,17 @@ test("requires validated ownership and events to have semantic claims", () => {
     const catalog = validCatalog();
     catalog.contexts[0].semanticClaims[0].ownership = [];
     writeCatalog(rootDir, catalog);
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-024"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-024"), true);
 
     catalog.contexts[0].semanticClaims[0].ownership = ["Repository"];
     catalog.contexts[0].semanticClaims[0].events = [];
     writeCatalog(rootDir, catalog);
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-025"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-025"), true);
 
     catalog.contexts[0].semanticClaims[0].events = ["RepositoryCreated@1"];
     catalog.contexts[0].semanticClaims[0].sourceIds = ["missing-source"];
     writeCatalog(rootDir, catalog);
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-024"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-024"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -482,7 +482,7 @@ test("requires canonical decision headings in context READMEs", () => {
 
   try {
     writeFixture(rootDir, "src/modules/core-domain/repositories/README.md", "# Repositories\n");
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -503,21 +503,21 @@ test("requires catalog references in active context content trees", () => {
       "src/modules/core-domain/repositories/README.md",
       readme.replace("    - Use case: `create-repository`\n", ""),
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
 
     writeFixture(
       rootDir,
       "src/modules/core-domain/repositories/README.md",
       readme.replace("    - Owned concepts: `Repository`\n", ""),
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
 
     writeFixture(
       rootDir,
       "src/modules/core-domain/repositories/README.md",
       readme.replace("    - Published events: `RepositoryCreated@1`\n", ""),
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -532,13 +532,13 @@ test("requires active published events to expose schemas and ordering keys", () 
     delete catalog.contexts[0].publishedEvents[0].orderingKey;
     writeCatalog(rootDir, catalog);
 
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-020"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-020"), true);
 
     catalog.contexts[0].publishedEvents[0].schema = "integration-contracts.ts#MissingEventV1";
     catalog.contexts[0].publishedEvents[0].orderingKey = "repositoryId";
     writeCatalog(rootDir, catalog);
 
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-020"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-020"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -561,21 +561,21 @@ test("supports incremental planned and active event delivery", () => {
     writeCatalog(rootDir, catalog);
 
     let errors = check(rootDir);
-    assert.equal(includesRule(errors, "ARCH-MAP-020"), false);
-    assert.equal(includesRule(errors, "ARCH-MAP-026"), false);
+    strict.equal(includesRule(errors, "ARCH-MAP-020"), false);
+    strict.equal(includesRule(errors, "ARCH-MAP-026"), false);
 
     catalog.contexts[0].publishedEvents[1].schema =
       "integration-contracts.ts#RepositoryRenamedV1";
     catalog.contexts[0].publishedEvents[1].orderingKey = "repositoryId";
     writeCatalog(rootDir, catalog);
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-026"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-026"), true);
 
     delete catalog.contexts[0].publishedEvents[1].schema;
     delete catalog.contexts[0].publishedEvents[1].orderingKey;
     catalog.contexts[0].implementationStatus = "planned";
     catalog.contexts[0].activationScope = [];
     writeCatalog(rootDir, catalog);
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-026"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-026"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -616,13 +616,13 @@ test("runtime event dependencies consume only active events", () => {
       semanticClaims: [],
     });
     writeCatalog(rootDir, catalog);
-    assert.equal(includesRule(check(rootDir), "ARCH-DEP-014"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-DEP-014"), true);
 
     const consumer = catalog.contexts[1];
     consumer.plannedRelationships = consumer.dependencies;
     consumer.dependencies = [];
     writeCatalog(rootDir, catalog);
-    assert.equal(includesRule(check(rootDir), "ARCH-DEP-014"), false);
+    strict.equal(includesRule(check(rootDir), "ARCH-DEP-014"), false);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -643,10 +643,10 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       dependency.mode === "event" &&
       dependency.events.some((selected) => selected.name === event && selected.version === 1));
 
-  assert.equal(catalog.version, 6);
-  assert.equal(catalog.contexts.length, 67);
-  assert.equal(catalog.contexts.every((item) => item.status === undefined), true);
-  assert.deepEqual(
+  strict.equal(catalog.version, 6);
+  strict.equal(catalog.contexts.length, 67);
+  strict.equal(catalog.contexts.every((item) => item.status === undefined), true);
+  strict.deepEqual(
     catalog.contexts
       .filter((item) => item.implementationStatus === "active")
       .map((item) => `${item.subdomain}/${item.name}`),
@@ -689,17 +689,17 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "projections/discovery",
     ],
   );
-  assert.equal(
+  strict.equal(
     catalog.contexts.filter((item) => item.implementationStatus === "planned").length,
     31,
   );
-  assert.equal(
+  strict.equal(
     byPath.get("organizations/organization-memberships").activationScope.includes(
       "list-active-organization-memberships-for-organization",
     ),
     true,
   );
-  assert.deepEqual(
+  strict.deepEqual(
     byPath.get("identity/accounts").activationScope,
     [
       "apply-account-identity-transaction",
@@ -709,16 +709,17 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "get-personal-account-by-username",
     ],
   );
-  assert.deepEqual(
+  strict.deepEqual(
     byPath.get("identity/account-emails").activationScope,
     [
       "add-account-email",
+      "get-verified-account-id-by-email",
       "list-account-emails",
       "update-account-email-settings",
       "verify-account-email",
     ],
   );
-  assert.deepEqual(
+  strict.deepEqual(
     byPath.get("platform/scheduled-commands").activationScope,
     [
       "claim-due-scheduled-commands",
@@ -728,17 +729,17 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "schedule-command",
     ],
   );
-  assert.deepEqual(
+  strict.deepEqual(
     byPath.get("platform/notification-channels").activationScope,
     ["deliver-email", "get-channel-delivery"],
   );
-  assert.equal(
+  strict.equal(
     byPath.get("identity/authentication").activationScope.includes(
       "manage-passkey",
     ),
-    true,
+    false,
   );
-  assert.deepEqual(
+  strict.deepEqual(
     byPath.get("enterprises/enterprise-teams").activationScope,
     [
       "add-enterprise-team-member",
@@ -753,7 +754,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "update-enterprise-team",
     ],
   );
-  assert.deepEqual(
+  strict.deepEqual(
     byPath.get("organizations/organization-teams").activationScope,
     [
       "add-team-member",
@@ -769,7 +770,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "update-organization-team",
     ],
   );
-  assert.deepEqual(
+  strict.deepEqual(
     byPath.get("organizations/organization-roles").activationScope,
     [
       "assign-organization-role",
@@ -779,7 +780,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "revoke-organization-role",
     ],
   );
-  assert.deepEqual(
+  strict.deepEqual(
     byPath.get("repositories/repository-access").activationScope,
     [
       "change-team-repository-access",
@@ -788,7 +789,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "resolve-effective-repository-permission",
     ],
   );
-  assert.deepEqual(
+  strict.deepEqual(
     byPath.get("repositories/repositories").activationScope,
     [
       "archive-repository",
@@ -809,7 +810,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "update-repository-profile",
     ],
   );
-  assert.deepEqual(
+  strict.deepEqual(
     byPath.get("repositories/repositories").dependencies,
     [
       {
@@ -839,7 +840,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       },
     ],
   );
-  assert.deepEqual(
+  strict.deepEqual(
     byPath
       .get("repositories/repositories")
       .publishedEvents.find(
@@ -856,13 +857,13 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       orderingKey: "repositoryId",
     },
   );
-  assert.equal(
+  strict.equal(
     catalog.contexts
       .filter((item) => item.implementationStatus === "planned")
       .every((item) => item.activationScope.length === 0),
     true,
   );
-  assert.deepEqual(
+  strict.deepEqual(
     byPath.get("projections/dashboard").activationScope,
     [
       "get-dashboard-repository-view",
@@ -872,7 +873,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "select-dashboard-context",
     ],
   );
-  assert.deepEqual(
+  strict.deepEqual(
     catalog.contexts
       .filter((item) => item.publishedEvents.some(
         (event) => event.implementationStatus === "active",
@@ -885,19 +886,19 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "repositories/repository-access",
     ],
   );
-  assert.equal(catalog.contexts.every((item) => item.semanticStatus !== undefined), true);
-  assert.equal(
+  strict.equal(catalog.contexts.every((item) => item.semanticStatus !== undefined), true);
+  strict.equal(
     catalog.contexts
       .filter((item) => item.semanticStatus === "validated")
       .every((item) => item.semanticClaims.length > 0),
     true,
   );
-  assert.equal(byPath.get("collaboration/issue-schema").owns.includes("IssueFieldValue"), false);
-  assert.equal(byPath.get("collaboration/issues").owns.includes("IssueFieldValueSet"), true);
-  assert.equal(byPath.has("integrations/github-app-registrations"), true);
-  assert.equal(byPath.has("integrations/oauth-app-registrations"), true);
-  assert.equal(byPath.has("integrations/repository-autolinks"), true);
-  assert.equal(byPath.get("projections/repository-insights").owns.includes("TrafficMetric"), false);
+  strict.equal(byPath.get("collaboration/issue-schema").owns.includes("IssueFieldValue"), false);
+  strict.equal(byPath.get("collaboration/issues").owns.includes("IssueFieldValueSet"), true);
+  strict.equal(byPath.has("integrations/github-app-registrations"), true);
+  strict.equal(byPath.has("integrations/oauth-app-registrations"), true);
+  strict.equal(byPath.has("integrations/repository-autolinks"), true);
+  strict.equal(byPath.get("projections/repository-insights").owns.includes("TrafficMetric"), false);
   for (const contextPath of [
     "platform/site-content",
     "integrations/marketplace-catalog",
@@ -914,69 +915,69 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
     "collaboration/wikis",
     "projections/repository-traffic",
   ]) {
-    assert.equal(byPath.get(contextPath).implementationStatus, "planned");
+    strict.equal(byPath.get(contextPath).implementationStatus, "planned");
   }
-  assert.deepEqual(
+  strict.deepEqual(
     byPath.get("platform/pull-request-route-compatibility").excludes,
     ["PullRequest", "Diff", "CommitLinkage", "CodeReview"],
   );
-  assert.equal(
+  strict.equal(
     byPath.get("repositories/repository-releases").excludes.includes("GitTag"),
     true,
   );
-  assert.equal(
+  strict.equal(
     byPath.get("collaboration/wikis").excludes.includes("GitBackedWikiStorage"),
     true,
   );
-  assert.equal(hasEventRelationship("engagement/stars", "repositories/repositories", "RepositoryVisibilityChanged"), true);
-  assert.equal(hasEventRelationship("engagement/subscriptions", "repositories/repositories", "RepositoryVisibilityChanged"), true);
-  assert.equal(hasEventRelationship("platform/notification-channels", "engagement/notifications", "NotificationDeliveryRequested"), true);
-  assert.equal(byPath.has("enterprises/custom-properties"), true);
-  assert.equal(
+  strict.equal(hasEventRelationship("engagement/stars", "repositories/repositories", "RepositoryVisibilityChanged"), true);
+  strict.equal(hasEventRelationship("engagement/subscriptions", "repositories/repositories", "RepositoryVisibilityChanged"), true);
+  strict.equal(hasEventRelationship("platform/notification-channels", "engagement/notifications", "NotificationDeliveryRequested"), true);
+  strict.equal(byPath.has("enterprises/custom-properties"), true);
+  strict.equal(
     byPath.get("enterprises/custom-properties").owns.includes("EnterpriseOrganizationPropertyDefinition"),
     true,
   );
-  assert.equal(
+  strict.equal(
     byPath.get("organizations/custom-properties").owns.includes("OrganizationPropertyValue"),
     false,
   );
-  assert.equal(
+  strict.equal(
     byPath.get("repositories/repository-metadata").plannedRelationships.some(
       (dependency) => dependency.context === "organizations/custom-properties",
     ),
     false,
   );
-  assert.equal(
+  strict.equal(
     byPath.get("repositories/repositories").owns.includes("RepositoryLifecycleState"),
     true,
   );
-  assert.equal(
+  strict.equal(
     byPath.get("collaboration/conversations").plannedRelationships.some(
       (dependency) => dependency.contract === "RepositoryLifecycleState",
     ),
     true,
   );
-  assert.equal(
+  strict.equal(
     byPath.get("enterprises/enterprises").plannedRelationships.some(
       (dependency) => dependency.context === "repositories/repositories",
     ),
     false,
   );
-  assert.equal(
+  strict.equal(
     hasEventRelationship("repositories/repository-access", "repositories/repositories", "RepositoryDeleted"),
     true,
   );
-  assert.equal(
+  strict.equal(
     byPath.get("repositories/repository-features").owns.includes("RepositoryDiscussionsFeatureState"),
     true,
   );
-  assert.equal(
+  strict.equal(
     byPath.get("collaboration/discussions").publishedEvents.some(
       (event) => event.name === "RepositoryDiscussionSpaceEnabled",
     ),
     false,
   );
-  assert.equal(
+  strict.equal(
     hasEventRelationship(
       "collaboration/discussions",
       "repositories/repository-features",
@@ -984,74 +985,74 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
     ),
     true,
   );
-  assert.equal(
+  strict.equal(
     byPath.get("integrations/github-app-registrations").publishedEvents.some(
       (event) => event.name === "AppSuspended",
     ),
     false,
   );
-  assert.equal(
+  strict.equal(
     byPath.get("integrations/github-app-registrations").publishedEvents.some(
       (event) => event.name === "GitHubAppOwnershipTransferred",
     ),
     true,
   );
-  assert.equal(
+  strict.equal(
     byPath.get("integrations/github-app-installations").publishedEvents.some(
       (event) => event.name === "GitHubAppInstallationSuspended",
     ),
     true,
   );
-  assert.equal(byPath.get("platform/event-publication").owns.includes("OutboxRecord"), false);
-  assert.equal(
+  strict.equal(byPath.get("platform/event-publication").owns.includes("OutboxRecord"), false);
+  strict.equal(
     catalog.contexts.some((context) => context.plannedRelationships.some(
       (dependency) => dependency.context === "platform/event-publication",
     )),
     false,
   );
-  assert.equal(
+  strict.equal(
     byPath.get("repositories/repository-features").owns.includes("RepositoryWikiFeatureState"),
     true,
   );
-  assert.equal(
+  strict.equal(
     byPath.get("repositories/repository-access").publishedEvents.some(
       (event) => event.name === "RepositoryInvitationDeclined",
     ),
     true,
   );
-  assert.equal(
+  strict.equal(
     byPath.get("repositories/repository-access").publishedEvents.some(
       (event) => event.name === "RepositoryInvitationPermissionChanged",
     ),
     true,
   );
-  assert.match(
+  strict.match(
     byPath.get("repositories/repositories").semanticClaims.find(
       (claim) => claim.id === "repository-transfer",
     ).statement,
     /personal account/,
   );
-  assert.equal(
+  strict.equal(
     byPath.get("repositories/repository-metadata").semanticStatus,
     "validated",
   );
-  assert.deepEqual(
+  strict.deepEqual(
     byPath.get("repositories/repository-metadata").semanticClaims.map((claim) => claim.id),
     ["repository-topic-set", "repository-social-preview"],
   );
-  assert.equal(
+  strict.equal(
     byPath.get("integrations/repository-autolinks").publishedEvents.some(
       (event) => event.name === "RepositoryAutolinkUpdated",
     ),
     false,
   );
-  assert.equal(
+  strict.equal(
     byPath.get("collaboration/discussions").publishedEvents.some(
       (event) => event.name === "OrganizationDiscussionSourceUnavailable",
     ),
     false,
   );
-  assert.match(
+  strict.match(
     byPath.get("integrations/repository-autolinks").semanticClaims.find(
       (claim) => claim.id === "repository-autolink-definition",
     ).statement,
@@ -1066,9 +1067,9 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
     "DiscussionSectionUpdated",
     "DiscussionSectionDeleted",
   ]) {
-    assert.equal(discussionEvents.has(event), true);
+    strict.equal(discussionEvents.has(event), true);
   }
-  assert.equal(discussionEvents.has("DiscussionPollClosed"), false);
+  strict.equal(discussionEvents.has("DiscussionPollClosed"), false);
   const discussionSourceUrls = new Set(
     byPath.get("collaboration/discussions").officialSources.map((source) => source.url),
   );
@@ -1078,15 +1079,15 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
     "https://docs.github.com/en/discussions/collaborating-with-your-community-using-discussions/participating-in-a-discussion",
     "https://docs.github.com/en/graphql/reference/discussions",
   ]) {
-    assert.equal(discussionSourceUrls.has(sourceUrl), true);
+    strict.equal(discussionSourceUrls.has(sourceUrl), true);
   }
-  assert.equal(
+  strict.equal(
     byPath.get("integrations/github-app-installations").officialSources.some(
       (source) => source.url.endsWith("/approving-updated-permissions-for-a-github-app"),
     ),
     true,
   );
-  assert.match(
+  strict.match(
     byPath.get("integrations/github-app-installations").semanticClaims.find(
       (claim) => claim.id === "github-app-installation-permission-approval",
     ).statement,
@@ -1097,7 +1098,7 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
     "repository-migration-locks",
     "organization-discussion-source-repository-disruption",
   ]) {
-    assert.equal(
+    strict.equal(
       catalog.deferredCapabilities.some((item) => item.name === capability),
       true,
     );
@@ -1116,7 +1117,7 @@ test("rejects unversioned, duplicate, or untraceable published events", () => {
     });
     writeCatalog(rootDir, catalog);
 
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-018"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-018"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1161,7 +1162,7 @@ test("rejects event dependencies that select undeclared event versions", () => {
     });
     writeCatalog(rootDir, catalog);
 
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-015"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-015"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1231,7 +1232,7 @@ test("requires a declared synchronous dependency for cross-context imports", () 
       'import { Button } from "@/modules/core-domain/repositories/browser-ui";\nexport const IssueCard = Button;\n',
     );
 
-    assert.equal(includesRule(check(rootDir), "ARCH-DEP-010"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-DEP-010"), true);
 
     catalog.contexts[1].plannedRelationships.push({
       context: "core-domain/repositories",
@@ -1240,14 +1241,14 @@ test("requires a declared synchronous dependency for cross-context imports", () 
     });
     writeCatalog(rootDir, catalog);
 
-    assert.equal(includesRule(check(rootDir), "ARCH-DEP-010"), false);
-    assert.equal(includesRule(check(rootDir), "ARCH-DEP-013"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-DEP-010"), false);
+    strict.equal(includesRule(check(rootDir), "ARCH-DEP-013"), true);
 
     catalog.contexts[1].dependencies.push(catalog.contexts[1].plannedRelationships.pop());
     writeCatalog(rootDir, catalog);
 
-    assert.equal(includesRule(check(rootDir), "ARCH-DEP-010"), false);
-    assert.equal(includesRule(check(rootDir), "ARCH-DEP-013"), false);
+    strict.equal(includesRule(check(rootDir), "ARCH-DEP-010"), false);
+    strict.equal(includesRule(check(rootDir), "ARCH-DEP-013"), false);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1258,10 +1259,10 @@ test("allows only AGENTS.md as the src-root instruction file", () => {
 
   try {
     writeFixture(rootDir, "src/AGENTS.md", "# Source instructions\n");
-    assert.equal(includesRule(check(rootDir), "ARCH-SRC-001"), false);
+    strict.equal(includesRule(check(rootDir), "ARCH-SRC-001"), false);
 
     writeFixture(rootDir, "src/README.md", "# Unsupported source-root file\n");
-    assert.equal(includesRule(check(rootDir), "ARCH-SRC-001"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-SRC-001"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1272,7 +1273,35 @@ test("rejects a third src root", () => {
 
   try {
     writeFixture(rootDir, "src/lib/utility.ts", "export const value = 1;\n");
-    assert.equal(includesRule(check(rootDir), "ARCH-SRC-001"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-SRC-001"), true);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("allows in-memory adapters only behind explicit test boundaries", () => {
+  const rootDir = createValidFixture();
+
+  try {
+    const moduleRoot = "src/modules/core-domain/repositories";
+    writeFixture(
+      rootDir,
+      `${moduleRoot}/adapters/outbound/persistence/in-memory-repository.adapter.ts`,
+      "export const inMemoryRepository = {};\n",
+    );
+    writeFixture(
+      rootDir,
+      `${moduleRoot}/tests/repository.test.ts`,
+      'import { inMemoryRepository } from "../adapters/outbound/persistence/in-memory-repository.adapter";\nvoid inMemoryRepository;\n',
+    );
+    strict.equal(includesRule(check(rootDir), "ARCH-SRC-002"), false);
+
+    writeFixture(
+      rootDir,
+      `${moduleRoot}/composition/repositories.composition.ts`,
+      'import { inMemoryRepository } from "../adapters/outbound/persistence/in-memory-repository.adapter";\nexport const repositories = inMemoryRepository;\n',
+    );
+    strict.equal(includesRule(check(rootDir), "ARCH-SRC-002"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1287,7 +1316,7 @@ test("rejects shadcn aliases that regenerate forbidden roots", () => {
       "components.json",
       `${JSON.stringify({ aliases: { ui: "@/components/ui" } }, null, 2)}\n`,
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-TOOL-001"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-TOOL-001"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1307,7 +1336,7 @@ test("rejects circular dependencies", () => {
       "src/modules/core-domain/repositories/adapters/inbound/react/second.ts",
       'import { first } from "./first";\nexport const second = first;\n',
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-GRAPH-001"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-GRAPH-001"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1324,14 +1353,14 @@ test("requires server-only markers for direct server capabilities", () => {
       adapterPath,
       'import { randomUUID } from "node:crypto";\nexport function createId(): string { return randomUUID(); }\n',
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-SERVER-001"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-SERVER-001"), true);
 
     writeFixture(
       rootDir,
       adapterPath,
       'import "server-only";\nimport { randomUUID } from "node:crypto";\nexport function createId(): string { return randomUUID(); }\n',
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-SERVER-001"), false);
+    strict.equal(includesRule(check(rootDir), "ARCH-SERVER-001"), false);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1351,7 +1380,7 @@ test("rejects server-only dependencies reachable from browser-ui.ts", () => {
       "src/modules/core-domain/repositories/composition/create-ui.ts",
       "export function createUi(): string { return process.env.NODE_ENV ?? \"test\"; }\n",
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-CLIENT-001"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-CLIENT-001"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1367,8 +1396,8 @@ test("rejects ambiguous names and multiple runtime exports", () => {
       "export const first = 1;\nexport const second = 2;\n",
     );
     const errors = check(rootDir);
-    assert.equal(includesRule(errors, "ARCH-NAME-002"), true);
-    assert.equal(includesRule(errors, "ARCH-FILE-001"), true);
+    strict.equal(includesRule(errors, "ARCH-NAME-002"), true);
+    strict.equal(includesRule(errors, "ARCH-FILE-001"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1389,8 +1418,8 @@ test("rejects nested barrels and misplaced role suffixes", () => {
       "export class Account {}\n",
     );
     const errors = check(rootDir);
-    assert.equal(includesRule(errors, "ARCH-NAME-003"), true);
-    assert.equal(includesRule(errors, "ARCH-NAME-004"), true);
+    strict.equal(includesRule(errors, "ARCH-NAME-003"), true);
+    strict.equal(includesRule(errors, "ARCH-NAME-004"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1405,14 +1434,14 @@ test("requires semantic context to use-case to function traceability", () => {
       "src/modules/core-domain/repositories/application/commands/create-repository.handler.ts",
       'import type { CreateRepositoryUseCase } from "../ports/inbound/create-repository.use-case";\nexport class CreateRepositoryHandler implements CreateRepositoryUseCase { async execute(): Promise<void> {} }\n',
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-001"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-USECASE-001"), true);
 
     writeFixture(
       rootDir,
       "src/modules/core-domain/repositories/application/commands/create-repository.handler.ts",
       'import type { CreateRepositoryUseCase } from "../ports/inbound/create-repository.use-case";\nexport class CreateRepositoryHandler implements CreateRepositoryUseCase { async createRepository(): Promise<void> {} }\n',
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-001"), false);
+    strict.equal(includesRule(check(rootDir), "ARCH-USECASE-001"), false);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1436,7 +1465,7 @@ test("requires every designed-use-case field", () => {
       ),
     );
 
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1459,14 +1488,14 @@ test("requires active designs to match activation scope and handler type", () =>
         "### `create-repository` [planned]",
       ),
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), true);
 
     writeFixture(
       rootDir,
       "src/modules/core-domain/repositories/README.md",
       readme.replace("- **Type:** `command`", "- **Type:** `query`"),
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), true);
 
     writeFixture(
       rootDir,
@@ -1476,7 +1505,7 @@ test("requires active designs to match activation scope and handler type", () =>
         "`CreateRepositoryUseCase.execute()`",
       ),
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1500,7 +1529,7 @@ test("rejects handlers without an approved active design", () => {
       ),
     );
 
-    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1539,7 +1568,7 @@ test("rejects inbound ports for planned designed use cases", () => {
       ),
     );
 
-    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1563,7 +1592,7 @@ test("requires designed rejection literals in the inbound result", () => {
       ),
     );
 
-    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-003"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-USECASE-003"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1598,7 +1627,7 @@ test("rejects uncataloged designed-use-case references", () => {
         "src/modules/core-domain/repositories/README.md",
         readme.replace(current, replacement),
       );
-      assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
+      strict.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
     }
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
@@ -1614,7 +1643,7 @@ test("rejects files that bypass the two-level context structure", () => {
       "src/modules/platform/orphan.ts",
       "export const orphan = true;\n",
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-STRUCT-002"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-STRUCT-002"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1631,7 +1660,7 @@ test("rejects unregistered and expired architecture exceptions", () => {
       buttonPath,
       "// @architecture-exception ARCH-EX-001\nexport function Button(): string { return \"button\"; }\n",
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-EXCEPTION-007"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-EXCEPTION-007"), true);
 
     const registry = [
       {
@@ -1653,7 +1682,7 @@ test("rejects unregistered and expired architecture exceptions", () => {
       "docs/architecture/exceptions/registry.json",
       `${JSON.stringify(registry, null, 2)}\n`,
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-EXCEPTION-006"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-EXCEPTION-006"), true);
 
     registry[0].approvedOn = "2027-07-01";
     registry[0].expiresOn = "2027-07-21";
@@ -1662,7 +1691,7 @@ test("rejects unregistered and expired architecture exceptions", () => {
       "docs/architecture/exceptions/registry.json",
       `${JSON.stringify(registry, null, 2)}\n`,
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-EXCEPTION-005"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-EXCEPTION-005"), true);
 
     registry[0].approvedOn = "2026-07-01";
     registry[0].expiresOn = "2027-07-21";
@@ -1672,7 +1701,7 @@ test("rejects unregistered and expired architecture exceptions", () => {
       "docs/architecture/exceptions/registry.json",
       `${JSON.stringify(registry, null, 2)}\n`,
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-EXCEPTION-008"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-EXCEPTION-008"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1683,8 +1712,8 @@ test("rejects a stale generated module map", () => {
 
   try {
     writeFixture(rootDir, "docs/architecture/module-map.md", "# stale\n");
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-012"), false);
-    assert.equal(
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-012"), false);
+    strict.equal(
       includesRule(check(rootDir, "generated"), "ARCH-MAP-012"),
       true,
     );
@@ -1705,7 +1734,7 @@ test("requires a README-owned directory for every planned context", () => {
       join(rootDir, "src", "modules", "core-domain", "repositories"),
       { recursive: true, force: true },
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-027"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-027"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1740,14 +1769,14 @@ test("allows only README.md in planned context directories", () => {
       join(rootDir, "src", "modules", "platform", "event-publication", "README.md"),
       "utf8",
     );
-    assert.match(plannedReadme, /## Ownership and invariants/);
-    assert.match(plannedReadme, /## Dependencies and consistency/);
-    assert.doesNotMatch(plannedReadme, /## Authorization/);
-    assert.doesNotMatch(plannedReadme, /## Retention and erasure/);
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-006"), false);
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-027"), false);
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), false);
-    assert.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), false);
+    strict.match(plannedReadme, /## Ownership and invariants/);
+    strict.match(plannedReadme, /## Dependencies and consistency/);
+    strict.doesNotMatch(plannedReadme, /## Authorization/);
+    strict.doesNotMatch(plannedReadme, /## Retention and erasure/);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-006"), false);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-027"), false);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-019"), false);
+    strict.equal(includesRule(check(rootDir), "ARCH-USECASE-002"), false);
 
     writeFixture(
       rootDir,
@@ -1782,7 +1811,7 @@ Not applicable while planned.
 No active events.
 `,
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-019"), true);
 
     writeFixture(
       rootDir,
@@ -1795,7 +1824,7 @@ No active events.
       "src/modules/platform/event-publication/server-api.ts",
       "export {};\n",
     );
-    assert.equal(includesRule(check(rootDir), "ARCH-MAP-006"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-MAP-006"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1808,7 +1837,7 @@ test("rejects broken nested AGENTS links and permanent overrides", () => {
     writeFixture(rootDir, "apps/web/AGENTS.md", "# Web\n\n[missing](missing.md)\n");
     writeFixture(rootDir, "apps/web/AGENTS.override.md", "# Override\n");
 
-    assert.equal(includesRule(check(rootDir), "ARCH-GUIDE-001"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-GUIDE-001"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1824,7 +1853,7 @@ test("rejects model-version startup boilerplate in guidance", () => {
       "# Fixture\n\nFor Codex 5.3 startup, read every guide.\n",
     );
 
-    assert.equal(includesRule(check(rootDir), "ARCH-GUIDE-003"), true);
+    strict.equal(includesRule(check(rootDir), "ARCH-GUIDE-003"), true);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }
@@ -1843,7 +1872,7 @@ test("reports inherited AGENTS paragraph duplication as knowledge", () => {
       `# Applications\n\n${repeatedParagraph}\n`,
     );
 
-    assert.equal(
+    strict.equal(
       includesRule(check(rootDir, "knowledge"), "ARCH-GUIDE-004"),
       true,
     );
@@ -1858,7 +1887,7 @@ test("reports guidance token budget excess as knowledge", () => {
   try {
     writeFixture(rootDir, "AGENTS.md", `# Root\n\n${"x".repeat(4_801)}\n`);
 
-    assert.equal(
+    strict.equal(
       check(rootDir, "knowledge").some((violation) => {
         return violation.ruleId === "ARCH-GUIDE-005" &&
           violation.message.startsWith("AGENTS.md is estimated");
@@ -1872,7 +1901,7 @@ test("reports guidance token budget excess as knowledge", () => {
       "apps/AGENTS.md",
       `# Applications\n\n${"x".repeat(12_001)}\n`,
     );
-    assert.equal(
+    strict.equal(
       check(rootDir, "knowledge").some((violation) => {
         return violation.ruleId === "ARCH-GUIDE-005" &&
           violation.message.startsWith(
@@ -1888,7 +1917,7 @@ test("reports guidance token budget excess as knowledge", () => {
       "packages/AGENTS.md",
       `# Packages\n\n${"x".repeat(8_001)}\n`,
     );
-    assert.equal(
+    strict.equal(
       check(rootDir, "knowledge").some((violation) => {
         return violation.ruleId === "ARCH-GUIDE-005" &&
           violation.message.startsWith(
@@ -1900,7 +1929,7 @@ test("reports guidance token budget excess as knowledge", () => {
     writeFixture(rootDir, "packages/AGENTS.md", "# Packages\n");
 
     writeFixture(rootDir, "README.md", `# Root\n\n${"x".repeat(7_201)}\n`);
-    assert.equal(
+    strict.equal(
       check(rootDir, "knowledge").some((violation) => {
         return violation.ruleId === "ARCH-GUIDE-005" &&
           violation.message.startsWith("README.md is estimated");
@@ -1913,7 +1942,7 @@ test("reports guidance token budget excess as knowledge", () => {
       "apps/web/src/app/example/README.md",
       `# Route\n\n${"x".repeat(4_801)}\n`,
     );
-    assert.equal(
+    strict.equal(
       check(rootDir, "knowledge").some((violation) => {
         return violation.ruleId === "ARCH-GUIDE-005" &&
           violation.message.startsWith("Route README");
@@ -1930,7 +1959,7 @@ test("reports guidance token budget excess as knowledge", () => {
       "src/modules/core-domain/repositories/README.md",
       `# Planned\n\n${"x".repeat(12_001)}\n`,
     );
-    assert.equal(
+    strict.equal(
       check(rootDir, "knowledge").some((violation) => {
         return violation.ruleId === "ARCH-GUIDE-005" &&
           violation.message.startsWith("Planned context README");

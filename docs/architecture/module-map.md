@@ -31,9 +31,9 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 | Subdomain | Bounded context | Kind | Classification | Maturity | Implementation | Source freshness | Semantic status | Responsibility |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | identity | [accounts](../../apps/web/src/modules/identity/accounts/README.md) | domain | core | stable | active | fresh | validated | User account identity, personal or managed account type, human or machine usage, username, lifecycle, and ghost attribution. |
-| identity | [authentication](../../apps/web/src/modules/identity/authentication/README.md) | domain | core | stable | active | fresh | validated | Credentials, browser session sets, active account-session selection, two-factor authentication, recovery, and external login binding. |
+| identity | [authentication](../../apps/web/src/modules/identity/authentication/README.md) | domain | core | stable | active | fresh | validated | Supabase Auth session normalization, password and OAuth sign-in, provider-owned password recovery, reauthentication, TOTP assurance, and external identity binding. |
 | identity | [account-emails](../../apps/web/src/modules/identity/account-emails/README.md) | domain | core | stable | active | fresh | validated | Account email addresses, verification, primary and public selection, managed-user ownership, reuse quarantine, and organization notification routing. |
-| identity | [account-registration](../../apps/web/src/modules/identity/account-registration/README.md) | domain | supporting | stable | active | fresh | validated | Coordinate personal account registration and username changes so account identity and password credentials never remain half-complete. |
+| identity | [account-registration](../../apps/web/src/modules/identity/account-registration/README.md) | domain | supporting | stable | active | fresh | validated | Coordinate Support username changes while Supabase Auth owns sign-up credentials and session issuance. |
 | identity | [profiles](../../apps/web/src/modules/identity/profiles/README.md) | domain | supporting | stable | active | fresh | validated | Public and private personal profiles, profile status, and pinned-item presentation. |
 | identity | [social-graph](../../apps/web/src/modules/identity/social-graph/README.md) | domain | supporting | stable | active | fresh | validated | Following relationships between users and organizations. |
 | enterprises | [enterprises](../../apps/web/src/modules/enterprises/enterprises/README.md) | domain | core | stable | active | fresh | validated | Enterprise identity, profile, account mode, lifecycle, and authoritative organization ownership links. |
@@ -113,20 +113,20 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 ### [identity/authentication](../../apps/web/src/modules/identity/authentication/README.md)
 
-- **Owns:** Credential, Session, TwoFactorConfiguration, ExternalLoginBinding.
+- **Owns:** Session, TwoFactorConfiguration, ExternalLoginBinding.
 - **Excludes:** AccountLifecycle, ScimProvisioning, OAuthAppAuthorization.
-- **Activation scope:** apply-password-credential-transaction, change-password, configure-totp, enter-sudo-mode, get-current-authenticated-session, list-browser-account-sessions, manage-passkey, recover-two-factor, remove-account-session, request-password-reset, reset-password, sign-out-all-sessions, switch-active-account-session, verify-additional-factor
-- **Runtime dependencies:** identity/accounts via AccountReference (synchronous); platform/notification-channels via EmailDelivery (synchronous)
+- **Activation scope:** enroll-totp, get-current-authenticated-session, reauthenticate, request-supabase-password-reset, sign-out-all-sessions, update-supabase-password, verify-mfa, verify-supabase-otp
+- **Runtime dependencies:** identity/accounts via AccountReference (synchronous)
 - **Planned relationships:** None.
 - **Published events:** SessionCreated@1 (domain; planned; contract pending), SessionRevoked@1 (domain; planned; contract pending), TwoFactorEnabled@1 (domain; planned; contract pending), TwoFactorDisabled@1 (domain; planned; contract pending), ExternalLoginLinked@1 (domain; planned; contract pending), ExternalLoginUnlinked@1 (domain; planned; contract pending)
-- **Semantic claims:** authentication-session-lifecycle (owns Credential, Session; events SessionCreated@1, SessionRevoked@1; sources identity-authentication-source-01, identity-authentication-source-02); authentication-additional-factors (owns TwoFactorConfiguration, ExternalLoginBinding; events TwoFactorEnabled@1, TwoFactorDisabled@1, ExternalLoginLinked@1, ExternalLoginUnlinked@1; sources identity-authentication-source-01)
+- **Semantic claims:** authentication-session-lifecycle (owns Session; events SessionCreated@1, SessionRevoked@1; sources identity-authentication-source-01, identity-authentication-source-02); authentication-additional-factors (owns TwoFactorConfiguration, ExternalLoginBinding; events TwoFactorEnabled@1, TwoFactorDisabled@1, ExternalLoginLinked@1, ExternalLoginUnlinked@1; sources identity-authentication-source-01)
 - **Official sources:** identity-authentication-source-01 ([authentication, sessions, two-factor authentication](https://docs.github.com/en/authentication), checked 2026-07-23); identity-authentication-source-02 ([multiple browser account sessions, active account switching, managed user reauthentication](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/switching-between-accounts), checked 2026-07-23); identity-authentication-source-03 ([password minimums, password verifier storage](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-strong-password), checked 2026-07-27)
 
 ### [identity/account-emails](../../apps/web/src/modules/identity/account-emails/README.md)
 
 - **Owns:** AccountEmail, EmailVerification, EmailReuseQuarantine, OrganizationNotificationRoute.
 - **Excludes:** AccountLifecycle, AuthenticationFactor, NotificationContent, VerifiedDomainLifecycle.
-- **Activation scope:** add-account-email, list-account-emails, update-account-email-settings, verify-account-email
+- **Activation scope:** add-account-email, get-verified-account-id-by-email, list-account-emails, update-account-email-settings, verify-account-email
 - **Runtime dependencies:** platform/notification-channels via EmailVerificationDelivery (synchronous)
 - **Planned relationships:** None.
 - **Published events:** AccountEmailAdded@1 (domain; planned; contract pending), AccountEmailVerified@1 (domain; planned; contract pending), PrimaryAccountEmailChanged@1 (domain; planned; contract pending)
@@ -137,7 +137,7 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 
 - **Owns:** AccountCredentialTransaction, UsernameChangeTransaction.
 - **Excludes:** Account, Credential, Session, EmailVerification, ScimProvisioning.
-- **Activation scope:** change-personal-account-username, register-personal-account
+- **Activation scope:** change-personal-account-username
 - **Runtime dependencies:** identity/accounts via AccountIdentityTransaction (synchronous); identity/authentication via PasswordCredentialTransaction (synchronous)
 - **Planned relationships:** None.
 - **Published events:** None. The coordinator owns transaction consistency rather than a product fact; account and credential event publication remains with their owning contexts.
@@ -259,7 +259,7 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 - **Owns:** OrganizationMembership, OrganizationInvitation, MembershipRole, MembershipState.
 - **Excludes:** OutsideCollaborator, RepositoryInvitation, EnterpriseRole.
 - **Activation scope:** accept-organization-invitation, cancel-organization-invitation, change-organization-member-role, check-organization-context-eligibility, decline-organization-invitation, invite-organization-member, list-active-organization-memberships-for-account, list-active-organization-memberships-for-organization, list-organization-invitations-for-organization, list-pending-organization-invitations-for-account, remove-organization-member, synchronize-enterprise-team-organization-memberships, update-organization-invitation
-- **Runtime dependencies:** organizations/organizations via OrganizationReference (synchronous); identity/accounts via AccountReference (synchronous)
+- **Runtime dependencies:** organizations/organizations via OrganizationReference (synchronous); identity/accounts via AccountReference (synchronous); identity/account-emails via VerifiedAccountEmailLookup (synchronous)
 - **Planned relationships:** enterprises/enterprise-memberships via EnterpriseAffiliation (synchronous)
 - **Published events:** OrganizationInvitationCreated@1 (domain; planned; contract pending), OrganizationInvitationAccepted@1 (domain; planned; contract pending), OrganizationInvitationRevoked@1 (domain; planned; contract pending), OrganizationMemberAdded@1 (domain; planned; contract pending), OrganizationMemberRemoved@1 (domain; planned; contract pending), OrganizationMemberRoleChanged@1 (domain; planned; contract pending)
 - **Semantic claims:** organization-membership-lifecycle (owns OrganizationMembership, OrganizationInvitation, MembershipRole, MembershipState; events OrganizationInvitationCreated@1, OrganizationInvitationAccepted@1, OrganizationInvitationRevoked@1, OrganizationMemberAdded@1, OrganizationMemberRemoved@1, OrganizationMemberRoleChanged@1; sources organizations-organization-memberships-source-01, organizations-organization-memberships-source-02, organizations-organization-memberships-source-03, organizations-organization-memberships-source-04, organizations-organization-memberships-source-05)

@@ -33,7 +33,7 @@ finalized as one visible outcome.
 
 ## Designed use cases
 
-### `register-personal-account` [active]
+### `register-personal-account` [planned]
 
 - **Type:** `command`
 - **Application boundary:** `RegisterPersonalAccountUseCase.registerPersonalAccount()`

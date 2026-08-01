@@ -282,6 +282,19 @@ export class RepositoryManagementService {
       ).toISOString(),
     };
     await this.repository.save(deleted);
+    await this.eventRecorder?.record({
+      aggregateId: deleted.repositoryId,
+      aggregateVersion: deleted.version,
+      eventName: "RepositoryDeleted",
+      eventVersion: 1,
+      orderingKey: deleted.repositoryId,
+      payload: {
+        deletedAt: deleted.deletedAt,
+        ownerId: deleted.owner.id,
+        repositoryId: deleted.repositoryId,
+        restoreUntil: deleted.restoreUntil,
+      },
+    });
     return { status: "deleted", repository: deleted };
   }
 
@@ -311,7 +324,25 @@ export class RepositoryManagementService {
       deletedAt: null,
       restoreUntil: null,
     };
-    await this.repository.save(restored);
+    const restoreResult = await this.repository.restoreDeleted(
+      resolved.repository.repositoryId,
+      restored,
+    );
+    if (restoreResult === "tombstone-not-found") {
+      return { status: "repository-not-found" };
+    }
+    await this.eventRecorder?.record({
+      aggregateId: restored.repositoryId,
+      aggregateVersion: restored.version,
+      eventName: "RepositoryRestored",
+      eventVersion: 1,
+      orderingKey: restored.repositoryId,
+      payload: {
+        previousRepositoryId: resolved.repository.repositoryId,
+        repositoryId: restored.repositoryId,
+        restoredAt: restored.updatedAt,
+      },
+    });
     return { status: "restored", repository: restored };
   }
 
@@ -363,6 +394,21 @@ export class RepositoryManagementService {
       lifecycleState: to,
     });
     await this.repository.save(changed);
+    await this.eventRecorder?.record({
+      aggregateId: changed.repositoryId,
+      aggregateVersion: changed.version,
+      eventName:
+        status === "archived"
+          ? "RepositoryArchived"
+          : "RepositoryUnarchived",
+      eventVersion: 1,
+      orderingKey: changed.repositoryId,
+      payload: {
+        lifecycleState: changed.lifecycleState,
+        repositoryId: changed.repositoryId,
+        updatedAt: changed.updatedAt,
+      },
+    });
     return { status, repository: changed };
   }
 
