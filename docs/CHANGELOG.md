@@ -28,6 +28,14 @@ technical architecture history.
   product-semantics authority, `docs/architecture/data-model` owns database
   design handoff, and `supabase/schemas` owns desired physical SQL.
 
+### Removed
+
+- Removed the superseded top-level product-semantic compatibility projections
+  after confirming that the canonical atlas retains all source IDs,
+  requirements, and Mermaid blocks.
+- Removed hard-coded personal Serena paths, installed-version claims, and
+  optional-tool counts from repository documentation.
+
 Future entries use only the applicable `Added`, `Changed`, `Deprecated`, or
 `Removed` groups defined by [`SCHEMA.md`](SCHEMA.md). Do not backfill events that
 cannot be verified from repository history.

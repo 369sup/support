@@ -52,12 +52,13 @@ artifacts or implementation contracts that were outside its original scope.
 
 DOC-DEC-007 supersedes the earlier consolidation workflow. Preserve
 [`github-non-code/`](github-non-code/README.md) as the product-evidence and
-logical-semantics authority. Top-level embedded copies are compatibility
-projections and receive no new semantic changes.
+logical-semantics authority. The former top-level embedded compatibility copies
+were removed after their source IDs, requirements, and Mermaid blocks were
+confirmed in the atlas; do not reintroduce them.
 
 Database work maps the atlas into
 [`architecture/data-model/`](architecture/data-model/README.md), resolves
-physical decisions there, and only then changes declarative SQL. Removal of an
-embedded compatibility projection is a focused governance change: update its
-navigation, decision, changelog, and link dependencies together, while leaving
-the canonical atlas intact.
+physical decisions there, and only then changes declarative SQL. A future
+authority move must update navigation, decision, changelog, and link
+dependencies together while preserving the canonical evidence and syntax
+validation path.

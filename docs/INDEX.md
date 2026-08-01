@@ -68,18 +68,3 @@ that purpose.
 
 Generated route READMEs and bounded-context READMEs are discovered through their
 own route and module catalogs rather than duplicated in this index.
-
-## Legacy product-semantic projections
-
-These top-level views are compatibility projections. New semantic changes are
-made in [`github-non-code/`](github-non-code/README.md), not duplicated here.
-
-- [`DOCUMENT-MAP.md`](DOCUMENT-MAP.md) — requirements traceability, recorded
-  Support capability status, evidence IDs, and future acceptance focus.
-- [`ARCHITECTURE.md`](ARCHITECTURE.md) — system context, authorization decision
-  flow, reconstruction architecture, and logical product navigation.
-- [`SCHEMA.md`](SCHEMA.md) — conceptual domain ERD and modeling invariants.
-- [`WORKFLOWS.md`](WORKFLOWS.md) — independent lifecycle states, core interaction
-  sequences, transition constraints, and failure coverage.
-- [`SOURCE-OF-TRUTH.md`](SOURCE-OF-TRUTH.md) — complete official GitHub source
-  register and evidence rules.

@@ -62,10 +62,11 @@ Do not report an unavailable, timed-out, skipped, or planned check as passing.
 ## Prepare a product-semantic slice
 
 For a repository-archive feature, start at `COL-001` in
-[`DOCUMENT-MAP.md`](DOCUMENT-MAP.md), follow `GH-REPO-005` to
-[`SOURCE-OF-TRUTH.md`](SOURCE-OF-TRUTH.md), and then read only the repository
-relationships, lifecycle, authorization, interaction, and navigation sections
-that constrain the slice.
+[`github-non-code/01-requirements-traceability.md`](github-non-code/01-requirements-traceability.md),
+follow `GH-REPO-005` to
+[`github-non-code/source-register.md`](github-non-code/source-register.md), and
+then read only the repository relationships, lifecycle, authorization,
+interaction, and navigation views that constrain the slice.
 
 The implementation handoff should cover:
 

@@ -38,15 +38,10 @@ when it is established by the owning authority or defined in
 [`GLOSSARY.md`](GLOSSARY.md). Do not use the same name for different concerns,
 or different names for the same registered concern.
 
-## Product-semantic identifiers
+## External identifiers
 
-- Official evidence IDs use the stable `GH-<AREA>-NNN` form registered in
-  [`SOURCE-OF-TRUTH.md`](SOURCE-OF-TRUTH.md), for example `GH-REPO-005`.
-- Product requirement IDs remain `SCOPE-001`, `ACT-001`, `GOV-001`, `COL-001`,
-  `ENG-001`, and `SAFE-001` unless a new requirement is deliberately added to
-  [`DOCUMENT-MAP.md`](DOCUMENT-MAP.md).
-- Never reuse or silently rename a source or requirement ID. Update all prose,
-  diagrams, tables, acceptance references, and records when an identity changes.
-- Use product names such as Issues, Discussions, Projects, and Actions with the
-  casing of their owning sources. Keep logical destination labels distinct from
-  literal route paths.
+Product evidence and requirement IDs are owned by
+[`github-non-code/source-register.md`](github-non-code/source-register.md) and
+[`github-non-code/01-requirements-traceability.md`](github-non-code/01-requirements-traceability.md).
+Follow the atlas workflow for renames and casing; do not register those IDs in
+the top-level governance map.

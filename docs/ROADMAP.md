@@ -4,6 +4,10 @@ This roadmap communicates possible documentation-governance outcomes. It is
 not an accepted decision, delivery commitment, deadline, or representation of
 implemented product behavior.
 
+Product-semantic gaps and research follow-up remain in
+[`github-non-code/`](github-non-code/README.md), not in this governance
+roadmap.
+
 ## Now
 
 - Keep the 21-document baseline internally consistent.
@@ -38,23 +42,3 @@ decision in [`DECISIONS.md`](DECISIONS.md).
 Items remain candidates until their prerequisites are satisfied. Completed
 governance changes move to [`CHANGELOG.md`](CHANGELOG.md); rejected or materially
 changed policy choices belong in the decision log.
-
-## Product-semantic gaps
-
-The integrated model preserves these candidates without treating them as active
-contracts:
-
-- repository transfer, including retained metadata and assignment
-  reconciliation;
-- direct collaborator invitations and outside-collaborator workflows;
-- repository feature metadata, templates, forks, and releases;
-- detailed billing, application integration, sponsorship, security-product,
-  and Wiki behavior;
-- HTTP status and existence-disclosure contracts for denied resources;
-- deny precedence beyond documented enterprise and organization restrictions;
-- destructive-state retention and audit details; and
-- provider-specific identity, email, search, and audit-export behavior.
-
-Promoting an item requires current official evidence, requirement traceability,
-an explicit architecture/catalog owner, active use-case scope, complete
-acceptance cases, and the repository's normal activation workflow.

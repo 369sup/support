@@ -66,22 +66,14 @@ map parity, or local links. Until such a gate is accepted and implemented,
 maintainers perform these structural checks explicitly. The candidate work is
 tracked in [`ROADMAP.md`](ROADMAP.md).
 
-## Product-semantic checks
+## Product-semantics checks
 
-For a change to the integrated GitHub non-code model:
+For changes under [`github-non-code/`](github-non-code/README.md), follow its
+[`AGENTS.md`](github-non-code/AGENTS.md), including source-ID validation,
+diagram-to-prose review, and Mermaid Chart rendering for every changed Mermaid
+block. Top-level governance validation additionally confirms that no evidence
+register, product model, or capability matrix has been copied back into the
+21-file control set.
 
-- verify every `GH-*` reference exists in the official source register and every
-  registered source uses HTTPS under `docs.github.com`;
-- preserve all six requirement IDs and map new requirements to evidence, model
-  owners, and future acceptance focus;
-- preserve the meanings of **Confirmed**, **Derived**, and **Unresolved**;
-- check diagram-to-prose consistency and render every changed Mermaid block;
-- ensure product models do not assert physical schemas, endpoints, literal
-  routes, GitHub internals, or implementation status without an owning contract;
-- check actors, ownership, independent states, authorization inputs, denial
-  cases, success/failure paths, side effects, and unresolved variants; and
-- verify the Git/code-development exclusions remain absent from routes,
-  commands, storage, and active navigation.
-
-When content is relocated, compare source-ID, requirement-ID, Mermaid-block,
+When semantic content moves, compare source-ID, requirement-ID, Mermaid-block,
 table, invariant, and unresolved-item counts before deleting the old path.

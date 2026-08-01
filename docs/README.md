@@ -49,72 +49,8 @@ record, or roadmap item.
 The 21 active top-level files are registered in
 [`DOCUMENT-MAP.md`](DOCUMENT-MAP.md). Their logical metadata is maintained in
 that map rather than YAML front matter. Material governance changes update the
-canonical owner, affected relationships, decision log when required, navigation,
-changelog, and validation evidence in the same scoped change.
+canonical owner, affected relationships, decision log when required,
+navigation, changelog, and validation evidence in the same scoped change.
 
 Agents working in this directory also follow [`AGENTS.md`](AGENTS.md) and the
 nearest nested guidance on the target path.
-
-## Legacy embedded product-semantic projection
-
-The material below predates DOC-DEC-007 and remains temporarily for link
-compatibility. New semantic changes belong only in
-[`github-non-code/`](github-non-code/README.md).
-
-Audience: product architects, domain modelers, and agents preparing a
-GitHub-like collaboration platform without Git or code-development workflows.
-
-The integrated model derives reconstruction guidance from registered GitHub
-documentation. It does not claim to describe GitHub's private implementation,
-change Support's canonical architecture, activate a runtime module, or assign
-literal routes.
-
-### Scope boundary
-
-The model includes:
-
-- personal accounts, authentication boundaries, profiles, and dashboards;
-- enterprises, organizations, memberships, invitations, roles, and teams;
-- repository ownership, metadata, visibility, access, policy, and lifecycle;
-- Issues, Discussions, Projects, notifications, subscriptions, stars, follows,
-  activity, non-code search, moderation, and audit; and
-- interactions among those capabilities.
-
-It excludes Git objects, repository file contents, commits, branches, tags,
-diffs, pull requests, review and merge workflows, Actions, packages,
-Codespaces, Pages, and releases. When an excluded capability affects retained
-metadata, only the observable non-code effect is modeled.
-
-Authentication providers, email delivery, search indexing, and audit export
-are system boundaries. Detailed billing, application integration,
-sponsorship, security-product, and Wiki behavior remains outside the model.
-
-### First-principles method
-
-1. Record an observable statement from an ID in
-   [`SOURCE-OF-TRUTH.md`](SOURCE-OF-TRUTH.md).
-2. Separate stable invariants from plan-specific or preview behavior.
-3. Derive actors, resources, relationships, states, permissions, and events.
-4. Preserve each derivation in the smallest suitable model.
-5. Mark target-architecture choices as inference rather than GitHub fact.
-6. Trace implementation work through [`DOCUMENT-MAP.md`](DOCUMENT-MAP.md) to a
-   requirement and official source ID.
-
-Use **Confirmed**, **Derived**, and **Unresolved** only as defined by
-[`CLASSIFICATION.md`](CLASSIFICATION.md). Existing Support source,
-architecture documents, and memory are placement or implementation evidence,
-not substitutes for GitHub product evidence.
-
-### Model route
-
-| Question | Owning document |
-| --- | --- |
-| Requirements, evidence IDs, acceptance focus, or capability status | [`DOCUMENT-MAP.md`](DOCUMENT-MAP.md) |
-| Actors, system boundary, authorization, reconstruction, or logical navigation | [`ARCHITECTURE.md`](ARCHITECTURE.md) |
-| Concepts, relationship ownership, or cardinality | [`SCHEMA.md`](SCHEMA.md) |
-| States, transitions, interaction sequences, or failure coverage | [`WORKFLOWS.md`](WORKFLOWS.md) |
-| Official GitHub sources and verification state | [`SOURCE-OF-TRUTH.md`](SOURCE-OF-TRUTH.md) |
-
-Before implementation, a feature slice still needs field validation,
-command/query and error contracts, permitted and forbidden acceptance cases,
-deployment assumptions, and explicit decisions for every unresolved variant.

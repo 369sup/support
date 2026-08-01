@@ -75,7 +75,8 @@ transactional outbox, observed UI layout, or Support implementation a confirmed
 GitHub behavior.
 
 **Correction:** Trace confirmed claims to a `GH-*` ID in
-[`SOURCE-OF-TRUTH.md`](SOURCE-OF-TRUTH.md) and label target choices **Derived**.
+[`github-non-code/source-register.md`](github-non-code/source-register.md) and
+label target choices **Derived** under the atlas vocabulary.
 
 ## Using unregistered product evidence
 
@@ -92,7 +93,8 @@ state with triage state, or visibility with authorization into one convenient
 enum or check.
 
 **Correction:** Preserve the independent dimensions in
-[`WORKFLOWS.md`](WORKFLOWS.md) and apply authorization/state guards separately.
+[`github-non-code/04-lifecycle-states.md`](github-non-code/04-lifecycle-states.md)
+and apply authorization/state guards separately.
 
 ## Treating diagrams as implementation contracts
 

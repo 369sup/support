@@ -63,16 +63,17 @@ See [`VALIDATION.md`](VALIDATION.md).
 
 ## Where is the GitHub non-code semantic model now?
 
-It is integrated into the top-level documentation set. Use
-[`README.md`](README.md) for routing, [`DOCUMENT-MAP.md`](DOCUMENT-MAP.md) for
-requirements, [`ARCHITECTURE.md`](ARCHITECTURE.md) for boundary and decision
-views, [`SCHEMA.md`](SCHEMA.md) for concepts, [`WORKFLOWS.md`](WORKFLOWS.md) for
-states and sequences, and [`SOURCE-OF-TRUTH.md`](SOURCE-OF-TRUTH.md) for evidence.
+It lives under [`github-non-code/`](github-non-code/README.md). Its requirement
+traceability, source register, domain, lifecycle, authorization, sequence,
+reconstruction, and navigation views are the only product-semantic copies.
+Top-level governance documents only route to that atlas.
 
 ## Was the external GitHub evidence reverified during consolidation?
 
 No. The recorded 2026-07-29 and 2026-07-30 verification dates were preserved.
-Moving content does not create new verification evidence.
+Removing compatibility copies does not create new verification evidence. Check
+the dates in
+[`github-non-code/source-register.md`](github-non-code/source-register.md).
 
 ## Do the product diagrams describe GitHub internals?
 

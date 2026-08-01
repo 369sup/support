@@ -51,22 +51,8 @@ identified, record the gap instead of assigning authority by convenience.
 
 ## Product evidence maintenance
 
-The official GitHub source register in
-[`SOURCE-OF-TRUTH.md`](SOURCE-OF-TRUTH.md) owns product evidence. Reverify an
-affected source when it is preview, plan-dependent, account-dependent,
-deployment-dependent, unavailable, materially changed, or plausibly stale.
-
-When evidence changes:
-
-1. keep the source ID stable unless the source concern itself is replaced;
-2. update its supported-semantics statement and recorded verification date;
-3. review incoming requirement and model references;
-4. downgrade affected claims to **Unresolved** when evidence is no longer
-   sufficient;
-5. update prose, diagrams, acceptance focus, and capability status together;
-   and
-6. run the product-semantic checks in [`VALIDATION.md`](VALIDATION.md).
-
-Do not refresh a date merely because content moved. The 2026-07-29 and
-2026-07-30 dates preserved in this migration remain historical verification
-evidence until the external pages are actually reviewed again.
+The official GitHub product register and its maintenance rules live in
+[`github-non-code/source-register.md`](github-non-code/source-register.md) and
+[`github-non-code/AGENTS.md`](github-non-code/AGENTS.md). Reverify affected
+sources under that workflow; do not refresh a verification date because a link
+or compatibility copy moved.

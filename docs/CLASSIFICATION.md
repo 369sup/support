@@ -54,30 +54,9 @@ historical obligation remains.
 - Treat all 21 top-level governance documents as `active` for the initial
   baseline; roadmap items may still describe uncommitted future work.
 
-## Product-semantic confidence
+## External vocabularies
 
-Product evidence uses a separate axis from documentation lifecycle:
-
-| Value | Meaning |
-| --- | --- |
-| **Confirmed** | Directly stated by a registered GitHub Docs source. |
-| **Derived** | The smallest model or target choice that satisfies several confirmed statements. |
-| **Unresolved** | Documentation is silent, preview-only, plan-dependent, or insufficient to select one implementation. |
-
-Do not promote repository code, an architectural preference, a familiar GitHub
-screen, or a plan-specific behavior to **Confirmed**. A derived model remains
-derived even when it is the preferred Support implementation.
-
-## Product capability status
-
-The capability matrix in [`DOCUMENT-MAP.md`](DOCUMENT-MAP.md) distinguishes:
-
-| Value | Meaning |
-| --- | --- |
-| `Active` | Recorded as implemented for the dated Support observation; current source and catalog verification is still required. |
-| `Deferred` | Evidence is retained without activating routes, commands, storage, or navigation. |
-| `Excluded` | Outside the Support non-code boundary and prohibited from accidental activation. |
-
-Product capability status, module implementation status, source freshness,
-evidence confidence, and document lifecycle are independent. Never substitute
-one axis for another.
+The [`github-non-code`](github-non-code/README.md) atlas owns product-evidence
+confidence and its capability matrix. The bounded-context catalog owns module
+implementation status. Neither vocabulary is a documentation lifecycle value;
+do not copy either into this classification contract.

@@ -69,7 +69,7 @@ system. It does not replace the technical architecture decision records in
 
 ## DOC-DEC-006: Keep reconstruction choices derived
 
-- **Status:** Accepted
+- **Status:** Superseded by DOC-DEC-007
 - **Date:** 2026-08-01
 - **Decision:** The deterministic authorization ordering, modular-monolith
   reconstruction, transactional outbox, and projection boundaries remain
@@ -78,9 +78,10 @@ system. It does not replace the technical architecture decision records in
 - **Rationale:** Official sources confirm observable roles, grants, policies,
   states, and effects but do not publish GitHub's universal authorization
   algorithm or internal service topology.
-- **Consequences:** Implementations still require active catalog status,
-  explicit contracts, acceptance cases, and separate decisions for unresolved
-  API disclosure, deny precedence, retention, and provider behavior.
+- **Consequences:** This entry preserves the historical classification choice.
+  The current classification and implementation handoff are owned by the
+  [`github-non-code/`](github-non-code/README.md) atlas and its downstream
+  architecture contracts rather than this top-level decision log.
 
 ## DOC-DEC-007: Separate evidence, design, and physical-schema authorities
 
@@ -96,7 +97,8 @@ system. It does not replace the technical architecture decision records in
 - **Rationale:** Product evidence, implementable database design, and deployed
   SQL have different owners and verification lifecycles. Combining them made
   the same model appear authoritative in multiple places.
-- **Consequences:** DOC-DEC-005 is superseded. Existing embedded semantic views
-  in the top-level documents are compatibility projections pending focused
-  removal; new semantic changes occur only in the atlas and are linked from the
-  governance layer.
+- **Consequences:** DOC-DEC-005 and DOC-DEC-006 are superseded as top-level
+  product-semantic authorities. Existing embedded semantic views in the
+  top-level documents were removed in the focused governance cleanup; new
+  semantic changes occur only in the atlas and are linked from the governance
+  layer.

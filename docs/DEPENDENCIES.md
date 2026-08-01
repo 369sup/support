@@ -47,35 +47,10 @@ Before changing a canonical document:
    authority, schema, vocabulary, or lifecycle policy changes.
 5. Record the delivered change in [`CHANGELOG.md`](CHANGELOG.md).
 
-## Product-semantic dependency chain
+## Product-semantics dependency
 
-The integrated GitHub non-code model has a required reasoning order:
-
-1. [`SOURCE-OF-TRUTH.md`](SOURCE-OF-TRUTH.md) owns official evidence IDs.
-2. [`DOCUMENT-MAP.md`](DOCUMENT-MAP.md) maps requirements to evidence and
-   acceptance focus.
-3. [`SCHEMA.md`](SCHEMA.md) derives concepts, ownership, and relationships.
-4. [`WORKFLOWS.md`](WORKFLOWS.md) derives independent states, transitions,
-   interactions, and failure paths.
-5. [`ARCHITECTURE.md`](ARCHITECTURE.md) applies visibility, authorization,
-   reconstruction, and logical navigation after the behavior is understood.
-
-Later views must not silently broaden an earlier requirement or replace its
-evidence. Architecture and navigation constrain placement and presentation;
-they do not create product semantics.
-
-## Product relationship invariants
-
-- Personal accounts remain distinct from enterprise, organization, team,
-  repository, and project roles.
-- Scoped memberships, assignments, team inheritance, direct grants, repository
-  roles, policies, object rules, and state guards remain separate authorization
-  inputs.
-- Search, navigation, and notification deep links re-evaluate the same current
-  visibility used by direct access.
-- Commands own semantic outcomes; notification, search, and external audit
-  projections consume committed events without becoming domain authorities.
-- Independent state dimensions, including issue/lock and notification
-  read/triage state, must not be collapsed into one dependency.
-- External identity, email, search indexing, and audit export remain ports or
-  projections unless a registered product source requires domain behavior.
+The canonical reasoning order for GitHub non-code evidence, requirements,
+models, authorization, sequences, and navigation is owned by
+[`github-non-code/AGENTS.md`](github-non-code/AGENTS.md). Top-level governance
+documents reference that atlas with `depends-on` or `references`; they do not
+restate its dependency chain or product invariants.
