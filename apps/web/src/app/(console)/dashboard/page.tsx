@@ -1,15 +1,13 @@
 import Link from "next/link";
-import { ArrowUpRight, FolderKanban, LockKeyhole } from "lucide-react";
+import { ArrowUpRight, FolderKanban } from "lucide-react";
 
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
 import { getDashboardRepositoryView } from "@/modules/projections/dashboard/server-api";
+import { RepositoryList } from "@/modules/repositories/repositories/browser-ui";
 
 export default async function DashboardPage() {
   const session = await requireCurrentSession();
   const view = await getDashboardRepositoryView(session);
-  const organizationLogin =
-    view.context.kind === "organization" ? view.context.login : null;
-
   return (
     <main className="flex flex-1 px-4 py-10 sm:px-8 lg:px-10">
       <section className="mx-auto w-full max-w-6xl">
@@ -50,81 +48,11 @@ export default async function DashboardPage() {
             </Link>
           </div>
           <RepositoryList
-            organizationLogin={organizationLogin}
+            emptyMessage="No repositories are visible in this context."
             repositories={view.repositories}
           />
         </div>
       </section>
     </main>
-  );
-}
-
-function RepositoryList({
-  organizationLogin,
-  repositories,
-}: Readonly<{
-  organizationLogin: string | null;
-  repositories: Awaited<
-    ReturnType<typeof getDashboardRepositoryView>
-  >["repositories"];
-}>) {
-  if (repositories.length === 0) {
-    return (
-      <p className="px-5 py-10 text-center text-sm text-slate-500" role="status">
-        No repositories are visible in this context.
-      </p>
-    );
-  }
-
-  return (
-    <ul className="divide-y divide-white/10">
-      {repositories.map((repository) => (
-        <li
-          className="grid gap-4 px-4 py-5 sm:px-5 lg:grid-cols-[minmax(0,1.5fr)_auto_auto_minmax(8rem,0.45fr)] lg:items-center"
-          key={repository.repositoryId}
-        >
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              {repository.visibility === "public" ? (
-                <FolderKanban
-                  aria-hidden="true"
-                  className="size-4 shrink-0 text-slate-500"
-                />
-              ) : (
-                <LockKeyhole
-                  aria-hidden="true"
-                  className="size-4 shrink-0 text-slate-500"
-                />
-              )}
-              <h3 className="truncate font-mono font-semibold text-slate-100">
-                {repository.ownerLogin}/{repository.name}
-              </h3>
-            </div>
-            <p className="mt-2 text-sm leading-6 text-slate-500">
-              {repository.description}
-            </p>
-          </div>
-          <span className="w-fit rounded-full border border-slate-600 px-2.5 py-1 text-xs text-slate-400 capitalize">
-            {repository.visibility}
-          </span>
-          <span className="w-fit rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-300 capitalize">
-            {repository.permission}
-          </span>
-          <div className="lg:text-right">
-            {organizationLogin !== null &&
-            repository.permission === "admin" ? (
-              <Link
-                className="text-sm font-medium text-emerald-400 hover:text-emerald-300"
-                href={`/organizations/${organizationLogin}/settings/repository-access/${repository.name}`}
-              >
-                Manage team access
-              </Link>
-            ) : (
-              <span className="text-sm text-slate-600">View only</span>
-            )}
-          </div>
-        </li>
-      ))}
-    </ul>
   );
 }

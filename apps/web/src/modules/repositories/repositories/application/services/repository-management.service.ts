@@ -288,7 +288,7 @@ export class RepositoryManagementService {
   async restoreDeletedRepository(
     command: ConfirmRepositoryLifecycleCommand,
   ): Promise<RestoreDeletedRepositoryResult> {
-    const resolved = await this.getConfirmedRepository(command);
+    const resolved = await this.getOwnerConfirmedRepository(command);
     if (resolved.status !== "found") {
       return resolved;
     }
@@ -313,6 +313,37 @@ export class RepositoryManagementService {
     };
     await this.repository.save(restored);
     return { status: "restored", repository: restored };
+  }
+
+  private async getOwnerConfirmedRepository(
+    command: ConfirmRepositoryLifecycleCommand,
+  ): Promise<
+    | Readonly<{ status: "found"; repository: RepositoryQuerySnapshot }>
+    | Readonly<{
+        status:
+          | "confirmation-mismatch"
+          | "permission-denied"
+          | "repository-not-found";
+      }>
+  > {
+    const repository = await this.repository.findByOwnerIdAndName(
+      command.ownerId,
+      command.name.trim(),
+    );
+    if (repository === null) {
+      return { status: "repository-not-found" };
+    }
+    const owner = await this.ownerGateway.authorizeOwner(
+      command.actorAccountId,
+      repository.owner.id,
+    );
+    if (owner === null) {
+      return { status: "permission-denied" };
+    }
+    const expected = `${repository.owner.username}/${repository.name}`;
+    return command.confirmation.trim() === expected
+      ? { status: "found", repository }
+      : { status: "confirmation-mismatch" };
   }
 
   private async changeLifecycle<T extends "archived" | "unarchived">(

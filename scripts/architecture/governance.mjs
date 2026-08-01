@@ -12,12 +12,6 @@ import {
 } from "node:path";
 
 import {
-  agentGuidanceSourcePaths,
-  generatedMemoryPaths,
-  loadSerenaMemorySources,
-  renderSerenaMemories,
-} from "../serena-memories.mjs";
-import {
   architectureRuleRegistry,
   isArchitectureProfile,
 } from "@support/tooling/architecture/policy";
@@ -137,7 +131,6 @@ export function validateAgentGuidance(
   applicationRoot,
   contextsByPath,
   errors,
-  generatedErrors,
   knowledgeErrors,
 ) {
   const documentationFiles = listDocumentationFiles(repositoryRoot);
@@ -149,15 +142,6 @@ export function validateAgentGuidance(
   const agentFiles = guidanceFiles.filter((filePath) => {
     return !filePath.endsWith(`${sep}AGENTS.override.md`);
   });
-  const actualAgentPaths = agentFiles
-    .filter((filePath) => {
-      return filePath.endsWith(`${sep}AGENTS.md`) ||
-        filePath === join(repositoryRoot, "AGENTS.md");
-    })
-    .map((filePath) => projectRelative(repositoryRoot, filePath))
-    .sort();
-  const expectedAgentPaths = [...agentGuidanceSourcePaths].sort();
-
   for (const filePath of documentationFiles) {
     const contents = readFileSync(filePath, "utf8");
 
@@ -328,235 +312,6 @@ export function validateAgentGuidance(
     }
   }
 
-  if (JSON.stringify(actualAgentPaths) !== JSON.stringify(expectedAgentPaths)) {
-    generatedErrors.push(
-      "[ARCH-GUIDE-002] Serena memory source allowlist must exactly match repository AGENTS.md files.",
-    );
-  }
-}
-
-export function validateSerenaMemories(repositoryRoot, errors) {
-  const memoryRoot = join(repositoryRoot, ".serena", "memories");
-  const projectConfigurationPath = join(
-    repositoryRoot,
-    ".serena",
-    "project.yml",
-  );
-  const gitignorePath = join(repositoryRoot, ".gitignore");
-
-  if (!existsSync(memoryRoot)) {
-    errors.push("[ARCH-MEM-001] Missing generated .serena/memories directory.");
-    return;
-  }
-
-  let expected;
-
-  try {
-    expected = renderSerenaMemories(loadSerenaMemorySources(repositoryRoot));
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    errors.push(`[ARCH-MEM-001] Cannot render Serena memories: ${message}`);
-    return;
-  }
-
-  const expectedPaths = new Set(generatedMemoryPaths);
-  const actualPaths = readdirSync(memoryRoot, {
-    recursive: true,
-    withFileTypes: true,
-  })
-    .filter((entry) => entry.isFile())
-    .map((entry) => {
-      return normalizePath(
-        relative(memoryRoot, join(entry.parentPath, entry.name)),
-      );
-    })
-    .filter((relativePath) => {
-      return !relativePath.startsWith("local/");
-    });
-
-  for (const relativePath of actualPaths) {
-    if (!expectedPaths.has(relativePath)) {
-      errors.push(
-        `[ARCH-MEM-001] Unexpected shared Serena memory: ${relativePath}.`,
-      );
-    }
-  }
-
-  for (const [relativePath, expectedContents] of expected) {
-    const filePath = join(memoryRoot, ...relativePath.split("/"));
-
-    if (!existsSync(filePath)) {
-      errors.push(`[ARCH-MEM-001] Missing generated Serena memory: ${relativePath}.`);
-      continue;
-    }
-
-    const actualContents = readFileSync(filePath, "utf8").replaceAll(
-      "\r\n",
-      "\n",
-    );
-
-    if (actualContents !== expectedContents) {
-      errors.push(
-        `[ARCH-MEM-001] Generated Serena memory is stale: ${relativePath}.`,
-      );
-    }
-
-    for (const match of actualContents.matchAll(/mem:([a-z0-9][a-z0-9/-]*)/g)) {
-      const referencedPath = `${match[1]}.md`;
-
-      if (!expectedPaths.has(referencedPath)) {
-        errors.push(
-          `[ARCH-MEM-001] ${relativePath} references missing memory mem:${match[1]}.`,
-        );
-      }
-    }
-  }
-
-  const gitignore = existsSync(gitignorePath)
-    ? readFileSync(gitignorePath, "utf8")
-    : "";
-  const projectConfiguration = existsSync(projectConfigurationPath)
-    ? readFileSync(projectConfigurationPath, "utf8")
-    : "";
-
-  if (!gitignore.split(/\r?\n/).includes(".serena/memories/local/")) {
-    errors.push(
-      "[ARCH-MEM-001] .serena/memories/local/ must be ignored for machine-local memories.",
-    );
-  }
-
-  if (
-    !projectConfiguration.includes(
-      '"^(memory_maintenance|core|shared/.*)$"',
-    )
-  ) {
-    errors.push(
-      "[ARCH-MEM-001] Generated shared Serena memories must be configured read-only.",
-    );
-  }
-
-  const automationPaths = [
-    ".codex/hooks/memory-orchestrator.mjs",
-    ".codex/hooks/memory-orchestrator.test.mjs",
-    ".serena/README.md",
-    "scripts/memory/AGENTS.md",
-    "scripts/memory/index.mjs",
-    "scripts/memory/memory.test.mjs",
-    "scripts/memory/model.mjs",
-    "scripts/memory/schema.mjs",
-    "scripts/memory/storage.mjs",
-    "scripts/memory/storage.test.mjs",
-  ];
-
-  for (const relativePath of automationPaths) {
-    if (!existsSync(join(repositoryRoot, ...relativePath.split("/")))) {
-      errors.push(
-        `[ARCH-MEM-002] Missing automatic Serena memory asset: ${relativePath}.`,
-      );
-    }
-  }
-
-  const serenaGuidancePath = join(repositoryRoot, ".serena", "AGENTS.md");
-  const operatorGuidePath = join(repositoryRoot, ".serena", "README.md");
-  const serenaGuidance = existsSync(serenaGuidancePath)
-    ? readFileSync(serenaGuidancePath, "utf8")
-    : "";
-  const operatorGuide = existsSync(operatorGuidePath)
-    ? readFileSync(operatorGuidePath, "utf8")
-    : "";
-
-  if (
-    !serenaGuidance.includes("## Memory ownership") ||
-    !serenaGuidance.includes("Exclusive ownership is always enabled") ||
-    !serenaGuidance.includes(".serena/memories/local/current-task.md") ||
-    !serenaGuidance.includes("only local memory the") ||
-    !operatorGuide.includes("## Exclusive ownership and quarantine") ||
-    !operatorGuide.includes("always owns the local namespace")
-  ) {
-    errors.push(
-      "[ARCH-MEM-002] Serena policy and operator guidance must enforce exclusive local-memory ownership and quarantine.",
-    );
-  }
-
-  if (
-    !projectConfiguration.includes(
-      'activation_command: "node scripts/memory/index.mjs activate --json"',
-    ) ||
-    !projectConfiguration.includes("activation_command_timeout: 15.0") ||
-    !projectConfiguration.includes(
-      '"^local/(episodes|archive|_state)/.*$"',
-    )
-  ) {
-    errors.push(
-      "[ARCH-MEM-002] Serena project configuration must register the bounded activation command and hide machine-managed local memories.",
-    );
-  }
-
-  const packageManifestPath = join(repositoryRoot, "package.json");
-  let packageManifest;
-
-  try {
-    packageManifest = JSON.parse(readFileSync(packageManifestPath, "utf8"));
-  } catch {
-    errors.push(
-      "[ARCH-MEM-002] package.json must be valid JSON for memory automation validation.",
-    );
-  }
-
-  const requiredScripts = {
-    "memory:activate": "node scripts/memory/index.mjs activate",
-    "memory:checkpoint": "node scripts/memory/index.mjs checkpoint",
-    "memory:maintain": "node scripts/memory/index.mjs maintain",
-    "memory:status": "node scripts/memory/index.mjs status",
-    "memory:validate": "node scripts/memory/index.mjs validate",
-    "test:memory": "node --test scripts/memory/memory.test.mjs scripts/memory/storage.test.mjs .codex/hooks/repository-guard.test.mjs .codex/hooks/memory-orchestrator.test.mjs",
-  };
-
-  if (
-    packageManifest !== undefined &&
-    Object.entries(requiredScripts).some(([name, command]) => {
-      return packageManifest.scripts?.[name] !== command;
-    })
-  ) {
-    errors.push(
-      "[ARCH-MEM-002] package.json must expose the canonical automatic Serena memory commands.",
-    );
-  }
-
-  const hookConfigurationPath = join(repositoryRoot, ".codex", "hooks.json");
-  let hookConfiguration;
-
-  try {
-    hookConfiguration = JSON.parse(
-      readFileSync(hookConfigurationPath, "utf8"),
-    );
-  } catch {
-    errors.push(
-      "[ARCH-MEM-002] .codex/hooks.json must be valid JSON for memory automation validation.",
-    );
-  }
-
-  if (hookConfiguration !== undefined) {
-    const serializedHooks = JSON.stringify(hookConfiguration.hooks ?? {});
-    const requiredEvents = [
-      "SessionStart",
-      "PreToolUse",
-      "PostToolUse",
-      "PreCompact",
-      "Stop",
-    ];
-
-    if (
-      !serializedHooks.includes("memory-orchestrator.mjs") ||
-      requiredEvents.some(
-        (eventName) => !Object.hasOwn(hookConfiguration.hooks ?? {}, eventName),
-      )
-    ) {
-      errors.push(
-        "[ARCH-MEM-002] Codex hooks must register the memory orchestrator for the complete lifecycle.",
-      );
-    }
-  }
 }
 
 const exceptionFields = [

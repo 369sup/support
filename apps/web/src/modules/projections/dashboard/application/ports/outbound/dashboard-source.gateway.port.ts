@@ -23,13 +23,11 @@ export type DashboardRepositoryCandidateSnapshot = Readonly<{
       }>;
   name: string;
   description: string;
+  homepage: string;
   visibility: "public" | "private" | "internal";
+  lifecycleState: "active" | "archived";
+  permission: "read" | "triage" | "write" | "maintain" | "admin";
   updatedAt: string;
-}>;
-
-export type DashboardRepositoryPermissionSnapshot = Readonly<{
-  isAllowed: boolean;
-  permission: "read" | "triage" | "write" | "maintain" | "admin" | null;
 }>;
 
 export interface DashboardSourceGatewayPort {
@@ -43,11 +41,8 @@ export interface DashboardSourceGatewayPort {
   listActiveOrganizationMemberships(
     accountId: string,
   ): Promise<readonly DashboardOrganizationMembershipSnapshot[]>;
-  listActiveRepositories(
+  listVisibleRepositories(
     ownerId: string,
+    actorAccountId: string,
   ): Promise<readonly DashboardRepositoryCandidateSnapshot[]>;
-  resolveRepositoryPermission(
-    repository: DashboardRepositoryCandidateSnapshot,
-    accountId: string,
-  ): Promise<DashboardRepositoryPermissionSnapshot>;
 }

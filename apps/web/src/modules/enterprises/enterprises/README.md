@@ -11,6 +11,7 @@ organizations. Enterprises do not directly own repositories.
   - `create-enterprise`
   - `attach-enterprise-organization`
   - `get-enterprise-by-slug`
+  - `get-enterprise-reference-by-id`
   - `list-enterprise-organizations`
   - Owned: `Enterprise`, `EnterpriseType`, `EnterpriseLifecycle`,
     `EnterpriseOrganizationLink`
@@ -71,6 +72,22 @@ organizations. Enterprises do not directly own repositories.
 - **Success result:** `found` with active enterprise reference.
 - **Expected rejections:** `enterprise-not-found`
 - **Authorization:** Public identity lookup only.
+- **Transaction:** Read-only.
+- **Idempotency:** Query.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `enterprises-enterprises-source-01`
+- **Local policy:** Suspended and deleted enterprises are absent.
+
+### `get-enterprise-reference-by-id` [active]
+
+- **Type:** `query`
+- **Application boundary:** `GetEnterpriseReferenceByIdUseCase.getEnterpriseReferenceById()`
+- **Public entrypoint:** `server-api.ts#getEnterpriseReferenceById`
+- **Input:** Enterprise ID.
+- **Success result:** `found` with active enterprise reference.
+- **Expected rejections:** `enterprise-not-found`
+- **Authorization:** None; public identity only.
 - **Transaction:** Read-only.
 - **Idempotency:** Query.
 - **Dependencies:** `none`

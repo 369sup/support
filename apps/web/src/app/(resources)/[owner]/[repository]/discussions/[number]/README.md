@@ -26,11 +26,8 @@ The filesystem route is active. Its business behavior remains owned by the refer
 - - **owner:** `collaboration/discussions` — use cases: `get-repository-discussion`; functions: `getRepositoryDiscussion`
 - - **collaborator:** `collaboration/conversations` — use cases: `add-comment`, `list-conversation-comments`; functions: `addComment`, `listConversationComments`
 - - **collaborator:** `collaboration/moderation` — use cases: `report-content`; functions: `reportContent`
-- - **collaborator:** `identity/accounts` — use cases: `get-personal-account-by-username`; functions: `getPersonalAccountByUsername`
 - - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
-- - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`
-- - **collaborator:** `repositories/repository-access` — use cases: `resolve-effective-repository-permission`; functions: `resolveEffectiveRepositoryPermission`
-- - **collaborator:** `repositories/repositories` — use cases: `get-repository-by-owner-and-name`; functions: `getRepositoryByOwnerAndName`
+- - **collaborator:** `repositories/repositories` — use cases: `get-repository-for-viewing`; functions: `getRepositoryForViewing`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

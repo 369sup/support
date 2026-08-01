@@ -1778,6 +1778,12 @@
           "functions": [
             "requireCurrentSession"
           ]
+        },
+        {
+          "context": "repositories/repositories",
+          "role": "collaborator",
+          "useCases": [],
+          "functions": []
         }
       ],
       "sourceIds": [
@@ -1813,6 +1819,54 @@
         "github-site-policy"
       ],
       "pageFunction": "DocsPage"
+    },
+    {
+      "id": "page-enterprises",
+      "file": "apps/web/src/app/(console)/enterprises/page.tsx",
+      "readme": "apps/web/src/app/(console)/enterprises/README.md",
+      "kind": "page",
+      "supportPath": "/enterprises",
+      "githubUrls": [],
+      "status": "active",
+      "materialization": "active",
+      "title": "Enterprises",
+      "summary": "Lists active enterprises affiliated with the signed-in account and links enterprise creation from the page.",
+      "pathParams": [],
+      "queryParams": [],
+      "modules": [
+        {
+          "context": "enterprises/enterprise-memberships",
+          "role": "collaborator",
+          "useCases": [
+            "list-active-enterprise-affiliations-for-account"
+          ],
+          "functions": [
+            "listActiveEnterpriseAffiliationsForAccount"
+          ]
+        },
+        {
+          "context": "enterprises/enterprises",
+          "role": "owner",
+          "useCases": [
+            "get-enterprise-reference-by-id"
+          ],
+          "functions": [
+            "getEnterpriseReferenceById"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "collaborator",
+          "useCases": [],
+          "functions": [
+            "requireCurrentSession"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "repository-app-router"
+      ],
+      "pageFunction": "EnterprisesPage"
     },
     {
       "id": "page-enterprises-new",
@@ -2769,6 +2823,54 @@
       "pageFunction": "OrganizationBillingPage"
     },
     {
+      "id": "page-organizations",
+      "file": "apps/web/src/app/(console)/organizations/page.tsx",
+      "readme": "apps/web/src/app/(console)/organizations/README.md",
+      "kind": "page",
+      "supportPath": "/organizations",
+      "githubUrls": [],
+      "status": "active",
+      "materialization": "active",
+      "title": "Organizations",
+      "summary": "Lists active organization memberships for the signed-in account and links organization creation from the page.",
+      "pathParams": [],
+      "queryParams": [],
+      "modules": [
+        {
+          "context": "organizations/organization-memberships",
+          "role": "collaborator",
+          "useCases": [
+            "list-active-organization-memberships-for-account"
+          ],
+          "functions": [
+            "listActiveOrganizationMembershipsForAccount"
+          ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "owner",
+          "useCases": [
+            "get-organization-reference-by-id"
+          ],
+          "functions": [
+            "getOrganizationReferenceById"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "collaborator",
+          "useCases": [],
+          "functions": [
+            "requireCurrentSession"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "repository-app-router"
+      ],
+      "pageFunction": "OrganizationsPage"
+    },
+    {
       "id": "page-organizations-new",
       "file": "apps/web/src/app/(console)/organizations/new/page.tsx",
       "readme": "apps/web/src/app/(console)/organizations/new/README.md",
@@ -3265,6 +3367,69 @@
       "pageFunction": "OrganizationTeamsPage"
     },
     {
+      "id": "page-organizations-login-settings-repositories",
+      "file": "apps/web/src/app/(console)/organizations/[login]/settings/repositories/page.tsx",
+      "readme": "apps/web/src/app/(console)/organizations/[login]/settings/repositories/README.md",
+      "kind": "page",
+      "supportPath": "/organizations/{login}/settings/repositories",
+      "githubUrls": [
+        "https://github.com/organizations/{login}/settings/deleted_repositories"
+      ],
+      "status": "active",
+      "materialization": "active",
+      "title": "Deleted Organization Repositories",
+      "summary": "Lists and restores eligible deleted organization repositories for organization owners.",
+      "pathParams": [
+        {
+          "name": "login",
+          "kind": "scalar"
+        }
+      ],
+      "queryParams": [
+        {
+          "name": "repository",
+          "required": false,
+          "repeatable": false
+        }
+      ],
+      "modules": [
+        {
+          "context": "repositories/repositories",
+          "role": "owner",
+          "useCases": [
+            "list-deleted-repositories-for-restoration",
+            "restore-deleted-repository"
+          ],
+          "functions": [
+            "listDeletedRepositoriesForRestoration",
+            "restoreDeletedRepository"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "collaborator",
+          "useCases": [],
+          "functions": [
+            "requireCurrentSession"
+          ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "collaborator",
+          "useCases": [
+            "get-organization-by-login"
+          ],
+          "functions": [
+            "getOrganizationByLogin"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "repository-app-router"
+      ],
+      "pageFunction": "DeletedOrganizationRepositoriesPage"
+    },
+    {
       "id": "page-orgs-organization-people",
       "file": "apps/web/src/app/(resources)/orgs/[organization]/people/page.tsx",
       "readme": "apps/web/src/app/(resources)/orgs/[organization]/people/README.md",
@@ -3428,7 +3593,7 @@
       "status": "active",
       "materialization": "active",
       "title": "Organization Repositories Page",
-      "summary": "Delivers `/orgs/{organization}/repositories` through `requireCurrentSession`, `checkOrganizationContextEligibility`, `getOrganizationByLogin`, `listActivePublicRepositoriesForOrganizationOwner`.",
+      "summary": "Lists active and archived repositories visible to the signed-in actor through `listVisibleRepositoriesForOwner` and the shared repository list.",
       "pathParams": [
         {
           "name": "organization",
@@ -3441,10 +3606,10 @@
           "context": "repositories/repositories",
           "role": "owner",
           "useCases": [
-            "list-active-public-repositories-for-organization-owner"
+            "list-visible-repositories-for-owner"
           ],
           "functions": [
-            "listActivePublicRepositoriesForOrganizationOwner"
+            "listVisibleRepositoriesForOwner"
           ]
         },
         {
@@ -3645,7 +3810,7 @@
       "status": "active",
       "materialization": "active",
       "title": "Owner Page",
-      "summary": "Delivers `/{owner}` profile, achievements, and visible repositories through `requireCurrentSession`, `getPersonalAccountByUsername`, `getUserProfile`, `getOrganizationByLogin`, `listActiveRepositoriesForOwner`, and `resolveEffectiveRepositoryPermission`.",
+      "summary": "Delivers `/{owner}` profile, achievements, and active or archived repositories visible through `listVisibleRepositoriesForOwner`.",
       "pathParams": [
         {
           "name": "owner",
@@ -3664,10 +3829,10 @@
           "context": "repositories/repositories",
           "role": "owner",
           "useCases": [
-            "list-active-repositories-for-owner"
+            "list-visible-repositories-for-owner"
           ],
           "functions": [
-            "listActiveRepositoriesForOwner"
+            "listVisibleRepositoriesForOwner"
           ]
         },
         {
@@ -3717,16 +3882,6 @@
           "functions": [
             "getOrganizationByLogin"
           ]
-        },
-        {
-          "context": "repositories/repository-access",
-          "role": "collaborator",
-          "useCases": [
-            "resolve-effective-repository-permission"
-          ],
-          "functions": [
-            "resolveEffectiveRepositoryPermission"
-          ]
         }
       ],
       "sourceIds": [
@@ -3744,7 +3899,7 @@
       "status": "active",
       "materialization": "active",
       "title": "Repository Page",
-      "summary": "Delivers `/{owner}/{repository}` through `requireCurrentSession`, `getPersonalAccountByUsername`, `getOrganizationByLogin`, `getRepositoryByOwnerAndName`, `resolveEffectiveRepositoryPermission`.",
+      "summary": "Delivers a denial-safe active or archived repository overview through `getRepositoryForViewing` and the shared repository shell.",
       "pathParams": [
         {
           "name": "owner",
@@ -3761,10 +3916,10 @@
           "context": "repositories/repositories",
           "role": "owner",
           "useCases": [
-            "get-repository-by-owner-and-name"
+            "get-repository-for-viewing"
           ],
           "functions": [
-            "getRepositoryByOwnerAndName"
+            "getRepositoryForViewing"
           ]
         },
         {
@@ -3773,60 +3928,6 @@
           "useCases": [],
           "functions": [
             "requireCurrentSession"
-          ]
-        },
-        {
-          "context": "identity/accounts",
-          "role": "collaborator",
-          "useCases": [
-            "get-personal-account-by-username"
-          ],
-          "functions": [
-            "getPersonalAccountByUsername"
-          ]
-        },
-        {
-          "context": "engagement/stars",
-          "role": "collaborator",
-          "useCases": [
-            "list-repository-stargazers",
-            "toggle-repository-star"
-          ],
-          "functions": [
-            "listRepositoryStargazers",
-            "toggleRepositoryStar"
-          ]
-        },
-        {
-          "context": "engagement/subscriptions",
-          "role": "collaborator",
-          "useCases": [
-            "list-repository-subscribers",
-            "toggle-repository-subscription"
-          ],
-          "functions": [
-            "listRepositorySubscribers",
-            "toggleRepositorySubscription"
-          ]
-        },
-        {
-          "context": "organizations/organizations",
-          "role": "collaborator",
-          "useCases": [
-            "get-organization-by-login"
-          ],
-          "functions": [
-            "getOrganizationByLogin"
-          ]
-        },
-        {
-          "context": "repositories/repository-access",
-          "role": "collaborator",
-          "useCases": [
-            "resolve-effective-repository-permission"
-          ],
-          "functions": [
-            "resolveEffectiveRepositoryPermission"
           ]
         }
       ],
@@ -3953,16 +4054,6 @@
           ]
         },
         {
-          "context": "identity/accounts",
-          "role": "collaborator",
-          "useCases": [
-            "get-personal-account-by-username"
-          ],
-          "functions": [
-            "getPersonalAccountByUsername"
-          ]
-        },
-        {
           "context": "identity/authentication",
           "role": "collaborator",
           "useCases": [],
@@ -3971,33 +4062,13 @@
           ]
         },
         {
-          "context": "organizations/organizations",
-          "role": "collaborator",
-          "useCases": [
-            "get-organization-by-login"
-          ],
-          "functions": [
-            "getOrganizationByLogin"
-          ]
-        },
-        {
-          "context": "repositories/repository-access",
-          "role": "collaborator",
-          "useCases": [
-            "resolve-effective-repository-permission"
-          ],
-          "functions": [
-            "resolveEffectiveRepositoryPermission"
-          ]
-        },
-        {
           "context": "repositories/repositories",
           "role": "collaborator",
           "useCases": [
-            "get-repository-by-owner-and-name"
+            "get-repository-for-viewing"
           ],
           "functions": [
-            "getRepositoryByOwnerAndName"
+            "getRepositoryForViewing"
           ]
         }
       ],
@@ -4509,16 +4580,6 @@
           ]
         },
         {
-          "context": "identity/accounts",
-          "role": "collaborator",
-          "useCases": [
-            "get-personal-account-by-username"
-          ],
-          "functions": [
-            "getPersonalAccountByUsername"
-          ]
-        },
-        {
           "context": "identity/authentication",
           "role": "collaborator",
           "useCases": [],
@@ -4527,33 +4588,13 @@
           ]
         },
         {
-          "context": "organizations/organizations",
-          "role": "collaborator",
-          "useCases": [
-            "get-organization-by-login"
-          ],
-          "functions": [
-            "getOrganizationByLogin"
-          ]
-        },
-        {
-          "context": "repositories/repository-access",
-          "role": "collaborator",
-          "useCases": [
-            "resolve-effective-repository-permission"
-          ],
-          "functions": [
-            "resolveEffectiveRepositoryPermission"
-          ]
-        },
-        {
           "context": "repositories/repositories",
           "role": "collaborator",
           "useCases": [
-            "get-repository-by-owner-and-name"
+            "get-repository-for-viewing"
           ],
           "functions": [
-            "getRepositoryByOwnerAndName"
+            "getRepositoryForViewing"
           ]
         }
       ],
@@ -4641,16 +4682,6 @@
           ]
         },
         {
-          "context": "identity/accounts",
-          "role": "collaborator",
-          "useCases": [
-            "get-personal-account-by-username"
-          ],
-          "functions": [
-            "getPersonalAccountByUsername"
-          ]
-        },
-        {
           "context": "identity/authentication",
           "role": "collaborator",
           "useCases": [],
@@ -4659,33 +4690,13 @@
           ]
         },
         {
-          "context": "organizations/organizations",
-          "role": "collaborator",
-          "useCases": [
-            "get-organization-by-login"
-          ],
-          "functions": [
-            "getOrganizationByLogin"
-          ]
-        },
-        {
-          "context": "repositories/repository-access",
-          "role": "collaborator",
-          "useCases": [
-            "resolve-effective-repository-permission"
-          ],
-          "functions": [
-            "resolveEffectiveRepositoryPermission"
-          ]
-        },
-        {
           "context": "repositories/repositories",
           "role": "collaborator",
           "useCases": [
-            "get-repository-by-owner-and-name"
+            "get-repository-for-viewing"
           ],
           "functions": [
-            "getRepositoryByOwnerAndName"
+            "getRepositoryForViewing"
           ]
         }
       ],
@@ -4765,16 +4776,6 @@
           ]
         },
         {
-          "context": "identity/accounts",
-          "role": "collaborator",
-          "useCases": [
-            "get-personal-account-by-username"
-          ],
-          "functions": [
-            "getPersonalAccountByUsername"
-          ]
-        },
-        {
           "context": "identity/authentication",
           "role": "collaborator",
           "useCases": [],
@@ -4783,33 +4784,13 @@
           ]
         },
         {
-          "context": "organizations/organizations",
-          "role": "collaborator",
-          "useCases": [
-            "get-organization-by-login"
-          ],
-          "functions": [
-            "getOrganizationByLogin"
-          ]
-        },
-        {
-          "context": "repositories/repository-access",
-          "role": "collaborator",
-          "useCases": [
-            "resolve-effective-repository-permission"
-          ],
-          "functions": [
-            "resolveEffectiveRepositoryPermission"
-          ]
-        },
-        {
           "context": "repositories/repositories",
           "role": "collaborator",
           "useCases": [
-            "get-repository-by-owner-and-name"
+            "get-repository-for-viewing"
           ],
           "functions": [
-            "getRepositoryByOwnerAndName"
+            "getRepositoryForViewing"
           ]
         }
       ],
@@ -4946,43 +4927,13 @@
           ]
         },
         {
-          "context": "identity/accounts",
-          "role": "collaborator",
-          "useCases": [
-            "get-personal-account-by-username"
-          ],
-          "functions": [
-            "getPersonalAccountByUsername"
-          ]
-        },
-        {
-          "context": "organizations/organizations",
-          "role": "collaborator",
-          "useCases": [
-            "get-organization-by-login"
-          ],
-          "functions": [
-            "getOrganizationByLogin"
-          ]
-        },
-        {
           "context": "repositories/repositories",
           "role": "collaborator",
           "useCases": [
-            "get-repository-by-owner-and-name"
+            "get-repository-for-viewing"
           ],
           "functions": [
-            "getRepositoryByOwnerAndName"
-          ]
-        },
-        {
-          "context": "repositories/repository-access",
-          "role": "collaborator",
-          "useCases": [
-            "resolve-effective-repository-permission"
-          ],
-          "functions": [
-            "resolveEffectiveRepositoryPermission"
+            "getRepositoryForViewing"
           ]
         }
       ],
@@ -5039,43 +4990,13 @@
           ]
         },
         {
-          "context": "identity/accounts",
-          "role": "collaborator",
-          "useCases": [
-            "get-personal-account-by-username"
-          ],
-          "functions": [
-            "getPersonalAccountByUsername"
-          ]
-        },
-        {
-          "context": "organizations/organizations",
-          "role": "collaborator",
-          "useCases": [
-            "get-organization-by-login"
-          ],
-          "functions": [
-            "getOrganizationByLogin"
-          ]
-        },
-        {
           "context": "repositories/repositories",
           "role": "collaborator",
           "useCases": [
-            "get-repository-by-owner-and-name"
+            "get-repository-for-viewing"
           ],
           "functions": [
-            "getRepositoryByOwnerAndName"
-          ]
-        },
-        {
-          "context": "repositories/repository-access",
-          "role": "collaborator",
-          "useCases": [
-            "resolve-effective-repository-permission"
-          ],
-          "functions": [
-            "resolveEffectiveRepositoryPermission"
+            "getRepositoryForViewing"
           ]
         }
       ],
@@ -5170,43 +5091,13 @@
           ]
         },
         {
-          "context": "identity/accounts",
-          "role": "collaborator",
-          "useCases": [
-            "get-personal-account-by-username"
-          ],
-          "functions": [
-            "getPersonalAccountByUsername"
-          ]
-        },
-        {
-          "context": "organizations/organizations",
-          "role": "collaborator",
-          "useCases": [
-            "get-organization-by-login"
-          ],
-          "functions": [
-            "getOrganizationByLogin"
-          ]
-        },
-        {
           "context": "repositories/repositories",
           "role": "collaborator",
           "useCases": [
-            "get-repository-by-owner-and-name"
+            "get-repository-for-viewing"
           ],
           "functions": [
-            "getRepositoryByOwnerAndName"
-          ]
-        },
-        {
-          "context": "repositories/repository-access",
-          "role": "collaborator",
-          "useCases": [
-            "resolve-effective-repository-permission"
-          ],
-          "functions": [
-            "resolveEffectiveRepositoryPermission"
+            "getRepositoryForViewing"
           ]
         }
       ],
@@ -5518,16 +5409,6 @@
           ]
         },
         {
-          "context": "identity/accounts",
-          "role": "collaborator",
-          "useCases": [
-            "get-personal-account-by-username"
-          ],
-          "functions": [
-            "getPersonalAccountByUsername"
-          ]
-        },
-        {
           "context": "identity/authentication",
           "role": "collaborator",
           "useCases": [],
@@ -5536,33 +5417,13 @@
           ]
         },
         {
-          "context": "organizations/organizations",
-          "role": "collaborator",
-          "useCases": [
-            "get-organization-by-login"
-          ],
-          "functions": [
-            "getOrganizationByLogin"
-          ]
-        },
-        {
-          "context": "repositories/repository-access",
-          "role": "collaborator",
-          "useCases": [
-            "resolve-effective-repository-permission"
-          ],
-          "functions": [
-            "resolveEffectiveRepositoryPermission"
-          ]
-        },
-        {
           "context": "repositories/repositories",
           "role": "collaborator",
           "useCases": [
-            "get-repository-by-owner-and-name"
+            "get-repository-for-viewing"
           ],
           "functions": [
-            "getRepositoryByOwnerAndName"
+            "getRepositoryForViewing"
           ]
         }
       ],
@@ -6209,16 +6070,6 @@
           ]
         },
         {
-          "context": "identity/accounts",
-          "role": "collaborator",
-          "useCases": [
-            "get-personal-account-by-username"
-          ],
-          "functions": [
-            "getPersonalAccountByUsername"
-          ]
-        },
-        {
           "context": "identity/authentication",
           "role": "collaborator",
           "useCases": [],
@@ -6227,33 +6078,13 @@
           ]
         },
         {
-          "context": "organizations/organizations",
-          "role": "collaborator",
-          "useCases": [
-            "get-organization-by-login"
-          ],
-          "functions": [
-            "getOrganizationByLogin"
-          ]
-        },
-        {
-          "context": "repositories/repository-access",
-          "role": "collaborator",
-          "useCases": [
-            "resolve-effective-repository-permission"
-          ],
-          "functions": [
-            "resolveEffectiveRepositoryPermission"
-          ]
-        },
-        {
           "context": "repositories/repositories",
           "role": "collaborator",
           "useCases": [
-            "get-repository-by-owner-and-name"
+            "get-repository-for-viewing"
           ],
           "functions": [
-            "getRepositoryByOwnerAndName"
+            "getRepositoryForViewing"
           ]
         }
       ],
@@ -6380,16 +6211,6 @@
           ]
         },
         {
-          "context": "identity/accounts",
-          "role": "collaborator",
-          "useCases": [
-            "get-personal-account-by-username"
-          ],
-          "functions": [
-            "getPersonalAccountByUsername"
-          ]
-        },
-        {
           "context": "identity/authentication",
           "role": "collaborator",
           "useCases": [],
@@ -6398,33 +6219,13 @@
           ]
         },
         {
-          "context": "organizations/organizations",
-          "role": "collaborator",
-          "useCases": [
-            "get-organization-by-login"
-          ],
-          "functions": [
-            "getOrganizationByLogin"
-          ]
-        },
-        {
-          "context": "repositories/repository-access",
-          "role": "collaborator",
-          "useCases": [
-            "resolve-effective-repository-permission"
-          ],
-          "functions": [
-            "resolveEffectiveRepositoryPermission"
-          ]
-        },
-        {
           "context": "repositories/repositories",
           "role": "collaborator",
           "useCases": [
-            "get-repository-by-owner-and-name"
+            "get-repository-for-viewing"
           ],
           "functions": [
-            "getRepositoryByOwnerAndName"
+            "getRepositoryForViewing"
           ]
         }
       ],
@@ -6629,6 +6430,12 @@
           "functions": [
             "requireCurrentSession"
           ]
+        },
+        {
+          "context": "repositories/repositories",
+          "role": "collaborator",
+          "useCases": [],
+          "functions": []
         }
       ],
       "sourceIds": [
@@ -6902,6 +6709,54 @@
         "repository-app-router"
       ],
       "pageFunction": "InstallationsSettingsPage"
+    },
+    {
+      "id": "page-settings-repositories",
+      "file": "apps/web/src/app/(console)/settings/repositories/page.tsx",
+      "readme": "apps/web/src/app/(console)/settings/repositories/README.md",
+      "kind": "page",
+      "supportPath": "/settings/repositories",
+      "githubUrls": [
+        "https://github.com/settings/deleted_repositories"
+      ],
+      "status": "active",
+      "materialization": "active",
+      "title": "Deleted Personal Repositories",
+      "summary": "Lists and restores eligible deleted repositories owned by the signed-in personal account.",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "repository",
+          "required": false,
+          "repeatable": false
+        }
+      ],
+      "modules": [
+        {
+          "context": "repositories/repositories",
+          "role": "owner",
+          "useCases": [
+            "list-deleted-repositories-for-restoration",
+            "restore-deleted-repository"
+          ],
+          "functions": [
+            "listDeletedRepositoriesForRestoration",
+            "restoreDeletedRepository"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "collaborator",
+          "useCases": [],
+          "functions": [
+            "requireCurrentSession"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "repository-app-router"
+      ],
+      "pageFunction": "DeletedPersonalRepositoriesPage"
     },
     {
       "id": "page-settings-sessions",

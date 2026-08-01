@@ -197,6 +197,64 @@ test("rejects cross-package relative imports", () => {
   }
 });
 
+test("allows Supabase SDK dependencies and imports inside the Supabase package", () => {
+  const rootDir = createWorkspaceFixture();
+
+  try {
+    const supabase = readManifest(rootDir, "packages/supabase");
+    supabase.dependencies = {
+      "@supabase/ssr": "0.12.3",
+    };
+    writeManifest(rootDir, "packages/supabase", supabase);
+    writeFixture(
+      rootDir,
+      "packages/supabase/src/auth.ts",
+      'import { createServerClient } from "@supabase/ssr";\n',
+    );
+
+    assert.equal(includesRule(validate(rootDir), "ARCH-PKG-011"), false);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test.each([
+  "dependencies",
+  "devDependencies",
+  "peerDependencies",
+  "optionalDependencies",
+])(
+  "rejects Supabase SDK declarations in %s outside the Supabase package",
+  (dependencySection) => {
+    const rootDir = createWorkspaceFixture();
+
+    try {
+      const web = readManifest(rootDir, "apps/web");
+      web[dependencySection] = {
+        "@supabase/supabase-js": "2.111.0",
+      };
+      writeManifest(rootDir, "apps/web", web);
+
+      const errors = validate(rootDir);
+      assert.equal(includesRule(errors, "ARCH-PKG-011"), true);
+      assert.equal(
+        errors.some(
+          (error) =>
+            error.includes(
+              `@support/web ${dependencySection} entry @supabase/supabase-js`,
+            ) &&
+            error.includes(
+              "Depend on @support/supabase and use an exported subpath instead.",
+            ),
+        ),
+        true,
+      );
+    } finally {
+      rmSync(rootDir, { recursive: true, force: true });
+    }
+  },
+);
+
 test("rejects direct Supabase SDK imports outside the Supabase package", () => {
   const rootDir = createWorkspaceFixture();
 
@@ -211,7 +269,9 @@ test("rejects direct Supabase SDK imports outside the Supabase package", () => {
     assert.equal(includesRule(errors, "ARCH-PKG-011"), true);
     assert.equal(
       errors.some((error) =>
-        error.includes("Use an exported @support/supabase subpath instead."),
+        error.includes(
+          "Depend on @support/supabase and use an exported subpath instead.",
+        ),
       ),
       true,
     );

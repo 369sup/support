@@ -7,6 +7,7 @@ import { AttachEnterpriseOrganizationHandler } from "../application/commands/att
 import type { AttachEnterpriseOrganizationUseCase } from "../application/ports/inbound/attach-enterprise-organization.use-case";
 import type { CreateEnterpriseUseCase } from "../application/ports/inbound/create-enterprise.use-case";
 import { GetEnterpriseBySlugHandler } from "../application/queries/get-enterprise-by-slug.handler";
+import { GetEnterpriseReferenceByIdHandler } from "../application/queries/get-enterprise-reference-by-id.handler";
 import { ListEnterpriseOrganizationsHandler } from "../application/queries/list-enterprise-organizations.handler";
 import type {
   EnterpriseLookupResult,
@@ -18,6 +19,9 @@ export interface EnterprisesServerFacade {
   attachEnterpriseOrganization: AttachEnterpriseOrganizationUseCase["attachEnterpriseOrganization"];
   createEnterprise: CreateEnterpriseUseCase["createEnterprise"];
   getEnterpriseBySlug: (slug: string) => Promise<EnterpriseLookupResult>;
+  getEnterpriseReferenceById: (
+    enterpriseId: string,
+  ) => Promise<EnterpriseLookupResult>;
   listEnterpriseOrganizations: (
     slug: string,
   ) => Promise<EnterpriseOrganizationsResult>;
@@ -37,6 +41,7 @@ function composeEnterprisesServerFacade(): EnterprisesServerFacade {
   const attachOrganization =
     new AttachEnterpriseOrganizationHandler(repository);
   const getBySlug = new GetEnterpriseBySlugHandler(repository);
+  const getById = new GetEnterpriseReferenceByIdHandler(repository);
   const listOrganizations = new ListEnterpriseOrganizationsHandler(
     repository,
     organizationGateway,
@@ -47,6 +52,8 @@ function composeEnterprisesServerFacade(): EnterprisesServerFacade {
       attachOrganization.attachEnterpriseOrganization(command),
     createEnterprise: (command) => create.createEnterprise(command),
     getEnterpriseBySlug: (slug) => getBySlug.getEnterpriseBySlug({ slug }),
+    getEnterpriseReferenceById: (enterpriseId) =>
+      getById.getEnterpriseReferenceById({ enterpriseId }),
     listEnterpriseOrganizations: (slug) =>
       listOrganizations.listEnterpriseOrganizations({ slug }),
   };

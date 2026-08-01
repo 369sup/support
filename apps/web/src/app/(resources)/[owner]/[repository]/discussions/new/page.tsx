@@ -1,45 +1,26 @@
 import { notFound, redirect } from "next/navigation";
 
+import { resolveRepositoryViewForActor } from "@/app/(resources)/_repository-view";
 import { readFormString } from "@/app/_route-contracts/read-form-string";
 import {
   createDiscussion,
   type DiscussionCategory,
 } from "@/modules/collaboration/discussions/server-api";
-import { getPersonalAccountByUsername } from "@/modules/identity/accounts/server-api";
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
-import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
-import { resolveEffectiveRepositoryPermission } from "@/modules/repositories/repository-access/server-api";
-import { getRepositoryByOwnerAndName } from "@/modules/repositories/repositories/server-api";
-
-async function resolveOwnerId(login: string): Promise<string | null> {
-  const organization = await getOrganizationByLogin(login);
-  if (organization.status === "found") {
-    return organization.organization.organizationId;
-  }
-  const account = await getPersonalAccountByUsername(login);
-  return account.isSuccessful ? account.account.accountId : null;
-}
+import { getRepositoryForViewing } from "@/modules/repositories/repositories/server-api";
 
 async function resolveAccess(owner: string, repositoryName: string) {
-  const [session, ownerId] = await Promise.all([
-    requireCurrentSession(),
-    resolveOwnerId(owner),
-  ]);
-  if (ownerId === null) {
+  const session = await requireCurrentSession();
+  const repository = await resolveRepositoryViewForActor(
+    session.account.accountId,
+    owner,
+    repositoryName,
+    getRepositoryForViewing,
+  );
+  if (repository === null) {
     notFound();
   }
-  const result = await getRepositoryByOwnerAndName(ownerId, repositoryName);
-  if (result.status !== "found") {
-    notFound();
-  }
-  const permission = await resolveEffectiveRepositoryPermission({
-    actor: session.account,
-    repository: result.repository,
-  });
-  if (!permission.isAllowed) {
-    notFound();
-  }
-  return { repository: result.repository, session };
+  return { repository, session };
 }
 
 async function createDiscussionAction(formData: FormData): Promise<never> {
@@ -48,6 +29,11 @@ async function createDiscussionAction(formData: FormData): Promise<never> {
   const owner = readFormString(formData, "owner");
   const repositoryName = readFormString(formData, "repository");
   const { repository, session } = await resolveAccess(owner, repositoryName);
+  if (repository.lifecycleState !== "active") {
+    redirect(
+      `/${owner}/${repositoryName}/discussions?repository=archived-read-only`,
+    );
+  }
   const requestedCategory = readFormString(formData, "category");
   let category: DiscussionCategory = "general";
   if (
@@ -81,7 +67,15 @@ export default async function NewDiscussionPage({
   params: Promise<{ owner: string; repository: string }>;
 }>) {
   const routeParams = await params;
-  await resolveAccess(routeParams.owner, routeParams.repository);
+  const { repository } = await resolveAccess(
+    routeParams.owner,
+    routeParams.repository,
+  );
+  if (repository.lifecycleState !== "active") {
+    redirect(
+      `/${routeParams.owner}/${routeParams.repository}/discussions?repository=archived-read-only`,
+    );
+  }
 
   return (
     <main className="flex flex-1 px-4 py-10 sm:px-8">

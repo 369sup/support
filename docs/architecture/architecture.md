@@ -264,8 +264,6 @@ not use wildcard or multi-level barrel re-exports.
   without authorizing runtime handling.
 - **ARCH-GUIDE-001:** Repository `AGENTS.md` files have resolvable local links;
   permanent `AGENTS.override.md` files are prohibited.
-- **ARCH-GUIDE-002:** The generated-memory authority allowlist exactly matches
-  repository guidance and is checked with generated artifacts.
 - **ARCH-ROUTE-001:** Every public `page.tsx` and `route.ts` delivery file maps
   to exactly one route-catalog entry. Parallel-slot fallbacks are not public
   URLs.
@@ -280,9 +278,6 @@ not use wildcard or multi-level barrel re-exports.
 - **ARCH-ROUTE-008:** `pnpm architecture:docs` deterministically projects
   per-URL READMEs and `_route-contracts/route-contracts.generated.ts`; generated
   governance rejects manual drift.
-- **ARCH-MEM-001:** Committed Serena shared memories are deterministic,
-  read-only generated projections of an explicit authority allowlist. Local
-  writable memories are ignored by Git.
 
 ## Responsibilities and boundaries
 
@@ -601,10 +596,19 @@ identity, effect safety, and related React compiler diagnostics.
 - `@support/database` owns the business-free PostgreSQL pool, transaction, and
   migration runtime. It does not own product tables, repositories, retention,
   authorization, tenant rules, or cross-context transactions.
-- `@support/supabase` owns only Supabase PostgreSQL endpoint, connection-mode,
-  and TLS validation before constructing `@support/database`. It does not own
-  Supabase Auth, the Data API, product schemas, RLS policies, or environment
-  parsing.
+- `@support/supabase` owns the business-free Supabase SDK boundary. Its
+  `postgres` subpath validates PostgreSQL endpoints, connection modes, and TLS
+  before constructing `@support/database`; its `auth` subpath validates Auth
+  configuration, constructs request-scoped server clients, bridges
+  framework-provided cookies, removes provider tokens, and normalizes SDK
+  results into package-owned types. It does not own Next.js request or response
+  objects, application environment parsing, Support account or username
+  lifecycle, authorization, product tables, migrations, RLS policies, or the
+  browser Data API.
+- Only `@support/supabase` may declare or import `@supabase/*` dependencies.
+  Consumers declare `@support/supabase` and use an explicit exported subpath;
+  new Supabase product integrations begin by adding a server-only package
+  subpath rather than importing an SDK from an application or another package.
 - Each bounded context owns its schema namespace, migrations, persistence
   adapters, optimistic-concurrency rules, and data lifecycle.
 - A transaction uses one checked-out connection for its complete lifetime and

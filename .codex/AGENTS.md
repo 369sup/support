@@ -6,14 +6,15 @@ loads for a trusted checkout.
 
 ## Active surfaces
 
-- [`config.toml`](config.toml) registers one project-specific review agent and
-  the public Context7 MCP endpoint.
+- [`config.toml`](config.toml) registers one project-specific review agent,
+  Context7, and Mermaid Chart.
 - [`agents/reviewer.toml`](agents/reviewer.toml) adds Support-specific review
   priorities. Codex built-ins cover general exploration and implementation.
 - [`environments/environment.toml`](environments/environment.toml) defines the
   Codex Desktop worktree setup check and dependency-install action.
-- [`hooks.json`](hooks.json) registers the repository guard and deterministic
-  Serena task-memory lifecycle described under [`hooks/`](hooks/).
+- [`hooks.json`](hooks.json) registers only the repository guard described
+  under [`hooks/`](hooks/). Serena activation, reminders, and cleanup use the
+  official user-level `serena-hooks` lifecycle.
 
 Do not add a customization surface until a current, project-wide requirement
 needs it. Durable repository guidance belongs in `AGENTS.md`; repeated
@@ -55,8 +56,9 @@ repository-relative inputs, explicit timeouts, untrusted-event validation, and
 fail-safe behavior. They must never persist transcripts, prompts, tool output,
 provider payloads, secrets, credentials, or personal/customer data.
 
-The local hook workflow and tests live in
-[`hooks/AGENTS.md`](hooks/AGENTS.md). Advisory prose does not belong in a hook.
+The local repository-guard workflow and tests live in
+[`hooks/AGENTS.md`](hooks/AGENTS.md). Do not add a second Serena lifecycle or
+memory engine here; official Serena owns those concerns.
 
 ## Change and verification workflow
 
@@ -67,7 +69,7 @@ trust, permissions, network, portability, secret handling, and startup impact.
 After a change:
 
 1. Parse TOML and JSON and resolve every referenced path.
-2. Run focused hook tests when hook definitions or implementations changed.
+2. Run `pnpm test:hooks` when hook definitions or implementations changed.
 3. Inspect the actual diff and confirm no personal or secret state is tracked.
 4. Start a fresh trusted Codex Desktop task and verify configuration discovery.
 5. Report any setting that could not be verified in the running client.

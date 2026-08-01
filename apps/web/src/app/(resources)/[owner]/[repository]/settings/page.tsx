@@ -97,6 +97,7 @@ async function resolveRepositoryActionContext(formData: FormData) {
   return {
     actorAccountId: session.account.accountId,
     ownerId: owner.id,
+    ownerKind: owner.kind,
     ownerLogin: owner.login,
     name: readFormString(formData, "repositoryName"),
   };
@@ -213,6 +214,13 @@ async function deleteRepositoryAction(formData: FormData): Promise<never> {
     confirmation: readFormString(formData, "confirmation"),
   });
   revalidatePath(`/${context.ownerLogin}/${context.name}`);
+  if (result.status === "deleted") {
+    redirect(
+      context.ownerKind === "organization"
+        ? `/organizations/${context.ownerLogin}/settings/repositories?repository=deleted`
+        : "/settings/repositories?repository=deleted",
+    );
+  }
   redirect(
     repositorySettingsUrl(context.ownerLogin, context.name, result.status),
   );

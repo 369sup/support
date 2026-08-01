@@ -38,7 +38,6 @@ import {
   validateAgentGuidance,
   validateExceptions,
   validateGeneratedModuleMap,
-  validateSerenaMemories,
 } from "./architecture/governance.mjs";
 import {
   buildSourceGraph,
@@ -1689,10 +1688,8 @@ export function runArchitectureChecks({
     applicationRoot,
     contextsByPath,
     requiredErrors,
-    generatedErrors,
     knowledgeErrors,
   );
-  validateSerenaMemories(repositoryRoot, generatedErrors);
 
   validateModuleNamesAndRoles(applicationRoot, sourceFiles, requiredErrors);
   validateUseCaseTraceability(

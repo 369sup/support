@@ -31,6 +31,10 @@ delete, restore, and repository profile updates without Git content.
     - Use case: `get-repository-by-owner-and-name`
     - Use case: `list-active-repositories-for-owner`
     - Private and internal candidates are never a visibility decision.
+  - Authorized repository views [active]
+    - Use case: `get-repository-for-viewing`
+    - Use case: `list-visible-repositories-for-owner`
+    - Active and archived repositories require a `repository-access` decision.
   - Repository identity and profile [active]
     - Use case: `create-empty-repository`
     - Use case: `get-repository-for-administration`
@@ -54,6 +58,7 @@ delete, restore, and repository profile updates without Git content.
     - Use case: `unarchive-repository`
     - Use case: `delete-repository`
     - Use case: `restore-deleted-repository`
+    - Use case: `list-deleted-repositories-for-restoration`
     - Owned concepts: `RepositoryTombstone`, `RepositoryRestoreWindow`
     - Planned events: `RepositoryArchived@1`, `RepositoryUnarchived@1`,
       `RepositoryDeleted@1`, `RepositoryRestored@1`
@@ -111,6 +116,38 @@ delete, restore, and repository profile updates without Git content.
 - **Published events:** `none`
 - **Official evidence:** `repositories-repositories-source-01`
 - **Local policy:** This privileged query is the only route-facing lookup that can retrieve a deleted tombstone.
+
+### `get-repository-for-viewing` [active]
+
+- **Type:** `query`
+- **Application boundary:** `GetRepositoryForViewingUseCase.getRepositoryForViewing()`
+- **Public entrypoint:** `server-api.ts#getRepositoryForViewing`
+- **Input:** Authenticated actor, stable owner ID, and repository name.
+- **Success result:** `found` with an authorized active or archived repository view and effective permission.
+- **Expected rejections:** `repository-not-found`
+- **Authorization:** `repository-access` resolves visibility and effective permission; denied and absent resources are normalized to the same result.
+- **Transaction:** Read-only.
+- **Idempotency:** Query.
+- **Dependencies:** `identity/accounts::AccountReference`, `repositories/repository-access::EffectiveRepositoryPermissionDecision`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repositories-source-01`, `repositories-repositories-source-05`
+- **Local policy:** Deleted tombstones are never exposed through a repository resource URL.
+
+### `list-deleted-repositories-for-restoration` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ListDeletedRepositoriesForRestorationUseCase.listDeletedRepositoriesForRestoration()`
+- **Public entrypoint:** `server-api.ts#listDeletedRepositoriesForRestoration`
+- **Input:** Authenticated actor and stable personal or organization owner ID.
+- **Success result:** `found` with deleted repositories, restore deadlines, and current eligibility.
+- **Expected rejections:** `permission-denied`
+- **Authorization:** A personal owner may inspect its own tombstones; an organization requires active owner membership.
+- **Transaction:** Read-only.
+- **Idempotency:** Query.
+- **Dependencies:** `identity/accounts::AccountReference`, `organizations/organizations::OrganizationOwnerReference`, `organizations/organization-memberships::OrganizationMembershipReference`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repositories-source-07`
+- **Local policy:** Repository admins who do not own the personal or organization account cannot restore deleted repositories.
 
 ### `update-repository-profile` [active]
 
@@ -216,10 +253,10 @@ delete, restore, and repository profile updates without Git content.
 - **Input:** Authorized actor, stable owner ID, deleted repository name, and exact owner/name confirmation.
 - **Success result:** `restored` with active lifecycle state and a new authorization subject ID.
 - **Expected rejections:** `permission-denied`, `repository-not-found`, `confirmation-mismatch`, `invalid-state`, `restore-window-expired`
-- **Authorization:** Effective `admin` repository permission.
+- **Authorization:** Personal-account owner or active organization owner; repository admin alone is insufficient.
 - **Transaction:** Tombstone replacement and owner/name index update together.
 - **Idempotency:** State-guarded; restored repositories return `invalid-state`.
-- **Dependencies:** `identity/accounts::AccountReference`, `repositories/repository-access::EffectiveRepositoryPermissionDecision`
+- **Dependencies:** `identity/accounts::AccountReference`, `organizations/organizations::OrganizationOwnerReference`, `organizations/organization-memberships::OrganizationMembershipReference`
 - **Published events:** `none`
 - **Official evidence:** `repositories-repositories-source-07`
 - **Local policy:** Restore is available through exactly 90 days; the new authorization subject ID ensures prior team permissions are not restored.
@@ -288,6 +325,22 @@ delete, restore, and repository profile updates without Git content.
 - **Official evidence:** `repositories-repositories-source-10`
 - **Local policy:** Every candidate must pass `repository-access` before user disclosure.
 
+### `list-visible-repositories-for-owner` [active]
+
+- **Type:** `query`
+- **Application boundary:** `ListVisibleRepositoriesForOwnerUseCase.listVisibleRepositoriesForOwner()`
+- **Public entrypoint:** `server-api.ts#listVisibleRepositoriesForOwner`
+- **Input:** Authenticated actor and stable personal or organization owner ID.
+- **Success result:** Authorized active and archived repository list items, possibly empty.
+- **Expected rejections:** `none`
+- **Authorization:** Every non-deleted candidate passes `repository-access`; denied candidates are omitted.
+- **Transaction:** Read-only.
+- **Idempotency:** Query.
+- **Dependencies:** `identity/accounts::AccountReference`, `repositories/repository-access::EffectiveRepositoryPermissionDecision`
+- **Published events:** `none`
+- **Official evidence:** `repositories-repositories-source-05`, `repositories-repositories-source-10`
+- **Local policy:** Deleted tombstones are excluded; archived repositories remain discoverable and visibly read-only.
+
 ## Ubiquitous language
 
 - **Repository**: the core GitHub product resource.
@@ -309,6 +362,8 @@ Git objects, grants, issues, stars, and subscriptions remain excluded.
 
 - `listActivePublicRepositoriesForPersonalOwner(owner)` through
   `server-api.ts`.
+- `getRepositoryForViewing(query)`, `listVisibleRepositoriesForOwner(query)`,
+  and `listDeletedRepositoriesForRestoration(query)` through `server-api.ts`.
 - `updateRepositoryProfile(command)` through `server-api.ts`.
 - `ListActivePublicRepositoriesForPersonalOwnerUseCase.listActivePublicRepositoriesForPersonalOwner()`
   is the application boundary implemented by

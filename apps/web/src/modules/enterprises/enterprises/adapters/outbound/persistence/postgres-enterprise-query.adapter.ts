@@ -50,6 +50,16 @@ export class PostgresEnterpriseQueryAdapter
     }
   }
 
+  async findById(enterpriseId: string) {
+    await this.isSchemaReady;
+    const result = await this.database.query<EnterpriseRow>(
+      `select enterprise_id, slug, display_name, enterprise_type, lifecycle_state
+         from support_enterprises where enterprise_id = $1`,
+      [enterpriseId],
+    );
+    return result.rows[0] === undefined ? null : mapRow(result.rows[0]);
+  }
+
   async findBySlug(slug: string) {
     await this.isSchemaReady;
     const result = await this.database.query<EnterpriseRow>(

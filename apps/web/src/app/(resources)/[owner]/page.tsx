@@ -1,5 +1,4 @@
-﻿import { Building2, FolderKanban, User2 } from "lucide-react";
-import Link from "next/link";
+﻿import { Building2, User2 } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
 import { redirect } from "next/navigation";
@@ -10,48 +9,12 @@ import { getPersonalAccountByUsername } from "@/modules/identity/accounts/server
 import { getUserProfile } from "@/modules/identity/profiles/server-api";
 import { toggleUserFollow } from "@/modules/identity/social-graph/server-api";
 import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
-import {
-  listActiveRepositoriesForOwner,
-  type RepositoryCandidateReference,
-} from "@/modules/repositories/repositories/server-api";
-import { resolveEffectiveRepositoryPermission } from "@/modules/repositories/repository-access/server-api";
+import { RepositoryList } from "@/modules/repositories/repositories/browser-ui";
+import { listVisibleRepositoriesForOwner } from "@/modules/repositories/repositories/server-api";
 
 type OwnerLookupResult =
   | Readonly<{ kind: "organization"; login: string; displayName: string; id: string }>
   | Readonly<{ kind: "account"; login: string; displayName: string; id: string }>;
-type OwnerRepository = Awaited<ReturnType<typeof listActiveRepositoriesForOwner>>[number];
-type RepositoryWithPermission = OwnerRepository & {
-  permission: "admin" | "maintain" | "write" | "triage" | "read";
-};
-
-type RepositoryForPermissionLookup = RepositoryCandidateReference;
-
-function mapRepositoryForPermissionLookup(
-  repository: OwnerRepository,
-): RepositoryForPermissionLookup {
-  return {
-    repositoryId: repository.repositoryId,
-    owner:
-      repository.owner.kind === "personal"
-        ? {
-            kind: "personal" as const,
-            accountId: repository.owner.accountId,
-            login: repository.owner.login,
-          }
-        : {
-            kind: "organization" as const,
-            organizationId: repository.owner.organizationId,
-            login: repository.owner.login,
-          },
-    name: repository.name,
-    description: repository.description,
-    homepage: repository.homepage,
-    visibility: repository.visibility,
-    lifecycleState: repository.lifecycleState,
-    updatedAt: repository.updatedAt,
-  };
-}
-
 async function resolveOwnerByLogin(
   owner: string,
 ): Promise<OwnerLookupResult | null> {
@@ -116,7 +79,10 @@ export default async function OwnerPage({
   }
 
   const [repositories, profileResult] = await Promise.all([
-    listActiveRepositoriesForOwner(owner.id),
+    listVisibleRepositoriesForOwner({
+      actorAccountId: session.account.accountId,
+      ownerId: owner.id,
+    }),
     owner.kind === "account"
       ? getUserProfile({
           accountId: owner.id,
@@ -126,29 +92,6 @@ export default async function OwnerPage({
   ]);
   const profile =
     profileResult.status === "found" ? profileResult.profile : null;
-
-  const visibleRepositories = (
-    await Promise.all(
-      repositories.map(async (repository) => {
-        const permission = await resolveEffectiveRepositoryPermission({
-          actor: session.account,
-          repository: mapRepositoryForPermissionLookup(repository),
-        });
-        if (!permission.isAllowed) {
-          return null;
-        }
-        return {
-          ...repository,
-          permission:
-            permission.permission ??
-            (repository.visibility === "public" ? "read" : null),
-        };
-      }),
-    )
-  ).filter(
-    (repository): repository is RepositoryWithPermission =>
-      repository !== null && repository.permission !== null,
-  );
 
   return (
     <main className="flex flex-1 px-4 py-10 sm:px-8 lg:px-10">
@@ -232,50 +175,13 @@ export default async function OwnerPage({
         <div className="mt-9 overflow-hidden rounded-xl border border-white/15 bg-[#0a1624]">
           <div className="border-b border-white/10 px-5 py-4">
             <h2 className="text-sm font-medium text-slate-300">
-              Repositories ({visibleRepositories.length})
+              Repositories ({repositories.length})
             </h2>
           </div>
-          {visibleRepositories.length === 0 ? (
-            <p
-              className="px-5 py-10 text-center text-sm text-slate-500"
-              role="status"
-            >
-              No repositories are visible to your current session.
-            </p>
-          ) : (
-            <ul className="divide-y divide-white/10">
-              {visibleRepositories.map((repository) => (
-                <li
-                  className="grid gap-4 px-4 py-5 sm:grid-cols-[minmax(0,1.5fr)_auto_auto] sm:items-center sm:gap-5 sm:px-5"
-                  key={repository.repositoryId}
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <FolderKanban
-                        aria-hidden="true"
-                        className="size-4 shrink-0 text-slate-500"
-                      />
-                      <Link
-                        className="truncate font-mono text-sm font-semibold text-slate-100 underline decoration-dashed underline-offset-4 hover:text-white"
-                        href={`/${owner.login}/${repository.name}`}
-                      >
-                        {repository.owner.login}/{repository.name}
-                      </Link>
-                    </div>
-                    <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-                      {repository.description}
-                    </p>
-                  </div>
-                  <span className="w-fit rounded-full border border-slate-600 px-2.5 py-1 text-xs capitalize text-slate-400">
-                    {repository.visibility}
-                  </span>
-                  <span className="w-fit rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-xs font-medium uppercase text-emerald-300">
-                    {repository.permission}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
+          <RepositoryList
+            emptyMessage="No repositories are visible to your current session."
+            repositories={repositories}
+          />
         </div>
       </section>
     </main>

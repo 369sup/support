@@ -1,51 +1,32 @@
 import { redirect, notFound } from "next/navigation";
 
+import { resolveRepositoryViewForActor } from "@/app/(resources)/_repository-view";
 import { readFormString } from "@/app/_route-contracts/read-form-string";
 import { createIssue } from "@/modules/collaboration/issues/server-api";
-import { getPersonalAccountByUsername } from "@/modules/identity/accounts/server-api";
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
-import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
-import { resolveEffectiveRepositoryPermission } from "@/modules/repositories/repository-access/server-api";
-import { getRepositoryByOwnerAndName } from "@/modules/repositories/repositories/server-api";
-
-async function resolveOwnerId(login: string): Promise<string | null> {
-  const organization = await getOrganizationByLogin(login);
-  if (organization.status === "found") {
-    return organization.organization.organizationId;
-  }
-  const account = await getPersonalAccountByUsername(login);
-  return account.isSuccessful ? account.account.accountId : null;
-}
+import { getRepositoryForViewing } from "@/modules/repositories/repositories/server-api";
 
 async function createIssueAction(formData: FormData): Promise<never> {
   "use server";
 
   const owner = readFormString(formData, "owner");
   const repositoryName = readFormString(formData, "repository");
-  const [session, ownerId] = await Promise.all([
-    requireCurrentSession(),
-    resolveOwnerId(owner),
-  ]);
-  if (ownerId === null) {
-    notFound();
-  }
-  const repositoryResult = await getRepositoryByOwnerAndName(
-    ownerId,
+  const session = await requireCurrentSession();
+  const repository = await resolveRepositoryViewForActor(
+    session.account.accountId,
+    owner,
     repositoryName,
+    getRepositoryForViewing,
   );
-  if (repositoryResult.status !== "found") {
+  if (repository === null) {
     notFound();
   }
-  const permission = await resolveEffectiveRepositoryPermission({
-    actor: session.account,
-    repository: repositoryResult.repository,
-  });
-  if (!permission.isAllowed) {
-    notFound();
+  if (repository.lifecycleState !== "active") {
+    redirect(`/${owner}/${repositoryName}/issues?repository=archived-read-only`);
   }
 
   const result = await createIssue({
-    repositoryId: repositoryResult.repository.repositoryId,
+    repositoryId: repository.repositoryId,
     actorAccountId: session.account.accountId,
     actorUsername: session.account.username,
     title: readFormString(formData, "title"),
@@ -66,6 +47,21 @@ export default async function NewIssuePage({
   searchParams: Promise<{ status?: string }>;
 }>) {
   const [routeParams, query] = await Promise.all([params, searchParams]);
+  const session = await requireCurrentSession();
+  const repository = await resolveRepositoryViewForActor(
+    session.account.accountId,
+    routeParams.owner,
+    routeParams.repository,
+    getRepositoryForViewing,
+  );
+  if (repository === null) {
+    notFound();
+  }
+  if (repository.lifecycleState !== "active") {
+    redirect(
+      `/${routeParams.owner}/${routeParams.repository}/issues?repository=archived-read-only`,
+    );
+  }
 
   return (
     <main className="flex flex-1 px-4 py-10 sm:px-8">

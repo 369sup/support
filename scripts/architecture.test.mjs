@@ -16,11 +16,6 @@ import {
   renderModuleMap,
   runArchitectureChecks,
 } from "./architecture.mjs";
-import {
-  agentGuidanceSourcePaths,
-  renderSerenaMemories,
-  loadSerenaMemorySources,
-} from "./serena-memories.mjs";
 
 function writeFixture(rootDir, relativePath, contents) {
   const filePath = join(rootDir, ...relativePath.split("/"));
@@ -203,12 +198,6 @@ function createValidFixture() {
       {
         scripts: {
           architecture: "node scripts/architecture.mjs check --profile=required",
-          "memory:activate": "node scripts/memory/index.mjs activate",
-          "memory:checkpoint": "node scripts/memory/index.mjs checkpoint",
-          "memory:maintain": "node scripts/memory/index.mjs maintain",
-          "memory:status": "node scripts/memory/index.mjs status",
-          "memory:validate": "node scripts/memory/index.mjs validate",
-          "test:memory": "node --test scripts/memory/memory.test.mjs scripts/memory/storage.test.mjs .codex/hooks/repository-guard.test.mjs .codex/hooks/memory-orchestrator.test.mjs",
         },
       },
       null,
@@ -220,96 +209,7 @@ function createValidFixture() {
     "docs/architecture/architecture.md",
     "# Architecture Contract\n",
   );
-  writeFixture(rootDir, ".gitignore", ".serena/memories/local/\n");
-  writeFixture(
-    rootDir,
-    ".serena/project.yml",
-    [
-      'activation_command: "node scripts/memory/index.mjs activate --json"',
-      "activation_command_timeout: 15.0",
-      "read_only_memory_patterns:",
-      '- "^(memory_maintenance|core|shared/.*)$"',
-      "ignored_memory_patterns:",
-      '- "^local/(episodes|archive|_state)/.*$"',
-      "",
-    ].join("\n"),
-  );
-  writeFixture(
-    rootDir,
-    ".codex/hooks.json",
-    `${JSON.stringify(
-      {
-        hooks: {
-          SessionStart: [],
-          PreToolUse: [],
-          PostToolUse: [],
-          PreCompact: [],
-          Stop: [
-            {
-              hooks: [
-                {
-                  command: "node .codex/hooks/memory-orchestrator.mjs",
-                  type: "command",
-                },
-              ],
-            },
-          ],
-        },
-      },
-      null,
-      2,
-    )}\n`,
-  );
-
-  for (const path of [
-    ".codex/hooks/memory-orchestrator.mjs",
-    ".codex/hooks/memory-orchestrator.test.mjs",
-    ".serena/README.md",
-    "scripts/memory/index.mjs",
-    "scripts/memory/memory.test.mjs",
-    "scripts/memory/model.mjs",
-    "scripts/memory/schema.mjs",
-    "scripts/memory/storage.mjs",
-    "scripts/memory/storage.test.mjs",
-  ]) {
-    writeFixture(rootDir, path, `// ${path} fixture\n`);
-  }
-
-  for (const path of agentGuidanceSourcePaths) {
-    writeFixture(rootDir, path, `# ${path} guidance\n`);
-  }
-
-  writeFixture(
-    rootDir,
-    ".serena/AGENTS.md",
-    [
-      "# Serena guidance",
-      "",
-      "## Memory ownership",
-      "",
-      "`.serena/memories/local/current-task.md` is the only local memory the model may author.",
-      "Exclusive ownership is always enabled.",
-      "",
-    ].join("\n"),
-  );
-  writeFixture(
-    rootDir,
-    ".serena/README.md",
-    [
-      "# Serena Memory Operator Guide",
-      "",
-      "## Exclusive ownership and quarantine",
-      "",
-      "The engine always owns the local namespace.",
-      "",
-    ].join("\n"),
-  );
-
-  const generatedMemories = renderSerenaMemories(loadSerenaMemorySources(rootDir));
-
-  for (const [path, contents] of generatedMemories) {
-    writeFixture(rootDir, `.serena/memories/${path}`, contents);
-  }
+  writeFixture(rootDir, "AGENTS.md", "# Repository guidance\n");
 
   writeFixture(rootDir, "docs/architecture/exceptions/registry.json", "[]\n");
   writeFixture(
@@ -896,10 +796,13 @@ test("keeps the repository semantic catalog boundaries regression-safe", () => {
       "create-empty-repository",
       "delete-repository",
       "get-repository-for-administration",
+      "get-repository-for-viewing",
       "get-repository-by-owner-and-name",
+      "list-deleted-repositories-for-restoration",
       "list-active-public-repositories-for-organization-owner",
       "list-active-public-repositories-for-personal-owner",
       "list-active-repositories-for-owner",
+      "list-visible-repositories-for-owner",
       "rename-repository",
       "restore-deleted-repository",
       "unarchive-repository",
@@ -2034,77 +1937,6 @@ test("reports guidance token budget excess as knowledge", () => {
       }),
       true,
     );
-  } finally {
-    rmSync(rootDir, { recursive: true, force: true });
-  }
-});
-
-test("rejects stale or unexpected shared Serena memories", () => {
-  const rootDir = createValidFixture();
-
-  try {
-    writeFixture(rootDir, ".serena/memories/core.md", "# stale\n");
-    writeFixture(rootDir, ".serena/memories/manual.md", "# manual shared memory\n");
-
-    assert.equal(includesRule(check(rootDir), "ARCH-MEM-001"), false);
-    assert.equal(
-      includesRule(check(rootDir, "generated"), "ARCH-MEM-001"),
-      true,
-    );
-  } finally {
-    rmSync(rootDir, { recursive: true, force: true });
-  }
-});
-
-test("rejects incomplete automatic Serena memory integration", () => {
-  const rootDir = createValidFixture();
-
-  try {
-    rmSync(join(rootDir, "scripts", "memory", "index.mjs"));
-    writeFixture(
-      rootDir,
-      ".serena/project.yml",
-      'read_only_memory_patterns:\n- "^(memory_maintenance|core|shared/.*)$"\n',
-    );
-    writeFixture(
-      rootDir,
-      ".codex/hooks.json",
-      `${JSON.stringify({ hooks: {} }, null, 2)}\n`,
-    );
-    writeFixture(
-      rootDir,
-      "package.json",
-      `${JSON.stringify(
-        {
-          scripts: {
-            architecture: "node scripts/architecture.mjs check --profile=required",
-          },
-        },
-        null,
-        2,
-      )}\n`,
-    );
-
-    const errors = check(rootDir, "generated").filter((error) => {
-      return error.ruleId === "ARCH-MEM-002";
-    });
-
-    assert.equal(errors.length >= 4, true);
-  } finally {
-    rmSync(rootDir, { recursive: true, force: true });
-  }
-});
-
-test("renders Serena memories deterministically without timestamps", () => {
-  const rootDir = createValidFixture();
-
-  try {
-    const sources = loadSerenaMemorySources(rootDir);
-    const first = [...renderSerenaMemories(sources)];
-    const second = [...renderSerenaMemories(sources)];
-
-    assert.deepEqual(first, second);
-    assert.equal(first.some(([, contents]) => /generated at|generated on/i.test(contents)), false);
   } finally {
     rmSync(rootDir, { recursive: true, force: true });
   }

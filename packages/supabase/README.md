@@ -5,6 +5,12 @@ workspace. It exposes explicit `@support/supabase/auth` and
 `@support/supabase/postgres` subpaths so browser and server dependency graphs
 remain separate.
 
+Only this package may declare or import `@supabase/*` dependencies. Workspace
+consumers depend on `@support/supabase` and use an explicit exported subpath.
+Adding another Supabase product integration begins here with a new server-only
+subpath instead of a direct SDK dependency in an application or another
+package.
+
 It owns:
 
 - Supabase Auth configuration validation;

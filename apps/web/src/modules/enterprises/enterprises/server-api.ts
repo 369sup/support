@@ -11,5 +11,7 @@ export const createEnterprise =
   enterprisesServerFacade.createEnterprise;
 export const getEnterpriseBySlug =
   enterprisesServerFacade.getEnterpriseBySlug;
+export const getEnterpriseReferenceById =
+  enterprisesServerFacade.getEnterpriseReferenceById;
 export const listEnterpriseOrganizations =
   enterprisesServerFacade.listEnterpriseOrganizations;

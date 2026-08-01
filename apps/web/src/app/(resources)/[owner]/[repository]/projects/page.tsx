@@ -1,20 +1,9 @@
 import { notFound } from "next/navigation";
 
+import { resolveRepositoryViewForActor } from "@/app/(resources)/_repository-view";
 import { listRepositoryProjects } from "@/modules/collaboration/projects/server-api";
-import { getPersonalAccountByUsername } from "@/modules/identity/accounts/server-api";
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
-import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
-import { resolveEffectiveRepositoryPermission } from "@/modules/repositories/repository-access/server-api";
-import { getRepositoryByOwnerAndName } from "@/modules/repositories/repositories/server-api";
-
-async function resolveOwnerId(login: string): Promise<string | null> {
-  const organization = await getOrganizationByLogin(login);
-  if (organization.status === "found") {
-    return organization.organization.organizationId;
-  }
-  const account = await getPersonalAccountByUsername(login);
-  return account.isSuccessful ? account.account.accountId : null;
-}
+import { getRepositoryForViewing } from "@/modules/repositories/repositories/server-api";
 
 export default async function RepositoryProjectsPage({
   params,
@@ -22,30 +11,17 @@ export default async function RepositoryProjectsPage({
   params: Promise<{ owner: string; repository: string }>;
 }>) {
   const routeParams = await params;
-  const [session, ownerId] = await Promise.all([
-    requireCurrentSession(),
-    resolveOwnerId(routeParams.owner),
-  ]);
-  if (ownerId === null) {
-    notFound();
-  }
-  const repositoryResult = await getRepositoryByOwnerAndName(
-    ownerId,
+  const session = await requireCurrentSession();
+  const repository = await resolveRepositoryViewForActor(
+    session.account.accountId,
+    routeParams.owner,
     routeParams.repository,
+    getRepositoryForViewing,
   );
-  if (repositoryResult.status !== "found") {
+  if (repository === null) {
     notFound();
   }
-  const permission = await resolveEffectiveRepositoryPermission({
-    actor: session.account,
-    repository: repositoryResult.repository,
-  });
-  if (!permission.isAllowed) {
-    notFound();
-  }
-  const result = await listRepositoryProjects(
-    repositoryResult.repository.repositoryId,
-  );
+  const result = await listRepositoryProjects(repository.repositoryId);
 
   return (
     <main className="flex flex-1 px-4 py-10 sm:px-8">

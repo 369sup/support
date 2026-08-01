@@ -3,6 +3,7 @@ import {
   type ListActivePublicRepositoriesForPersonalOwnerAdapter,
 } from "../adapters/inbound/server/list-active-public-repositories-for-personal-owner.adapter";
 import { RepositoryAdministrationAuthorizationAdapter } from "../adapters/outbound/integration/repository-administration-authorization.adapter";
+import { RepositoryViewAuthorizationAdapter } from "../adapters/outbound/integration/repository-view-authorization.adapter";
 import { InMemoryRepositoryQueryAdapter } from "../adapters/outbound/persistence/in-memory-repository-query.adapter";
 import { InMemoryRepositoryIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-repository-id-generator.adapter";
 import { NodeRepositoryIdGeneratorAdapter } from "../adapters/outbound/persistence/node-repository-id-generator.adapter";
@@ -18,6 +19,9 @@ import { ChangeRepositoryVisibilityHandler } from "../application/commands/chang
 import { CreateEmptyRepositoryHandler } from "../application/commands/create-empty-repository.handler";
 import { DeleteRepositoryHandler } from "../application/commands/delete-repository.handler";
 import { GetRepositoryForAdministrationHandler } from "../application/queries/get-repository-for-administration.handler";
+import { GetRepositoryForViewingHandler } from "../application/queries/get-repository-for-viewing.handler";
+import { ListDeletedRepositoriesForRestorationHandler } from "../application/queries/list-deleted-repositories-for-restoration.handler";
+import { ListVisibleRepositoriesForOwnerHandler } from "../application/queries/list-visible-repositories-for-owner.handler";
 import { RenameRepositoryHandler } from "../application/commands/rename-repository.handler";
 import { RestoreDeletedRepositoryHandler } from "../application/commands/restore-deleted-repository.handler";
 import { UnarchiveRepositoryHandler } from "../application/commands/unarchive-repository.handler";
@@ -27,6 +31,9 @@ import type { ChangeRepositoryVisibilityUseCase } from "../application/ports/inb
 import type { CreateEmptyRepositoryUseCase } from "../application/ports/inbound/create-empty-repository.use-case";
 import type { DeleteRepositoryUseCase } from "../application/ports/inbound/delete-repository.use-case";
 import type { GetRepositoryForAdministrationUseCase } from "../application/ports/inbound/get-repository-for-administration.use-case";
+import type { GetRepositoryForViewingUseCase } from "../application/ports/inbound/get-repository-for-viewing.use-case";
+import type { ListDeletedRepositoriesForRestorationUseCase } from "../application/ports/inbound/list-deleted-repositories-for-restoration.use-case";
+import type { ListVisibleRepositoriesForOwnerUseCase } from "../application/ports/inbound/list-visible-repositories-for-owner.use-case";
 import type { RenameRepositoryUseCase } from "../application/ports/inbound/rename-repository.use-case";
 import type { RestoreDeletedRepositoryUseCase } from "../application/ports/inbound/restore-deleted-repository.use-case";
 import type { UnarchiveRepositoryUseCase } from "../application/ports/inbound/unarchive-repository.use-case";
@@ -54,6 +61,7 @@ export interface RepositoriesServerFacade {
     name: string,
   ) => Promise<RepositoryLookupResult>;
   getRepositoryForAdministration: GetRepositoryForAdministrationUseCase["getRepositoryForAdministration"];
+  getRepositoryForViewing: GetRepositoryForViewingUseCase["getRepositoryForViewing"];
   listActivePublicRepositoriesForOrganizationOwner: (
     owner: { organizationId: string; login: string },
   ) => Promise<readonly PublicRepositorySummary[]>;
@@ -61,6 +69,8 @@ export interface RepositoriesServerFacade {
   listActiveRepositoriesForOwner: (
     ownerId: string,
   ) => Promise<readonly RepositoryCandidateReference[]>;
+  listDeletedRepositoriesForRestoration: ListDeletedRepositoriesForRestorationUseCase["listDeletedRepositoriesForRestoration"];
+  listVisibleRepositoriesForOwner: ListVisibleRepositoriesForOwnerUseCase["listVisibleRepositoriesForOwner"];
   renameRepository: RenameRepositoryUseCase["renameRepository"];
   restoreDeletedRepository: RestoreDeletedRepositoryUseCase["restoreDeletedRepository"];
   unarchiveRepository: UnarchiveRepositoryUseCase["unarchiveRepository"];
@@ -110,14 +120,31 @@ function composeRepositoriesServerFacade(): RepositoriesServerFacade {
     new ListActivePublicRepositoriesForPersonalOwnerHandler(repository);
   const listActiveForOwner =
     new ListActiveRepositoriesForOwnerHandler(repository);
+  const ownerAuthorization = new RepositoryOwnerAuthorizationAdapter();
+  const viewAuthorization = new RepositoryViewAuthorizationAdapter();
+  const clock = new SystemRepositoryClockAdapter();
+  const getForViewing = new GetRepositoryForViewingHandler(
+    repository,
+    viewAuthorization,
+  );
+  const listVisibleForOwner = new ListVisibleRepositoriesForOwnerHandler(
+    repository,
+    viewAuthorization,
+  );
+  const listDeletedForRestoration =
+    new ListDeletedRepositoriesForRestorationHandler(
+      repository,
+      ownerAuthorization,
+      clock,
+    );
   const managementService = new RepositoryManagementService(
     repository,
-    new RepositoryOwnerAuthorizationAdapter(),
+    ownerAuthorization,
     new RepositoryAdministrationAuthorizationAdapter(),
     database === null
       ? new InMemoryRepositoryIdGeneratorAdapter()
       : new NodeRepositoryIdGeneratorAdapter(),
-    new SystemRepositoryClockAdapter(),
+    clock,
     eventRecorder,
   );
   const archive = new ArchiveRepositoryHandler(managementService);
@@ -153,6 +180,8 @@ function composeRepositoriesServerFacade(): RepositoriesServerFacade {
     },
     getRepositoryForAdministration: (query) =>
       getForAdministration.getRepositoryForAdministration(query),
+    getRepositoryForViewing: (query) =>
+      getForViewing.getRepositoryForViewing(query),
     listActivePublicRepositoriesForOrganizationOwner: async (owner) => {
       const repositories =
         await listOrganizationPublic.listActivePublicRepositoriesForOrganizationOwner(
@@ -178,6 +207,10 @@ function composeRepositoriesServerFacade(): RepositoriesServerFacade {
         await listActiveForOwner.listActiveRepositoriesForOwner({ ownerId });
       return repositories.map(mapCandidate);
     },
+    listDeletedRepositoriesForRestoration: (query) =>
+      listDeletedForRestoration.listDeletedRepositoriesForRestoration(query),
+    listVisibleRepositoriesForOwner: (query) =>
+      listVisibleForOwner.listVisibleRepositoriesForOwner(query),
     renameRepository: (command) =>
       rename.renameRepository(command),
     restoreDeletedRepository: (command) =>

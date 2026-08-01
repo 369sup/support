@@ -39,19 +39,6 @@ languages: []
 # For a list of possible encodings, see https://docs.python.org/3.11/library/codecs.html#standard-encodings
 encoding: "utf-8"
 
-# optional shell command to run before the language backend (LSP or JetBrains) is initialised.
-# the command runs in the project root directory and is only executed if the project is trusted
-# (see trusted_project_path_patterns in the global configuration).
-# serena waits for the command to exit: a non-zero exit code is logged as an error but does not
-# abort activation. a per-project timeout (activation_command_timeout, default 180s) is the safety
-# backstop for non-terminating commands; on expiry the process is killed and activation continues.
-# example: activation_command: "npx nx run-many -t build"
-activation_command: "node scripts/memory/index.mjs activate --json"
-
-# maximum time in seconds to wait for activation_command to complete before killing it (default 180s).
-# must be a positive number.
-activation_command_timeout: 15.0
-
 # line ending convention to use when writing source files.
 # Possible values: unset (use global setting), "lf", "crlf", or "native" (platform default)
 # This does not affect Serena's own files (e.g. memories and configuration files), which always use native line endings.
@@ -98,6 +85,13 @@ ls_additional_workspace_folders: []
 
 # list of additional paths to ignore in this project.
 # Same syntax as gitignore, so you can use * and **.
+# Important: quote patterns that start with `*`, otherwise YAML treats them as aliases.
+# Example:
+#   ignored_paths:
+#     - "examples/**"
+#     - ".worktrees/**"
+#     - "**/bin/**"
+#     - "**/obj/**"
 # Note: global ignored_paths from serena_config.yml are also applied additively.
 ignored_paths: []
 
@@ -136,6 +130,7 @@ default_modes:
 # The full set of modes to be activated is base_modes (from global config) + default_modes + added_modes.
 # See https://oraios.github.io/serena/02-usage/050_configuration.html#modes
 added_modes:
+- query-projects
 
 # initial prompt for the project. It will always be given to the LLM upon activating the project
 # (contrary to the memories, which are loaded on demand).
@@ -149,8 +144,7 @@ symbol_info_budget:
 
 # list of regex patterns which, when matched, mark a memory entry as read‑only.
 # Extends the list from the global configuration, merging the two lists.
-read_only_memory_patterns:
-- "^(memory_maintenance|core|shared/.*)$"
+read_only_memory_patterns: []
 
 # list of regex patterns for memories to completely ignore.
 # Matching memories will not appear in list_memories or activate_project output
@@ -158,5 +152,17 @@ read_only_memory_patterns:
 # To access ignored memory files, use the read_file tool on the raw file path.
 # Extends the list from the global configuration, merging the two lists.
 # Example: ["_archive/.*", "_episodes/.*"]
-ignored_memory_patterns:
-- "^local/(episodes|archive|_state)/.*$"
+ignored_memory_patterns: []
+
+# optional shell command to run before the language backend (LSP or JetBrains) is initialised.
+# the command runs in the project root directory and is only executed if the project is trusted
+# (see trusted_project_path_patterns in the global configuration).
+# serena waits for the command to exit: a non-zero exit code is logged as an error but does not
+# abort activation. a per-project timeout (activation_command_timeout, default 180s) is the safety
+# backstop for non-terminating commands; on expiry the process is killed and activation continues.
+# example: activation_command: "npx nx run-many -t build"
+activation_command:
+
+# maximum time in seconds to wait for activation_command to complete before killing it (default 180s).
+# must be a positive number.
+activation_command_timeout: 180.0

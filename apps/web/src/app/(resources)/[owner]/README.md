@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Delivers `/{owner}` profile, achievements, and visible repositories through `requireCurrentSession`, `getPersonalAccountByUsername`, `getUserProfile`, `getOrganizationByLogin`, `listActiveRepositoriesForOwner`, and `resolveEffectiveRepositoryPermission`.
+Delivers `/{owner}` profile, achievements, and active or archived repositories visible through `listVisibleRepositoriesForOwner`.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -23,13 +23,12 @@ The filesystem route is active. Its business behavior remains owned by the refer
 
 ## Module contracts
 
-- - **owner:** `repositories/repositories` — use cases: `list-active-repositories-for-owner`; functions: `listActiveRepositoriesForOwner`
+- - **owner:** `repositories/repositories` — use cases: `list-visible-repositories-for-owner`; functions: `listVisibleRepositoriesForOwner`
 - - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
 - - **collaborator:** `identity/accounts` — use cases: `get-personal-account-by-username`; functions: `getPersonalAccountByUsername`
 - - **collaborator:** `identity/profiles` — use cases: `get-user-profile`; functions: `getUserProfile`
 - - **collaborator:** `identity/social-graph` — use cases: `toggle-user-follow`; functions: `toggleUserFollow`
 - - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`
-- - **collaborator:** `repositories/repository-access` — use cases: `resolve-effective-repository-permission`; functions: `resolveEffectiveRepositoryPermission`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

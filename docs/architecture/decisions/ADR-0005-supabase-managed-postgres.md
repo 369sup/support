@@ -1,6 +1,6 @@
 # ADR-0005: Use Supabase only as managed PostgreSQL
 
-- **Status:** Accepted
+- **Status:** Superseded
 - **Decision date:** 2026-07-28
 - **Supersedes:** none
 - **Superseded by:** ADR-0006

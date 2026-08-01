@@ -25,6 +25,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 
 - - **owner:** `projections/dashboard` — use cases: `get-dashboard-repository-view`; functions: `getDashboardRepositoryView`
 - - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
+- - **collaborator:** `repositories/repositories` — use cases: no route-level use-case reference; functions: no runtime function reference
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

@@ -14,7 +14,7 @@ import type {
 import { RepositoryManagementService } from "../application/services/repository-management.service";
 
 class OwnerGatewayFake implements RepositoryOwnerAuthorizationGatewayPort {
-  private readonly owner: AuthorizedRepositoryOwner | null;
+  private owner: AuthorizedRepositoryOwner | null;
 
   constructor(owner: AuthorizedRepositoryOwner | null = {
       kind: "personal",
@@ -26,6 +26,10 @@ class OwnerGatewayFake implements RepositoryOwnerAuthorizationGatewayPort {
 
   authorizeOwner() {
     return Promise.resolve(this.owner);
+  }
+
+  setOwner(owner: AuthorizedRepositoryOwner | null) {
+    this.owner = owner;
   }
 }
 
@@ -396,6 +400,35 @@ describe("RepositoryManagementService", () => {
         confirmation: "owner/support",
       }),
     ).resolves.toEqual({ status: "restore-window-expired" });
+  });
+
+  it("allows restore only for the personal or organization owner", async () => {
+    const ownerGateway = new OwnerGatewayFake();
+    const { service } = createService({ ownerGateway });
+    await service.createEmptyRepository({
+      actorAccountId: "account_owner",
+      ownerId: "account_owner",
+      name: "support",
+      description: "",
+      visibility: "private",
+    });
+    await service.deleteRepository({
+      actorAccountId: "account_owner",
+      ownerId: "account_owner",
+      name: "support",
+      confirmation: "owner/support",
+    });
+
+    ownerGateway.setOwner(null);
+
+    await expect(
+      service.restoreDeletedRepository({
+        actorAccountId: "account_repository_admin",
+        ownerId: "account_owner",
+        name: "support",
+        confirmation: "owner/support",
+      }),
+    ).resolves.toEqual({ status: "permission-denied" });
   });
 
   it("rejects unauthorized owners and destructive confirmation mismatches", async () => {

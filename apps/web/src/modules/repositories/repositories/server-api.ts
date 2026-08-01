@@ -14,16 +14,28 @@ export type {
   RepositoryOwnerReference,
 } from "./contracts/repository-reference";
 export type { PublicRepositorySummary } from "./contracts/repository-summary";
+export type {
+  DeletedRepositoryForRestoration,
+  RepositoryListItem,
+  RepositoryViewPermission,
+  RepositoryViewReference,
+} from "./contracts/repository-view";
 export const getRepositoryByOwnerAndName =
   repositoriesServerFacade.getRepositoryByOwnerAndName;
 export const getRepositoryForAdministration =
   repositoriesServerFacade.getRepositoryForAdministration;
+export const getRepositoryForViewing =
+  repositoriesServerFacade.getRepositoryForViewing;
 export const listActivePublicRepositoriesForOrganizationOwner =
   repositoriesServerFacade.listActivePublicRepositoriesForOrganizationOwner;
 export const listActivePublicRepositoriesForPersonalOwner =
   repositoriesServerFacade.listActivePublicRepositoriesForPersonalOwner;
 export const listActiveRepositoriesForOwner =
   repositoriesServerFacade.listActiveRepositoriesForOwner;
+export const listDeletedRepositoriesForRestoration =
+  repositoriesServerFacade.listDeletedRepositoriesForRestoration;
+export const listVisibleRepositoriesForOwner =
+  repositoriesServerFacade.listVisibleRepositoriesForOwner;
 export const renameRepository =
   repositoriesServerFacade.renameRepository;
 export const restoreDeletedRepository =

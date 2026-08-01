@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Delivers `/orgs/{organization}/repositories` through `requireCurrentSession`, `checkOrganizationContextEligibility`, `getOrganizationByLogin`, `listActivePublicRepositoriesForOrganizationOwner`.
+Lists active and archived repositories visible to the signed-in actor through `listVisibleRepositoriesForOwner` and the shared repository list.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -23,7 +23,7 @@ The filesystem route is active. Its business behavior remains owned by the refer
 
 ## Module contracts
 
-- - **owner:** `repositories/repositories` — use cases: `list-active-public-repositories-for-organization-owner`; functions: `listActivePublicRepositoriesForOrganizationOwner`
+- - **owner:** `repositories/repositories` — use cases: `list-visible-repositories-for-owner`; functions: `listVisibleRepositoriesForOwner`
 - - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
 - - **collaborator:** `organizations/organization-memberships` — use cases: `check-organization-context-eligibility`; functions: `checkOrganizationContextEligibility`
 - - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`

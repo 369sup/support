@@ -1,17 +1,14 @@
-import { getAccountReferenceById } from "@/modules/identity/accounts/server-api";
 import {
   checkOrganizationContextEligibility,
   listActiveOrganizationMembershipsForAccount,
 } from "@/modules/organizations/organization-memberships/server-api";
 import { getOrganizationReferenceById } from "@/modules/organizations/organizations/server-api";
-import { resolveEffectiveRepositoryPermission } from "@/modules/repositories/repository-access/server-api";
-import { listActiveRepositoriesForOwner } from "@/modules/repositories/repositories/server-api";
+import { listVisibleRepositoriesForOwner } from "@/modules/repositories/repositories/server-api";
 
 import type {
   DashboardOrganizationMembershipSnapshot,
   DashboardOrganizationSnapshot,
   DashboardRepositoryCandidateSnapshot,
-  DashboardRepositoryPermissionSnapshot,
   DashboardSourceGatewayPort,
 } from "../../../application/ports/outbound/dashboard-source.gateway.port";
 
@@ -40,35 +37,25 @@ export class DashboardSourceAdapter implements DashboardSourceGatewayPort {
     return listActiveOrganizationMembershipsForAccount(accountId);
   }
 
-  async listActiveRepositories(
+  async listVisibleRepositories(
     ownerId: string,
+    actorAccountId: string,
   ): Promise<readonly DashboardRepositoryCandidateSnapshot[]> {
-    const repositories = await listActiveRepositoriesForOwner(ownerId);
+    const repositories = await listVisibleRepositoriesForOwner({
+      actorAccountId,
+      ownerId,
+    });
     return repositories.map((repository) => ({
       repositoryId: repository.repositoryId,
       ownerLogin: repository.owner.login,
       owner: repository.owner,
       name: repository.name,
       description: repository.description,
+      homepage: repository.homepage,
       visibility: repository.visibility,
+      lifecycleState: repository.lifecycleState,
+      permission: repository.permission,
       updatedAt: repository.updatedAt,
     }));
-  }
-
-  async resolveRepositoryPermission(
-    repository: DashboardRepositoryCandidateSnapshot,
-    accountId: string,
-  ): Promise<DashboardRepositoryPermissionSnapshot> {
-    const accountResult = await getAccountReferenceById(accountId);
-    if (accountResult.status !== "found") {
-      return { isAllowed: false, permission: null };
-    }
-    return resolveEffectiveRepositoryPermission({
-      repository: {
-        ...repository,
-        lifecycleState: "active",
-      },
-      actor: accountResult.account,
-    });
   }
 }

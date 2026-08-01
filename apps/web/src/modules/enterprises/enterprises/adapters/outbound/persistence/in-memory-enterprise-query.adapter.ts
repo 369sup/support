@@ -21,6 +21,7 @@ const developmentLinks = new Map<string, readonly string[]>([
 ]);
 
 type EnterpriseStore = Readonly<{
+  byId: Map<string, EnterpriseQuerySnapshot>;
   bySlug: Map<string, EnterpriseQuerySnapshot>;
   organizationIdsByEnterpriseId: Map<string, readonly string[]>;
 }>;
@@ -31,6 +32,12 @@ declare global {
 
 function createStore(): EnterpriseStore {
   return {
+    byId: new Map(
+      developmentEnterprises.map((enterprise) => [
+        enterprise.enterpriseId,
+        enterprise,
+      ]),
+    ),
     bySlug: new Map(
       developmentEnterprises.map((enterprise) => [
         enterprise.slug,
@@ -53,6 +60,10 @@ export class InMemoryEnterpriseQueryAdapter
 
   constructor(store = getProcessStore()) {
     this.store = store;
+  }
+
+  findById(enterpriseId: string): Promise<EnterpriseQuerySnapshot | null> {
+    return Promise.resolve(this.store.byId.get(enterpriseId) ?? null);
   }
 
   findBySlug(slug: string): Promise<EnterpriseQuerySnapshot | null> {

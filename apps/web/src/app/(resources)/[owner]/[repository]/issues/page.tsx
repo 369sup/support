@@ -1,21 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { resolveRepositoryViewForActor } from "@/app/(resources)/_repository-view";
 import { listRepositoryIssues } from "@/modules/collaboration/issues/server-api";
-import { getPersonalAccountByUsername } from "@/modules/identity/accounts/server-api";
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
-import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
-import { resolveEffectiveRepositoryPermission } from "@/modules/repositories/repository-access/server-api";
-import { getRepositoryByOwnerAndName } from "@/modules/repositories/repositories/server-api";
-
-async function resolveOwnerId(login: string): Promise<string | null> {
-  const organization = await getOrganizationByLogin(login);
-  if (organization.status === "found") {
-    return organization.organization.organizationId;
-  }
-  const account = await getPersonalAccountByUsername(login);
-  return account.isSuccessful ? account.account.accountId : null;
-}
+import { getRepositoryForViewing } from "@/modules/repositories/repositories/server-api";
 
 export default async function IssuesPage({
   params,
@@ -23,31 +12,19 @@ export default async function IssuesPage({
   params: Promise<{ owner: string; repository: string }>;
 }>) {
   const routeParams = await params;
-  const [session, ownerId] = await Promise.all([
-    requireCurrentSession(),
-    resolveOwnerId(routeParams.owner),
-  ]);
-  if (ownerId === null) {
-    notFound();
-  }
-
-  const repositoryResult = await getRepositoryByOwnerAndName(
-    ownerId,
+  const session = await requireCurrentSession();
+  const repository = await resolveRepositoryViewForActor(
+    session.account.accountId,
+    routeParams.owner,
     routeParams.repository,
+    getRepositoryForViewing,
   );
-  if (repositoryResult.status !== "found") {
-    notFound();
-  }
-  const permission = await resolveEffectiveRepositoryPermission({
-    actor: session.account,
-    repository: repositoryResult.repository,
-  });
-  if (!permission.isAllowed) {
+  if (repository === null) {
     notFound();
   }
 
   const result = await listRepositoryIssues({
-    repositoryId: repositoryResult.repository.repositoryId,
+    repositoryId: repository.repositoryId,
   });
   const issues = result.status === "found" ? result.issues : [];
   return (
@@ -62,12 +39,18 @@ export default async function IssuesPage({
               Issues
             </h1>
           </div>
-          <Link
-            className="rounded-lg bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-300"
-            href={`/${routeParams.owner}/${routeParams.repository}/issues/new`}
-          >
-            New issue
-          </Link>
+          {repository.lifecycleState === "active" ? (
+            <Link
+              className="rounded-lg bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-300"
+              href={`/${routeParams.owner}/${routeParams.repository}/issues/new`}
+            >
+              New issue
+            </Link>
+          ) : (
+            <span className="text-sm text-amber-200">
+              Archived repositories are read-only.
+            </span>
+          )}
         </div>
 
         <div className="mt-8 overflow-hidden rounded-xl border border-white/15 bg-[#0a1624]">

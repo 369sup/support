@@ -998,6 +998,7 @@
       "activationScope": [
         "create-enterprise",
         "get-enterprise-by-slug",
+        "get-enterprise-reference-by-id",
         "list-enterprise-organizations",
         "attach-enterprise-organization"
       ],
@@ -3051,7 +3052,7 @@
             "repository identity",
             "ownership"
           ],
-          "verifiedOn": "2026-07-22"
+          "verifiedOn": "2026-07-30"
         },
         {
           "id": "repositories-repositories-source-02",
@@ -3062,7 +3063,7 @@
             "description",
             "visibility"
           ],
-          "verifiedOn": "2026-07-22"
+          "verifiedOn": "2026-07-30"
         },
         {
           "id": "repositories-repositories-source-03",
@@ -3092,7 +3093,7 @@
             "archived repository read-only behavior",
             "archived repository starring"
           ],
-          "verifiedOn": "2026-07-22"
+          "verifiedOn": "2026-07-30"
         },
         {
           "id": "repositories-repositories-source-06",
@@ -3101,7 +3102,7 @@
             "repository deletion",
             "permanent team permission removal"
           ],
-          "verifiedOn": "2026-07-22"
+          "verifiedOn": "2026-07-30"
         },
         {
           "id": "repositories-repositories-source-07",
@@ -3111,7 +3112,7 @@
             "restore window",
             "team permissions excluded from restoration"
           ],
-          "verifiedOn": "2026-07-22"
+          "verifiedOn": "2026-07-30"
         },
         {
           "id": "repositories-repositories-source-08",
@@ -3120,7 +3121,7 @@
             "repository rename",
             "redirects"
           ],
-          "verifiedOn": "2026-07-22"
+          "verifiedOn": "2026-07-30"
         },
         {
           "id": "repositories-repositories-source-09",
@@ -3138,9 +3139,11 @@
           "supports": [
             "repository dashboard listing",
             "owner repository views",
-            "visibility filtering"
+            "repository search",
+            "visibility filtering",
+            "repository sorting"
           ],
-          "verifiedOn": "2026-07-23"
+          "verifiedOn": "2026-07-30"
         },
         {
           "id": "repositories-repositories-source-11",
@@ -3272,10 +3275,13 @@
         "create-empty-repository",
         "delete-repository",
         "get-repository-for-administration",
+        "get-repository-for-viewing",
         "get-repository-by-owner-and-name",
+        "list-deleted-repositories-for-restoration",
         "list-active-public-repositories-for-organization-owner",
         "list-active-public-repositories-for-personal-owner",
         "list-active-repositories-for-owner",
+        "list-visible-repositories-for-owner",
         "rename-repository",
         "restore-deleted-repository",
         "unarchive-repository",
@@ -3310,6 +3316,18 @@
             "repositories-repositories-source-01",
             "repositories-repositories-source-02",
             "repositories-repositories-source-09"
+          ]
+        },
+        {
+          "id": "repository-discovery-and-viewing",
+          "statement": "Authenticated repository discovery returns only active or archived repositories visible to the actor, supports search and filters, and never exposes deleted repositories.",
+          "ownership": [
+            "Repository"
+          ],
+          "events": [],
+          "sourceIds": [
+            "repositories-repositories-source-01",
+            "repositories-repositories-source-10"
           ]
         },
         {

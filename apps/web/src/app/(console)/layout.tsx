@@ -1,7 +1,9 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
+  Building2,
   FolderKanban,
+  Landmark,
   LayoutDashboard,
   ShieldCheck,
   UsersRound,
@@ -31,6 +33,16 @@ const consoleNavigation = [
     href: buildLinkHref("page-repositories", {}),
     label: "Repositories",
     icon: FolderKanban,
+  },
+  {
+    href: buildLinkHref("page-organizations", {}),
+    label: "Organizations",
+    icon: Building2,
+  },
+  {
+    href: buildLinkHref("page-enterprises", {}),
+    label: "Enterprises",
+    icon: Landmark,
   },
 ] satisfies readonly ConsoleNavigationItem[];
 

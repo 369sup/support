@@ -7,7 +7,7 @@ the delta for its subtree; anything it does not change remains inherited.
 
 1. Read this file.
 2. Read only the `AGENTS.md` files on the path to the target.
-3. Read a nearby `README.md` only when the task needs its behavior, design, or
+3. Read a `README.md` only when the task needs its behavior, design, or
    operating details.
 
 Do not load sibling guidance, generated output, dependencies, caches, or vendor
@@ -35,6 +35,16 @@ not a mandatory startup file.
 
 - Support models GitHub-like non-code product capabilities. Git content,
   commits, diffs, pull requests, code review, and Actions remain excluded.
+- For work that adds, changes, or reviews GitHub-like product behavior, use the
+  [GitHub non-code product-semantics atlas](docs/product-semantics/github-non-code/README.md)
+  first. Follow the affected requirement through its GitHub Docs evidence,
+  domain relationships, lifecycle, authorization, and interaction sequence;
+  load architecture or navigation only for placement or presentation.
+- Treat that atlas as product research, not as a physical schema, API, route,
+  test, module-activation, or canonical architecture contract. Preserve
+  `Confirmed`, `Derived`, and `Unresolved` distinctions; when the atlas and a
+  repository contract address different concerns, map them explicitly instead
+  of silently replacing either one.
 - Applications may depend on packages; packages never depend on applications
   or own product authorization, tenant, billing, notification, or data rules.
 - Routes import bounded-context public entrypoints, never module internals.
@@ -46,13 +56,19 @@ not a mandatory startup file.
 
 ## Tool workflow
 
-- Use Serena JetBrains semantic tools for source symbols and references.
-- Use direct file tools for Markdown, JSON, YAML, TOML, and other non-symbolic
-  content.
-- When `SessionStart` announces automatic Serena memory, read
-  [`.serena/AGENTS.md`](.serena/AGENTS.md) before multi-step or material work.
-  Maintain only `mem:local/current-task` at phase boundaries or before
-  compaction; skip task memory for trivial work.
+- For operations supported by the Serena JetBrains Plugin, use its
+  JetBrains tool before a generic language-server, search, file, or shell
+  equivalent. This includes symbols, declarations, implementations, references,
+  hierarchies, inspections, debugging, rename, move, inline, and safe delete.
+- Use direct file tools for Markdown, JSON, YAML, TOML, exact literal lookup,
+  and other non-symbolic content. Use shell tools for builds, tests, Git, and
+  system diagnostics. Fall back from JetBrains only after confirming the exact
+  project root, plugin connection, and indexing state; narrow the request
+  before one retry and report any semantic-verification gap.
+- Activate the repository with Serena and read its initial instructions before
+  multi-step or material work. Use official Serena memory tools only for
+  concise, durable, verified project facts; task state stays in the current
+  task unless a checkpoint is explicitly required.
 - Use Repomix only for narrow repository snapshots, architecture mapping, or
   cross-file patterns. Start with `includePatterns`, inspect metrics, then grep
   or read exact ranges. Keep security scanning enabled, distrust remote

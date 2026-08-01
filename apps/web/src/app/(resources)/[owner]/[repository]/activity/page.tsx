@@ -1,20 +1,9 @@
 import { notFound } from "next/navigation";
 
-import { getPersonalAccountByUsername } from "@/modules/identity/accounts/server-api";
+import { resolveRepositoryViewForActor } from "@/app/(resources)/_repository-view";
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
-import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
 import { listRepositoryActivity } from "@/modules/projections/activity-feed/server-api";
-import { resolveEffectiveRepositoryPermission } from "@/modules/repositories/repository-access/server-api";
-import { getRepositoryByOwnerAndName } from "@/modules/repositories/repositories/server-api";
-
-async function resolveOwnerId(login: string): Promise<string | null> {
-  const organization = await getOrganizationByLogin(login);
-  if (organization.status === "found") {
-    return organization.organization.organizationId;
-  }
-  const account = await getPersonalAccountByUsername(login);
-  return account.isSuccessful ? account.account.accountId : null;
-}
+import { getRepositoryForViewing } from "@/modules/repositories/repositories/server-api";
 
 export default async function RepositoryActivityPage({
   params,
@@ -22,30 +11,17 @@ export default async function RepositoryActivityPage({
   params: Promise<{ owner: string; repository: string }>;
 }>) {
   const routeParams = await params;
-  const [session, ownerId] = await Promise.all([
-    requireCurrentSession(),
-    resolveOwnerId(routeParams.owner),
-  ]);
-  if (ownerId === null) {
-    notFound();
-  }
-  const result = await getRepositoryByOwnerAndName(
-    ownerId,
+  const session = await requireCurrentSession();
+  const repository = await resolveRepositoryViewForActor(
+    session.account.accountId,
+    routeParams.owner,
     routeParams.repository,
+    getRepositoryForViewing,
   );
-  if (result.status !== "found") {
+  if (repository === null) {
     notFound();
   }
-  const permission = await resolveEffectiveRepositoryPermission({
-    actor: session.account,
-    repository: result.repository,
-  });
-  if (!permission.isAllowed) {
-    notFound();
-  }
-  const activityResult = await listRepositoryActivity(
-    result.repository.repositoryId,
-  );
+  const activityResult = await listRepositoryActivity(repository.repositoryId);
   const items = activityResult.status === "found" ? activityResult.items : [];
 
   return (

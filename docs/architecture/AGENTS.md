@@ -62,7 +62,6 @@ Run:
 
 ```text
 pnpm architecture:docs
-pnpm serena:memories
 pnpm architecture
 pnpm test:architecture
 ```

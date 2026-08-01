@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 
 import { readFormString } from "@/app/_route-contracts/read-form-string";
+import { resolveRepositoryViewForActor } from "@/app/(resources)/_repository-view";
 import {
   addComment,
   addReaction,
@@ -13,55 +14,32 @@ import {
   reportContent,
   type ContentReportReason,
 } from "@/modules/collaboration/moderation/server-api";
-import { getPersonalAccountByUsername } from "@/modules/identity/accounts/server-api";
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
-import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
-import { resolveEffectiveRepositoryPermission } from "@/modules/repositories/repository-access/server-api";
-import { getRepositoryByOwnerAndName } from "@/modules/repositories/repositories/server-api";
-
-async function resolveOwnerId(login: string): Promise<string | null> {
-  const organization = await getOrganizationByLogin(login);
-  if (organization.status === "found") {
-    return organization.organization.organizationId;
-  }
-  const account = await getPersonalAccountByUsername(login);
-  return account.isSuccessful ? account.account.accountId : null;
-}
+import { getRepositoryForViewing } from "@/modules/repositories/repositories/server-api";
 
 async function resolveIssueAccess(
   owner: string,
   repositoryName: string,
   number: number,
 ) {
-  const [session, ownerId] = await Promise.all([
-    requireCurrentSession(),
-    resolveOwnerId(owner),
-  ]);
-  if (ownerId === null) {
-    notFound();
-  }
-  const repositoryResult = await getRepositoryByOwnerAndName(
-    ownerId,
+  const session = await requireCurrentSession();
+  const repository = await resolveRepositoryViewForActor(
+    session.account.accountId,
+    owner,
     repositoryName,
+    getRepositoryForViewing,
   );
-  if (repositoryResult.status !== "found") {
-    notFound();
-  }
-  const permission = await resolveEffectiveRepositoryPermission({
-    actor: session.account,
-    repository: repositoryResult.repository,
-  });
-  if (!permission.isAllowed) {
+  if (repository === null) {
     notFound();
   }
   const issueResult = await getRepositoryIssue({
-    repositoryId: repositoryResult.repository.repositoryId,
+    repositoryId: repository.repositoryId,
     number,
   });
   if (issueResult.status !== "found") {
     notFound();
   }
-  return { session, issue: issueResult.issue };
+  return { session, repository, issue: issueResult.issue };
 }
 
 function readIssueActionTarget(formData: FormData) {
@@ -76,11 +54,16 @@ async function addCommentAction(formData: FormData): Promise<never> {
   "use server";
 
   const target = readIssueActionTarget(formData);
-  const { session, issue } = await resolveIssueAccess(
+  const { session, repository, issue } = await resolveIssueAccess(
     target.owner,
     target.repository,
     target.number,
   );
+  if (repository.lifecycleState !== "active") {
+    redirect(
+      `/${target.owner}/${target.repository}/issues/${target.number}?repository=archived-read-only`,
+    );
+  }
   const result = await addComment({
     subjectKind: "issue",
     subjectId: issue.issueId,
@@ -105,11 +88,16 @@ async function addReactionAction(formData: FormData): Promise<never> {
   "use server";
 
   const target = readIssueActionTarget(formData);
-  const { session, issue } = await resolveIssueAccess(
+  const { session, repository, issue } = await resolveIssueAccess(
     target.owner,
     target.repository,
     target.number,
   );
+  if (repository.lifecycleState !== "active") {
+    redirect(
+      `/${target.owner}/${target.repository}/issues/${target.number}?repository=archived-read-only`,
+    );
+  }
   const requestedReaction = readFormString(formData, "reaction");
   let reaction: ConversationReaction = "thumbs-up";
   if (
@@ -185,11 +173,12 @@ export default async function IssuePage({
 }>) {
   const [routeParams, query] = await Promise.all([params, searchParams]);
   const number = Number(routeParams.number);
-  const { issue } = await resolveIssueAccess(
+  const { issue, repository } = await resolveIssueAccess(
     routeParams.owner,
     routeParams.repository,
     number,
   );
+  const isReadOnly = repository.lifecycleState === "archived";
   const commentsResult = await listConversationComments({
     subjectKind: "issue",
     subjectId: issue.issueId,
@@ -268,6 +257,7 @@ export default async function IssuePage({
                   />
                   <button
                     className="rounded-md border border-white/15 px-2.5 py-1 text-xs text-slate-300 hover:border-emerald-400/50"
+                    disabled={isReadOnly}
                     name="reaction"
                     type="submit"
                     value="thumbs-up"
@@ -290,16 +280,24 @@ export default async function IssuePage({
             </label>
             <textarea
               className="min-h-32 resize-y rounded-lg border border-white/15 bg-[#08111d] px-3 py-2.5 outline-none focus:border-emerald-400"
+              disabled={isReadOnly}
               id="issue-comment"
               name="body"
               required
             />
             <button
               className="w-fit rounded-lg bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-300"
+              disabled={isReadOnly}
               type="submit"
             >
               Comment
             </button>
+            {isReadOnly ? (
+              <p className="text-sm text-amber-200">
+                Archived repositories are read-only. Existing issues remain
+                available for reference.
+              </p>
+            ) : null}
           </form>
         </section>
 

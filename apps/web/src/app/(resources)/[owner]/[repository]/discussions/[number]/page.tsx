@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 
 import { readFormString } from "@/app/_route-contracts/read-form-string";
+import { resolveRepositoryViewForActor } from "@/app/(resources)/_repository-view";
 import {
   addComment,
   listConversationComments,
@@ -11,55 +12,32 @@ import {
   reportContent,
   type ContentReportReason,
 } from "@/modules/collaboration/moderation/server-api";
-import { getPersonalAccountByUsername } from "@/modules/identity/accounts/server-api";
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
-import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
-import { resolveEffectiveRepositoryPermission } from "@/modules/repositories/repository-access/server-api";
-import { getRepositoryByOwnerAndName } from "@/modules/repositories/repositories/server-api";
-
-async function resolveOwnerId(login: string): Promise<string | null> {
-  const organization = await getOrganizationByLogin(login);
-  if (organization.status === "found") {
-    return organization.organization.organizationId;
-  }
-  const account = await getPersonalAccountByUsername(login);
-  return account.isSuccessful ? account.account.accountId : null;
-}
+import { getRepositoryForViewing } from "@/modules/repositories/repositories/server-api";
 
 async function resolveDiscussionAccess(
   owner: string,
   repositoryName: string,
   number: number,
 ) {
-  const [session, ownerId] = await Promise.all([
-    requireCurrentSession(),
-    resolveOwnerId(owner),
-  ]);
-  if (ownerId === null) {
-    notFound();
-  }
-  const repositoryResult = await getRepositoryByOwnerAndName(
-    ownerId,
+  const session = await requireCurrentSession();
+  const repository = await resolveRepositoryViewForActor(
+    session.account.accountId,
+    owner,
     repositoryName,
+    getRepositoryForViewing,
   );
-  if (repositoryResult.status !== "found") {
-    notFound();
-  }
-  const permission = await resolveEffectiveRepositoryPermission({
-    actor: session.account,
-    repository: repositoryResult.repository,
-  });
-  if (!permission.isAllowed) {
+  if (repository === null) {
     notFound();
   }
   const discussionResult = await getRepositoryDiscussion({
     number,
-    repositoryId: repositoryResult.repository.repositoryId,
+    repositoryId: repository.repositoryId,
   });
   if (discussionResult.status !== "found") {
     notFound();
   }
-  return { discussion: discussionResult.discussion, session };
+  return { discussion: discussionResult.discussion, repository, session };
 }
 
 function readTarget(formData: FormData) {
@@ -74,11 +52,16 @@ async function addCommentAction(formData: FormData): Promise<never> {
   "use server";
 
   const target = readTarget(formData);
-  const { discussion, session } = await resolveDiscussionAccess(
+  const { discussion, repository, session } = await resolveDiscussionAccess(
     target.owner,
     target.repository,
     target.number,
   );
+  if (repository.lifecycleState !== "active") {
+    redirect(
+      `/${target.owner}/${target.repository}/discussions/${target.number}?repository=archived-read-only`,
+    );
+  }
   const result = await addComment({
     actorAccountId: session.account.accountId,
     actorUsername: session.account.username,
@@ -141,11 +124,12 @@ export default async function DiscussionPage({
 }>) {
   const routeParams = await params;
   const number = Number(routeParams.number);
-  const { discussion } = await resolveDiscussionAccess(
+  const { discussion, repository } = await resolveDiscussionAccess(
     routeParams.owner,
     routeParams.repository,
     number,
   );
+  const isReadOnly = repository.lifecycleState === "archived";
   const commentsResult = await listConversationComments({
     subjectId: discussion.discussionId,
     subjectKind: "discussion",
@@ -225,16 +209,24 @@ export default async function DiscussionPage({
               Add a comment
               <textarea
                 className="min-h-32 rounded-lg border border-white/15 bg-[#08111d] px-3 py-2.5"
+                disabled={isReadOnly}
                 name="body"
                 required
               />
             </label>
             <button
               className="w-fit rounded-lg bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-slate-950"
+              disabled={isReadOnly}
               type="submit"
             >
               Comment
             </button>
+            {isReadOnly ? (
+              <p className="text-sm text-amber-200">
+                Archived repositories are read-only. Existing discussions
+                remain available for reference.
+              </p>
+            ) : null}
           </form>
         </section>
       </section>

@@ -31,29 +31,11 @@ export class GetDashboardRepositoryViewHandler
       restored.context.kind === "personal"
         ? restored.context.accountId
         : restored.context.organizationId;
-    const candidates =
-      await this.sourceGateway.listActiveRepositories(ownerId);
-    const repositories: GetDashboardRepositoryViewResult["repositories"][number][] =
-      [];
-
-    for (const candidate of candidates) {
-      const decision =
-        await this.sourceGateway.resolveRepositoryPermission(
-          candidate,
-          query.actor.account.accountId,
-        );
-      if (decision.isAllowed && decision.permission !== null) {
-        repositories.push({
-          repositoryId: candidate.repositoryId,
-          ownerLogin: candidate.ownerLogin,
-          name: candidate.name,
-          description: candidate.description,
-          visibility: candidate.visibility,
-          permission: decision.permission,
-          updatedAt: candidate.updatedAt,
-        });
-      }
-    }
+    const repositories =
+      await this.sourceGateway.listVisibleRepositories(
+        ownerId,
+        query.actor.account.accountId,
+      );
     return { context: restored.context, repositories };
   }
 }

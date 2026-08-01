@@ -46,7 +46,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# local Serena working memory; reviewed shared memories remain tracked
+# local Serena working memory remains untracked
 .serena/memories/local/
 
 # package-manager cache created by sandboxed validation

@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { type LucideIcon, CheckCircle2, KeyRound, ShieldCheck, UserRound } from "lucide-react";
+import {
+  type LucideIcon,
+  ArchiveRestore,
+  CheckCircle2,
+  KeyRound,
+  ShieldCheck,
+  UserRound,
+} from "lucide-react";
 
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
 import { buildLinkHref } from "../../_route-contracts/route-contract";
@@ -25,6 +32,13 @@ const settingsCards = [
       "Review browser sessions, switch active accounts, and sign out from all sessions.",
     href: buildLinkHref("page-settings-sessions", {}),
     icon: KeyRound,
+  },
+  {
+    title: "Deleted repositories",
+    description:
+      "Restore eligible personal repositories within their recovery window.",
+    href: buildLinkHref("page-settings-repositories", {}),
+    icon: ArchiveRestore,
   },
   {
     title: "Applications",

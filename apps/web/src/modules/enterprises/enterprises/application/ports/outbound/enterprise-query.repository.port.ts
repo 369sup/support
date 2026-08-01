@@ -7,6 +7,7 @@ export type EnterpriseQuerySnapshot = Readonly<{
 }>;
 
 export interface EnterpriseQueryRepositoryPort {
+  findById(enterpriseId: string): Promise<EnterpriseQuerySnapshot | null>;
   findBySlug(slug: string): Promise<EnterpriseQuerySnapshot | null>;
   findOrganizationIds(
     enterpriseId: string,

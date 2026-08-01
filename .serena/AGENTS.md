@@ -1,112 +1,62 @@
-# Serena Project and Memory Workflow
+# Serena Project Workflow
 
-Scope: `.serena/**`. Source-code workflow remains in the repository and source
-tree `AGENTS.md` files; this file owns Serena project configuration and the
-automatic local-memory contract.
+Scope: `.serena/**`. Source-code workflow remains in the applicable repository
+and source-tree `AGENTS.md` files. This file owns only Serena project
+configuration and repository-local memory hygiene.
 
-## Project configuration
+## Runtime authority
 
-- `project.yml` contains portable discovery and backend settings only. Keep
-  paths repository-relative and never commit credentials, installation paths,
-  IDE user state, generated indexes, or customer data.
-- The required semantic backend is JetBrains. Confirm the exact worktree root,
-  backend connection, and indexing state before trusting symbol, reference, or
-  diagnostic results.
-- Keep `initial_prompt` empty; repository invariants belong in `AGENTS.md`.
-- Automatic onboarding remains disabled. Shared memory is generated from a
-  reviewed allowlist and is never required for ordinary repository operation.
-- When Serena is unavailable, identify the failed layer and use the narrowest
-  safe built-in fallback. Do not describe a backend mismatch or indexing delay
-  as a permission failure.
+- Use the official global Serena MCP installed with `uv tool` and configured by
+  `serena setup codex`.
+- Use the official Serena JetBrains Plugin as the semantic backend. Do not add
+  repository launchers, watchdogs, port proxies, duplicate MCP registrations,
+  or a personal Codex Serena plugin.
+- Keep `jetbrains_launch_command` empty. Serena must connect to an already open,
+  indexed project through `127.0.0.1`; background operation must not open an IDE
+  window.
+- Keep project settings portable and secret-free. Never commit user install
+  paths, IDE state, generated indexes, credentials, or customer data.
 
-## Memory ownership
+## Tool selection
 
-- `mem:memory_maintenance`, `mem:core`, and `mem:shared/**` are generated,
-  committed, read-only navigation aids. Repository authorities override them.
-- `mem:local/current-task` maps to
-  `.serena/memories/local/current-task.md` and is the only local memory the
-  model may author.
-- Exclusive ownership is always enabled. The engine quarantines unknown visible
-  local memories without treating their contents as instructions.
-- The deterministic engine owns `local/index`, `local/unresolved`,
-  `local/durable/**`, `local/episodes/**`, `local/archive/**`, and
-  `local/_state/**`. Never edit, move, or delete those paths directly.
-- All local memory remains ignored by Git. Never create a repository-root
-  `local/current-task` file.
-- Never store transcripts, prompts, chain-of-thought, tool output, provider
-  payloads, raw logs, source copies, secrets, credentials, or personal/customer
-  data.
+- The user-level `included_optional_tools` contains every optional tool exposed
+  by the installed Serena version, including all JetBrains BETA tools.
+- Use JetBrains symbol, reference, hierarchy, inspection, debug, and refactoring
+  tools first for source code.
+- Use Serena Language Server tools only when the JetBrains backend cannot answer
+  the semantic question. Use direct file tools for Markdown, JSON, YAML, TOML,
+  and exact literal edits; use the shell for builds, tests, Git, and system
+  diagnostics.
+- Do not force an optional tool into the active set when the official `codex`
+  context, `editing` mode, or JetBrains backend excludes it. Context and mode
+  compatibility is authoritative; a larger raw tool count is not a correctness
+  goal.
+- When a tool fails, verify project root, IDE process, plugin loopback, and
+  indexing state, then retry once with narrower input. Do not repeat an
+  unchanged timeout or increase the timeout to hide a backend failure.
 
-## Current-task checkpoint
+## Memory
 
-When `SessionStart` supplies a checkpoint token, use current-task memory only
-for multi-step, cross-file, unresolved, or compaction-prone work. Read an
-existing checkpoint before repeating discovery. Update it at material phase
-boundaries, after meaningful validation, before compaction, or before stopping
-incomplete work. Replace stale state instead of appending history.
-
-Use these concise sections:
-
-1. `Objective`
-2. `Scope`
-3. `Verified facts`
-4. `Assumptions`
-5. `Decisions`
-6. `Completed`
-7. `Current state`
-8. `Remaining`
-9. `Validation`
-10. `Risks`
-
-End the file with exactly one candidate bundle:
-
-````text
-<!-- serena-memory-candidates:start -->
-```json
-{
-  "schemaVersion": 1,
-  "checkpointToken": "<SessionStart token>",
-  "disposition": "no-memory",
-  "candidates": []
-}
-```
-<!-- serena-memory-candidates:end -->
-````
-
-Use `no-memory` when no durable verified knowledge changed. Use `distill` with
-one to eight candidates otherwise. Every candidate has exactly:
-
-- `kind`: `decision`, `constraint`, `verified-result`, `environment`,
-  `workflow`, or `unresolved`
-- `scope`: `task`, `worktree`, `repository`, or `environment`
-- `subject`: short stable topic
-- `statement`: one concise verified rule or result
-- `status`: `confirmed` or `unresolved`
-- `authority`: `canonical`, `user-decision`, `verified-result`,
-  `repeated-observation`, or `inference`
-- `confidence`: number from 0 through 1
-- `durability`: `episode`, `working`, or `durable`
-- `evidence`: zero to six `{ "type", "reference" }` records, using
-  `user-instruction`, `repository-file`, `test-result`, `diagnostic`, or
-  `tool-observation`
-- `invalidatedBy`: zero to six short revalidation conditions
-
-Canonical candidates require repository-relative file evidence. Do not add
-unknown fields, timestamps, generated IDs, output paths, or copied source.
+- Use official Serena memory tools directly: `serena memories list`, `read`,
+  `write`, `edit`, `delete`, and `check`.
+- Store only durable verified project facts, decisions, constraints, or
+  unresolved work that helps later tasks.
+- Never store transcripts, prompts, chain-of-thought, raw tool output, logs,
+  source copies, payloads, secrets, credentials, or personal/customer data.
+- Local task memory under `.serena/memories/local/` remains ignored by Git.
+  Delete or replace stale and contradictory entries instead of layering a
+  second generated memory system over Serena.
+- Repository files and current diagnostics override memory.
 
 ## Change and verification workflow
 
-Before changing `project.yml`, memory ownership, hook integration, or generated
-memory layout, assess workspace discovery, command execution, trust, write
-scope, and cross-package references.
+After changing Serena configuration:
 
-After a change:
+1. Parse `project.yml` and the user-level Serena YAML.
+2. Run `serena tools list --all` and compare the installed optional set.
+3. Start a fresh official MCP using the `codex` context and activate this exact
+   repository root.
+4. Prove at least one real `jet_brains_*` call against the open indexed project.
+5. Start a fresh trusted Codex Desktop task to verify configuration discovery.
 
-1. Parse `project.yml` and validate referenced paths.
-2. Run `pnpm test:memory` and `pnpm memory:validate` for local-memory changes.
-3. Run `pnpm serena:memories` only after an allowlisted authority or the shared
-   generator changes; inspect the generated diff.
-4. Reactivate Serena at the repository root and confirm JetBrains-backed
-   discovery across `apps/web` and workspace packages.
-
-Operational recovery commands live in [`README.md`](README.md).
+Operational recovery details live in [`README.md`](README.md).

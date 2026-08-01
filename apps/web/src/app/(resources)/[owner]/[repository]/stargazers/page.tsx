@@ -1,21 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { resolveRepositoryViewForActor } from "@/app/(resources)/_repository-view";
 import { listRepositoryStargazers } from "@/modules/engagement/stars/server-api";
-import { getPersonalAccountByUsername } from "@/modules/identity/accounts/server-api";
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
-import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
-import { resolveEffectiveRepositoryPermission } from "@/modules/repositories/repository-access/server-api";
-import { getRepositoryByOwnerAndName } from "@/modules/repositories/repositories/server-api";
-
-async function resolveOwnerId(login: string): Promise<string | null> {
-  const organization = await getOrganizationByLogin(login);
-  if (organization.status === "found") {
-    return organization.organization.organizationId;
-  }
-  const account = await getPersonalAccountByUsername(login);
-  return account.isSuccessful ? account.account.accountId : null;
-}
+import { getRepositoryForViewing } from "@/modules/repositories/repositories/server-api";
 
 export default async function StargazersPage({
   params,
@@ -23,29 +12,18 @@ export default async function StargazersPage({
   params: Promise<{ owner: string; repository: string }>;
 }>) {
   const routeParams = await params;
-  const [session, ownerId] = await Promise.all([
-    requireCurrentSession(),
-    resolveOwnerId(routeParams.owner),
-  ]);
-  if (ownerId === null) {
-    notFound();
-  }
-  const result = await getRepositoryByOwnerAndName(
-    ownerId,
+  const session = await requireCurrentSession();
+  const repository = await resolveRepositoryViewForActor(
+    session.account.accountId,
+    routeParams.owner,
     routeParams.repository,
+    getRepositoryForViewing,
   );
-  if (result.status !== "found") {
-    notFound();
-  }
-  const permission = await resolveEffectiveRepositoryPermission({
-    actor: session.account,
-    repository: result.repository,
-  });
-  if (!permission.isAllowed) {
+  if (repository === null) {
     notFound();
   }
   const stargazerResult = await listRepositoryStargazers(
-    result.repository.repositoryId,
+    repository.repositoryId,
   );
   const stargazers =
     stargazerResult.status === "found" ? stargazerResult.stargazers : [];

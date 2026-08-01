@@ -1,21 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { resolveRepositoryViewForActor } from "@/app/(resources)/_repository-view";
 import { listRepositoryDiscussions } from "@/modules/collaboration/discussions/server-api";
-import { getPersonalAccountByUsername } from "@/modules/identity/accounts/server-api";
 import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
-import { getOrganizationByLogin } from "@/modules/organizations/organizations/server-api";
-import { resolveEffectiveRepositoryPermission } from "@/modules/repositories/repository-access/server-api";
-import { getRepositoryByOwnerAndName } from "@/modules/repositories/repositories/server-api";
-
-async function resolveOwnerId(login: string): Promise<string | null> {
-  const organization = await getOrganizationByLogin(login);
-  if (organization.status === "found") {
-    return organization.organization.organizationId;
-  }
-  const account = await getPersonalAccountByUsername(login);
-  return account.isSuccessful ? account.account.accountId : null;
-}
+import { getRepositoryForViewing } from "@/modules/repositories/repositories/server-api";
 
 export default async function DiscussionsPage({
   params,
@@ -23,30 +12,17 @@ export default async function DiscussionsPage({
   params: Promise<{ owner: string; repository: string }>;
 }>) {
   const routeParams = await params;
-  const [session, ownerId] = await Promise.all([
-    requireCurrentSession(),
-    resolveOwnerId(routeParams.owner),
-  ]);
-  if (ownerId === null) {
-    notFound();
-  }
-  const repositoryResult = await getRepositoryByOwnerAndName(
-    ownerId,
+  const session = await requireCurrentSession();
+  const repository = await resolveRepositoryViewForActor(
+    session.account.accountId,
+    routeParams.owner,
     routeParams.repository,
+    getRepositoryForViewing,
   );
-  if (repositoryResult.status !== "found") {
+  if (repository === null) {
     notFound();
   }
-  const permission = await resolveEffectiveRepositoryPermission({
-    actor: session.account,
-    repository: repositoryResult.repository,
-  });
-  if (!permission.isAllowed) {
-    notFound();
-  }
-  const result = await listRepositoryDiscussions(
-    repositoryResult.repository.repositoryId,
-  );
+  const result = await listRepositoryDiscussions(repository.repositoryId);
   return (
     <main className="flex flex-1 px-4 py-10 sm:px-8">
       <section className="mx-auto w-full max-w-5xl">
@@ -59,12 +35,18 @@ export default async function DiscussionsPage({
               Discussions
             </h1>
           </div>
-          <Link
-            className="rounded-lg bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-300"
-            href={`/${routeParams.owner}/${routeParams.repository}/discussions/new`}
-          >
-            New discussion
-          </Link>
+          {repository.lifecycleState === "active" ? (
+            <Link
+              className="rounded-lg bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-300"
+              href={`/${routeParams.owner}/${routeParams.repository}/discussions/new`}
+            >
+              New discussion
+            </Link>
+          ) : (
+            <span className="text-sm text-amber-200">
+              Archived repositories are read-only.
+            </span>
+          )}
         </div>
         <ul className="mt-8 divide-y divide-white/10 overflow-hidden rounded-xl border border-white/15 bg-[#0a1624]">
           {result.discussions.map((discussion) => (

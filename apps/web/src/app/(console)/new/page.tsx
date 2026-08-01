@@ -47,7 +47,7 @@ async function createRepositoryAction(formData: FormData): Promise<never> {
   });
   if (result.status === "created") {
     redirect(
-      `/${result.repository.owner.username}/${result.repository.name}/settings?repository=created`,
+      `/${result.repository.owner.username}/${result.repository.name}?repository=created`,
     );
   }
   redirect(`/new?repository=${result.status}`);

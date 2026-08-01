@@ -144,6 +144,20 @@ function internalDependencyEntries(manifest) {
   });
 }
 
+function validateSupabaseSdkDependencies(workspace, errors) {
+  if (workspace.name === "@support/supabase") {
+    return;
+  }
+
+  for (const dependency of dependencyEntries(workspace.manifest)) {
+    if (dependency.name.startsWith("@supabase/")) {
+      errors.push(
+        `[ARCH-PKG-011] ${workspace.name} ${dependency.section} entry ${dependency.name} declares a Supabase SDK outside @support/supabase. Depend on @support/supabase and use an exported subpath instead.`,
+      );
+    }
+  }
+}
+
 function validateExclusiveDependencyFamilies(workspaces, errors) {
   for (const family of exclusiveDependencyFamilies) {
     const providers = new Map();
@@ -344,7 +358,7 @@ function validateSourceImports(
         workspace.name !== "@support/supabase"
       ) {
         errors.push(
-          `[ARCH-PKG-011] ${projectRelative(repositoryRoot, filePath)} imports ${specifier} outside @support/supabase. Use an exported @support/supabase subpath instead.`,
+          `[ARCH-PKG-011] ${projectRelative(repositoryRoot, filePath)} imports ${specifier} outside @support/supabase. Depend on @support/supabase and use an exported subpath instead.`,
         );
         continue;
       }
@@ -500,6 +514,7 @@ export function validateWorkspacePackages(repositoryRoot, errors) {
   validateExclusiveDependencyFamilies(workspaces, errors);
 
   for (const workspace of workspaces) {
+    validateSupabaseSdkDependencies(workspace, errors);
     validateExportTargets(workspace, repositoryRoot, errors);
     const dependencyNames = new Set();
 
