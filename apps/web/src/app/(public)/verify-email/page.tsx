@@ -1,5 +1,12 @@
-import { RoutePlaceholder } from "@/app/_components/route-placeholder";
+import { notFound } from "next/navigation";
 
-export default function VerifyEmailPage() {
-  return <RoutePlaceholder title="Verify email" description="Complete email verification to activate your account." />;
+export default function VerifyEmailPage(): never {
+  void {
+    urlPattern: "/verify-email",
+    title: "Verify email",
+    summary: "Verify an account email as part of the authentication lifecycle.",
+    contexts: ["identity/authentication"],
+    catalogStatus: "active",
+  };
+  notFound();
 }

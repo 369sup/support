@@ -1,5 +1,16 @@
-import { RoutePlaceholder } from "@/app/_components/route-placeholder";
+import { notFound } from "next/navigation";
 
-export default function SettingsPage() {
-  return <RoutePlaceholder title="Settings" description="Configure account, organization, repository, access, and integration policies." />;
+export default function SettingsPage(): never {
+  void {
+    urlPattern: "/settings",
+    title: "Settings",
+    summary: "Open the account-level settings entry point for identity, integrations, and billing.",
+    contexts: [
+      "identity/authentication",
+      "integrations/oauth-authorizations",
+      "commerce/billing",
+    ],
+    catalogStatus: "mixed",
+  };
+  notFound();
 }

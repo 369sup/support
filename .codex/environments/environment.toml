@@ -1,0 +1,24 @@
+version = 1
+name = "Support workspace (pnpm)"
+
+# Keep worktree creation lightweight. Dependency installation is performed
+# only when the task requires repository tooling.
+[setup]
+script = '''
+set -euo pipefail
+
+test -f pnpm-lock.yaml || {
+  echo 'Expected pnpm-lock.yaml at the Support workspace root.' >&2
+  exit 1
+}
+
+command -v pnpm >/dev/null 2>&1 || {
+  echo 'pnpm is required; package.json pins pnpm@11.15.1.' >&2
+  exit 1
+}
+'''
+
+[[actions]]
+name = "Install dependencies"
+icon = "download"
+command = "pnpm install --frozen-lockfile"

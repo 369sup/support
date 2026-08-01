@@ -1,6 +1,19 @@
 {
-  "description": "Repository guards for generated architecture docs and module boundaries.",
+  "description": "Repository guards and automatic Serena memory lifecycle.",
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const{execFileSync}=require('node:child_process');const{pathToFileURL}=require('node:url');const{join}=require('node:path');const root=execFileSync('git',['rev-parse','--show-toplevel'],{encoding:'utf8'}).trim();import(pathToFileURL(join(root,'.codex','hooks','memory-orchestrator.mjs')).href).then(module=>module.run())\"",
+            "timeout": 15,
+            "statusMessage": "Starting automatic Serena memory"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write|apply_patch",
@@ -10,6 +23,17 @@
             "command": "node -e \"const{execFileSync}=require('node:child_process');const{pathToFileURL}=require('node:url');const{join}=require('node:path');const root=execFileSync('git',['rev-parse','--show-toplevel'],{encoding:'utf8'}).trim();import(pathToFileURL(join(root,'.codex','hooks','repository-guard.mjs')).href).then(module=>module.run())\"",
             "timeout": 30,
             "statusMessage": "Checking generated-file policy"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const{execFileSync}=require('node:child_process');const{pathToFileURL}=require('node:url');const{join}=require('node:path');const root=execFileSync('git',['rev-parse','--show-toplevel'],{encoding:'utf8'}).trim();import(pathToFileURL(join(root,'.codex','hooks','memory-orchestrator.mjs')).href).then(module=>module.run())\"",
+            "timeout": 10,
+            "statusMessage": "Checking Serena workflow"
           }
         ]
       }
@@ -23,6 +47,42 @@
             "command": "node -e \"const{execFileSync}=require('node:child_process');const{pathToFileURL}=require('node:url');const{join}=require('node:path');const root=execFileSync('git',['rev-parse','--show-toplevel'],{encoding:'utf8'}).trim();import(pathToFileURL(join(root,'.codex','hooks','repository-guard.mjs')).href).then(module=>module.run())\"",
             "timeout": 30,
             "statusMessage": "Checking architecture after edits"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Edit|Write|apply_patch|mcp__serena_jetbrains__.*_memory",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const{execFileSync}=require('node:child_process');const{pathToFileURL}=require('node:url');const{join}=require('node:path');const root=execFileSync('git',['rev-parse','--show-toplevel'],{encoding:'utf8'}).trim();import(pathToFileURL(join(root,'.codex','hooks','memory-orchestrator.mjs')).href).then(module=>module.run())\"",
+            "timeout": 10,
+            "statusMessage": "Recording memory-safe task metadata"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "manual|auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const{execFileSync}=require('node:child_process');const{pathToFileURL}=require('node:url');const{join}=require('node:path');const root=execFileSync('git',['rev-parse','--show-toplevel'],{encoding:'utf8'}).trim();import(pathToFileURL(join(root,'.codex','hooks','memory-orchestrator.mjs')).href).then(module=>module.run())\"",
+            "timeout": 15,
+            "statusMessage": "Preparing resumable task state"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const{execFileSync}=require('node:child_process');const{pathToFileURL}=require('node:url');const{join}=require('node:path');const root=execFileSync('git',['rev-parse','--show-toplevel'],{encoding:'utf8'}).trim();import(pathToFileURL(join(root,'.codex','hooks','memory-orchestrator.mjs')).href).then(module=>module.run())\"",
+            "timeout": 20,
+            "statusMessage": "Distilling Serena task memory"
           }
         ]
       }

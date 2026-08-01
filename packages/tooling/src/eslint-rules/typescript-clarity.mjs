@@ -20,6 +20,29 @@ function matchesAllowedAlias(source, imported, local, allowedAliases) {
   });
 }
 
+function memberPath(node) {
+  if (node.type === "Identifier") {
+    return [node.name];
+  }
+
+  if (node.type !== "MemberExpression" || node.optional) {
+    return undefined;
+  }
+
+  if (node.computed && node.property.type !== "Literal") {
+    return undefined;
+  }
+
+  const objectPath = memberPath(node.object);
+  const propertyName = staticName(node.property);
+
+  if (objectPath === undefined || propertyName === undefined) {
+    return undefined;
+  }
+
+  return [...objectPath, propertyName];
+}
+
 const noRenamedImportExport = {
   meta: {
     type: "problem",
@@ -195,17 +218,183 @@ const noSideEffectImport = {
     docs: {
       description: "Keep initialization dependencies explicit.",
     },
-    schema: [],
+    schema: [
+      {
+        type: "object",
+        properties: {
+          allowedModules: {
+            type: "array",
+            items: { type: "string" },
+            uniqueItems: true,
+          },
+        },
+        additionalProperties: false,
+      },
+    ],
     messages: {
       sideEffectImport:
         "Replace this hidden side-effect import with an explicit initialization function.",
     },
   },
   create(context) {
+    const [{ allowedModules = [] } = {}] = context.options;
+
     return {
       ImportDeclaration(node) {
-        if (node.specifiers.length === 0) {
+        if (
+          node.specifiers.length === 0 &&
+          !allowedModules.includes(node.source.value)
+        ) {
           context.report({ node, messageId: "sideEffectImport" });
+        }
+      },
+    };
+  },
+};
+
+const noClientRouteShell = {
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Keep App Router pages and layouts as Server Component composition shells.",
+    },
+    schema: [],
+    messages: {
+      clientRouteShell:
+        "Move browser interaction into the smallest child Client Component; pages and layouts remain Server Components.",
+    },
+  },
+  create(context) {
+    return {
+      Program(node) {
+        const clientDirective = node.body.find((statement) => {
+          return (
+            statement.type === "ExpressionStatement" &&
+            statement.directive === "use client"
+          );
+        });
+
+        if (clientDirective !== undefined) {
+          context.report({
+            node: clientDirective,
+            messageId: "clientRouteShell",
+          });
+        }
+      },
+    };
+  },
+};
+
+const noFocusedOrDisabledTests = {
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Prevent focused, disabled, or silently deferred tests from entering the repository.",
+    },
+    schema: [],
+    messages: {
+      disabledTest:
+        "Do not commit focused, skipped, or fixme tests; fix the test or track an explicit external blocker.",
+    },
+  },
+  create(context) {
+    const testRoots = new Set(["describe", "it", "test"]);
+    const prohibitedModifiers = new Set(["fixme", "only", "skip", "todo"]);
+
+    return {
+      CallExpression(node) {
+        const path = memberPath(node.callee);
+
+        if (
+          path !== undefined &&
+          testRoots.has(path[0]) &&
+          prohibitedModifiers.has(path.at(-1))
+        ) {
+          context.report({ node, messageId: "disabledTest" });
+        }
+      },
+    };
+  },
+};
+
+const noFixedTestWait = {
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Require browser tests to wait for observable conditions instead of elapsed time.",
+    },
+    schema: [],
+    messages: {
+      fixedWait:
+        "Wait for an observable UI, network, or application condition instead of waitForTimeout().",
+    },
+  },
+  create(context) {
+    return {
+      CallExpression(node) {
+        const path = memberPath(node.callee);
+
+        if (path?.at(-1) === "waitForTimeout") {
+          context.report({ node, messageId: "fixedWait" });
+        }
+      },
+    };
+  },
+};
+
+const noUncontrolledTestSources = {
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Require unit and integration tests to control time, randomness, timers, and network access.",
+    },
+    schema: [],
+    messages: {
+      uncontrolledSource:
+        "Inject, fake, or explicitly control {{source}} instead of reading it directly in a test.",
+    },
+  },
+  create(context) {
+    const prohibitedCalls = new Map([
+      ["Date.now", "the real clock"],
+      ["Math.random", "randomness"],
+      ["crypto.getRandomValues", "randomness"],
+      ["crypto.randomUUID", "randomness"],
+      ["fetch", "the network"],
+      ["performance.now", "the real clock"],
+      ["setInterval", "a real timer"],
+      ["setTimeout", "a real timer"],
+    ]);
+
+    return {
+      CallExpression(node) {
+        const path = memberPath(node.callee);
+        const source =
+          path === undefined ? undefined : prohibitedCalls.get(path.join("."));
+
+        if (source !== undefined) {
+          context.report({
+            node,
+            messageId: "uncontrolledSource",
+            data: { source },
+          });
+        }
+      },
+      NewExpression(node) {
+        if (
+          node.callee.type === "Identifier" &&
+          node.callee.name === "Date" &&
+          node.arguments.length === 0
+        ) {
+          context.report({
+            node,
+            messageId: "uncontrolledSource",
+            data: { source: "the real clock" },
+          });
         }
       },
     };
@@ -214,11 +403,15 @@ const noSideEffectImport = {
 
 export const typescriptClarityPlugin = {
   rules: {
+    "no-client-route-shell": noClientRouteShell,
     "no-default-export": noDefaultExport,
     "no-export-all": noExportAll,
+    "no-fixed-test-wait": noFixedTestWait,
+    "no-focused-or-disabled-tests": noFocusedOrDisabledTests,
     "no-namespace-import": noNamespaceImport,
     "no-renamed-import-export": noRenamedImportExport,
     "no-side-effect-import": noSideEffectImport,
+    "no-uncontrolled-test-sources": noUncontrolledTestSources,
     "no-variable-dynamic-import": noVariableDynamicImport,
   },
 };

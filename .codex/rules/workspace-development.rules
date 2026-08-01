@@ -1,0 +1,141 @@
+# Allow the focused package checks that have been verified in this workspace.
+# On Windows, use pnpm.cmd so PowerShell does not select the blocked pnpm.ps1
+# shim.
+prefix_rule(
+    pattern = [
+        "pnpm.cmd",
+        "--filter",
+        "@support/web",
+        ["build", "lint", "test", "typecheck"],
+    ],
+    decision = "allow",
+    justification = "Run verified focused checks for the Support web package without repeated approval.",
+    match = [
+        "pnpm.cmd --filter @support/web build",
+        "pnpm.cmd --filter @support/web lint",
+        "pnpm.cmd --filter @support/web test",
+        "pnpm.cmd --filter @support/web typecheck",
+    ],
+    not_match = [
+        "pnpm --filter @support/web test",
+        "pnpm.cmd --filter @support/web dev",
+        "pnpm.cmd --filter @support/web start",
+        "pnpm.cmd --filter @support/web test:e2e",
+        "pnpm.cmd --filter @support/shadcn typecheck",
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "pnpm.cmd",
+        "--filter",
+        "@support/shadcn",
+        ["lint", "typecheck"],
+    ],
+    decision = "allow",
+    justification = "Run verified focused checks for the Support shadcn package without repeated approval.",
+    match = [
+        "pnpm.cmd --filter @support/shadcn lint",
+        "pnpm.cmd --filter @support/shadcn typecheck",
+    ],
+    not_match = [
+        "pnpm --filter @support/shadcn lint",
+        "pnpm.cmd --filter @support/shadcn build",
+        "pnpm.cmd --filter @support/shadcn test",
+        "pnpm.cmd --filter @support/web typecheck",
+    ],
+)
+
+prefix_rule(
+    pattern = ["pnpm.cmd", "test:architecture"],
+    decision = "allow",
+    justification = "Run the verified architecture test suite without repeated approval.",
+    match = [
+        "pnpm.cmd test:architecture",
+    ],
+    not_match = [
+        "pnpm test:architecture",
+        "pnpm.cmd test:e2e",
+        "pnpm.cmd check:full",
+    ],
+)
+
+# These scripts deterministically update tracked generated artifacts, so keep
+# an approval boundary while recording the exact supported commands.
+prefix_rule(
+    pattern = [
+        "pnpm.cmd",
+        ["architecture:docs", "serena:memories"],
+    ],
+    decision = "prompt",
+    justification = "Confirm regeneration of tracked architecture documentation or Serena memories.",
+    match = [
+        "pnpm.cmd architecture:docs",
+        "pnpm.cmd serena:memories",
+    ],
+    not_match = [
+        "pnpm architecture:docs",
+        "pnpm.cmd architecture",
+        "pnpm.cmd dev",
+    ],
+)
+
+# Git publication changes local or remote repository state. Preserve explicit
+# approval while making the known-good main publication sequence discoverable.
+prefix_rule(
+    pattern = ["git", "fetch", "origin", "main"],
+    decision = "prompt",
+    justification = "Confirm refreshing origin/main before publishing Support changes.",
+    match = [
+        "git fetch origin main",
+    ],
+    not_match = [
+        "git fetch",
+        "git fetch origin",
+        "git fetch --all",
+        "git pull origin main",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "add", "-A"],
+    decision = "prompt",
+    justification = "Confirm staging the reviewed Support workspace changes.",
+    match = [
+        "git add -A",
+    ],
+    not_match = [
+        "git add .",
+        "git add --all",
+        "git add apps/web",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "commit", "-m"],
+    decision = "prompt",
+    justification = "Confirm creating a Support repository commit with an explicit message.",
+    match = [
+        "git commit -m \"Add architecture and mock auth foundation\"",
+    ],
+    not_match = [
+        "git commit",
+        "git commit --amend",
+        "git commit -am \"Update\"",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "push", "origin", "main"],
+    decision = "prompt",
+    justification = "Confirm publishing the current Support main branch to origin/main.",
+    match = [
+        "git push origin main",
+    ],
+    not_match = [
+        "git push",
+        "git push origin",
+        "git push --force origin main",
+        "git push origin feature/example",
+    ],
+)

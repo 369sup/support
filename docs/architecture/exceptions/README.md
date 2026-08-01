@@ -10,13 +10,14 @@ Every entry must contain:
 - `rule`: stable architecture rule ID being waived.
 - `scope`: exact repository-relative file or directory.
 - `owner`: team or person responsible for review and removal.
+- `approvedOn`: approval date in `YYYY-MM-DD` form; future dates are invalid.
+- `expiresOn`: mandatory future expiry date in `YYYY-MM-DD` form.
 - `reason`: external constraint that makes the standard form impossible.
 - `alternatives`: alternatives considered and why they were rejected.
 - `risk`: concrete cost introduced by the exception.
 - `spreadPrevention`: how copying the exception is prevented.
-- `reviewAfter`: future ISO date in `YYYY-MM-DD` form.
 - `removalCondition`: observable condition that ends the exception.
 
 The affected source must reference the ID in the narrowest ESLint disable or
-`@architecture-exception` comment. Missing, unused, expired, or out-of-scope
-entries fail `pnpm architecture`.
+`@architecture-exception` comment. Missing, unused, permanently unbounded,
+expired, or out-of-scope entries fail `pnpm architecture`.

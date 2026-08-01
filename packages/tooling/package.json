@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./architecture/policy": "./src/architecture/policy.mjs",
     "./eslint-rules/architecture-boundaries": "./src/eslint-rules/architecture-boundaries.mjs",
     "./eslint-rules/typescript-clarity": "./src/eslint-rules/typescript-clarity.mjs"
   },

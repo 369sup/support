@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveSiteUrl } from "./src/app/_configuration/site";
+import { resolveSiteUrl } from "./site-configuration";
 
 describe("site URL configuration", () => {
   it("prefers an explicit site URL", () => {

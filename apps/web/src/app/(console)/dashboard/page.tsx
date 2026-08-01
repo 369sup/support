@@ -1,5 +1,85 @@
-import { RoutePlaceholder } from "@/app/_components/route-placeholder";
+import { Separator } from "@support/shadcn/ui/separator";
 
-export default function DashboardPage() {
-  return <RoutePlaceholder title="Dashboard" description="Review activity across your repositories, organizations, teams, and projects." />;
+import { requireCurrentSession } from "@/modules/identity/authentication/server-api";
+import { getDashboardRepositoryView } from "@/modules/projections/dashboard/server-api";
+
+export default async function DashboardPage() {
+  const session = await requireCurrentSession();
+  const view = await getDashboardRepositoryView(session);
+
+  return (
+    <main className="flex flex-1 px-5 py-16 sm:px-8">
+      <section className="mx-auto w-full max-w-5xl">
+        <p className="text-sm font-medium text-muted-foreground">
+          {view.context.kind === "personal"
+            ? `Personal context · @${view.context.login}`
+            : `Organization context · ${view.context.displayName}`}
+        </p>
+        <h1 className="mt-2 text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">
+          Dashboard
+        </h1>
+        <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
+          Repositories are scoped by the selected context and independently
+          filtered by source-attributed repository permissions.
+        </p>
+        <Separator className="my-10" />
+        <RepositoryCards
+          organizationLogin={
+            view.context.kind === "organization" ? view.context.login : null
+          }
+          repositories={view.repositories}
+        />
+      </section>
+    </main>
+  );
 }
+
+function RepositoryCards({
+  organizationLogin,
+  repositories,
+}: Readonly<{
+  organizationLogin: string | null;
+  repositories: Awaited<
+    ReturnType<typeof getDashboardRepositoryView>
+  >["repositories"];
+}>) {
+  if (repositories.length === 0) {
+    return (
+      <p role="status" className="text-sm text-muted-foreground">
+        No repositories are visible in this context.
+      </p>
+    );
+  }
+  return (
+    <ul className="divide-y rounded-xl border">
+      {repositories.map((repository) => (
+        <li className="p-5 sm:p-6" key={repository.repositoryId}>
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="font-mono text-lg font-semibold">
+              {repository.ownerLogin}/{repository.name}
+            </h2>
+            <span className="rounded-full border px-2.5 py-1 text-xs text-muted-foreground">
+              {repository.visibility}
+            </span>
+            <span className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">
+              {repository.permission}
+            </span>
+          </div>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+            {repository.description}
+          </p>
+          {organizationLogin !== null &&
+          repository.permission === "admin" ? (
+            <Link
+              className="mt-3 inline-flex text-sm font-medium underline-offset-4 hover:underline"
+              href={`/organizations/${organizationLogin}/settings/repository-access/${repository.name}`}
+            >
+              Manage team access
+            </Link>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+import Link from "next/link";

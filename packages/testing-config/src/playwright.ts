@@ -4,12 +4,14 @@ interface PlaywrightConfigOptions {
   baseURL: string;
   testDir: string;
   webServerCommand: string;
+  webServerEnvironment?: Readonly<Record<string, string>>;
 }
 
 export function createPlaywrightConfig({
   baseURL,
   testDir,
   webServerCommand,
+  webServerEnvironment,
 }: PlaywrightConfigOptions) {
   const isContinuousIntegration = Boolean(process.env["CI"]);
 
@@ -37,6 +39,14 @@ export function createPlaywrightConfig({
     },
     webServer: {
       command: webServerCommand,
+      env: {
+        ...Object.fromEntries(
+          Object.entries(process.env).filter(
+            (entry): entry is [string, string] => entry[1] !== undefined,
+          ),
+        ),
+        ...webServerEnvironment,
+      },
       reuseExistingServer: !isContinuousIntegration,
       stderr: "pipe",
       stdout: "ignore",

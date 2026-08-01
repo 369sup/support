@@ -55,6 +55,15 @@ ruleTester.run(
           "D:/project/src/modules/core-domain/repositories/composition/repository-composition.ts",
         code: 'import { RepositoryAdapter } from "../adapters/outbound/persistence/repository.adapter";',
       },
+      {
+        filename: "D:/project/src/app/page.tsx",
+        code: 'const module = import("@/modules/core-domain/repositories/server-api");',
+      },
+      {
+        filename:
+          "D:/project/src/modules/core-domain/repositories/application/queries/get-repository.handler.ts",
+        code: 'export { getRepository } from "./get-repository";',
+      },
     ],
     invalid: [
       {
@@ -126,6 +135,23 @@ ruleTester.run(
         code: 'import { Repository } from "../domain/entities/repository.entity";',
         errors: [{ messageId: "compositionDirection" }],
       },
+      {
+        filename: "D:/project/src/app/page.tsx",
+        code: "const target = getTarget(); const module = import(target);",
+        errors: [{ messageId: "unsupportedDependencySyntax" }],
+      },
+      {
+        filename:
+          "D:/project/src/modules/core-domain/repositories/application/index.ts",
+        code: 'export * from "./queries/get-repository";',
+        errors: [{ messageId: "unsupportedDependencySyntax" }],
+      },
+      {
+        filename:
+          "D:/project/src/modules/core-domain/repositories/application/index.ts",
+        code: 'const repository = require("./queries/get-repository");',
+        errors: [{ messageId: "unsupportedDependencySyntax" }],
+      },
     ],
   },
 );
@@ -180,6 +206,11 @@ ruleTester.run(
       },
       {
         filename:
+          "D:/project/src/modules/core-domain/repositories/server-api.ts",
+        code: 'import { repositoriesServerFacade } from "./composition/repositories.composition"; export const listRepositories = repositoriesServerFacade.listRepositories;',
+      },
+      {
+        filename:
           "D:/project/src/modules/core-domain/repositories/integration-contracts.ts",
         code: 'export type { RepositoryRef } from "./contracts/repository-ref";',
       },
@@ -207,6 +238,18 @@ ruleTester.run(
         filename:
           "D:/project/src/modules/core-domain/repositories/server-api.ts",
         code: 'export { Repository } from "./domain/entities/repository.entity";',
+        errors: [{ messageId: "invalidPublicExport" }],
+      },
+      {
+        filename:
+          "D:/project/src/modules/core-domain/repositories/server-api.ts",
+        code: 'import { composeRepositories } from "./composition/repositories.composition"; export const repositories = composeRepositories();',
+        errors: [{ messageId: "invalidPublicExport" }],
+      },
+      {
+        filename:
+          "D:/project/src/modules/core-domain/repositories/server-api.ts",
+        code: 'import { repositoriesServerFacade } from "./composition/repositories.composition"; export const listRepositories = repositoriesServerFacade.createRepository;',
         errors: [{ messageId: "invalidPublicExport" }],
       },
       {

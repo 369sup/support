@@ -8,6 +8,12 @@ import { typescriptClarityPlugin } from "@support/tooling/eslint-rules/typescrip
 export function createTypeScriptLibraryConfig({ tsconfigRootDir }) {
   const typedFiles = ["**/*.{ts,tsx,mts,cts}"];
   const sourceFiles = ["src/**/*.{js,mjs,cjs,ts,tsx,mts,cts}"];
+  const explicitBoundaryFiles = [
+    "src/modules/**/{server-api,server-actions,integration-contracts}.{ts,tsx,mts,cts}",
+    "src/modules/**/*.use-case.{ts,tsx,mts,cts}",
+  ];
+  const testFiles = ["**/*.{test,spec}.{js,jsx,ts,tsx,mjs,mts,cts}"];
+  const unitTestFiles = ["**/*.test.{js,jsx,ts,tsx,mjs,mts,cts}"];
 
   return defineConfig([
     eslint.configs.recommended,
@@ -50,9 +56,16 @@ export function createTypeScriptLibraryConfig({ tsconfigRootDir }) {
         "no-nested-ternary": "error",
         "no-param-reassign": "error",
         "no-sequences": "error",
+        "id-length": ["error", { exceptions: ["_"], min: 2, properties: "never" }],
         "@typescript-eslint/ban-ts-comment": [
           "error",
-          { minimumDescriptionLength: 10 },
+          {
+            minimumDescriptionLength: 10,
+            "ts-check": false,
+            "ts-expect-error": "allow-with-description",
+            "ts-ignore": true,
+            "ts-nocheck": true,
+          },
         ],
         "@typescript-eslint/consistent-type-assertions": [
           "error",
@@ -63,7 +76,31 @@ export function createTypeScriptLibraryConfig({ tsconfigRootDir }) {
           "error",
           { fixStyle: "separate-type-imports", prefer: "type-imports" },
         ],
+        "@typescript-eslint/naming-convention": [
+          "error",
+          {
+            selector: [
+              "classProperty",
+              "parameter",
+              "typeProperty",
+              "variable",
+            ],
+            types: ["boolean"],
+            format: ["PascalCase"],
+            prefix: [
+              "is",
+              "has",
+              "can",
+              "should",
+              "does",
+              "did",
+              "was",
+              "will",
+            ],
+          },
+        ],
         "@typescript-eslint/no-confusing-void-expression": "error",
+        "@typescript-eslint/no-deprecated": "error",
         "@typescript-eslint/no-duplicate-type-constituents": "error",
         "@typescript-eslint/no-explicit-any": "error",
         "@typescript-eslint/no-floating-promises": "error",
@@ -71,6 +108,19 @@ export function createTypeScriptLibraryConfig({ tsconfigRootDir }) {
         "@typescript-eslint/no-namespace": "error",
         "@typescript-eslint/no-non-null-assertion": "error",
         "@typescript-eslint/no-redundant-type-constituents": "error",
+        "@typescript-eslint/no-restricted-types": [
+          "error",
+          {
+            types: {
+              Function: {
+                message: "Declare the callable signature explicitly.",
+              },
+              object: {
+                message: "Declare the object shape explicitly.",
+              },
+            },
+          },
+        ],
         "@typescript-eslint/no-unnecessary-condition": "error",
         "@typescript-eslint/no-unnecessary-type-arguments": "error",
         "@typescript-eslint/no-unnecessary-type-assertion": "error",
@@ -100,6 +150,28 @@ export function createTypeScriptLibraryConfig({ tsconfigRootDir }) {
         "@typescript-eslint/switch-exhaustiveness-check": "error",
         "@typescript-eslint/unified-signatures": "error",
         "@typescript-eslint/use-unknown-in-catch-callback-variable": "error",
+      },
+    },
+    {
+      files: explicitBoundaryFiles,
+      rules: {
+        "@typescript-eslint/explicit-module-boundary-types": "error",
+      },
+    },
+    {
+      files: testFiles,
+      plugins: {
+        clarity: typescriptClarityPlugin,
+      },
+      rules: {
+        "clarity/no-fixed-test-wait": "error",
+        "clarity/no-focused-or-disabled-tests": "error",
+      },
+    },
+    {
+      files: unitTestFiles,
+      rules: {
+        "clarity/no-uncontrolled-test-sources": "error",
       },
     },
     {
@@ -134,7 +206,10 @@ export function createTypeScriptLibraryConfig({ tsconfigRootDir }) {
             ],
           },
         ],
-        "clarity/no-side-effect-import": "error",
+        "clarity/no-side-effect-import": [
+          "error",
+          { allowedModules: ["server-only"] },
+        ],
         "clarity/no-variable-dynamic-import": "error",
         "architecture/enforce-import-boundaries": "error",
         "architecture/no-domain-ambient-infrastructure": "error",

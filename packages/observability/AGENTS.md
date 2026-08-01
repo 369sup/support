@@ -5,14 +5,17 @@ tracing, and metrics APIs.
 
 ## Runtime boundary
 
+- Follow the operational field ownership and identity restrictions in
+  [`docs/architecture/architecture.md`](../../docs/architecture/architecture.md#observability-ownership).
 - Keep Next.js, exporters, collectors, deployment environment parsing, and
   provider-specific SDK initialization in the consuming application.
 - Logging is Node-only. Tracing and metrics use `@opentelemetry/api` and must
   remain safe when no SDK is registered.
 - Do not import product modules or encode domain attributes in this package.
-- Never log authorization values, cookies, tokens, passwords, secrets, full
-  request bodies, or unreviewed provider payloads. Extend redaction tests when
-  a new sensitive shape is introduced.
+- Never log actor or tenant identifiers, usernames, email addresses,
+  authorization values, cookies, tokens, passwords, secrets, full request
+  bodies, or unreviewed provider payloads. Extend redaction tests when a new
+  sensitive shape is introduced.
 - Keep attribute names stable and low-cardinality when they are used for
   metrics.
 

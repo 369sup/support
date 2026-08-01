@@ -111,12 +111,110 @@ ruleTester.run(
   "no-side-effect-import",
   typescriptClarityPlugin.rules["no-side-effect-import"],
   {
-  valid: ['import { registerMonitoring } from "./monitoring";'],
-  invalid: [
-    {
-      code: 'import "./register-monitoring";',
-      errors: [{ messageId: "sideEffectImport" }],
-    },
-  ],
+    valid: [
+      'import { registerMonitoring } from "./monitoring";',
+      {
+        code: 'import "server-only";',
+        options: [{ allowedModules: ["server-only"] }],
+      },
+    ],
+    invalid: [
+      {
+        code: 'import "./register-monitoring";',
+        errors: [{ messageId: "sideEffectImport" }],
+        options: [{ allowedModules: ["server-only"] }],
+      },
+    ],
+  },
+);
+
+ruleTester.run(
+  "no-client-route-shell",
+  typescriptClarityPlugin.rules["no-client-route-shell"],
+  {
+    valid: ['export default function Page() { return "server"; }'],
+    invalid: [
+      {
+        code: '"use client";\nexport default function Page() { return "client"; }',
+        errors: [{ messageId: "clientRouteShell" }],
+      },
+    ],
+  },
+);
+
+ruleTester.run(
+  "no-focused-or-disabled-tests",
+  typescriptClarityPlugin.rules["no-focused-or-disabled-tests"],
+  {
+    valid: [
+      'test("works", () => {});',
+      'test.describe("flow", () => {});',
+    ],
+    invalid: [
+      {
+        code: 'test.only("focused", () => {});',
+        errors: [{ messageId: "disabledTest" }],
+      },
+      {
+        code: 'test.describe.skip("disabled", () => {});',
+        errors: [{ messageId: "disabledTest" }],
+      },
+      {
+        code: 'it.fixme("deferred", () => {});',
+        errors: [{ messageId: "disabledTest" }],
+      },
+      {
+        code: 'test.todo("not implemented");',
+        errors: [{ messageId: "disabledTest" }],
+      },
+    ],
+  },
+);
+
+ruleTester.run(
+  "no-fixed-test-wait",
+  typescriptClarityPlugin.rules["no-fixed-test-wait"],
+  {
+    valid: ["await expect(page.getByRole('status')).toBeVisible();"],
+    invalid: [
+      {
+        code: "await page.waitForTimeout(1_000);",
+        errors: [{ messageId: "fixedWait" }],
+      },
+    ],
+  },
+);
+
+ruleTester.run(
+  "no-uncontrolled-test-sources",
+  typescriptClarityPlugin.rules["no-uncontrolled-test-sources"],
+  {
+    valid: [
+      "const now = clock.now();",
+      "const timestamp = new Date('2026-07-24T00:00:00Z');",
+      "await httpClient.get('/health');",
+    ],
+    invalid: [
+      {
+        code: "const now = Date.now();",
+        errors: [{ messageId: "uncontrolledSource" }],
+      },
+      {
+        code: "const current = new Date();",
+        errors: [{ messageId: "uncontrolledSource" }],
+      },
+      {
+        code: "const value = Math.random();",
+        errors: [{ messageId: "uncontrolledSource" }],
+      },
+      {
+        code: "await fetch('/health');",
+        errors: [{ messageId: "uncontrolledSource" }],
+      },
+      {
+        code: "setTimeout(handleTimeout, 100);",
+        errors: [{ messageId: "uncontrolledSource" }],
+      },
+    ],
   },
 );

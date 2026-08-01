@@ -1,4 +1,4 @@
-import { RoutePlaceholder } from "@/app/_components/route-placeholder";
+import { RoutePlaceholder } from "@support/shadcn/custom/route-placeholder";
 
 export default function PrivacyPage() {
   return <RoutePlaceholder title="Privacy" description="Understand how information is collected, used, and protected." />;

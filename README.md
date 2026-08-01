@@ -1,6 +1,6 @@
 # Support
 
-A GitHub-like non-code product platform built with Next.js App Router and
+A non-code product platform built with Next.js App Router and
 organized as a Turborepo workspace. The product models users, enterprises,
 organizations, teams, repositories, issues, discussions, projects,
 notifications, permissions, governance, commerce, and integrations.
@@ -30,6 +30,9 @@ Architecture, naming, module-map, and exception rules are documented under
 
 ## Development
 
+Read [`CONTRIBUTING.md`](CONTRIBUTING.md) before changing code. It defines the
+review, verification, documentation, dependency, and commit workflow.
+
 ```text
 pnpm install
 pnpm dev
@@ -37,13 +40,48 @@ pnpm dev
 
 Open <http://localhost:3000>.
 
+### Development runtime
+
+The current product runtime is intentionally in-memory:
+
+- Development enables it automatically. Production-mode E2E enables it with
+  `SUPPORT_IN_MEMORY_RUNTIME=enabled`.
+- State is process-local, non-durable, single-instance, and invalidated by a
+  process restart. It is not a production persistence or session guarantee.
+- Each bounded context owns its own versioned store. Cross-context reads use
+  public contracts rather than a shared application database.
+- Browser authentication uses an opaque HttpOnly cookie. The deterministic
+  development sign-in fixtures use `octocat`, `hubot`, `carol_ACME`, and `bob`
+  with the non-secret fixture password `github`.
+
+The implemented product slice currently includes multi-account sessions,
+personal and organization Dashboard contexts, enterprise administration,
+organization teams and predefined role assignments, personal and organization
+repositories, and source-attributed repository permission decisions. The
+active technical foundation also includes context-local event publication,
+search-index candidates, opaque media storage, and audit storage. Remaining
+catalog contexts stay `planned`; a catalog entry does not imply a completed
+runtime capability.
+
+Useful development pages include:
+
+- `/dashboard` and `/account`
+- `/enterprises/[slug]`
+- `/organizations/[login]/settings/teams`
+- `/organizations/[login]/settings/roles`
+- `/organizations/[login]/settings/repository-access/[repository]`
+
+Development authentication endpoints are disabled outside development or the
+explicit in-memory E2E runtime. Platform delivery adapters are simulated and
+must not be treated as durable storage or external provider integrations.
+
 ## Commands
 
 - `pnpm build` - create a production build through Turborepo.
 - `pnpm lint` - run ESLint and immediate architecture boundary rules.
 - `pnpm typecheck` - run TypeScript without emitting files.
 - `pnpm architecture` - validate structure, graph, module map, and exceptions.
-- `pnpm test` - run ESLint-rule and architecture-checker tests with Vitest.
+- `pnpm test` - run ESLint-rule and architecture automation tests with Vitest.
 - `pnpm test:e2e` - run Playwright Chromium against the production server.
 - `pnpm check` - run the browser-free local gate.
 - `pnpm check:full` - add production build and E2E verification.

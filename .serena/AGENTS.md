@@ -18,9 +18,9 @@ root and source-tree `AGENTS.md` files.
 - Prefer the existing ignore model and narrow additions over manually listing
   generated directories already covered by `.gitignore`.
 - Automatic onboarding is disabled for this repository. Shared Serena memories
-  are generated from reviewed repository authorities; local memories may be
-  created or updated only when the user explicitly asks for persistent project
-  knowledge and are never a prerequisite for an ordinary coding task.
+  are generated from reviewed repository authorities. The deterministic local
+  engine has exclusive ownership of project-local memory outside
+  `local/current-task`; memory is never a prerequisite for ordinary coding.
 
 ## Memory boundary
 
@@ -29,6 +29,10 @@ root and source-tree `AGENTS.md` files.
 - `memories/local/**` is writable local state and must remain ignored by Git.
 - Generate shared memories with `pnpm serena:memories`; never edit generated
   memory files directly.
+- Automatically regenerate shared memories after changing an allowlisted
+  authority that affects their content. Review the generated diff and report a
+  failed or skipped regeneration instead of leaving shared memories knowingly
+  stale.
 - The generator reads only its explicit allowlist of AGENTS, architecture
   catalog, and package-script sources. It must never scan source code,
   environment files, logs, provider payloads, or user data.
@@ -37,6 +41,45 @@ root and source-tree `AGENTS.md` files.
   conflict.
 - Keep `mem:` references valid and run the architecture checks after changing
   memory inputs or layout.
+
+## Exclusive local memory ownership
+
+- The model may create or update only `memories/local/current-task.md`. Do not
+  create arbitrary local topic files or directly edit rendered or hidden state.
+- The engine owns every other project-local memory. The only visible layout is
+  `local/current-task`, `local/index`, `local/unresolved`, and
+  `local/durable/**`.
+- Exclusive ownership is always enabled. Activation quarantines unmanaged
+  local memories.
+  It preserves their complete contents and hashes under hidden archive state,
+  removes them from Serena's visible memory list, and renders a bounded notice
+  in `local/unresolved`.
+- Never store new credentials, tokens, personal/customer data, provider
+  payloads, raw logs, source-file copies, or embargoed security findings.
+  Quarantine metadata must never reproduce source contents.
+- Read only memories relevant by name and verify drift-prone facts against the
+  current worktree. Repository authorities always override local state.
+
+## Deterministic local memory engine
+
+- `local/current-task` is the only model-authored input to automatic
+  distillation. It contains the resumable task sections and one marked,
+  schema-valid JSON candidate bundle using the current Codex checkpoint token.
+- `local/index`, `local/unresolved`, and `local/durable/**` are rendered views
+  owned by `scripts/memory/**`; do not edit them directly.
+- `local/episodes/**`, `local/archive/**`, and `local/_state/**` are
+  machine-managed and hidden from Serena memory tools through
+  `ignored_memory_patterns`.
+- The engine may archive managed expired or superseded records but never
+  deletes their only retained representation. Unexpected local memories are
+  quarantined with their original content because the engine cannot infer that
+  they are obsolete.
+- Run `pnpm memory:validate` for local managed-state integrity and
+  `pnpm test:memory` after engine, schema, hook, or lifecycle
+  changes. Use `pnpm memory:status` to inspect ownership and quarantine counts.
+- Context7 and external model APIs are not runtime dependencies. Activation
+  must remain deterministic, offline, dependency-free, and bounded to 15
+  seconds.
 
 ## Session workflow
 

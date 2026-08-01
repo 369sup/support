@@ -1,11 +1,8 @@
 import { posix as path } from "node:path";
 
-const publicEntrypoints = new Set([
-  "server-api",
-  "browser-ui",
-  "server-actions",
-  "integration-contracts",
-]);
+import { publicEntrypointBasenames } from "../architecture/policy.mjs";
+
+const publicEntrypoints = new Set(publicEntrypointBasenames);
 
 function normalizeFilename(filename) {
   return filename.replaceAll("\\", "/");
@@ -130,6 +127,8 @@ const enforceImportBoundaries = {
         "[ARCH-DEP-011] Keep inbound and outbound adapters separate and depend only on the permitted inner layers.",
       compositionDirection:
         "[ARCH-DEP-011] Composition may wire only the same context's application, adapters, and contracts.",
+      unsupportedDependencySyntax:
+        "[ARCH-DEP-012] Use static imports, explicit named re-exports, or string-literal dynamic imports so architecture boundaries remain enforceable.",
     },
   },
   create(context) {
@@ -274,10 +273,40 @@ const enforceImportBoundaries = {
 
     return {
       ImportDeclaration: checkImport,
-      ImportExpression: checkImport,
+      ImportExpression(node) {
+        if (
+          node.source.type !== "Literal" ||
+          typeof node.source.value !== "string"
+        ) {
+          context.report({
+            node,
+            messageId: "unsupportedDependencySyntax",
+          });
+          return;
+        }
+
+        checkImport(node);
+      },
       ExportNamedDeclaration(node) {
         if (node.source !== null) {
           checkImport(node);
+        }
+      },
+      ExportAllDeclaration(node) {
+        context.report({
+          node,
+          messageId: "unsupportedDependencySyntax",
+        });
+      },
+      CallExpression(node) {
+        if (
+          node.callee.type === "Identifier" &&
+          node.callee.name === "require"
+        ) {
+          context.report({
+            node,
+            messageId: "unsupportedDependencySyntax",
+          });
         }
       },
     };
@@ -343,6 +372,49 @@ const noDomainAmbientInfrastructure = {
   },
 };
 
+function compositionImportNames(program) {
+  const names = new Set();
+
+  for (const statement of program.body) {
+    if (
+      statement.type !== "ImportDeclaration" ||
+      !String(statement.source.value).startsWith("./composition/")
+    ) {
+      continue;
+    }
+
+    for (const specifier of statement.specifiers) {
+      names.add(specifier.local.name);
+    }
+  }
+
+  return names;
+}
+
+function isCompositionFacadeProjection(declaration, importedNames) {
+  if (
+    declaration?.type !== "VariableDeclaration" ||
+    declaration.kind !== "const" ||
+    declaration.declarations.length === 0
+  ) {
+    return false;
+  }
+
+  return declaration.declarations.every((item) => {
+    const initializer = item.init;
+
+    return (
+      item.id.type === "Identifier" &&
+      initializer?.type === "MemberExpression" &&
+      !initializer.computed &&
+      initializer.object.type === "Identifier" &&
+      importedNames.has(initializer.object.name) &&
+      initializer.property.type === "Identifier" &&
+      initializer.property.name === item.id.name
+    );
+  });
+}
+
 const publicEntrypointContract = {
   meta: {
     type: "problem",
@@ -378,9 +450,12 @@ const publicEntrypointContract = {
 
     const basename = currentModule.internalPath.replace(/\.(?:[cm]?ts|tsx)$/, "");
     const isPublicEntrypoint = publicEntrypoints.has(basename);
+    let importedCompositionNames = new Set();
 
     return {
       Program(node) {
+        importedCompositionNames = compositionImportNames(node);
+
         if (basename === "browser-ui" && !hasDirective(node, "use client")) {
           context.report({ node, messageId: "missingClientDirective" });
         }
@@ -418,6 +493,16 @@ const publicEntrypointContract = {
         }
 
         if (node.source === null) {
+          if (
+            basename === "server-api" &&
+            isCompositionFacadeProjection(
+              node.declaration,
+              importedCompositionNames,
+            )
+          ) {
+            return;
+          }
+
           context.report({ node, messageId: "invalidPublicExport" });
           return;
         }

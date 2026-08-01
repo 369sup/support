@@ -9,7 +9,10 @@ afterEach(() => {
 
 describe("createNodeTestConfig", () => {
   it("applies deterministic Node defaults and standard artifact exclusions", () => {
-    const config = createNodeTestConfig({ include: ["src/**/*.test.ts"] });
+    const config = createNodeTestConfig({
+      exclude: ["src/**/*.node.test.ts"],
+      include: ["src/**/*.test.ts"],
+    });
 
     expect(config).toMatchObject({
       test: {
@@ -27,6 +30,7 @@ describe("createNodeTestConfig", () => {
         "**/.next/**",
         "**/playwright-report/**",
         "**/test-results/**",
+        "src/**/*.node.test.ts",
       ]),
     );
   });
