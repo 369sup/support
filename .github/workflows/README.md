@@ -21,7 +21,7 @@ The full `main` E2E job requires these repository secrets:
 
 The workflow supplies the non-secret `SUPABASE_STORAGE_BUCKET` value directly.
 The names stay aligned with the required production runtime contract and
-[`apps/web/.env.example`](../../apps/web/.env.example); secret values never
+[`/.env.example`](../../.env.example); secret values never
 belong in repository files or workflow output.
 
 `governance.yml` is a read-only knowledge-governance workflow owned by the

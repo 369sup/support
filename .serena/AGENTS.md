@@ -19,8 +19,10 @@ configuration and repository-local memory hygiene.
 
 ## Tool selection
 
-- The user-level `included_optional_tools` contains every optional tool exposed
-  by the installed Serena version, including all JetBrains BETA tools.
+- Project configuration leaves `included_optional_tools`, `excluded_tools`, and
+  `fixed_tools` empty. User-level optional tools and the installed Serena
+  version are runtime state; verify them with `serena tools list --all` instead
+  of recording a count or list in repository documentation.
 - Use JetBrains symbol, reference, hierarchy, inspection, debug, and refactoring
   tools first for source code.
 - Use Serena Language Server tools only when the JetBrains backend cannot answer
