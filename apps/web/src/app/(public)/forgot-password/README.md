@@ -9,13 +9,13 @@
 - **GitHub canonical patterns:** No official pattern is asserted.
 - **Delivery:** `page`
 - **Status:** `active`
-- **Materialization:** `scaffolded`
+- **Materialization:** `active`
 
 ## Functional intent
 
 Request a credential recovery flow for an account.
 
-The filesystem route is reserved and currently returns the canonical unavailable response.
+The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
 ## Delivery functions
 
@@ -23,7 +23,7 @@ The filesystem route is reserved and currently returns the canonical unavailable
 
 ## Module contracts
 
-- - **owner:** `identity/authentication` — use cases: no route-level use-case reference; functions: no runtime function reference
+- - **owner:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requestSupabasePasswordReset`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

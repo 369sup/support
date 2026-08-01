@@ -1,8 +1,9 @@
 import { OrganizationMembershipAdapter } from "../adapters/outbound/integration/organization-membership.adapter";
 import { OrganizationReferenceAdapter } from "../adapters/outbound/integration/organization-reference.adapter";
 import { InMemoryOrganizationTeamAdapter } from "../adapters/outbound/persistence/in-memory-organization-team.adapter";
-import { InMemoryOrganizationTeamOutboxAdapter } from "../adapters/outbound/persistence/in-memory-organization-team-outbox.adapter";
 import { InMemoryTeamIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-team-id-generator.adapter";
+import { NodeTeamIdGeneratorAdapter } from "../adapters/outbound/persistence/node-team-id-generator.adapter";
+import { PostgresOrganizationTeamAdapter } from "../adapters/outbound/persistence/postgres-organization-team.adapter";
 import { AddTeamMemberHandler } from "../application/commands/add-team-member.handler";
 import { AssignTeamMaintainerHandler } from "../application/commands/assign-team-maintainer.handler";
 import { CreateOrganizationTeamHandler } from "../application/commands/create-organization-team.handler";
@@ -26,6 +27,7 @@ import { ListOrganizationTeamsHandler } from "../application/queries/list-organi
 import { ListTeamMembersHandler } from "../application/queries/list-team-members.handler";
 import { ResolveAccountTeamMembershipsHandler } from "../application/queries/resolve-account-team-memberships.handler";
 import { OrganizationTeamService } from "../application/services/organization-team.service";
+import { getProductionDatabase } from "../../../../../production-runtime";
 
 export interface OrganizationTeamsServerFacade {
   createOrganizationTeam: CreateOrganizationTeamUseCase["createOrganizationTeam"];
@@ -42,13 +44,20 @@ export interface OrganizationTeamsServerFacade {
 }
 
 function composeOrganizationTeamsServerFacade(): OrganizationTeamsServerFacade {
-  const eventRecorder = new InMemoryOrganizationTeamOutboxAdapter();
+  const database = getProductionDatabase();
+  const eventRecorder = createContextEventSource(
+    "organizations/organization-teams",
+  );
   registerEventSource(eventRecorder);
   const service = new OrganizationTeamService(
-    new InMemoryOrganizationTeamAdapter(),
+    database === null
+      ? new InMemoryOrganizationTeamAdapter()
+      : new PostgresOrganizationTeamAdapter(database),
     new OrganizationMembershipAdapter(),
     new OrganizationReferenceAdapter(),
-    new InMemoryTeamIdGeneratorAdapter(),
+    database === null
+      ? new InMemoryTeamIdGeneratorAdapter()
+      : new NodeTeamIdGeneratorAdapter(),
     eventRecorder,
   );
   const create = new CreateOrganizationTeamHandler(service);
@@ -88,4 +97,7 @@ function composeOrganizationTeamsServerFacade(): OrganizationTeamsServerFacade {
 
 export const organizationTeamsServerFacade =
   composeOrganizationTeamsServerFacade();
-import { registerEventSource } from "@/modules/platform/event-publication/server-api";
+import {
+  createContextEventSource,
+  registerEventSource,
+} from "@/modules/platform/event-publication/server-api";

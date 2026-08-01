@@ -664,7 +664,7 @@ export function validateRouteCatalog({
     for (const query of route.queryParams) {
       if (
         typeof query?.name !== "string" ||
-        !/^[A-Za-z][A-Za-z0-9]*$/.test(query.name) ||
+        !/^[A-Za-z][A-Za-z0-9_]*$/.test(query.name) ||
         typeof query.required !== "boolean" ||
         typeof query.repeatable !== "boolean" ||
         (query.default !== undefined && typeof query.default !== "string") ||

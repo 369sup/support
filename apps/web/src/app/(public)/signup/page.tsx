@@ -3,7 +3,11 @@ import { UserPlus } from "lucide-react";
 import Link from "next/link";
 
 import { readFormString } from "@/app/_route-contracts/read-form-string";
-import { registerPersonalAccount } from "@/modules/identity/account-registration/server-api";
+import { getAccountCandidateByUsername } from "@/modules/identity/accounts/server-api";
+import {
+  isSupabaseAuthenticationEnabled,
+  signUpWithPassword,
+} from "@/modules/identity/authentication/server-api";
 import { Button } from "@support/shadcn/ui/button";
 import {
   Field,
@@ -12,13 +16,21 @@ import {
   FieldLabel,
 } from "@support/shadcn/ui/field";
 import { Input } from "@support/shadcn/ui/input";
+import { siteConfig } from "../../../../site-configuration";
 
 const registrationMessages: Readonly<Record<string, string>> = {
+  "confirmation-required":
+    "Check your email to confirm your account before signing in.",
+  "invalid-email": "Enter a valid email address.",
+  "invalid-registration":
+    "The account could not be created with those details.",
   "invalid-username":
     "Use 1–39 letters, numbers, or single hyphens; do not begin or end with a hyphen.",
   "password-mismatch": "The password confirmation does not match.",
   "registration-failed":
-    "The account and credential transaction could not be committed. No account was created.",
+    "The account could not be created. Please try again.",
+  "service-unavailable":
+    "Account registration is temporarily unavailable.",
   "username-conflict": "That username is already in use.",
   "weak-password":
     "Use at least 15 characters, or at least 8 with a lowercase letter and a number.",
@@ -29,16 +41,47 @@ async function registerPersonalAccountAction(
 ): Promise<never> {
   "use server";
 
+  const email = readFormString(formData, "email").trim();
+  const username = readFormString(formData, "username").trim();
   const password = readFormString(formData, "password");
   if (password !== readFormString(formData, "passwordConfirmation")) {
     redirect("/signup?registration=password-mismatch");
   }
-  const result = await registerPersonalAccount({
-    username: readFormString(formData, "username"),
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/u.test(email)) {
+    redirect("/signup?registration=invalid-email");
+  }
+  if (
+    !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/u.test(username)
+  ) {
+    redirect("/signup?registration=invalid-username");
+  }
+  if (
+    password.length > 128 ||
+    !(
+      password.length >= 15 ||
+      (password.length >= 8 && /[a-z]/u.test(password) && /\d/u.test(password))
+    )
+  ) {
+    redirect("/signup?registration=weak-password");
+  }
+  if (!isSupabaseAuthenticationEnabled()) {
+    redirect("/signup?registration=service-unavailable");
+  }
+  const existingAccount = await getAccountCandidateByUsername(username);
+  if (existingAccount.status === "found") {
+    redirect("/signup?registration=username-conflict");
+  }
+  const result = await signUpWithPassword({
+    email,
+    emailRedirectTo: new URL("/auth/callback", siteConfig.url).toString(),
     password,
+    username,
   });
   if (result.status === "created") {
-    redirect("/login");
+    redirect("/dashboard");
+  }
+  if (result.status === "confirmation-required") {
+    redirect("/verify-email?registration=confirmation-required");
   }
   redirect(`/signup?registration=${result.status}`);
 }
@@ -64,8 +107,8 @@ export default async function SignupPage({
           Create a personal account
         </h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          Account identity and its password credential become visible together.
-          If either participant fails, both reservations are rolled back.
+          Supabase Auth verifies your email while Support keeps product roles
+          and organization access in its server-only database.
         </p>
 
         {message !== undefined ? (
@@ -79,6 +122,22 @@ export default async function SignupPage({
 
         <form action={registerPersonalAccountAction} className="mt-7">
           <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="registration-email">
+                Email address
+              </FieldLabel>
+              <Input
+                autoComplete="email"
+                id="registration-email"
+                maxLength={254}
+                name="email"
+                required
+                type="email"
+              />
+              <FieldDescription>
+                Confirm this address before your first sign-in.
+              </FieldDescription>
+            </Field>
             <Field>
               <FieldLabel htmlFor="registration-username">
                 Username
@@ -132,8 +191,7 @@ export default async function SignupPage({
         </form>
 
         <p className="mt-5 text-xs leading-5 text-muted-foreground">
-          Email ownership verification, social login, passkeys, and 2FA are
-          separate security slices and are not simulated here.
+          Roles and permissions are never stored in authentication metadata.
         </p>
         <p className="mt-5 text-center text-sm text-muted-foreground">
           Already registered?{" "}

@@ -197,6 +197,29 @@ test("rejects cross-package relative imports", () => {
   }
 });
 
+test("rejects direct Supabase SDK imports outside the Supabase package", () => {
+  const rootDir = createWorkspaceFixture();
+
+  try {
+    writeFixture(
+      rootDir,
+      "apps/web/src/auth.ts",
+      'import { createServerClient } from "@supabase/ssr";\n',
+    );
+
+    const errors = validate(rootDir);
+    assert.equal(includesRule(errors, "ARCH-PKG-011"), true);
+    assert.equal(
+      errors.some((error) =>
+        error.includes("Use an exported @support/supabase subpath instead."),
+      ),
+      true,
+    );
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
 test("rejects workspace package cycles", () => {
   const rootDir = createWorkspaceFixture();
 

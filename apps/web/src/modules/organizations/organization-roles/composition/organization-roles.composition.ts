@@ -2,7 +2,8 @@ import { OrganizationMembershipAdapter } from "../adapters/outbound/integration/
 import { OrganizationTeamAdapter } from "../adapters/outbound/integration/organization-team.adapter";
 import { InMemoryOrganizationRoleAssignmentAdapter } from "../adapters/outbound/persistence/in-memory-organization-role-assignment.adapter";
 import { InMemoryOrganizationRoleIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-organization-role-id-generator.adapter";
-import { InMemoryOrganizationRoleOutboxAdapter } from "../adapters/outbound/persistence/in-memory-organization-role-outbox.adapter";
+import { NodeOrganizationRoleIdGeneratorAdapter } from "../adapters/outbound/persistence/node-organization-role-id-generator.adapter";
+import { PostgresOrganizationRoleAssignmentAdapter } from "../adapters/outbound/persistence/postgres-organization-role-assignment.adapter";
 import { AssignOrganizationRoleHandler } from "../application/commands/assign-organization-role.handler";
 import { RevokeOrganizationRoleHandler } from "../application/commands/revoke-organization-role.handler";
 import type { AssignOrganizationRoleUseCase } from "../application/ports/inbound/assign-organization-role.use-case";
@@ -14,6 +15,7 @@ import { ListOrganizationRoleAssignmentsHandler } from "../application/queries/l
 import { ListPredefinedOrganizationRolesHandler } from "../application/queries/list-predefined-organization-roles.handler";
 import { ResolveOrganizationRepositoryRoleContributionsHandler } from "../application/queries/resolve-organization-repository-role-contributions.handler";
 import { OrganizationRoleService } from "../application/services/organization-role.service";
+import { getProductionDatabase } from "../../../../../production-runtime";
 
 export interface OrganizationRolesServerFacade {
   listPredefinedOrganizationRoles: ListPredefinedOrganizationRolesUseCase["listPredefinedOrganizationRoles"];
@@ -24,13 +26,20 @@ export interface OrganizationRolesServerFacade {
 }
 
 function composeOrganizationRolesServerFacade(): OrganizationRolesServerFacade {
-  const eventRecorder = new InMemoryOrganizationRoleOutboxAdapter();
+  const database = getProductionDatabase();
+  const eventRecorder = createContextEventSource(
+    "organizations/organization-roles",
+  );
   registerEventSource(eventRecorder);
   const service = new OrganizationRoleService(
-    new InMemoryOrganizationRoleAssignmentAdapter(),
+    database === null
+      ? new InMemoryOrganizationRoleAssignmentAdapter()
+      : new PostgresOrganizationRoleAssignmentAdapter(database),
     new OrganizationMembershipAdapter(),
     new OrganizationTeamAdapter(),
-    new InMemoryOrganizationRoleIdGeneratorAdapter(),
+    database === null
+      ? new InMemoryOrganizationRoleIdGeneratorAdapter()
+      : new NodeOrganizationRoleIdGeneratorAdapter(),
     eventRecorder,
   );
   const listDefinitions =
@@ -58,4 +67,7 @@ function composeOrganizationRolesServerFacade(): OrganizationRolesServerFacade {
 
 export const organizationRolesServerFacade =
   composeOrganizationRolesServerFacade();
-import { registerEventSource } from "@/modules/platform/event-publication/server-api";
+import {
+  createContextEventSource,
+  registerEventSource,
+} from "@/modules/platform/event-publication/server-api";

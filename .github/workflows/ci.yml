@@ -186,6 +186,17 @@ jobs:
 
       - name: Test full main branch
         if: github.event_name == 'push'
+        env:
+          DATABASE_PROVIDER: supabase
+          DATABASE_SSL_MODE: require
+          DATABASE_URL: ${{ secrets.SUPPORT_E2E_DATABASE_URL }}
+          SUPPORT_RUNTIME_MODE: postgres
+          SUPABASE_E2E_EMAIL: ${{ secrets.SUPPORT_E2E_EMAIL }}
+          SUPABASE_E2E_ENABLED: 'true'
+          SUPABASE_E2E_PASSWORD: ${{ secrets.SUPPORT_E2E_PASSWORD }}
+          SUPABASE_POSTGRES_CONNECTION_MODE: transaction-pooler
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPPORT_E2E_SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPPORT_E2E_SUPABASE_URL }}
         run: pnpm test:e2e
 
       - name: Upload Playwright report

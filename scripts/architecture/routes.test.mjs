@@ -45,6 +45,11 @@ function validRoute() {
         repeatable: false,
         default: "summary",
       },
+      {
+        name: "provider_flow_id",
+        required: false,
+        repeatable: false,
+      },
     ],
     modules: [
       {

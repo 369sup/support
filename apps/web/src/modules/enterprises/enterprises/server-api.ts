@@ -5,7 +5,10 @@ export type {
   EnterpriseOrganizationsResult,
   EnterpriseReference,
 } from "./contracts/enterprise-reference";
-
+export const attachEnterpriseOrganization =
+  enterprisesServerFacade.attachEnterpriseOrganization;
+export const createEnterprise =
+  enterprisesServerFacade.createEnterprise;
 export const getEnterpriseBySlug =
   enterprisesServerFacade.getEnterpriseBySlug;
 export const listEnterpriseOrganizations =

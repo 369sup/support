@@ -5,7 +5,8 @@ export type {
   OrganizationOwnerReference,
   OrganizationReference,
 } from "./contracts/organization-reference";
-
+export const createOrganization =
+  organizationsServerFacade.createOrganization;
 export const getOrganizationByLogin =
   organizationsServerFacade.getOrganizationByLogin;
 export const getOrganizationReferenceById =

@@ -1,7 +1,10 @@
 import { OrganizationInvitationAccountAdapter } from "../adapters/outbound/integration/organization-invitation-account.adapter";
 import { InMemoryOrganizationMembershipAdapter } from "../adapters/outbound/persistence/in-memory-organization-membership.adapter";
 import { InMemoryOrganizationMembershipIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-organization-membership-id-generator.adapter";
+import { NodeOrganizationMembershipIdGeneratorAdapter } from "../adapters/outbound/persistence/node-organization-membership-id-generator.adapter";
+import { PostgresOrganizationMembershipAdapter } from "../adapters/outbound/persistence/postgres-organization-membership.adapter";
 import { SystemOrganizationMembershipClockAdapter } from "../adapters/outbound/persistence/system-organization-membership-clock.adapter";
+import { getProductionDatabase } from "../../../../../production-runtime";
 import { AcceptOrganizationInvitationHandler } from "../application/commands/accept-organization-invitation.handler";
 import { CancelOrganizationInvitationHandler } from "../application/commands/cancel-organization-invitation.handler";
 import { ChangeOrganizationMemberRoleHandler } from "../application/commands/change-organization-member-role.handler";
@@ -55,11 +58,17 @@ export interface OrganizationMembershipsServerFacade {
 }
 
 function composeOrganizationMembershipsServerFacade(): OrganizationMembershipsServerFacade {
-  const repository = new InMemoryOrganizationMembershipAdapter();
+  const database = getProductionDatabase();
+  const repository =
+    database === null
+      ? new InMemoryOrganizationMembershipAdapter()
+      : new PostgresOrganizationMembershipAdapter(database);
   const service = new OrganizationMembershipService(
     repository,
     new OrganizationInvitationAccountAdapter(),
-    new InMemoryOrganizationMembershipIdGeneratorAdapter(),
+    database === null
+      ? new InMemoryOrganizationMembershipIdGeneratorAdapter()
+      : new NodeOrganizationMembershipIdGeneratorAdapter(),
     new SystemOrganizationMembershipClockAdapter(),
   );
   const acceptInvitation =

@@ -6,6 +6,8 @@ import { OrganizationPolicyAdapter } from "../adapters/outbound/integration/orga
 import { OrganizationReferenceAdapter } from "../adapters/outbound/integration/organization-reference.adapter";
 import { InMemoryEnterpriseTeamAdapter } from "../adapters/outbound/persistence/in-memory-enterprise-team.adapter";
 import { InMemoryEnterpriseTeamIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-enterprise-team-id-generator.adapter";
+import { NodeEnterpriseTeamIdGeneratorAdapter } from "../adapters/outbound/persistence/node-enterprise-team-id-generator.adapter";
+import { PostgresEnterpriseTeamAdapter } from "../adapters/outbound/persistence/postgres-enterprise-team.adapter";
 import { AddEnterpriseTeamMemberHandler } from "../application/commands/add-enterprise-team-member.handler";
 import { AssignEnterpriseTeamToOrganizationHandler } from "../application/commands/assign-enterprise-team-to-organization.handler";
 import { CreateEnterpriseTeamHandler } from "../application/commands/create-enterprise-team.handler";
@@ -27,6 +29,7 @@ import { ListEnterpriseTeamOrganizationAssignmentsHandler } from "../application
 import { ListEnterpriseTeamMembersHandler } from "../application/queries/list-enterprise-team-members.handler";
 import { ListEnterpriseTeamsHandler } from "../application/queries/list-enterprise-teams.handler";
 import { EnterpriseTeamService } from "../application/services/enterprise-team.service";
+import { getProductionDatabase } from "../../../../../production-runtime";
 
 export interface EnterpriseTeamsServerFacade {
   addEnterpriseTeamMember: AddEnterpriseTeamMemberUseCase["addEnterpriseTeamMember"];
@@ -42,15 +45,20 @@ export interface EnterpriseTeamsServerFacade {
 }
 
 function composeEnterpriseTeamsServerFacade(): EnterpriseTeamsServerFacade {
+  const database = getProductionDatabase();
   const service = new EnterpriseTeamService(
-    new InMemoryEnterpriseTeamAdapter(),
+    database === null
+      ? new InMemoryEnterpriseTeamAdapter()
+      : new PostgresEnterpriseTeamAdapter(database),
     new EnterpriseReferenceAdapter(),
     new EnterpriseAdministrationAdapter(),
     new AccountReferenceAdapter(),
     new OrganizationReferenceAdapter(),
     new OrganizationMembershipAdapter(),
     new OrganizationPolicyAdapter(),
-    new InMemoryEnterpriseTeamIdGeneratorAdapter(),
+    database === null
+      ? new InMemoryEnterpriseTeamIdGeneratorAdapter()
+      : new NodeEnterpriseTeamIdGeneratorAdapter(),
   );
   const addMember = new AddEnterpriseTeamMemberHandler(service);
   const assignOrganization =

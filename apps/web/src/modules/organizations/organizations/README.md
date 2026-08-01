@@ -8,6 +8,7 @@ Enterprise organization links are owned by `enterprises/enterprises`.
 ## Context content tree
 
 - Organization discovery [active]
+  - `create-organization`
   - `get-organization-by-login`
   - `get-organization-reference-by-id`
   - Owned: `Organization`, `OrganizationProfile`, `OrganizationLifecycle`
@@ -23,6 +24,26 @@ Enterprise organization links are owned by `enterprises/enterprises`.
     `EnterpriseOrganizationLink`
 
 ## Designed use cases
+
+### `create-organization` [active]
+
+- **Type:** `command`
+- **Application boundary:** `CreateOrganizationUseCase.createOrganization()`
+- **Public entrypoint:** `server-api.ts#createOrganization`
+- **Input:** Authenticated actor account ID, organization login, display name.
+- **Success result:** `created` with organization ID and login.
+- **Expected rejections:** `invalid-login`, `invalid-display-name`,
+  `login-conflict`, `service-unavailable`
+- **Authorization:** Any authenticated personal account may bootstrap a
+  standalone organization and becomes its first owner.
+- **Transaction:** Organization and first owner membership are inserted in one
+  PostgreSQL transaction.
+- **Idempotency:** Unique normalized login rejects duplicates.
+- **Dependencies:** `none`
+- **Published events:** `none`
+- **Official evidence:** `organizations-organizations-source-01`
+- **Local policy:** The final active owner is protected by the membership
+  database trigger.
 
 ### `get-organization-by-login` [active]
 
@@ -69,7 +90,7 @@ Enterprise ownership links are excluded to preserve one authority.
 
 ## Public capabilities
 
-The two active queries are exposed through `server-api.ts`.
+The active command and two queries are exposed through `server-api.ts`.
 `OrganizationReference` and `OrganizationOwnerReference` are integration
 contracts.
 
@@ -80,12 +101,14 @@ validated by scenario integration tests.
 
 ## Authorization
 
-Public identity lookup requires no authorization.
+Public identity lookup requires no authorization. Creation requires an
+authenticated account and binds that account as the first owner.
 
 ## Persistence and transactions
 
-A versioned context-local process Map indexes ID and login. Queries do not
-write.
+Production uses PostgreSQL with normalized-login uniqueness. Development
+queries retain the process adapter; bootstrap creation fails closed without
+durable storage.
 
 ## Data classification
 

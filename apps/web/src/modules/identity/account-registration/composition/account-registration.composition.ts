@@ -1,6 +1,8 @@
+import { getProductionDatabase } from "../../../../../production-runtime";
 import { AccountIdentityAdapter } from "../adapters/outbound/integration/account-identity.adapter";
 import { PasswordCredentialAdapter } from "../adapters/outbound/integration/password-credential.adapter";
 import { InMemoryAccountRegistrationIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-account-registration-id-generator.adapter";
+import { NodeAccountRegistrationIdGeneratorAdapter } from "../adapters/outbound/persistence/node-account-registration-id-generator.adapter";
 import { ChangePersonalAccountUsernameHandler } from "../application/commands/change-personal-account-username.handler";
 import { RegisterPersonalAccountHandler } from "../application/commands/register-personal-account.handler";
 import type { ChangePersonalAccountUsernameUseCase } from "../application/ports/inbound/change-personal-account-username.use-case";
@@ -13,10 +15,14 @@ export interface AccountRegistrationServerFacade {
 }
 
 function composeAccountRegistrationServerFacade(): AccountRegistrationServerFacade {
+  const idGenerator =
+    getProductionDatabase() === null
+      ? new InMemoryAccountRegistrationIdGeneratorAdapter()
+      : new NodeAccountRegistrationIdGeneratorAdapter();
   const service = new AccountRegistrationService(
     new AccountIdentityAdapter(),
     new PasswordCredentialAdapter(),
-    new InMemoryAccountRegistrationIdGeneratorAdapter(),
+    idGenerator,
   );
   const changeUsername = new ChangePersonalAccountUsernameHandler(service);
   const register = new RegisterPersonalAccountHandler(service);

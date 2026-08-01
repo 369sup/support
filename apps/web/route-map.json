@@ -318,6 +318,42 @@
       ]
     },
     {
+      "id": "handler-api-auth-sessions",
+      "file": "apps/web/src/app/api/auth/sessions/route.ts",
+      "readme": "apps/web/src/app/api/auth/sessions/README.md",
+      "kind": "handler",
+      "supportPath": "/api/auth/sessions",
+      "githubUrls": [],
+      "status": "active",
+      "materialization": "active",
+      "title": "Sessions Handler",
+      "summary": "Handles POST requests for `/api/auth/sessions` through `hasSameOrigin`, `isPasswordAuthenticationEnabled`, `signInWithPassword`.",
+      "pathParams": [],
+      "queryParams": [],
+      "modules": [
+        {
+          "context": "identity/authentication",
+          "role": "owner",
+          "useCases": [],
+          "functions": [
+            "hasSameOrigin",
+            "isPasswordAuthenticationEnabled",
+            "signInWithPassword"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "repository-app-router"
+      ],
+      "methods": [
+        {
+          "method": "POST",
+          "function": "POST",
+          "summary": "Processes the POST transport contract without moving business policy into the route."
+        }
+      ]
+    },
+    {
       "id": "handler-api-auth-session",
       "file": "apps/web/src/app/api/auth/session/route.ts",
       "readme": "apps/web/src/app/api/auth/session/README.md",
@@ -537,134 +573,6 @@
       ]
     },
     {
-      "id": "handler-api-development-auth-account-sessions-sessionid-expire",
-      "file": "apps/web/src/app/api/development/auth/account-sessions/[sessionId]/expire/route.ts",
-      "readme": "apps/web/src/app/api/development/auth/account-sessions/[sessionId]/expire/README.md",
-      "kind": "handler",
-      "supportPath": "/api/development/auth/account-sessions/{sessionId}/expire",
-      "githubUrls": [],
-      "status": "active",
-      "materialization": "active",
-      "title": "Expire Handler",
-      "summary": "Handles POST requests for `/api/development/auth/account-sessions/{sessionId}/expire` through `expireSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`, `readBrowserSessionToken`.",
-      "pathParams": [
-        {
-          "name": "sessionId",
-          "kind": "scalar"
-        }
-      ],
-      "queryParams": [],
-      "modules": [
-        {
-          "context": "identity/authentication",
-          "role": "owner",
-          "useCases": [
-            "expire-session"
-          ],
-          "functions": [
-            "expireSession",
-            "hasSameOrigin",
-            "isInMemoryRuntimeEnabled",
-            "readBrowserSessionToken"
-          ]
-        }
-      ],
-      "sourceIds": [
-        "repository-app-router"
-      ],
-      "methods": [
-        {
-          "method": "POST",
-          "function": "POST",
-          "summary": "Processes the POST transport contract without moving business policy into the route."
-        }
-      ]
-    },
-    {
-      "id": "handler-api-development-auth-account-sessions-sessionid-reauthenticate",
-      "file": "apps/web/src/app/api/development/auth/account-sessions/[sessionId]/reauthenticate/route.ts",
-      "readme": "apps/web/src/app/api/development/auth/account-sessions/[sessionId]/reauthenticate/README.md",
-      "kind": "handler",
-      "supportPath": "/api/development/auth/account-sessions/{sessionId}/reauthenticate",
-      "githubUrls": [],
-      "status": "active",
-      "materialization": "active",
-      "title": "Reauthenticate Handler",
-      "summary": "Handles POST requests for `/api/development/auth/account-sessions/{sessionId}/reauthenticate` through `hasSameOrigin`, `isInMemoryRuntimeEnabled`, `readBrowserSessionToken`, `reauthenticateSession`.",
-      "pathParams": [
-        {
-          "name": "sessionId",
-          "kind": "scalar"
-        }
-      ],
-      "queryParams": [],
-      "modules": [
-        {
-          "context": "identity/authentication",
-          "role": "owner",
-          "useCases": [
-            "reauthenticate-session"
-          ],
-          "functions": [
-            "hasSameOrigin",
-            "isInMemoryRuntimeEnabled",
-            "readBrowserSessionToken",
-            "reauthenticateSession"
-          ]
-        }
-      ],
-      "sourceIds": [
-        "repository-app-router"
-      ],
-      "methods": [
-        {
-          "method": "POST",
-          "function": "POST",
-          "summary": "Processes the POST transport contract without moving business policy into the route."
-        }
-      ]
-    },
-    {
-      "id": "handler-api-development-auth-sessions",
-      "file": "apps/web/src/app/api/development/auth/sessions/route.ts",
-      "readme": "apps/web/src/app/api/development/auth/sessions/README.md",
-      "kind": "handler",
-      "supportPath": "/api/development/auth/sessions",
-      "githubUrls": [],
-      "status": "active",
-      "materialization": "active",
-      "title": "Sessions Handler",
-      "summary": "Handles POST requests for `/api/development/auth/sessions` through `createDevelopmentSession`, `hasSameOrigin`, `isInMemoryRuntimeEnabled`, `readBrowserSessionToken`, `writeBrowserSessionToken`.",
-      "pathParams": [],
-      "queryParams": [],
-      "modules": [
-        {
-          "context": "identity/authentication",
-          "role": "owner",
-          "useCases": [
-            "create-development-session"
-          ],
-          "functions": [
-            "createDevelopmentSession",
-            "hasSameOrigin",
-            "isInMemoryRuntimeEnabled",
-            "readBrowserSessionToken",
-            "writeBrowserSessionToken"
-          ]
-        }
-      ],
-      "sourceIds": [
-        "repository-app-router"
-      ],
-      "methods": [
-        {
-          "method": "POST",
-          "function": "POST",
-          "summary": "Processes the POST transport contract without moving business policy into the route."
-        }
-      ]
-    },
-    {
       "id": "handler-api-enterprises-slug-organizations",
       "file": "apps/web/src/app/api/enterprises/[slug]/organizations/route.ts",
       "readme": "apps/web/src/app/api/enterprises/[slug]/organizations/README.md",
@@ -674,7 +582,7 @@
       "status": "active",
       "materialization": "active",
       "title": "Organizations Handler",
-      "summary": "Handles GET requests for `/api/enterprises/{slug}/organizations` through `getOptionalCurrentSession`, `authorizeEnterpriseAdministration`, `getEnterpriseBySlug`, `listEnterpriseOrganizations`.",
+      "summary": "Lists enterprise organizations and lets an enterprise owner attach a standalone organization.",
       "pathParams": [
         {
           "name": "slug",
@@ -688,11 +596,13 @@
           "role": "owner",
           "useCases": [
             "get-enterprise-by-slug",
-            "list-enterprise-organizations"
+            "list-enterprise-organizations",
+            "attach-enterprise-organization"
           ],
           "functions": [
             "getEnterpriseBySlug",
-            "listEnterpriseOrganizations"
+            "listEnterpriseOrganizations",
+            "attachEnterpriseOrganization"
           ]
         },
         {
@@ -712,6 +622,16 @@
           "functions": [
             "authorizeEnterpriseAdministration"
           ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "collaborator",
+          "useCases": [
+            "get-organization-by-login"
+          ],
+          "functions": [
+            "getOrganizationByLogin"
+          ]
         }
       ],
       "sourceIds": [
@@ -722,6 +642,11 @@
           "method": "GET",
           "function": "GET",
           "summary": "Processes the GET transport contract without moving business policy into the route."
+        },
+        {
+          "method": "POST",
+          "function": "POST",
+          "summary": "Authorizes the enterprise owner and attaches the selected standalone organization."
         }
       ]
     },
@@ -1537,6 +1462,68 @@
       ]
     },
     {
+      "id": "handler-auth-callback",
+      "file": "apps/web/src/app/(public)/auth/callback/route.ts",
+      "readme": "apps/web/src/app/(public)/auth/callback/README.md",
+      "kind": "handler",
+      "supportPath": "/auth/callback",
+      "githubUrls": [],
+      "status": "active",
+      "materialization": "active",
+      "title": "Supabase Auth callback",
+      "summary": "Exchanges a PKCE code or verifies an email OTP before redirecting to the requested safe application path.",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "code",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "token_hash",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "type",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "next",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "sb_flow_id",
+          "required": false,
+          "repeatable": false
+        }
+      ],
+      "modules": [
+        {
+          "context": "identity/authentication",
+          "role": "owner",
+          "useCases": [],
+          "functions": [
+            "completeExternalSignIn",
+            "isSupabaseAuthenticationEnabled",
+            "verifySupabaseOtp"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "repository-app-router"
+      ],
+      "methods": [
+        {
+          "method": "GET",
+          "function": "GET",
+          "summary": "Validates the provider callback and establishes the cookie-backed session."
+        }
+      ]
+    },
+    {
       "id": "handler-logout",
       "file": "apps/web/src/app/(public)/logout/route.ts",
       "readme": "apps/web/src/app/(public)/logout/README.md",
@@ -1546,20 +1533,16 @@
       "status": "active",
       "materialization": "active",
       "title": "Logout Handler",
-      "summary": "Handles GET requests for `/logout` through `clearBrowserSessionToken`, `readBrowserSessionToken`, `signOutAllSessions`.",
+      "summary": "Signs out the current Supabase Auth session and redirects to login.",
       "pathParams": [],
       "queryParams": [],
       "modules": [
         {
           "context": "identity/authentication",
           "role": "owner",
-          "useCases": [
-            "sign-out-all-sessions"
-          ],
+          "useCases": [],
           "functions": [
-            "clearBrowserSessionToken",
-            "readBrowserSessionToken",
-            "signOutAllSessions"
+            "signOutCurrentSession"
           ]
         }
       ],
@@ -1830,6 +1813,50 @@
         "github-site-policy"
       ],
       "pageFunction": "DocsPage"
+    },
+    {
+      "id": "page-enterprises-new",
+      "file": "apps/web/src/app/(console)/enterprises/new/page.tsx",
+      "readme": "apps/web/src/app/(console)/enterprises/new/README.md",
+      "kind": "page",
+      "supportPath": "/enterprises/new",
+      "githubUrls": [],
+      "status": "active",
+      "materialization": "active",
+      "title": "Create enterprise",
+      "summary": "Creates a standard enterprise and makes the signed-in account its first owner.",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "enterprise",
+          "required": false,
+          "repeatable": false
+        }
+      ],
+      "modules": [
+        {
+          "context": "enterprises/enterprises",
+          "role": "owner",
+          "useCases": [
+            "create-enterprise"
+          ],
+          "functions": [
+            "createEnterprise"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "collaborator",
+          "useCases": [],
+          "functions": [
+            "requireCurrentSession"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "repository-app-router"
+      ],
+      "pageFunction": "NewEnterprisePage"
     },
     {
       "id": "page-enterprises-slug",
@@ -2394,7 +2421,7 @@
       "supportPath": "/forgot-password",
       "githubUrls": [],
       "status": "active",
-      "materialization": "scaffolded",
+      "materialization": "active",
       "title": "Forgot password",
       "summary": "Request a credential recovery flow for an account.",
       "pathParams": [],
@@ -2404,7 +2431,9 @@
           "context": "identity/authentication",
           "role": "owner",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "requestSupabasePasswordReset"
+          ]
         }
       ],
       "sourceIds": [
@@ -2422,13 +2451,23 @@
       "status": "active",
       "materialization": "active",
       "title": "Login Page",
-      "summary": "Delivers `/login` through `isInMemoryRuntimeEnabled`.",
+      "summary": "Delivers `/login` through `isPasswordAuthenticationEnabled`.",
       "pathParams": [],
       "queryParams": [
         {
           "name": "add",
           "required": false,
           "repeatable": true
+        },
+        {
+          "name": "authentication",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "confirmation",
+          "required": false,
+          "repeatable": false
         }
       ],
       "modules": [
@@ -2437,7 +2476,8 @@
           "role": "owner",
           "useCases": [],
           "functions": [
-            "isInMemoryRuntimeEnabled"
+            "isPasswordAuthenticationEnabled",
+            "startExternalSignIn"
           ]
         }
       ],
@@ -2729,14 +2769,58 @@
       "pageFunction": "OrganizationBillingPage"
     },
     {
+      "id": "page-organizations-new",
+      "file": "apps/web/src/app/(console)/organizations/new/page.tsx",
+      "readme": "apps/web/src/app/(console)/organizations/new/README.md",
+      "kind": "page",
+      "supportPath": "/organizations/new",
+      "githubUrls": [],
+      "status": "active",
+      "materialization": "active",
+      "title": "Create organization",
+      "summary": "Creates a standalone organization and makes the signed-in account its first owner.",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "organization",
+          "required": false,
+          "repeatable": false
+        }
+      ],
+      "modules": [
+        {
+          "context": "organizations/organizations",
+          "role": "owner",
+          "useCases": [
+            "create-organization"
+          ],
+          "functions": [
+            "createOrganization"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "collaborator",
+          "useCases": [],
+          "functions": [
+            "requireCurrentSession"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "repository-app-router"
+      ],
+      "pageFunction": "NewOrganizationPage"
+    },
+    {
       "id": "page-organizations-login-settings-custom-properties",
       "file": "apps/web/src/app/(console)/organizations/[login]/settings/custom_properties/page.tsx",
       "readme": "apps/web/src/app/(console)/organizations/[login]/settings/custom_properties/README.md",
       "kind": "page",
       "supportPath": "/organizations/{login}/settings/custom_properties",
       "githubUrls": [],
-      "status": "planned",
-      "materialization": "scaffolded",
+      "status": "active",
+      "materialization": "active",
       "title": "Organization custom properties",
       "summary": "Define organization-owned custom property schemas and values.",
       "pathParams": [
@@ -2745,13 +2829,53 @@
           "kind": "scalar"
         }
       ],
-      "queryParams": [],
+      "queryParams": [
+        {
+          "name": "property",
+          "required": false,
+          "repeatable": false
+        }
+      ],
       "modules": [
         {
           "context": "organizations/custom-properties",
           "role": "owner",
+          "useCases": [
+            "define-organization-repository-property",
+            "list-organization-repository-properties"
+          ],
+          "functions": [
+            "defineOrganizationRepositoryProperty",
+            "listOrganizationRepositoryProperties"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "collaborator",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "requireCurrentSession"
+          ]
+        },
+        {
+          "context": "organizations/organizations",
+          "role": "collaborator",
+          "useCases": [
+            "get-organization-by-login"
+          ],
+          "functions": [
+            "getOrganizationByLogin"
+          ]
+        },
+        {
+          "context": "organizations/organization-memberships",
+          "role": "collaborator",
+          "useCases": [
+            "list-active-organization-memberships-for-organization"
+          ],
+          "functions": [
+            "listActiveOrganizationMembershipsForOrganization"
+          ]
         }
       ],
       "sourceIds": [
@@ -6520,7 +6644,7 @@
       "supportPath": "/reset-password",
       "githubUrls": [],
       "status": "active",
-      "materialization": "scaffolded",
+      "materialization": "active",
       "title": "Reset password",
       "summary": "Complete an account credential recovery flow.",
       "pathParams": [],
@@ -6530,7 +6654,10 @@
           "context": "identity/authentication",
           "role": "owner",
           "useCases": [],
-          "functions": []
+          "functions": [
+            "signOutCurrentSession",
+            "updateSupabasePassword"
+          ]
         }
       ],
       "sourceIds": [
@@ -6882,7 +7009,7 @@
       "status": "active",
       "materialization": "active",
       "title": "Sign up",
-      "summary": "Delivers `/signup` through `registerPersonalAccount`.",
+      "summary": "Delivers `/signup` through Supabase Auth account registration.",
       "pathParams": [],
       "queryParams": [
         {
@@ -6893,13 +7020,22 @@
       ],
       "modules": [
         {
-          "context": "identity/account-registration",
-          "role": "owner",
+          "context": "identity/accounts",
+          "role": "collaborator",
           "useCases": [
-            "register-personal-account"
+            "get-account-candidate-by-username"
           ],
           "functions": [
-            "registerPersonalAccount"
+            "getAccountCandidateByUsername"
+          ]
+        },
+        {
+          "context": "identity/authentication",
+          "role": "owner",
+          "useCases": [],
+          "functions": [
+            "isSupabaseAuthenticationEnabled",
+            "signUpWithPassword"
           ]
         }
       ],
@@ -6907,6 +7043,42 @@
         "repository-app-router"
       ],
       "pageFunction": "SignupPage"
+    },
+    {
+      "id": "page-signup-complete",
+      "file": "apps/web/src/app/(public)/signup/complete/page.tsx",
+      "readme": "apps/web/src/app/(public)/signup/complete/README.md",
+      "kind": "page",
+      "supportPath": "/signup/complete",
+      "githubUrls": [],
+      "status": "active",
+      "materialization": "active",
+      "title": "Complete Google signup",
+      "summary": "Requires a verified first-time Google user to choose an available Support username before product-account provisioning.",
+      "pathParams": [],
+      "queryParams": [
+        {
+          "name": "provisioning",
+          "required": false,
+          "repeatable": false
+        }
+      ],
+      "modules": [
+        {
+          "context": "identity/authentication",
+          "role": "owner",
+          "useCases": [],
+          "functions": [
+            "completeExternalAccountProvisioning",
+            "getExternalAccountProvisioningState",
+            "signOutCurrentSession"
+          ]
+        }
+      ],
+      "sourceIds": [
+        "repository-app-router"
+      ],
+      "pageFunction": "CompleteGoogleSignupPage"
     },
     {
       "id": "page-terms",
@@ -7078,7 +7250,7 @@
       "supportPath": "/verify-email",
       "githubUrls": [],
       "status": "active",
-      "materialization": "scaffolded",
+      "materialization": "active",
       "title": "Verify email",
       "summary": "Verify an account email as part of the authentication lifecycle.",
       "pathParams": [],

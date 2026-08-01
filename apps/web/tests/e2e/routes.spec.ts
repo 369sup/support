@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 const publicRoutes = [
   { path: "/", heading: "Where teams build trust together." },
@@ -6,134 +6,20 @@ const publicRoutes = [
   { path: "/docs", heading: "Documentation" },
   { path: "/privacy", heading: "Privacy" },
   { path: "/login", heading: "Sign in to Support" },
+  { path: "/signup", heading: "Create a personal account" },
   { path: "/terms", heading: "Terms" },
-];
-
-const consoleRoutes = [
-  { path: "/account", heading: "Account" },
-  { path: "/dashboard", heading: "Dashboard" },
-  { path: "/repositories", heading: "Repositories" },
-  { path: "/settings", heading: "Settings" },
-  { path: "/settings/sessions", heading: "Account sessions" },
-  {
-    path: "/organizations/community-lab/settings/teams",
-    heading: "Organization teams",
-  },
-  {
-    path: "/organizations/community-lab/settings/roles",
-    heading: "Organization roles",
-  },
-  {
-    path: "/organizations/community-lab/settings/repository-access/private-handbook",
-    heading: "Repository team access",
-  },
-  {
-    path: "/organizations/community-lab/settings/member_privileges",
-    heading: "Organization member privileges",
-  },
-  {
-    path: "/organizations/community-lab/settings/audit-log",
-    heading: "Organization audit log",
-  },
-];
-
-const unavailableScaffoldRoutes = [
-  "/accept-invitation",
-  "/forgot-password",
-  "/reset-password",
-  "/search",
-  "/sign-up",
-  "/signup",
-  "/verify-email",
-  "/explore",
-  "/topics",
-  "/topics/typescript",
-  "/trending",
-  "/collections",
-  "/marketplace",
-  "/new",
-  "/notifications",
-  "/projects",
-  "/settings/apps",
-  "/settings/installations",
-  "/settings/developers",
-  "/settings/applications",
-  "/settings/billing",
-  
-  
-  "/orgs/community-lab/projects",
-  "/orgs/community-lab/projects/1",
-  "/users/octocat/projects/1",
-  "/organizations/community-lab/settings/custom_properties",
-  "/organizations/community-lab/settings/apps",
-  "/organizations/community-lab/settings/installations",
-  "/organizations/community-lab/settings/installations/1",
-  "/organizations/community-lab/settings/hooks",
-  "/organizations/community-lab/settings/billing",
-
-  "/community-lab/docs/settings/hooks",
-  "/community-lab/docs/issues",
-  "/community-lab/docs/issues/views",
-  "/community-lab/docs/issues/new",
-  "/community-lab/docs/issues/1",
-  "/community-lab/docs/labels",
-  "/community-lab/docs/labels/documentation",
-  "/community-lab/docs/milestones",
-  "/community-lab/docs/milestone/1",
-  "/community-lab/docs/discussions",
-  "/community-lab/docs/discussions/new",
-  "/community-lab/docs/discussions/1",
-  "/community-lab/docs/discussions/categories/general",
-  "/community-lab/docs/projects",
-  "/community-lab/docs/stargazers",
-  "/community-lab/docs/watchers",
-  "/community-lab/docs/activity",
-  "/community-lab/docs/pulse",
-  "/community-lab/docs/custom-properties",
-  "/community-lab/docs/tree/main/README.md",
-  "/community-lab/docs/blob/main/README.md",
-  "/community-lab/docs/raw/main/README.md",
-  "/community-lab/docs/blame/main/README.md",
-  "/community-lab/docs/commit/0123456789abcdef",
-  "/community-lab/docs/commits/main",
-  "/community-lab/docs/branches",
-  "/community-lab/docs/branches/active",
-  "/community-lab/docs/tags",
-  "/community-lab/docs/compare",
-  "/community-lab/docs/compare/main...next",
-  "/community-lab/docs/pull/1",
-  "/community-lab/docs/pulls",
-  "/community-lab/docs/actions",
-  "/community-lab/docs/actions/runs/1",
-  "/community-lab/docs/packages",
-  "/community-lab/docs/pages",
-  "/community-lab/docs/releases",
-  "/community-lab/docs/releases/latest",
-  "/community-lab/docs/releases/tag/v1.0.0",
-  "/community-lab/docs/releases/download/v1.0.0/example.zip",
-  "/community-lab/docs/archive/refs/heads/main.zip",
-  "/community-lab/docs/forks",
-  "/community-lab/docs/community",
-  "/community-lab/docs/wiki",
-  "/community-lab/docs/wiki/Home",
-  "/community-lab/docs/graphs/traffic",
 ] as const;
 
-async function signIn(page: Page) {
-  await page.goto("/login");
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
-}
-
-async function signInAs(page: Page, username: string) {
-  await page.goto("/login");
-  await page.getByLabel("Username").fill(username);
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
-}
+const protectedRoutes = [
+  "/account",
+  "/dashboard",
+  "/repositories",
+  "/settings",
+  "/settings/sessions",
+] as const;
 
 for (const route of publicRoutes) {
-  test(`${route.path} renders its expected heading`, async ({ page }) => {
+  test(route.path + " renders its expected heading", async ({ page }) => {
     const response = await page.goto(route.path);
 
     expect(response?.ok()).toBe(true);
@@ -154,66 +40,6 @@ test("home call to action reaches the canonical login page", async ({ page }) =>
   await expect(
     page.getByRole("heading", { level: 1, name: "Sign in to Support" }),
   ).toBeVisible();
-});
-
-test("implemented owner pages render profile headings", async ({ page }) => {
-  await signIn(page);
-
-  await page.goto("/community-lab");
-  await expect(
-    page.getByRole("heading", { level: 1, name: "Community Lab" }),
-  ).toBeVisible();
-
-  await page.goto("/octocat");
-  await expect(
-    page.getByRole("heading", { level: 1, name: "The Octocat" }),
-  ).toBeVisible();
-});
-
-test("implemented repository pages render their implemented surface", async ({ page }) => {
-  await signIn(page);
-
-  await page.goto("/community-lab/docs");
-  await expect(
-    page.getByRole("heading", { level: 1, name: "community-lab/docs" }),
-  ).toBeVisible();
-
-  await page.goto("/community-lab/docs/settings");
-  await expect(
-    page.getByRole("heading", { level: 1, name: "Repository settings" }),
-  ).toBeVisible();
-});
-
-test("repository administrators update and clear repository profile fields", async ({
-  page,
-}) => {
-  await signIn(page);
-  await page.goto("/octocat/support/settings");
-
-  await page
-    .getByLabel("Description")
-    .fill("Support repository profile updated through settings.");
-  await page.getByLabel("Homepage").fill("https://support.example.com");
-  await page.getByRole("button", { name: "Save profile" }).click();
-
-  await expect(page).toHaveURL(/repository=profile-updated/);
-  await expect(page.getByRole("status")).toHaveText(
-    "Repository profile updated.",
-  );
-
-  await page.goto("/octocat/support");
-  await expect(
-    page.getByText("Support repository profile updated through settings."),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: "https://support.example.com" }),
-  ).toHaveAttribute("href", "https://support.example.com");
-
-  await page.goto("/octocat/support/settings");
-  await page.getByLabel("Description").fill("");
-  await page.getByLabel("Homepage").fill("");
-  await page.getByRole("button", { name: "Save profile" }).click();
-  await expect(page).toHaveURL(/repository=profile-updated/);
 });
 
 test("home layout is responsive and keyboard actions are supported", async ({ page }) => {
@@ -259,33 +85,6 @@ test("home page exposes core sections and section navigation", async ({ page }) 
   await expect(page).toHaveURL(/#product$/);
 });
 
-test("/login exposes username/password fields and keyboard submit", async ({
-  page,
-}) => {
-  await page.goto("/login");
-
-  await expect(page.getByRole("heading", { name: "Sign in to Support" })).toBeVisible();
-  await expect(page.getByLabel("Username")).toBeVisible();
-  await expect(page.getByLabel("Password")).toBeVisible();
-  const signInButton = page.getByRole("button", {
-    name: "Sign in",
-    exact: true,
-  });
-  await expect(signInButton).toBeVisible();
-
-  await page.getByLabel("Username").focus();
-  await expect(page.getByLabel("Username")).toBeFocused();
-  await page.keyboard.press("Tab");
-  await expect(page.getByLabel("Password")).toBeFocused();
-
-  await page.getByLabel("Username").fill("octocat");
-  await page.getByLabel("Password").fill("incorrect");
-  await page.getByLabel("Password").press("Enter");
-
-  const alert = page.locator("p[role='alert']");
-  await expect(alert).toHaveText("Incorrect development username or password.");
-});
-
 test("legacy sign-in URLs permanently redirect to canonical login URLs", async ({
   request,
 }) => {
@@ -300,402 +99,62 @@ test("legacy sign-in URLs permanently redirect to canonical login URLs", async (
   expect(addAccountResponse.headers()["location"]).toBe("/login?add=1");
 });
 
-test("login add-account mode keeps its dedicated presentation", async ({ page }) => {
-  await page.goto("/login?add=1");
+test("development authentication handlers are not routable", async ({
+  request,
+}) => {
+  const removedRoutes = [
+    "/api/development/auth/sessions",
+    "/api/development/auth/account-sessions/example/expire",
+    "/api/development/auth/account-sessions/example/reauthenticate",
+  ];
 
-  await expect(
-    page.getByRole("heading", { level: 1, name: "Add account to Support" }),
-  ).toBeVisible();
-  await expect(page.getByLabel("Username")).toHaveValue("carol_ACME");
-  await expect(
-    page.getByRole("button", { name: "Add account", exact: true }),
-  ).toBeVisible();
+  for (const route of removedRoutes) {
+    const response = await request.post(route, { maxRedirects: 0 });
+    expect([307, 404, 405], route).toContain(response.status());
+    if (response.status() === 307) {
+      expect(response.headers()["location"], route).toBe("/login");
+    }
+  }
 });
 
-test("logout route signs out and routes to login", async ({ page, context }) => {
-  await page.goto("/login");
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+for (const route of protectedRoutes) {
+  test(route + " redirects unauthenticated visitors to login", async ({ page }) => {
+    await page.goto(route);
 
-  const signInCookie = await page.context().cookies();
-  expect(
-    signInCookie.some((cookie) => cookie.name === "support.browser-session"),
-    "browser session cookie exists after sign-in",
-  ).toBe(true);
-
-  await page.goto("/logout");
-  await expect(page).toHaveURL(/\/login$/);
-  await expect(
-    page.getByRole("heading", { level: 1, name: "Sign in to Support" }),
-  ).toBeVisible();
-
-  const cookiesAfterLogout = await page.context().cookies();
-  const sessionCookieAfterLogout = cookiesAfterLogout.find(
-    (cookie) => cookie.name === "support.browser-session",
-  );
-  expect(sessionCookieAfterLogout).toBeUndefined();
-
-  const dashboardResponse = await context.request.get("/dashboard", {
-    maxRedirects: 0,
-  });
-  expect(
-    [301, 302, 307, 308].includes(dashboardResponse.status()),
-    "/dashboard redirects to login when signed out",
-  ).toBe(true);
-  await expect(page).toHaveURL(/\/login$/);
-});
-
-for (const route of consoleRoutes) {
-  test(`${route.path} renders after authentication`, async ({ page }) => {
-    await signIn(page);
-    await page.goto(route.path);
-
+    await expect(page).toHaveURL(/\/login$/);
     await expect(
-      page.getByRole("heading", { level: 1, name: route.heading }),
+      page.getByRole("heading", { level: 1, name: "Sign in to Support" }),
     ).toBeVisible();
   });
 }
 
-test("unavailable route scaffolds consistently render not found", async ({
+test("unavailable authentication does not expose organization administration APIs", async ({
   context,
-  page,
 }) => {
-  await signIn(page);
-
-  for (const route of unavailableScaffoldRoutes) {
-    const response = await context.request.get(route, {
-      maxRedirects: 0,
-      timeout: 5000,
-    });
-    expect(response.status(), route).toBe(404);
-  }
-});
-
-test("unauthenticated console navigation redirects to login", async ({ page }) => {
-  await page.goto("/dashboard");
-
-  await expect(page).toHaveURL(/\/login$/);
-  await expect(
-    page.getByRole("heading", { level: 1, name: "Sign in to Support" }),
-  ).toBeVisible();
-});
-
-test("invalid development credentials remain on login", async ({ page }) => {
-  await page.goto("/login");
-  await page.getByLabel("Password").fill("incorrect");
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
-
-  await expect(page.locator("form").getByRole("alert")).toHaveText(
-    "Incorrect development username or password.",
-  );
-  await expect(page).toHaveURL(/\/login$/);
-});
-
-test("organization administration APIs require authentication and same origin", async ({
-  context,
-  page,
-}) => {
-  const unauthenticated = await context.request.get(
+  const response = await context.request.get(
     "/api/organizations/community-lab/teams",
   );
-  expect(unauthenticated.status()).toBe(401);
 
-  await signIn(page);
-  const crossOrigin = await context.request.post(
-    "/api/organizations/community-lab/teams",
-    {
-      data: {
-        name: "Cross origin",
-        slug: "cross-origin",
-        description: "",
-        visibility: "visible",
-      },
-      headers: { origin: "https://invalid.example" },
-    },
-  );
-  expect(crossOrigin.status()).toBe(403);
+  expect(response.status()).toBe(404);
 });
 
-test("login uses an HttpOnly cookie and sign-out-all completes the flow", async ({
-  context,
-  page,
-}) => {
-  await signIn(page);
-  await expect(page.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible();
-  const sessionCookie = (await context.cookies()).find(
-    (cookie) => cookie.name === "support.browser-session",
-  );
-  expect(sessionCookie).toMatchObject({
-    httpOnly: true,
-    sameSite: "Lax",
-  });
-  await page.getByLabel("Account menu for @octocat").click();
-  await page.getByRole("button", { name: "Sign out all" }).click();
-
-  await expect(page).toHaveURL(/\/login$/);
-});
-
-test("public navigation reaches documentation and login", async ({ page }) => {
+test("public navigation reaches login", async ({ page }) => {
   await page.goto("/docs");
   await page.getByRole("link", { name: "Sign in" }).click();
 
   await expect(page).toHaveURL(/\/login$/);
 });
 
-test("console navigation reaches repositories", async ({ page }) => {
-  await signIn(page);
-  await page.getByRole("link", { name: "Repositories" }).click();
+test("unknown routes cannot bypass unauthenticated redirects", async ({ page }) => {
+  await page.goto("/does-not-exist");
 
-  await expect(page).toHaveURL(/\/repositories$/);
+  await expect(page).toHaveURL(/\/login$/);
   await expect(
-    page.getByRole("heading", { level: 1, name: "Repositories" }),
+    page.getByRole("heading", { level: 1, name: "Sign in to Support" }),
   ).toBeVisible();
 });
 
-test("redesigned console surfaces fit a mobile viewport", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await signIn(page);
-  await page.getByLabel("Dashboard context").selectOption({
-    label: "Community Lab",
-  });
-
-  for (const route of consoleRoutes.slice(1)) {
-    await page.goto(route.path);
-    await expect(
-      page.getByRole("heading", { level: 1, name: route.heading }),
-    ).toBeVisible();
-
-    const viewport = await page.evaluate(() => ({
-      clientWidth: document.documentElement.clientWidth,
-      scrollWidth: document.documentElement.scrollWidth,
-    }));
-    expect(viewport.scrollWidth).toBeLessThanOrEqual(viewport.clientWidth);
-  }
-});
-
-test("unknown routes render the application not-found page", async ({ page }) => {
-  const response = await page.goto("/does-not-exist");
-
-  expect(response?.status()).toBe(404);
-  await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
-});
-
-test("account, Dashboard context, enterprise role, and repository access integrate", async ({
-  page,
-}) => {
-  await signIn(page);
-
-  const contextSwitcher = page.getByLabel("Dashboard context");
-  await expect(contextSwitcher).toContainText("Community Lab");
-  await expect(contextSwitcher).not.toContainText("ACME Enterprise");
-  await contextSwitcher.selectOption({
-    label: "Community Lab",
-  });
-  await expect(page.getByText("community-lab/docs")).toBeVisible();
-  await page.reload();
-  await expect(page.getByLabel("Dashboard context")).toHaveValue(
-    "organization:organization_community_lab",
-  );
-  await page.getByRole("link", { name: "Repositories" }).click();
-  await expect(page).toHaveURL(/\/repositories$/);
-  await page.goBack();
-  await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByLabel("Dashboard context")).toHaveValue(
-    "organization:organization_community_lab",
-  );
-  await page.goForward();
-  await expect(page).toHaveURL(/\/repositories$/);
-  await page.goBack();
-  await expect(page.getByText("community-lab/docs")).toBeVisible();
-
-  await page.getByLabel("Account menu for @octocat").click();
-  await page.getByRole("link", { name: "Add account" }).click();
-  await expect(
-    page.getByRole("heading", { level: 1, name: "Add account" }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Add account" }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByLabel("Account menu for @carol_ACME")).toBeVisible();
-
-  await expect(page.getByLabel("Dashboard context")).toContainText(
-    "ACME Platform",
-  );
-  await page.getByLabel("Dashboard context").selectOption({
-    label: "ACME Platform",
-  });
-  await expect(page.getByText("acme-platform/internal-tools")).toBeVisible();
-  await expect(page.getByText("read", { exact: true })).toBeVisible();
-
-  await page.getByLabel("Account menu for @carol_ACME").click();
-  await page
-    .getByRole("link", { name: "Enterprise administration" })
-    .click();
-  await expect(
-    page.getByRole("heading", { level: 1, name: "ACME Enterprise" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { level: 2, name: "ACME Platform" }),
-  ).toBeVisible();
-
-  await page.getByRole("button", { name: /@octocat/ }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByLabel("Dashboard context")).toHaveValue(
-    "organization:organization_community_lab",
-  );
-  await expect(page.getByText("community-lab/docs")).toBeVisible();
-  await expect(page.getByLabel("Dashboard context")).not.toContainText(
-    "ACME Platform",
-  );
-});
-
-test("pending membership is not a selectable Dashboard context", async ({
-  page,
-}) => {
-  await page.goto("/login");
-  await page.getByLabel("Username").fill("bob");
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByLabel("Dashboard context")).not.toContainText(
-    "ACME Support",
-  );
-});
-
-test("a child team member receives an inherited repository grant", async ({
-  page,
-}) => {
-  await signInAs(page, "hubot");
-  await page.getByLabel("Dashboard context").selectOption({
-    label: "Community Lab",
-  });
-
-  const privateRepository = page
-    .getByRole("listitem")
-    .filter({ hasText: "community-lab/private-handbook" });
-  await expect(privateRepository).toBeVisible();
-  await expect(
-    privateRepository.getByText("read", { exact: true }),
-  ).toBeVisible();
-});
-
-test("team and role administration preserve inherited access boundaries", async ({
-  page,
-}) => {
-  await signIn(page);
-  await page.getByLabel("Dashboard context").selectOption({
-    label: "Community Lab",
-  });
-  await expect(page.getByRole("link", { name: "Teams" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Roles" })).toBeVisible();
-
-  const inheritedRevoke = await page.evaluate(async () => {
-    const response = await fetch(
-      "/api/organizations/community-lab/repositories/private-handbook/teams/docs-ops",
-      { method: "DELETE" },
-    );
-    const payload: unknown = await response.json();
-    return {
-      httpStatus: response.status,
-      status:
-        payload !== null &&
-        typeof payload === "object" &&
-        "status" in payload &&
-        typeof payload.status === "string"
-          ? payload.status
-          : null,
-    };
-  });
-  expect(inheritedRevoke).toEqual({
-    httpStatus: 409,
-    status: "inherited-access-cannot-be-removed",
-  });
-
-  const assignmentId = await page.evaluate(async () => {
-    const response = await fetch(
-      "/api/organizations/community-lab/roles/assignments",
-      {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          roleKey: "all-repository-read",
-          subjectKind: "account",
-          subjectIdentifier: "account_hubot",
-        }),
-      },
-    );
-    const payload: unknown = await response.json();
-    if (
-      response.status !== 201 ||
-      payload === null ||
-      typeof payload !== "object" ||
-      !("assignment" in payload) ||
-      payload.assignment === null ||
-      typeof payload.assignment !== "object" ||
-      !("assignmentId" in payload.assignment) ||
-      typeof payload.assignment.assignmentId !== "string"
-    ) {
-      return null;
-    }
-    return payload.assignment.assignmentId;
-  });
-  expect(assignmentId).not.toBeNull();
-  if (assignmentId === null) {
-    throw new Error("Role assignment was not created.");
-  }
-  const revokeStatus = await page.evaluate(async (id) => {
-    const response = await fetch(
-      `/api/organizations/community-lab/roles/assignments/${id}`,
-      { method: "DELETE" },
-    );
-    return response.status;
-  }, assignmentId);
-  expect(revokeStatus).toBe(200);
-});
-
-test("secret teams and pending members are not disclosed or accepted", async ({
-  page,
-}) => {
-  await signInAs(page, "carol_ACME");
-  const secretTeamStatus = await page.evaluate(async () => {
-    const response = await fetch(
-      "/api/organizations/community-lab/teams/private-planning",
-    );
-    return response.status;
-  });
-  expect(secretTeamStatus).toBe(404);
-
-  await page.getByLabel("Account menu for @carol_ACME").click();
-  await page.getByRole("button", { name: "Sign out all" }).click();
-  await signIn(page);
-  const pendingMemberStatus = await page.evaluate(async () => {
-    const response = await fetch(
-      "/api/organizations/community-lab/teams/docs/members/bob",
-      { method: "PUT" },
-    );
-    return response.status;
-  });
-  expect(pendingMemberStatus).toBe(400);
-});
-
-test("an account session can be removed without exposing its account", async ({
-  page,
-}) => {
-  await signIn(page);
-  await page.getByLabel("Account menu for @octocat").click();
-  await page.getByRole("link", { name: "Add account" }).click();
-  await page.getByRole("button", { name: "Add account" }).click();
-  await expect(page.getByLabel("Account menu for @carol_ACME")).toBeVisible();
-
-  await page.getByLabel("Account menu for @carol_ACME").click();
-  await page
-    .getByRole("button", { name: "Remove octocat session" })
-    .click();
-  await page.getByLabel("Account menu for @carol_ACME").click();
-  await expect(
-    page.getByRole("button", { name: /@octocat/ }),
-  ).toHaveCount(0);
-});
-
-test("a process-invalidated opaque cookie safely redirects to login", async ({
+test("an invalid legacy browser cookie cannot authenticate", async ({
   context,
   page,
 }) => {
@@ -710,89 +169,3 @@ test("a process-invalidated opaque cookie safely redirects to login", async ({
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/login$/);
 });
-
-test("expired managed session requires reauthentication and keeps active account", async ({
-  page,
-}) => {
-  await signIn(page);
-  await page.getByLabel("Account menu for @octocat").click();
-  await page.getByRole("link", { name: "Add account" }).click();
-  await page.getByRole("button", { name: "Add account" }).click();
-
-  const carolSessionId = await page.evaluate(async () => {
-    const response = await fetch("/api/auth/account-sessions");
-    const payload: unknown = await response.json();
-    if (
-      payload === null ||
-      typeof payload !== "object" ||
-      !("sessions" in payload) ||
-      !Array.isArray(payload.sessions)
-    ) {
-      return null;
-    }
-    const sessions: unknown[] = payload.sessions;
-    for (const session of sessions) {
-      if (
-        session !== null &&
-        typeof session === "object" &&
-        "sessionId" in session &&
-        typeof session.sessionId === "string" &&
-        "account" in session &&
-        session.account !== null &&
-        typeof session.account === "object" &&
-        "username" in session.account &&
-        session.account.username === "carol_ACME"
-      ) {
-        return session.sessionId;
-      }
-    }
-    return null;
-  });
-  expect(carolSessionId).not.toBeNull();
-
-  await page.evaluate(async (sessionId) => {
-    await fetch(
-      `/api/development/auth/account-sessions/${sessionId}/expire`,
-      { method: "POST" },
-    );
-  }, carolSessionId);
-  await page.goto("/dashboard");
-  await expect(page).toHaveURL(/\/login$/);
-
-  await page.goto("/login");
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
-  await page.getByLabel("Account menu for @octocat").click();
-  const expiredManagedSession = page.getByRole("button", {
-    name: /@carol_ACME/,
-  });
-  await expect(expiredManagedSession).toBeDisabled();
-  await expect(expiredManagedSession).toContainText(
-    "Reauthentication required",
-  );
-  const activationStatus = await page.evaluate(async (sessionId) => {
-    const response = await fetch(
-      `/api/auth/account-sessions/${sessionId}/activate`,
-      { method: "POST" },
-    );
-    const payload: unknown = await response.json();
-    let status: string | null = null;
-    if (
-      payload !== null &&
-      typeof payload === "object" &&
-      "status" in payload &&
-      typeof payload.status === "string"
-    ) {
-      status = payload.status;
-    }
-    return {
-      httpStatus: response.status,
-      status,
-    };
-  }, carolSessionId);
-  expect(activationStatus).toEqual({
-    httpStatus: 409,
-    status: "reauthentication-required",
-  });
-  await expect(page.getByLabel("Account menu for @octocat")).toBeVisible();
-});
-

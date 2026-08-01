@@ -1,16 +1,21 @@
 import type { AccountReference } from "@/modules/identity/accounts/integration-contracts";
-import { registerEventSource } from "@/modules/platform/event-publication/server-api";
+import {
+  createContextEventSource,
+  registerEventSource,
+} from "@/modules/platform/event-publication/server-api";
 
 import { OrganizationMembershipAdapter } from "../adapters/outbound/integration/organization-membership.adapter";
 import { OrganizationPolicyAdapter } from "../adapters/outbound/integration/organization-policy.adapter";
 import { OrganizationRoleAdapter } from "../adapters/outbound/integration/organization-role.adapter";
 import { OrganizationTeamAdapter } from "../adapters/outbound/integration/organization-team.adapter";
 import { InMemoryRepositoryGrantAdapter } from "../adapters/outbound/persistence/in-memory-repository-grant.adapter";
-import { InMemoryRepositoryAccessOutboxAdapter } from "../adapters/outbound/persistence/in-memory-repository-access-outbox.adapter";
 import { InMemoryTeamRepositoryGrantIdGeneratorAdapter } from "../adapters/outbound/persistence/in-memory-team-repository-grant-id-generator.adapter";
+import { NodeTeamRepositoryGrantIdGeneratorAdapter } from "../adapters/outbound/persistence/node-team-repository-grant-id-generator.adapter";
+import { PostgresRepositoryGrantAdapter } from "../adapters/outbound/persistence/postgres-repository-grant.adapter";
 import { ChangeTeamRepositoryAccessHandler } from "../application/commands/change-team-repository-access.handler";
 import { GrantTeamRepositoryAccessHandler } from "../application/commands/grant-team-repository-access.handler";
 import { RevokeTeamRepositoryAccessHandler } from "../application/commands/revoke-team-repository-access.handler";
+import { getProductionDatabase } from "../../../../../production-runtime";
 import { ResolveEffectiveRepositoryPermissionHandler } from "../application/queries/resolve-effective-repository-permission.handler";
 import { TeamRepositoryAccessService } from "../application/services/team-repository-access.service";
 import type {
@@ -91,8 +96,14 @@ function mapRepository(repository: RepositoryAccessTarget) {
 }
 
 function composeRepositoryAccessServerFacade(): RepositoryAccessServerFacade {
-  const grantAdapter = new InMemoryRepositoryGrantAdapter();
-  const eventRecorder = new InMemoryRepositoryAccessOutboxAdapter();
+  const database = getProductionDatabase();
+  const grantAdapter =
+    database === null
+      ? new InMemoryRepositoryGrantAdapter()
+      : new PostgresRepositoryGrantAdapter(database);
+  const eventRecorder = createContextEventSource(
+    "repositories/repository-access",
+  );
   registerEventSource(eventRecorder);
   const teamAdapter = new OrganizationTeamAdapter();
   const resolver = new ResolveEffectiveRepositoryPermissionHandler(
@@ -107,7 +118,9 @@ function composeRepositoryAccessServerFacade(): RepositoryAccessServerFacade {
     grantAdapter,
     teamAdapter,
     resolver,
-    new InMemoryTeamRepositoryGrantIdGeneratorAdapter(),
+    database === null
+      ? new InMemoryTeamRepositoryGrantIdGeneratorAdapter()
+      : new NodeTeamRepositoryGrantIdGeneratorAdapter(),
     eventRecorder,
   );
   const grant = new GrantTeamRepositoryAccessHandler(teamAccessService);

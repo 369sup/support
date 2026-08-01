@@ -32,7 +32,11 @@ export type CreateDevelopmentSessionResult =
       session: AuthenticatedSessionReference;
     }>
   | Readonly<{
-      status: "invalid-credentials" | "account-unavailable";
+      status:
+        | "account-unavailable"
+        | "additional-factor-required"
+        | "invalid-additional-factor"
+        | "invalid-credentials";
     }>;
 
 export type SwitchAccountSessionResult =

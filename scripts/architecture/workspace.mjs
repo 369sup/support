@@ -339,6 +339,16 @@ function validateSourceImports(
 
   for (const filePath of sourceFiles) {
     for (const specifier of moduleSpecifiers(filePath)) {
+      if (
+        specifier.startsWith("@supabase/") &&
+        workspace.name !== "@support/supabase"
+      ) {
+        errors.push(
+          `[ARCH-PKG-011] ${projectRelative(repositoryRoot, filePath)} imports ${specifier} outside @support/supabase. Use an exported @support/supabase subpath instead.`,
+        );
+        continue;
+      }
+
       const targetWorkspace = targetForSpecifier(specifier, workspacesByName);
 
       if (targetWorkspace !== undefined) {

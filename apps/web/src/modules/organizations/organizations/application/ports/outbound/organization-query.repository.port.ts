@@ -8,4 +8,8 @@ export type OrganizationQuerySnapshot = Readonly<{
 export interface OrganizationQueryRepositoryPort {
   findById(organizationId: string): Promise<OrganizationQuerySnapshot | null>;
   findByLogin(login: string): Promise<OrganizationQuerySnapshot | null>;
+  createWithOwner?(
+    organization: OrganizationQuerySnapshot,
+    ownerAccountId: string,
+  ): Promise<"created" | "conflict">;
 }

@@ -11,4 +11,12 @@ export interface EnterpriseQueryRepositoryPort {
   findOrganizationIds(
     enterpriseId: string,
   ): Promise<readonly string[]>;
+  createWithOwner?(
+    enterprise: EnterpriseQuerySnapshot,
+    ownerAccountId: string,
+  ): Promise<"created" | "conflict">;
+  attachOrganization?(
+    enterpriseId: string,
+    organizationId: string,
+  ): Promise<"attached" | "organization-already-attached">;
 }

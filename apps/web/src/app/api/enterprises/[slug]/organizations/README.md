@@ -13,19 +13,21 @@
 
 ## Functional intent
 
-Handles GET requests for `/api/enterprises/{slug}/organizations` through `getOptionalCurrentSession`, `authorizeEnterpriseAdministration`, `getEnterpriseBySlug`, `listEnterpriseOrganizations`.
+Lists enterprise organizations and lets an enterprise owner attach a standalone organization.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
 ## Delivery functions
 
 - `GET`: `GET` — Processes the GET transport contract without moving business policy into the route.
+- `POST`: `POST` — Authorizes the enterprise owner and attaches the selected standalone organization.
 
 ## Module contracts
 
-- - **owner:** `enterprises/enterprises` — use cases: `get-enterprise-by-slug`, `list-enterprise-organizations`; functions: `getEnterpriseBySlug`, `listEnterpriseOrganizations`
+- - **owner:** `enterprises/enterprises` — use cases: `get-enterprise-by-slug`, `list-enterprise-organizations`, `attach-enterprise-organization`; functions: `getEnterpriseBySlug`, `listEnterpriseOrganizations`, `attachEnterpriseOrganization`
 - - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `getOptionalCurrentSession`
 - - **collaborator:** `enterprises/enterprise-roles` — use cases: `authorize-enterprise-administration`; functions: `authorizeEnterpriseAdministration`
+- - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

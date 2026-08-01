@@ -14,24 +14,22 @@ export type RouteMaterialization =
   | "scaffolded"
   | "documented-only";
 
-export type RouteId = "handler-api-auth-account-sessions" | "handler-api-auth-account-sessions-sessionid" | "handler-api-auth-account-sessions-sessionid-activate" | "handler-api-auth-session" | "handler-api-context" | "handler-api-context-selection" | "handler-api-contexts" | "handler-api-dashboard" | "handler-api-development-auth-account-sessions-sessionid-expire" | "handler-api-development-auth-account-sessions-sessionid-reauthenticate" | "handler-api-development-auth-sessions" | "handler-api-enterprises-slug-organizations" | "handler-api-organizations-login-repositories" | "handler-api-organizations-login-repositories-repository-teams-teamslug" | "handler-api-organizations-login-roles" | "handler-api-organizations-login-roles-assignments" | "handler-api-organizations-login-roles-assignments-assignmentid" | "handler-api-organizations-login-teams" | "handler-api-organizations-login-teams-teamslug" | "handler-api-organizations-login-teams-teamslug-maintainers-username" | "handler-api-organizations-login-teams-teamslug-members" | "handler-api-organizations-login-teams-teamslug-members-username" | "handler-api-users-username-repositories" | "handler-logout" | "page-accept-invitation" | "page-accessibility" | "page-account" | "page-collections" | "page-dashboard" | "page-docs" | "page-enterprises-slug" | "page-enterprises-slug-enterprise-roles" | "page-enterprises-slug-organizations" | "page-enterprises-slug-people" | "page-enterprises-slug-settings" | "page-enterprises-slug-settings-apps" | "page-enterprises-slug-settings-audit-log" | "page-enterprises-slug-settings-billing" | "page-enterprises-slug-teams" | "page-explore" | "page-forgot-password" | "page-login" | "page-marketplace" | "page-new" | "page-notifications" | "page-organizations-login-settings-apps" | "page-organizations-login-settings-audit-log" | "page-organizations-login-settings-billing" | "page-organizations-login-settings-custom-properties" | "page-organizations-login-settings-hooks" | "page-organizations-login-settings-installations" | "page-organizations-login-settings-installations-installationid" | "page-organizations-login-settings-member-privileges" | "page-organizations-login-settings-repository-access-repository" | "page-organizations-login-settings-roles" | "page-organizations-login-settings-teams" | "page-orgs-organization-people" | "page-orgs-organization-projects" | "page-orgs-organization-projects-number" | "page-orgs-organization-repositories" | "page-orgs-organization-teams" | "page-orgs-organization-teams-teamslug" | "page-owner" | "page-owner-repository" | "page-owner-repository-actions" | "page-owner-repository-actions-actionpath" | "page-owner-repository-activity" | "page-owner-repository-archive-archivepath" | "page-owner-repository-blame-refandpath" | "page-owner-repository-blob-refandpath" | "page-owner-repository-branches" | "page-owner-repository-branches-view" | "page-owner-repository-commit-sha" | "page-owner-repository-commits-refandpath" | "page-owner-repository-community" | "page-owner-repository-compare" | "page-owner-repository-compare-comparison" | "page-owner-repository-custom-properties" | "page-owner-repository-discussions" | "page-owner-repository-discussions-categories-slug" | "page-owner-repository-discussions-new" | "page-owner-repository-discussions-number" | "page-owner-repository-forks" | "page-owner-repository-graphs-traffic" | "page-owner-repository-issues" | "page-owner-repository-issues-new" | "page-owner-repository-issues-number" | "page-owner-repository-issues-views" | "page-owner-repository-labels" | "page-owner-repository-labels-label" | "page-owner-repository-milestone-number" | "page-owner-repository-milestones" | "page-owner-repository-packages" | "page-owner-repository-pages" | "page-owner-repository-projects" | "page-owner-repository-pull-pullpath" | "page-owner-repository-pulls" | "page-owner-repository-pulse" | "page-owner-repository-raw-refandpath" | "page-owner-repository-releases" | "page-owner-repository-releases-download-assetpath" | "page-owner-repository-releases-latest" | "page-owner-repository-releases-latest-download-assetpath" | "page-owner-repository-releases-tag-tag" | "page-owner-repository-settings" | "page-owner-repository-settings-access" | "page-owner-repository-settings-hooks" | "page-owner-repository-stargazers" | "page-owner-repository-tags" | "page-owner-repository-tree-refandpath" | "page-owner-repository-watchers" | "page-owner-repository-wiki" | "page-owner-repository-wiki-pagename" | "page-privacy" | "page-projects" | "page-repositories" | "page-reset-password" | "page-root" | "page-search" | "page-settings" | "page-settings-applications" | "page-settings-apps" | "page-settings-billing" | "page-settings-developers" | "page-settings-installations" | "page-settings-sessions" | "page-sign-in" | "page-sign-up" | "page-signup" | "page-terms" | "page-topics" | "page-topics-topic" | "page-trending" | "page-users-username-projects-number" | "page-verify-email";
+export type RouteId = "handler-api-auth-account-sessions" | "handler-api-auth-account-sessions-sessionid" | "handler-api-auth-account-sessions-sessionid-activate" | "handler-api-auth-session" | "handler-api-auth-sessions" | "handler-api-context" | "handler-api-context-selection" | "handler-api-contexts" | "handler-api-dashboard" | "handler-api-enterprises-slug-organizations" | "handler-api-organizations-login-repositories" | "handler-api-organizations-login-repositories-repository-teams-teamslug" | "handler-api-organizations-login-roles" | "handler-api-organizations-login-roles-assignments" | "handler-api-organizations-login-roles-assignments-assignmentid" | "handler-api-organizations-login-teams" | "handler-api-organizations-login-teams-teamslug" | "handler-api-organizations-login-teams-teamslug-maintainers-username" | "handler-api-organizations-login-teams-teamslug-members" | "handler-api-organizations-login-teams-teamslug-members-username" | "handler-api-users-username-repositories" | "handler-auth-callback" | "handler-logout" | "page-accept-invitation" | "page-accessibility" | "page-account" | "page-collections" | "page-dashboard" | "page-docs" | "page-enterprises-new" | "page-enterprises-slug" | "page-enterprises-slug-enterprise-roles" | "page-enterprises-slug-organizations" | "page-enterprises-slug-people" | "page-enterprises-slug-settings" | "page-enterprises-slug-settings-apps" | "page-enterprises-slug-settings-audit-log" | "page-enterprises-slug-settings-billing" | "page-enterprises-slug-teams" | "page-explore" | "page-forgot-password" | "page-login" | "page-marketplace" | "page-new" | "page-notifications" | "page-organizations-login-settings-apps" | "page-organizations-login-settings-audit-log" | "page-organizations-login-settings-billing" | "page-organizations-login-settings-custom-properties" | "page-organizations-login-settings-hooks" | "page-organizations-login-settings-installations" | "page-organizations-login-settings-installations-installationid" | "page-organizations-login-settings-member-privileges" | "page-organizations-login-settings-repository-access-repository" | "page-organizations-login-settings-roles" | "page-organizations-login-settings-teams" | "page-organizations-new" | "page-orgs-organization-people" | "page-orgs-organization-projects" | "page-orgs-organization-projects-number" | "page-orgs-organization-repositories" | "page-orgs-organization-teams" | "page-orgs-organization-teams-teamslug" | "page-owner" | "page-owner-repository" | "page-owner-repository-actions" | "page-owner-repository-actions-actionpath" | "page-owner-repository-activity" | "page-owner-repository-archive-archivepath" | "page-owner-repository-blame-refandpath" | "page-owner-repository-blob-refandpath" | "page-owner-repository-branches" | "page-owner-repository-branches-view" | "page-owner-repository-commit-sha" | "page-owner-repository-commits-refandpath" | "page-owner-repository-community" | "page-owner-repository-compare" | "page-owner-repository-compare-comparison" | "page-owner-repository-custom-properties" | "page-owner-repository-discussions" | "page-owner-repository-discussions-categories-slug" | "page-owner-repository-discussions-new" | "page-owner-repository-discussions-number" | "page-owner-repository-forks" | "page-owner-repository-graphs-traffic" | "page-owner-repository-issues" | "page-owner-repository-issues-new" | "page-owner-repository-issues-number" | "page-owner-repository-issues-views" | "page-owner-repository-labels" | "page-owner-repository-labels-label" | "page-owner-repository-milestone-number" | "page-owner-repository-milestones" | "page-owner-repository-packages" | "page-owner-repository-pages" | "page-owner-repository-projects" | "page-owner-repository-pull-pullpath" | "page-owner-repository-pulls" | "page-owner-repository-pulse" | "page-owner-repository-raw-refandpath" | "page-owner-repository-releases" | "page-owner-repository-releases-download-assetpath" | "page-owner-repository-releases-latest" | "page-owner-repository-releases-latest-download-assetpath" | "page-owner-repository-releases-tag-tag" | "page-owner-repository-settings" | "page-owner-repository-settings-access" | "page-owner-repository-settings-hooks" | "page-owner-repository-stargazers" | "page-owner-repository-tags" | "page-owner-repository-tree-refandpath" | "page-owner-repository-watchers" | "page-owner-repository-wiki" | "page-owner-repository-wiki-pagename" | "page-privacy" | "page-projects" | "page-repositories" | "page-reset-password" | "page-root" | "page-search" | "page-settings" | "page-settings-applications" | "page-settings-apps" | "page-settings-billing" | "page-settings-developers" | "page-settings-installations" | "page-settings-sessions" | "page-sign-in" | "page-sign-up" | "page-signup" | "page-signup-complete" | "page-terms" | "page-topics" | "page-topics-topic" | "page-trending" | "page-users-username-projects-number" | "page-verify-email";
 
-export type NavigableRouteId = "page-accept-invitation" | "page-accessibility" | "page-account" | "page-dashboard" | "page-docs" | "page-enterprises-slug" | "page-enterprises-slug-enterprise-roles" | "page-enterprises-slug-organizations" | "page-enterprises-slug-people" | "page-enterprises-slug-settings" | "page-enterprises-slug-settings-apps" | "page-enterprises-slug-settings-audit-log" | "page-enterprises-slug-settings-billing" | "page-enterprises-slug-teams" | "page-explore" | "page-login" | "page-new" | "page-notifications" | "page-organizations-login-settings-audit-log" | "page-organizations-login-settings-member-privileges" | "page-organizations-login-settings-repository-access-repository" | "page-organizations-login-settings-roles" | "page-organizations-login-settings-teams" | "page-orgs-organization-people" | "page-orgs-organization-repositories" | "page-orgs-organization-teams" | "page-orgs-organization-teams-teamslug" | "page-owner" | "page-owner-repository" | "page-owner-repository-activity" | "page-owner-repository-discussions" | "page-owner-repository-discussions-new" | "page-owner-repository-discussions-number" | "page-owner-repository-issues" | "page-owner-repository-issues-new" | "page-owner-repository-issues-number" | "page-owner-repository-projects" | "page-owner-repository-settings" | "page-owner-repository-settings-access" | "page-owner-repository-stargazers" | "page-owner-repository-watchers" | "page-privacy" | "page-projects" | "page-repositories" | "page-root" | "page-search" | "page-settings" | "page-settings-sessions" | "page-sign-in" | "page-signup" | "page-terms";
+export type NavigableRouteId = "page-accept-invitation" | "page-accessibility" | "page-account" | "page-dashboard" | "page-docs" | "page-enterprises-new" | "page-enterprises-slug" | "page-enterprises-slug-enterprise-roles" | "page-enterprises-slug-organizations" | "page-enterprises-slug-people" | "page-enterprises-slug-settings" | "page-enterprises-slug-settings-apps" | "page-enterprises-slug-settings-audit-log" | "page-enterprises-slug-settings-billing" | "page-enterprises-slug-teams" | "page-explore" | "page-forgot-password" | "page-login" | "page-new" | "page-notifications" | "page-organizations-login-settings-audit-log" | "page-organizations-login-settings-custom-properties" | "page-organizations-login-settings-member-privileges" | "page-organizations-login-settings-repository-access-repository" | "page-organizations-login-settings-roles" | "page-organizations-login-settings-teams" | "page-organizations-new" | "page-orgs-organization-people" | "page-orgs-organization-repositories" | "page-orgs-organization-teams" | "page-orgs-organization-teams-teamslug" | "page-owner" | "page-owner-repository" | "page-owner-repository-activity" | "page-owner-repository-discussions" | "page-owner-repository-discussions-new" | "page-owner-repository-discussions-number" | "page-owner-repository-issues" | "page-owner-repository-issues-new" | "page-owner-repository-issues-number" | "page-owner-repository-projects" | "page-owner-repository-settings" | "page-owner-repository-settings-access" | "page-owner-repository-stargazers" | "page-owner-repository-watchers" | "page-privacy" | "page-projects" | "page-repositories" | "page-reset-password" | "page-root" | "page-search" | "page-settings" | "page-settings-sessions" | "page-sign-in" | "page-signup" | "page-signup-complete" | "page-terms" | "page-verify-email";
 
-export type UnavailableRouteId = "page-collections" | "page-forgot-password" | "page-marketplace" | "page-organizations-login-settings-apps" | "page-organizations-login-settings-billing" | "page-organizations-login-settings-custom-properties" | "page-organizations-login-settings-hooks" | "page-organizations-login-settings-installations" | "page-organizations-login-settings-installations-installationid" | "page-orgs-organization-projects" | "page-orgs-organization-projects-number" | "page-owner-repository-actions" | "page-owner-repository-actions-actionpath" | "page-owner-repository-archive-archivepath" | "page-owner-repository-blame-refandpath" | "page-owner-repository-blob-refandpath" | "page-owner-repository-branches" | "page-owner-repository-branches-view" | "page-owner-repository-commit-sha" | "page-owner-repository-commits-refandpath" | "page-owner-repository-community" | "page-owner-repository-compare" | "page-owner-repository-compare-comparison" | "page-owner-repository-custom-properties" | "page-owner-repository-discussions-categories-slug" | "page-owner-repository-forks" | "page-owner-repository-graphs-traffic" | "page-owner-repository-issues-views" | "page-owner-repository-labels" | "page-owner-repository-labels-label" | "page-owner-repository-milestone-number" | "page-owner-repository-milestones" | "page-owner-repository-packages" | "page-owner-repository-pages" | "page-owner-repository-pull-pullpath" | "page-owner-repository-pulls" | "page-owner-repository-pulse" | "page-owner-repository-raw-refandpath" | "page-owner-repository-releases" | "page-owner-repository-releases-download-assetpath" | "page-owner-repository-releases-latest" | "page-owner-repository-releases-latest-download-assetpath" | "page-owner-repository-releases-tag-tag" | "page-owner-repository-settings-hooks" | "page-owner-repository-tags" | "page-owner-repository-tree-refandpath" | "page-owner-repository-wiki" | "page-owner-repository-wiki-pagename" | "page-reset-password" | "page-settings-applications" | "page-settings-apps" | "page-settings-billing" | "page-settings-developers" | "page-settings-installations" | "page-sign-up" | "page-topics" | "page-topics-topic" | "page-trending" | "page-users-username-projects-number" | "page-verify-email";
+export type UnavailableRouteId = "page-collections" | "page-marketplace" | "page-organizations-login-settings-apps" | "page-organizations-login-settings-billing" | "page-organizations-login-settings-hooks" | "page-organizations-login-settings-installations" | "page-organizations-login-settings-installations-installationid" | "page-orgs-organization-projects" | "page-orgs-organization-projects-number" | "page-owner-repository-actions" | "page-owner-repository-actions-actionpath" | "page-owner-repository-archive-archivepath" | "page-owner-repository-blame-refandpath" | "page-owner-repository-blob-refandpath" | "page-owner-repository-branches" | "page-owner-repository-branches-view" | "page-owner-repository-commit-sha" | "page-owner-repository-commits-refandpath" | "page-owner-repository-community" | "page-owner-repository-compare" | "page-owner-repository-compare-comparison" | "page-owner-repository-custom-properties" | "page-owner-repository-discussions-categories-slug" | "page-owner-repository-forks" | "page-owner-repository-graphs-traffic" | "page-owner-repository-issues-views" | "page-owner-repository-labels" | "page-owner-repository-labels-label" | "page-owner-repository-milestone-number" | "page-owner-repository-milestones" | "page-owner-repository-packages" | "page-owner-repository-pages" | "page-owner-repository-pull-pullpath" | "page-owner-repository-pulls" | "page-owner-repository-pulse" | "page-owner-repository-raw-refandpath" | "page-owner-repository-releases" | "page-owner-repository-releases-download-assetpath" | "page-owner-repository-releases-latest" | "page-owner-repository-releases-latest-download-assetpath" | "page-owner-repository-releases-tag-tag" | "page-owner-repository-settings-hooks" | "page-owner-repository-tags" | "page-owner-repository-tree-refandpath" | "page-owner-repository-wiki" | "page-owner-repository-wiki-pagename" | "page-settings-applications" | "page-settings-apps" | "page-settings-billing" | "page-settings-developers" | "page-settings-installations" | "page-sign-up" | "page-topics" | "page-topics-topic" | "page-trending" | "page-users-username-projects-number";
 
 export type RouteParamsById = Readonly<{
   "handler-api-auth-account-sessions": Readonly<Record<never, never>>;
   "handler-api-auth-account-sessions-sessionid": Readonly<{ readonly "sessionId": string; }>;
   "handler-api-auth-account-sessions-sessionid-activate": Readonly<{ readonly "sessionId": string; }>;
   "handler-api-auth-session": Readonly<Record<never, never>>;
+  "handler-api-auth-sessions": Readonly<Record<never, never>>;
   "handler-api-context": Readonly<Record<never, never>>;
   "handler-api-context-selection": Readonly<Record<never, never>>;
   "handler-api-contexts": Readonly<Record<never, never>>;
   "handler-api-dashboard": Readonly<Record<never, never>>;
-  "handler-api-development-auth-account-sessions-sessionid-expire": Readonly<{ readonly "sessionId": string; }>;
-  "handler-api-development-auth-account-sessions-sessionid-reauthenticate": Readonly<{ readonly "sessionId": string; }>;
-  "handler-api-development-auth-sessions": Readonly<Record<never, never>>;
   "handler-api-enterprises-slug-organizations": Readonly<{ readonly "slug": string; }>;
   "handler-api-organizations-login-repositories": Readonly<{ readonly "login": string; }>;
   "handler-api-organizations-login-repositories-repository-teams-teamslug": Readonly<{ readonly "login": string; readonly "repository": string; readonly "teamSlug": string; }>;
@@ -44,6 +42,7 @@ export type RouteParamsById = Readonly<{
   "handler-api-organizations-login-teams-teamslug-members": Readonly<{ readonly "login": string; readonly "teamSlug": string; }>;
   "handler-api-organizations-login-teams-teamslug-members-username": Readonly<{ readonly "login": string; readonly "teamSlug": string; readonly "username": string; }>;
   "handler-api-users-username-repositories": Readonly<{ readonly "username": string; }>;
+  "handler-auth-callback": Readonly<Record<never, never>>;
   "handler-logout": Readonly<Record<never, never>>;
   "page-accept-invitation": Readonly<Record<never, never>>;
   "page-accessibility": Readonly<Record<never, never>>;
@@ -51,6 +50,7 @@ export type RouteParamsById = Readonly<{
   "page-collections": Readonly<Record<never, never>>;
   "page-dashboard": Readonly<Record<never, never>>;
   "page-docs": Readonly<Record<never, never>>;
+  "page-enterprises-new": Readonly<Record<never, never>>;
   "page-enterprises-slug": Readonly<{ readonly "slug": string; }>;
   "page-enterprises-slug-enterprise-roles": Readonly<{ readonly "slug": string; }>;
   "page-enterprises-slug-organizations": Readonly<{ readonly "slug": string; }>;
@@ -77,6 +77,7 @@ export type RouteParamsById = Readonly<{
   "page-organizations-login-settings-repository-access-repository": Readonly<{ readonly "login": string; readonly "repository": string; }>;
   "page-organizations-login-settings-roles": Readonly<{ readonly "login": string; }>;
   "page-organizations-login-settings-teams": Readonly<{ readonly "login": string; }>;
+  "page-organizations-new": Readonly<Record<never, never>>;
   "page-orgs-organization-people": Readonly<{ readonly "organization": string; }>;
   "page-orgs-organization-projects": Readonly<{ readonly "organization": string; }>;
   "page-orgs-organization-projects-number": Readonly<{ readonly "organization": string; readonly "number": string; }>;
@@ -150,6 +151,7 @@ export type RouteParamsById = Readonly<{
   "page-sign-in": Readonly<Record<never, never>>;
   "page-sign-up": Readonly<Record<never, never>>;
   "page-signup": Readonly<Record<never, never>>;
+  "page-signup-complete": Readonly<Record<never, never>>;
   "page-terms": Readonly<Record<never, never>>;
   "page-topics": Readonly<Record<never, never>>;
   "page-topics-topic": Readonly<{ readonly "topic": string; }>;
@@ -163,13 +165,11 @@ export type RouteQueryById = Readonly<{
   "handler-api-auth-account-sessions-sessionid": Readonly<Record<never, never>>;
   "handler-api-auth-account-sessions-sessionid-activate": Readonly<Record<never, never>>;
   "handler-api-auth-session": Readonly<Record<never, never>>;
+  "handler-api-auth-sessions": Readonly<Record<never, never>>;
   "handler-api-context": Readonly<Record<never, never>>;
   "handler-api-context-selection": Readonly<Record<never, never>>;
   "handler-api-contexts": Readonly<Record<never, never>>;
   "handler-api-dashboard": Readonly<Record<never, never>>;
-  "handler-api-development-auth-account-sessions-sessionid-expire": Readonly<Record<never, never>>;
-  "handler-api-development-auth-account-sessions-sessionid-reauthenticate": Readonly<Record<never, never>>;
-  "handler-api-development-auth-sessions": Readonly<Record<never, never>>;
   "handler-api-enterprises-slug-organizations": Readonly<Record<never, never>>;
   "handler-api-organizations-login-repositories": Readonly<Record<never, never>>;
   "handler-api-organizations-login-repositories-repository-teams-teamslug": Readonly<Record<never, never>>;
@@ -182,6 +182,7 @@ export type RouteQueryById = Readonly<{
   "handler-api-organizations-login-teams-teamslug-members": Readonly<Record<never, never>>;
   "handler-api-organizations-login-teams-teamslug-members-username": Readonly<Record<never, never>>;
   "handler-api-users-username-repositories": Readonly<Record<never, never>>;
+  "handler-auth-callback": Readonly<{ readonly "code"?: string; readonly "token_hash"?: string; readonly "type"?: string; readonly "next"?: string; readonly "sb_flow_id"?: string; }>;
   "handler-logout": Readonly<Record<never, never>>;
   "page-accept-invitation": Readonly<{ readonly "invitation"?: string; }>;
   "page-accessibility": Readonly<Record<never, never>>;
@@ -189,6 +190,7 @@ export type RouteQueryById = Readonly<{
   "page-collections": Readonly<Record<never, never>>;
   "page-dashboard": Readonly<Record<never, never>>;
   "page-docs": Readonly<Record<never, never>>;
+  "page-enterprises-new": Readonly<{ readonly "enterprise"?: string; }>;
   "page-enterprises-slug": Readonly<Record<never, never>>;
   "page-enterprises-slug-enterprise-roles": Readonly<Record<never, never>>;
   "page-enterprises-slug-organizations": Readonly<Record<never, never>>;
@@ -200,14 +202,14 @@ export type RouteQueryById = Readonly<{
   "page-enterprises-slug-teams": Readonly<{ readonly "member"?: string; readonly "team"?: string; }>;
   "page-explore": Readonly<Record<never, never>>;
   "page-forgot-password": Readonly<Record<never, never>>;
-  "page-login": Readonly<{ readonly "add"?: readonly string[]; }>;
+  "page-login": Readonly<{ readonly "add"?: readonly string[]; readonly "authentication"?: string; readonly "confirmation"?: string; }>;
   "page-marketplace": Readonly<Record<never, never>>;
   "page-new": Readonly<{ readonly "repository"?: string; }>;
   "page-notifications": Readonly<Record<never, never>>;
   "page-organizations-login-settings-apps": Readonly<Record<never, never>>;
   "page-organizations-login-settings-audit-log": Readonly<Record<never, never>>;
   "page-organizations-login-settings-billing": Readonly<Record<never, never>>;
-  "page-organizations-login-settings-custom-properties": Readonly<Record<never, never>>;
+  "page-organizations-login-settings-custom-properties": Readonly<{ readonly "property"?: string; }>;
   "page-organizations-login-settings-hooks": Readonly<Record<never, never>>;
   "page-organizations-login-settings-installations": Readonly<Record<never, never>>;
   "page-organizations-login-settings-installations-installationid": Readonly<Record<never, never>>;
@@ -215,6 +217,7 @@ export type RouteQueryById = Readonly<{
   "page-organizations-login-settings-repository-access-repository": Readonly<Record<never, never>>;
   "page-organizations-login-settings-roles": Readonly<Record<never, never>>;
   "page-organizations-login-settings-teams": Readonly<Record<never, never>>;
+  "page-organizations-new": Readonly<{ readonly "organization"?: string; }>;
   "page-orgs-organization-people": Readonly<{ readonly "invitation"?: string; readonly "member"?: string; }>;
   "page-orgs-organization-projects": Readonly<Record<never, never>>;
   "page-orgs-organization-projects-number": Readonly<Record<never, never>>;
@@ -288,6 +291,7 @@ export type RouteQueryById = Readonly<{
   "page-sign-in": Readonly<{ readonly "add"?: readonly string[]; }>;
   "page-sign-up": Readonly<Record<never, never>>;
   "page-signup": Readonly<{ readonly "registration"?: string; }>;
+  "page-signup-complete": Readonly<{ readonly "provisioning"?: string; }>;
   "page-terms": Readonly<Record<never, never>>;
   "page-topics": Readonly<Record<never, never>>;
   "page-topics-topic": Readonly<Record<never, never>>;
@@ -361,6 +365,15 @@ export const routeDefinitions = {
     "pathParams": [],
     "queryParams": []
   },
+  "handler-api-auth-sessions": {
+    "id": "handler-api-auth-sessions",
+    "kind": "handler",
+    "supportPath": "/api/auth/sessions",
+    "status": "active",
+    "materialization": "active",
+    "pathParams": [],
+    "queryParams": []
+  },
   "handler-api-context": {
     "id": "handler-api-context",
     "kind": "handler",
@@ -392,43 +405,6 @@ export const routeDefinitions = {
     "id": "handler-api-dashboard",
     "kind": "handler",
     "supportPath": "/api/dashboard",
-    "status": "active",
-    "materialization": "active",
-    "pathParams": [],
-    "queryParams": []
-  },
-  "handler-api-development-auth-account-sessions-sessionid-expire": {
-    "id": "handler-api-development-auth-account-sessions-sessionid-expire",
-    "kind": "handler",
-    "supportPath": "/api/development/auth/account-sessions/{sessionId}/expire",
-    "status": "active",
-    "materialization": "active",
-    "pathParams": [
-      {
-        "name": "sessionId",
-        "kind": "scalar"
-      }
-    ],
-    "queryParams": []
-  },
-  "handler-api-development-auth-account-sessions-sessionid-reauthenticate": {
-    "id": "handler-api-development-auth-account-sessions-sessionid-reauthenticate",
-    "kind": "handler",
-    "supportPath": "/api/development/auth/account-sessions/{sessionId}/reauthenticate",
-    "status": "active",
-    "materialization": "active",
-    "pathParams": [
-      {
-        "name": "sessionId",
-        "kind": "scalar"
-      }
-    ],
-    "queryParams": []
-  },
-  "handler-api-development-auth-sessions": {
-    "id": "handler-api-development-auth-sessions",
-    "kind": "handler",
-    "supportPath": "/api/development/auth/sessions",
     "status": "active",
     "materialization": "active",
     "pathParams": [],
@@ -638,6 +614,41 @@ export const routeDefinitions = {
     ],
     "queryParams": []
   },
+  "handler-auth-callback": {
+    "id": "handler-auth-callback",
+    "kind": "handler",
+    "supportPath": "/auth/callback",
+    "status": "active",
+    "materialization": "active",
+    "pathParams": [],
+    "queryParams": [
+      {
+        "name": "code",
+        "isRequired": false,
+        "isRepeatable": false
+      },
+      {
+        "name": "token_hash",
+        "isRequired": false,
+        "isRepeatable": false
+      },
+      {
+        "name": "type",
+        "isRequired": false,
+        "isRepeatable": false
+      },
+      {
+        "name": "next",
+        "isRequired": false,
+        "isRepeatable": false
+      },
+      {
+        "name": "sb_flow_id",
+        "isRequired": false,
+        "isRepeatable": false
+      }
+    ]
+  },
   "handler-logout": {
     "id": "handler-logout",
     "kind": "handler",
@@ -717,6 +728,21 @@ export const routeDefinitions = {
     "materialization": "active",
     "pathParams": [],
     "queryParams": []
+  },
+  "page-enterprises-new": {
+    "id": "page-enterprises-new",
+    "kind": "page",
+    "supportPath": "/enterprises/new",
+    "status": "active",
+    "materialization": "active",
+    "pathParams": [],
+    "queryParams": [
+      {
+        "name": "enterprise",
+        "isRequired": false,
+        "isRepeatable": false
+      }
+    ]
   },
   "page-enterprises-slug": {
     "id": "page-enterprises-slug",
@@ -869,7 +895,7 @@ export const routeDefinitions = {
     "kind": "page",
     "supportPath": "/forgot-password",
     "status": "active",
-    "materialization": "scaffolded",
+    "materialization": "active",
     "pathParams": [],
     "queryParams": []
   },
@@ -885,6 +911,16 @@ export const routeDefinitions = {
         "name": "add",
         "isRequired": false,
         "isRepeatable": true
+      },
+      {
+        "name": "authentication",
+        "isRequired": false,
+        "isRepeatable": false
+      },
+      {
+        "name": "confirmation",
+        "isRequired": false,
+        "isRepeatable": false
       }
     ]
   },
@@ -967,15 +1003,21 @@ export const routeDefinitions = {
     "id": "page-organizations-login-settings-custom-properties",
     "kind": "page",
     "supportPath": "/organizations/{login}/settings/custom_properties",
-    "status": "planned",
-    "materialization": "scaffolded",
+    "status": "active",
+    "materialization": "active",
     "pathParams": [
       {
         "name": "login",
         "kind": "scalar"
       }
     ],
-    "queryParams": []
+    "queryParams": [
+      {
+        "name": "property",
+        "isRequired": false,
+        "isRepeatable": false
+      }
+    ]
   },
   "page-organizations-login-settings-hooks": {
     "id": "page-organizations-login-settings-hooks",
@@ -1082,6 +1124,21 @@ export const routeDefinitions = {
       }
     ],
     "queryParams": []
+  },
+  "page-organizations-new": {
+    "id": "page-organizations-new",
+    "kind": "page",
+    "supportPath": "/organizations/new",
+    "status": "active",
+    "materialization": "active",
+    "pathParams": [],
+    "queryParams": [
+      {
+        "name": "organization",
+        "isRequired": false,
+        "isRepeatable": false
+      }
+    ]
   },
   "page-orgs-organization-people": {
     "id": "page-orgs-organization-people",
@@ -2263,7 +2320,7 @@ export const routeDefinitions = {
     "kind": "page",
     "supportPath": "/reset-password",
     "status": "active",
-    "materialization": "scaffolded",
+    "materialization": "active",
     "pathParams": [],
     "queryParams": []
   },
@@ -2393,6 +2450,21 @@ export const routeDefinitions = {
       }
     ]
   },
+  "page-signup-complete": {
+    "id": "page-signup-complete",
+    "kind": "page",
+    "supportPath": "/signup/complete",
+    "status": "active",
+    "materialization": "active",
+    "pathParams": [],
+    "queryParams": [
+      {
+        "name": "provisioning",
+        "isRequired": false,
+        "isRepeatable": false
+      }
+    ]
+  },
   "page-terms": {
     "id": "page-terms",
     "kind": "page",
@@ -2457,7 +2529,7 @@ export const routeDefinitions = {
     "kind": "page",
     "supportPath": "/verify-email",
     "status": "active",
-    "materialization": "scaffolded",
+    "materialization": "active",
     "pathParams": [],
     "queryParams": []
   }

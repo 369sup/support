@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { CreateDevelopmentSessionHandler } from "../application/commands/create-development-session.handler";
-import { ExpireSessionHandler } from "../application/commands/expire-session.handler";
-import { ReauthenticateSessionHandler } from "../application/commands/reauthenticate-session.handler";
+import { CreateDevelopmentSessionHandler } from "./fixtures/development-session.fixture";
+import { ExpireSessionHandler } from "./fixtures/expire-session.fixture";
+import { ReauthenticateSessionHandler } from "./fixtures/reauthenticate-session.fixture";
 import { SwitchActiveAccountSessionHandler } from "../application/commands/switch-active-account-session.handler";
 import { GetCurrentAuthenticatedSessionHandler } from "../application/queries/get-current-authenticated-session.handler";
 import { ListBrowserAccountSessionsHandler } from "../application/queries/list-browser-account-sessions.handler";
@@ -117,19 +117,19 @@ describe("browser account session switching", () => {
     );
     await expect(
       switchSession.switchActiveAccountSession({
-        browserToken: first.browserToken,
+        browserToken: second.browserToken,
         sessionId: first.session.sessionId,
       }),
     ).resolves.toMatchObject({ status: "switched" });
 
     const expire = new ExpireSessionHandler(repository);
     await expire.expireSession({
-      browserToken: first.browserToken,
+      browserToken: second.browserToken,
       sessionId: second.session.sessionId,
     });
     await expect(
       switchSession.switchActiveAccountSession({
-        browserToken: first.browserToken,
+        browserToken: second.browserToken,
         sessionId: second.session.sessionId,
       }),
     ).resolves.toMatchObject({
@@ -144,7 +144,7 @@ describe("browser account session switching", () => {
     );
     await expect(
       current.getCurrentAuthenticatedSession({
-        browserToken: first.browserToken,
+        browserToken: second.browserToken,
       }),
     ).resolves.toMatchObject({
       status: "authenticated",
@@ -158,13 +158,13 @@ describe("browser account session switching", () => {
       runtime,
     );
     await reauthenticate.reauthenticateSession({
-      browserToken: first.browserToken,
+      browserToken: second.browserToken,
       sessionId: second.session.sessionId,
       password: "github",
     });
     await expect(
       switchSession.switchActiveAccountSession({
-        browserToken: first.browserToken,
+        browserToken: second.browserToken,
         sessionId: second.session.sessionId,
       }),
     ).resolves.toMatchObject({

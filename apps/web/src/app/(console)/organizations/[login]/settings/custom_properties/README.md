@@ -8,14 +8,14 @@
 - **Support path:** `/organizations/{login}/settings/custom_properties`
 - **GitHub canonical patterns:** No official pattern is asserted.
 - **Delivery:** `page`
-- **Status:** `planned`
-- **Materialization:** `scaffolded`
+- **Status:** `active`
+- **Materialization:** `active`
 
 ## Functional intent
 
 Define organization-owned custom property schemas and values.
 
-The filesystem route is reserved and currently returns the canonical unavailable response.
+The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
 ## Delivery functions
 
@@ -23,7 +23,10 @@ The filesystem route is reserved and currently returns the canonical unavailable
 
 ## Module contracts
 
-- - **owner:** `organizations/custom-properties` — use cases: no route-level use-case reference; functions: no runtime function reference
+- - **owner:** `organizations/custom-properties` — use cases: `define-organization-repository-property`, `list-organization-repository-properties`; functions: `defineOrganizationRepositoryProperty`, `listOrganizationRepositoryProperties`
+- - **collaborator:** `identity/authentication` — use cases: no route-level use-case reference; functions: `requireCurrentSession`
+- - **collaborator:** `organizations/organizations` — use cases: `get-organization-by-login`; functions: `getOrganizationByLogin`
+- - **collaborator:** `organizations/organization-memberships` — use cases: `list-active-organization-memberships-for-organization`; functions: `listActiveOrganizationMembershipsForOrganization`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 
@@ -35,7 +38,7 @@ The module README remains the semantic authority for each complete thirteen-fiel
 
 ### Query
 
-None.
+- - `property`: optional, single
 
 Query keys not declared here are rejected by the typed URL builder.
 

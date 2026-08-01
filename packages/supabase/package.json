@@ -1,0 +1,31 @@
+{
+  "name": "@support/supabase",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./auth": "./src/auth.ts",
+    "./postgres": "./src/postgres.ts"
+  },
+  "scripts": {
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest run --config vitest.config.ts --configLoader runner",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/ssr": "catalog:",
+    "@supabase/supabase-js": "catalog:",
+    "@support/database": "workspace:*",
+    "server-only": "0.0.1"
+  },
+  "devDependencies": {
+    "@support/eslint-config": "workspace:*",
+    "@support/testing-config": "workspace:*",
+    "@support/typescript-config": "workspace:*",
+    "@types/node": "^20",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

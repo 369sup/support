@@ -30,6 +30,10 @@ export const workspacePackagePolicy = Object.freeze({
     kind: "contracts",
     path: "packages/contracts",
   }),
+  "@support/database": Object.freeze({
+    kind: "runtime",
+    path: "packages/database",
+  }),
   "@support/eslint-config": Object.freeze({
     kind: "config",
     path: "packages/eslint-config",
@@ -41,6 +45,10 @@ export const workspacePackagePolicy = Object.freeze({
   "@support/shadcn": Object.freeze({
     kind: "ui",
     path: "packages/shadcn",
+  }),
+  "@support/supabase": Object.freeze({
+    kind: "runtime",
+    path: "packages/supabase",
   }),
   "@support/testing-config": Object.freeze({
     kind: "testing",
@@ -240,6 +248,7 @@ const ruleEntries = [
   rule("ARCH-PKG-008", "workspace", "required", "checker", "Package exports exist and the package graph is acyclic."),
   rule("ARCH-PKG-009", "workspace", "required", "checker", "Exclusive dependency capabilities use one provider across the workspace."),
   rule("ARCH-PKG-010", "workspace", "required", "checker", "The package manager, lockfile, install scripts, and CI install mode are pinned."),
+  rule("ARCH-PKG-011", "workspace", "required", "checker", "Supabase SDK imports are isolated behind the Supabase package."),
   rule("ARCH-ROUTE-001", "route", "required", "checker", "The route catalog is valid and exactly covers App Router delivery files."),
   rule("ARCH-ROUTE-002", "route", "required", "checker", "Route identifiers, paths, files, and README outputs are unique."),
   rule("ARCH-ROUTE-003", "route", "required", "checker", "Filesystem paths and declared path and query schemas agree."),

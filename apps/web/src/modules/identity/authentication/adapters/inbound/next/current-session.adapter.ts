@@ -1,12 +1,10 @@
-import { redirect } from "next/navigation";
-
 import type {
   AuthenticatedSessionReference,
   CurrentSessionResult,
 } from "../../../contracts/authenticated-session-reference";
+import { createRequiredCurrentSessionAdapter } from "./required-current-session.adapter";
 
 interface CurrentSessionDependencies {
-  isInMemoryRuntimeEnabled: () => boolean;
   readBrowserSessionToken: () => Promise<string | null>;
   getCurrentAuthenticatedSession: (
     browserToken: string,
@@ -14,14 +12,10 @@ interface CurrentSessionDependencies {
 }
 
 export function createCurrentSessionAdapter({
-  isInMemoryRuntimeEnabled,
   readBrowserSessionToken,
   getCurrentAuthenticatedSession,
 }: CurrentSessionDependencies) {
   async function getOptionalCurrentSession(): Promise<AuthenticatedSessionReference | null> {
-    if (!isInMemoryRuntimeEnabled()) {
-      return null;
-    }
     const browserToken = await readBrowserSessionToken();
     if (browserToken === null) {
       return null;
@@ -30,16 +24,5 @@ export function createCurrentSessionAdapter({
     return result.status === "authenticated" ? result.session : null;
   }
 
-  async function requireCurrentSession(): Promise<AuthenticatedSessionReference> {
-    const session = await getOptionalCurrentSession();
-    if (session === null) {
-      redirect("/login");
-    }
-    return session;
-  }
-
-  return {
-    getOptionalCurrentSession,
-    requireCurrentSession,
-  };
+  return createRequiredCurrentSessionAdapter(getOptionalCurrentSession);
 }

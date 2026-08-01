@@ -27,6 +27,8 @@ four-digit number. Add each record to the table below.
 | [ADR-0001](ADR-0001-account-and-dashboard-contexts.md) | Accepted | Separate account sessions, Dashboard context, and enterprise administration. |
 | [ADR-0002](ADR-0002-organization-team-and-role-access.md) | Accepted | Keep team hierarchy, organization roles, and repository grants as separate authorization sources. |
 | [ADR-0003](ADR-0003-in-memory-event-and-policy-runtime.md) | Accepted | Define context-local outbox publication, grant-policy-entitlement ordering, simulated integrations, and acyclic custom-property orchestration. |
+| [ADR-0004](ADR-0004-production-runtime-adapters.md) | Accepted | Add provider-neutral production persistence and integration adapters beside the in-memory development runtime. |
+| [ADR-0005](ADR-0005-supabase-managed-postgres.md) | Accepted | Use Supabase only as managed PostgreSQL behind the provider-neutral database runtime. |
 
 ## Template
 

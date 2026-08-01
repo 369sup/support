@@ -13,7 +13,7 @@
 
 ## Functional intent
 
-Delivers `/signup` through `registerPersonalAccount`.
+Delivers `/signup` through Supabase Auth account registration.
 
 The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
@@ -23,7 +23,8 @@ The filesystem route is active. Its business behavior remains owned by the refer
 
 ## Module contracts
 
-- - **owner:** `identity/account-registration` — use cases: `register-personal-account`; functions: `registerPersonalAccount`
+- - **collaborator:** `identity/accounts` — use cases: `get-account-candidate-by-username`; functions: `getAccountCandidateByUsername`
+- - **owner:** `identity/authentication` — use cases: no route-level use-case reference; functions: `isSupabaseAuthenticationEnabled`, `signUpWithPassword`
 
 The module README remains the semantic authority for each complete thirteen-field use-case contract.
 

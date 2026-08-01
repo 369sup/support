@@ -7,7 +7,95 @@
 config_file = "agents/reviewer.toml"
 description = "Review changes for correctness, security, architecture, and regression risks."
 
-# Public Context7 endpoint for basic use without OAuth or an API key.
+# ------------------------------------------------------------
+# Context7
+# Retrieves current library and framework documentation.
+# ------------------------------------------------------------
+
 [mcp_servers.context7]
 url = "https://mcp.context7.com/mcp"
-env_http_headers = { "CONTEXT7_API_KEY" = "CONTEXT7_API_KEY" }
+
+enabled = true
+required = false
+
+startup_timeout_sec = 20
+tool_timeout_sec = 120
+
+env_http_headers = {
+  CONTEXT7_API_KEY = "CONTEXT7_API_KEY"
+}
+
+
+# ------------------------------------------------------------
+# Time
+# Provides timezone-aware dates and times.
+# ------------------------------------------------------------
+
+[mcp_servers.time]
+command = "uvx"
+args = ["mcp-server-time"]
+
+enabled = true
+required = false
+
+startup_timeout_sec = 30
+tool_timeout_sec = 60
+
+
+# ------------------------------------------------------------
+# Sequential Thinking
+# Optional structured decomposition for complex documentation.
+# ------------------------------------------------------------
+
+[mcp_servers.sequential-thinking]
+command = "npx"
+args = [
+  "-y",
+  "@modelcontextprotocol/server-sequential-thinking",
+]
+
+env = {
+  DISABLE_THOUGHT_LOGGING = "true"
+}
+
+enabled = true
+required = false
+
+startup_timeout_sec = 30
+tool_timeout_sec = 180
+
+
+# ------------------------------------------------------------
+# Mermaid
+# Validates and renders Mermaid diagrams embedded in Markdown.
+# ------------------------------------------------------------
+
+[mcp_servers.mermaid]
+url = "https://mcp.mermaid.ai/mcp"
+
+enabled = true
+required = false
+
+startup_timeout_sec = 20
+tool_timeout_sec = 120
+
+
+# ------------------------------------------------------------
+# Playwright
+# Optional: verifies the rendered documentation website.
+# Keep disabled unless browser validation is needed.
+# ------------------------------------------------------------
+
+[mcp_servers.playwright]
+command = "npx"
+args = [
+  "-y",
+  "@playwright/mcp@latest",
+  "--isolated",
+]
+
+enabled = false
+required = false
+
+startup_timeout_sec = 30
+tool_timeout_sec = 180

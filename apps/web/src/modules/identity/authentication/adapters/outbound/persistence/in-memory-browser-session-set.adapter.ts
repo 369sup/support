@@ -2,6 +2,7 @@ import type {
   BrowserSessionSetRepositoryPort,
   BrowserSessionSetSnapshot,
 } from "../../../application/ports/outbound/browser-session-set.repository.port";
+import type { AccountSessionRevocationPort } from "../../../application/ports/outbound/account-session-revocation.port";
 
 type BrowserSessionStore = Map<string, BrowserSessionSetSnapshot>;
 
@@ -24,7 +25,9 @@ function cloneSessionSet(
 }
 
 export class InMemoryBrowserSessionSetAdapter
-  implements BrowserSessionSetRepositoryPort
+  implements
+    BrowserSessionSetRepositoryPort,
+    AccountSessionRevocationPort
 {
   private readonly store: BrowserSessionStore;
 
@@ -48,6 +51,28 @@ export class InMemoryBrowserSessionSetAdapter
 
   save(sessionSet: BrowserSessionSetSnapshot): Promise<void> {
     this.store.set(sessionSet.browserToken, cloneSessionSet(sessionSet));
+    return Promise.resolve();
+  }
+
+  revokeAccountSessions(accountId: string): Promise<void> {
+    for (const [browserToken, sessionSet] of this.store) {
+      const sessions = sessionSet.sessions.map((session) =>
+        session.accountId === accountId
+          ? { ...session, status: "revoked" as const }
+          : session,
+      );
+      const activeSession = sessions.find(
+        (session) => session.sessionId === sessionSet.activeSessionId,
+      );
+      this.store.set(browserToken, {
+        ...sessionSet,
+        activeSessionId:
+          activeSession?.status === "active"
+            ? sessionSet.activeSessionId
+            : null,
+        sessions,
+      });
+    }
     return Promise.resolve();
   }
 }

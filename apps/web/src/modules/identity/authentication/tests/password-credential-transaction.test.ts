@@ -1,10 +1,18 @@
+import "server-only";
+
+import { randomBytes } from "node:crypto";
+
 import { describe, expect, it } from "vitest";
 
-import { InMemoryDevelopmentCredentialAdapter } from "../adapters/outbound/persistence/in-memory-development-credential.adapter";
+import { InMemoryDevelopmentCredentialAdapter } from "./fixtures/development-credential.fixture";
+
+const developmentPassword = randomBytes(24).toString("base64url");
 
 describe("password credential transaction", () => {
   it("stores a new verifier, authenticates only after commit, and compensates", async () => {
-    const adapter = new InMemoryDevelopmentCredentialAdapter();
+    const adapter = new InMemoryDevelopmentCredentialAdapter(
+      developmentPassword,
+    );
     const transactionId = "credential_registration_test";
     const username = "registered-credential-test";
     const accountId = "account_credential_test";
@@ -31,7 +39,9 @@ describe("password credential transaction", () => {
   });
 
   it("locks authentication during username change and restores on rollback", async () => {
-    const adapter = new InMemoryDevelopmentCredentialAdapter();
+    const adapter = new InMemoryDevelopmentCredentialAdapter(
+      developmentPassword,
+    );
     const transactionId = "credential_username_test";
 
     await adapter.apply({
@@ -41,18 +51,18 @@ describe("password credential transaction", () => {
       newUsername: "octocat-renamed",
     });
     await expect(
-      adapter.authenticate("octocat", "github"),
+      adapter.authenticate("octocat", developmentPassword),
     ).resolves.toBeNull();
     await adapter.apply({ action: "commit", transactionId });
     await expect(
-      adapter.authenticate("octocat-renamed", "github"),
+      adapter.authenticate("octocat-renamed", developmentPassword),
     ).resolves.toBe("account_octocat");
     await adapter.apply({ action: "rollback", transactionId });
     await expect(
-      adapter.authenticate("octocat", "github"),
+      adapter.authenticate("octocat", developmentPassword),
     ).resolves.toBe("account_octocat");
     await expect(
-      adapter.authenticate("octocat-renamed", "github"),
+      adapter.authenticate("octocat-renamed", developmentPassword),
     ).resolves.toBeNull();
   });
 });

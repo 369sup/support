@@ -9,13 +9,13 @@
 - **GitHub canonical patterns:** No official pattern is asserted.
 - **Delivery:** `page`
 - **Status:** `active`
-- **Materialization:** `scaffolded`
+- **Materialization:** `active`
 
 ## Functional intent
 
 Verify an account email as part of the authentication lifecycle.
 
-The filesystem route is reserved and currently returns the canonical unavailable response.
+The filesystem route is active. Its business behavior remains owned by the referenced module contracts.
 
 ## Delivery functions
 

@@ -1,3 +1,4 @@
+import { getProductionDatabase } from "../../../../../production-runtime";
 import {
   createGetAccountCandidateByUsernameAdapter,
   type GetAccountCandidateByUsernameAdapter,
@@ -7,6 +8,7 @@ import {
   type GetPersonalAccountByUsernameAdapter,
 } from "../adapters/inbound/server/get-personal-account-by-username.adapter";
 import { InMemoryAccountQueryAdapter } from "../adapters/outbound/persistence/in-memory-account-query.adapter";
+import { PostgresAccountAdapter } from "../adapters/outbound/persistence/postgres-account.adapter";
 import {
   createGetAccountReferenceByIdAdapter,
   type GetAccountReferenceByIdAdapter,
@@ -28,7 +30,11 @@ export interface AccountsServerFacade {
 }
 
 function composeAccountsServerFacade(): AccountsServerFacade {
-  const accountQueryRepository = new InMemoryAccountQueryAdapter();
+  const database = getProductionDatabase();
+  const accountQueryRepository =
+    database === null
+      ? new InMemoryAccountQueryAdapter()
+      : new PostgresAccountAdapter(database);
   const getAccountCandidateByUsernameHandler =
     new GetAccountCandidateByUsernameHandler(accountQueryRepository);
   const getAccountReferenceByIdHandler =
