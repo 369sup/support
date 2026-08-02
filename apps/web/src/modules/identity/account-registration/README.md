@@ -2,28 +2,34 @@
 
 ## Purpose
 
-Coordinate personal account registration and username changes so account
-identity and its password credential are prepared, committed, compensated, and
-finalized as one visible outcome.
+Coordinate personal-account identity changes that span owned contexts. The
+active slice changes a username through the Accounts transaction protocol;
+registration and credential coordination remain planned because Supabase Auth
+owns sign-up credentials and session issuance.
 
 ## Context content tree
 
-- Account and credential consistency [active]
-  - Use case: `register-personal-account`
-  - Use case: `change-personal-account-username`
-  - Owned concepts: `AccountCredentialTransaction`, `UsernameChangeTransaction`
+- Account identity consistency
+  - Username change [active]
+    - Use case: `change-personal-account-username`
+    - Owned concept: `UsernameChangeTransaction`
+  - Account and credential registration [planned]
+    - Use case: `register-personal-account`
+    - Owned concept: `AccountCredentialTransaction`
   - Rules and invariants:
     - A reserved account is not publicly discoverable.
-    - A prepared credential cannot authenticate.
-    - Each participant commit remains reversible until both commits succeed.
-    - Any prepare or commit failure rolls both participants back.
+    - A prepared username reservation is not publicly visible.
+    - The Accounts commit remains reversible until the coordinator finalizes.
+    - A failed active username change compensates the Accounts participant.
+    - Planned registration must coordinate any credential participant without
+      taking ownership of credentials or sessions.
     - Managed users are provisioned by the enterprise and cannot use this flow.
   - Published events: none; the coordinator changes no owned product fact and
     participant event publication remains deferred.
 - Email verification and account recovery [planned]
 - External relationships
-  - `identity/accounts::AccountIdentityTransaction`
-  - `identity/authentication::PasswordCredentialTransaction`
+  - Active: `identity/accounts::AccountIdentityTransaction`
+  - Planned: `identity/authentication::PasswordCredentialTransaction`
 - Explicit exclusions
   - `Account`
   - `Credential`
@@ -56,11 +62,11 @@ finalized as one visible outcome.
 - **Public entrypoint:** `server-api.ts#changePersonalAccountUsername`
 - **Input:** Authenticated actor account ID, target account ID, and requested username.
 - **Success result:** `changed` with stable account ID and new username.
-- **Expected rejections:** `account-not-found`, `credential-unavailable`, `invalid-username`, `permission-denied`, `transaction-failed`, `unsupported-account-type`, `username-conflict`
+- **Expected rejections:** `account-not-found`, `invalid-username`, `permission-denied`, `transaction-failed`, `unsupported-account-type`, `username-conflict`
 - **Authorization:** A personal human account may change only its own username.
-- **Transaction:** Reserve the account namespace, lock password authentication, commit both participants reversibly, compensate on failure, and finalize after both commits.
+- **Transaction:** Reserve the account namespace, commit the Accounts participant reversibly, compensate on failure, and finalize after the commit.
 - **Idempotency:** Repeating the current case-insensitive username is safe; a conflicting account is rejected.
-- **Dependencies:** `identity/accounts::AccountIdentityTransaction`, `identity/authentication::PasswordCredentialTransaction`
+- **Dependencies:** `identity/accounts::AccountIdentityTransaction`
 - **Published events:** `none`
 - **Official evidence:** `identity-account-registration-source-02`
 - **Local policy:** Old-profile redirects and repository namespace redirects remain deferred; existing sessions continue through stable account ID.
@@ -76,41 +82,46 @@ finalized as one visible outcome.
 ## Ownership and invariants
 
 This context owns only the consistency workflow. Accounts owns account identity
-and username; Authentication owns password credentials. No participant is
-considered complete until both commits succeed.
+and username; Authentication owns credentials and sessions. The active
+username change completes only after the Accounts participant commits and is
+finalized.
 
 ## Public capabilities
 
-`server-api.ts` exposes personal registration and owner-authorized username
-change.
+`server-api.ts` exposes the owner-authorized username change. Personal
+registration remains a planned boundary and is not exported.
 
 ## Dependencies and consistency
 
-The coordinator synchronously calls public transaction protocols from Accounts
-and Authentication. In-memory commit records remain reversible until the
-coordinator finalizes both.
+The active coordinator synchronously calls the public Accounts transaction
+protocol. Planned registration may add the Authentication credential protocol
+without changing ownership. Account transaction records remain reversible
+until the coordinator finalizes them.
 
 ## Authorization
 
-Registration is public and creates only personal human accounts. Username
-change requires matching authenticated actor and target stable account IDs;
-the Accounts participant rechecks this rule.
+Planned registration is public and would create only personal human accounts.
+The active username change requires matching authenticated actor and target
+stable account IDs; the Accounts participant rechecks this rule.
 
 ## Persistence and transactions
 
-All participants use versioned process-local Maps. Compensation prevents
-half-visible state during expected failure; process restart discards the
-entire development dataset.
+Production composition uses the durable PostgreSQL Accounts transaction
+protocol. Compensation restores the prior username during expected failure;
+the in-memory participant remains an isolated development and test
+alternative.
 
 ## Data classification
 
-Username and stable account ID are public. Passwords are secret and pass only
-to Authentication, which stores new registrations as salted scrypt verifiers.
+Username and stable account ID are public. The active flow never receives a
+password or credential. Any planned registration credential must pass only to
+Authentication.
 
 ## Retention and erasure
 
-Finalization removes compensation metadata. Durable recovery logs and abandoned
-reservation cleanup are required before a production persistence adapter.
+Finalization removes compensation metadata. Recovery of interrupted
+coordinator work and abandoned-reservation cleanup remain required operational
+work.
 
 ## Events and failure behavior
 
@@ -126,6 +137,6 @@ effort rollback and return `registration-failed` or `transaction-failed`.
 
 ## Exceptions
 
-Email ownership verification is not simulated, and username redirect effects
-remain deferred. This transaction runtime is process-local and not
-horizontally consistent.
+Email ownership verification and registration remain planned, and username
+redirect effects remain deferred. The active coordinator is compensating, not
+a cross-context distributed transaction.

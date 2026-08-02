@@ -138,8 +138,8 @@ Reproduce GitHub product semantics for people, enterprises, organizations, teams
 - **Owns:** AccountCredentialTransaction, UsernameChangeTransaction.
 - **Excludes:** Account, Credential, Session, EmailVerification, ScimProvisioning.
 - **Activation scope:** change-personal-account-username
-- **Runtime dependencies:** identity/accounts via AccountIdentityTransaction (synchronous); identity/authentication via PasswordCredentialTransaction (synchronous)
-- **Planned relationships:** None.
+- **Runtime dependencies:** identity/accounts via AccountIdentityTransaction (synchronous)
+- **Planned relationships:** identity/authentication via PasswordCredentialTransaction (synchronous)
 - **Published events:** None. The coordinator owns transaction consistency rather than a product fact; account and credential event publication remains with their owning contexts.
 - **Semantic claims:** account-credential-consistency (owns AccountCredentialTransaction, UsernameChangeTransaction; no events; sources identity-account-registration-source-01, identity-account-registration-source-02, identity-account-registration-source-03)
 - **Official sources:** identity-account-registration-source-01 ([personal account registration, managed user exclusion](https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github), checked 2026-07-27); identity-account-registration-source-02 ([username availability, username changes](https://docs.github.com/en/account-and-profile/concepts/username-changes), checked 2026-07-27); identity-account-registration-source-03 ([password minimums, password verifier storage](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-strong-password), checked 2026-07-27)

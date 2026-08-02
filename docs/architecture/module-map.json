@@ -566,11 +566,6 @@
           "context": "identity/accounts",
           "contract": "AccountIdentityTransaction",
           "mode": "synchronous"
-        },
-        {
-          "context": "identity/authentication",
-          "contract": "PasswordCredentialTransaction",
-          "mode": "synchronous"
         }
       ],
       "officialSources": [
@@ -607,11 +602,17 @@
     "activationScope": [
       "change-personal-account-username"
       ],
-      "plannedRelationships": [],
+      "plannedRelationships": [
+        {
+          "context": "identity/authentication",
+          "contract": "PasswordCredentialTransaction",
+          "mode": "synchronous"
+        }
+      ],
       "semanticClaims": [
         {
           "id": "account-credential-consistency",
-          "statement": "Personal account registration and username changes coordinate account identity with its password credential through reservations, reversible commits, and compensation before finalization.",
+          "statement": "Personal account registration coordinates account identity with its credential; the active username change uses account reservations, reversible commit, compensation, and finalization without taking credential ownership.",
           "ownership": [
             "AccountCredentialTransaction",
             "UsernameChangeTransaction"
