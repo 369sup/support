@@ -1,6 +1,6 @@
 {
   "name": "serena-jetbrains",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Run Serena MCP as a Codex-managed stdio subprocess with the JetBrains language backend.",
   "author": {
     "name": "Support maintainers"

@@ -86,6 +86,10 @@ files:
    line-level implementation details, secrets, or guesses.
 7. If memory changed, run `serena memories check` and report its result.
 
+The lifecycle hook may request this completion pass once. Use the hook input's
+stop-active guard to avoid a continuation loop. The hook does not authorize a
+memory write and does not replace this semantic decision.
+
 Report only paths verified in the current task. Do not infer a passing state
 from earlier sessions, cached plugin state, an open port, or a running process.
 

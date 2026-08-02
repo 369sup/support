@@ -1,0 +1,57 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','lifecycle.cjs')).run()\"",
+            "timeout": 5,
+            "statusMessage": "Loading Serena JetBrains readiness workflow",
+            "additionalContextLimit": 900
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','lifecycle.cjs')).run()\"",
+            "timeout": 5,
+            "statusMessage": "Routing symbol-sensitive work through Serena JetBrains",
+            "additionalContextLimit": 500
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^(mcp__serena__jet_brains_.*|apply_patch|Edit|Write)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','lifecycle.cjs')).run()\"",
+            "timeout": 5,
+            "statusMessage": "Recording Serena lifecycle evidence",
+            "additionalContextLimit": 500
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"require(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','lifecycle.cjs')).run()\"",
+            "timeout": 5,
+            "statusMessage": "Checking Serena verification and durable-memory decision"
+          }
+        ]
+      }
+    ]
+  }
+}
