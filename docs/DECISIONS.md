@@ -102,3 +102,20 @@ system. It does not replace the technical architecture decision records in
   top-level documents were removed in the focused governance cleanup; new
   semantic changes occur only in the atlas and are linked from the governance
   layer.
+
+## DOC-DEC-008: Normalize durable rules before propagation
+
+- **Status:** Accepted
+- **Date:** 2026-08-02
+- **Decision:** A reusable rule first receives one purpose, explicit invariants,
+  and one canonical owner. Conversations, reviews, tool output, and memory are
+  inputs to this process rather than authorities. Local guidance and mechanical
+  enforcement reference the canonical rule and do not restate it as a separate
+  contract.
+- **Rationale:** Copying recommendations into several `AGENTS.md`, `README.md`,
+  architecture, and memory locations makes later conflicts impossible to
+  resolve deterministically.
+- **Consequences:** Maintainers apply the normalization workflow in
+  [`WORKFLOWS.md`](WORKFLOWS.md), keep nested guidance to subtree deltas, and
+  update policy metadata, checkers, and focused fixtures together when a rule
+  can be enforced mechanically.

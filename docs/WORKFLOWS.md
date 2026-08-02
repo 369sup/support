@@ -36,6 +36,33 @@ and review requirements remain in [`../CONTRIBUTING.md`](../CONTRIBUTING.md).
 6. Add a changelog entry, inspect the actual diff, and run the smallest relevant
    validation.
 
+## Normalize rules from analysis or review
+
+Use this workflow when a conversation, review, audit, tool result, or memory
+contains guidance that may need to persist:
+
+1. Separate each candidate into a durable invariant, current remediation,
+   future intent, or stale context. Only the first category becomes a rule.
+2. Mark its evidence strength as confirmed by current repository evidence,
+   derived from confirmed facts, or unresolved. Do not normalize an unresolved
+   claim as a requirement.
+3. Give the candidate one purpose and state the minimum invariants required to
+   preserve it.
+4. Locate the existing authority for that concern in
+   [`SOURCE-OF-TRUTH.md`](SOURCE-OF-TRUTH.md). Extend that owner; create a new
+   authority only when no current owner can hold the concern without changing
+   its responsibility.
+5. Edit the canonical owner first. Add references, examples, or a nested
+   `AGENTS.md` delta only where a consumer needs local application guidance.
+6. When the invariant is mechanically decidable, update the shared rule
+   registry, checker, and focused positive and negative fixtures in the same
+   change.
+7. Keep one-time remediation in the active task and future work in the roadmap.
+   Update memory only after current verification, and never treat memory as a
+   repository authority.
+8. Inspect the authority chain and actual diff, then run the smallest relevant
+   documentation and architecture validations.
+
 ## Replace or deprecate a document
 
 1. Name the active replacement and explain why the old responsibility is moving.

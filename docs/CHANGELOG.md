@@ -4,6 +4,16 @@ This changelog records changes to the documentation governance system. It does
 not record product releases, application behavior, package versions, or
 technical architecture history.
 
+## 2026-08-02
+
+### Changed
+
+- Defined rule normalization as a single-purpose, single-owner process for
+  turning external analysis into durable repository contracts.
+- Added an intake workflow that separates durable invariants from current
+  remediation, future intent, and stale context before updating authorities,
+  local guidance, enforcement, or verified memory.
+
 ## 2026-08-01
 
 ### Added

@@ -48,6 +48,27 @@ semantic ownership. The authoritative relationship vocabulary is defined in
 - Documentation never claims implementation, verification, source freshness,
   or operational readiness without current evidence.
 
+## Rule normalization
+
+Rule normalization has one purpose: convert durable guidance into a single
+maintainable contract without creating competing authorities. A normalized
+rule defines one bounded concern, its invariants, and exactly one canonical
+owner before any local guidance or enforcement is changed.
+
+The following conditions are invariant:
+
+- One rule has one purpose and one canonical owner.
+- Enforcement, examples, navigation, and path-local guidance reference that
+  owner; they do not become parallel normative sources.
+- A nested `AGENTS.md` records only the delta required by its subtree.
+- Current remediation belongs in a task, and future intent belongs in a
+  roadmap. Neither becomes a durable rule merely by being written down.
+- Conversations, reviews, tool output, and memory are evidence inputs, not
+  authorities. Conflicts are resolved against current repository evidence and
+  corrected at the canonical owner.
+- A mechanically enforceable rule uses the same stable rule identity in its
+  canonical text, policy registry, checker, and positive and negative tests.
+
 ## Navigation model
 
 [`README.md`](README.md) is the task-oriented entrypoint. [`INDEX.md`](INDEX.md)
