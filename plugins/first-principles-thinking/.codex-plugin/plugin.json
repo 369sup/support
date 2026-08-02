@@ -1,0 +1,32 @@
+{
+  "name": "first-principles-thinking",
+  "version": "0.2.0",
+  "description": "Evidence-first engineering workflow that can overturn existing designs.",
+  "author": {
+    "name": "Support maintainers",
+    "url": "https://github.com/369sup"
+  },
+  "repository": "https://github.com/369sup/support",
+  "keywords": [
+    "architecture",
+    "assumption-challenging",
+    "engineering",
+    "first-principles"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "First Principles Thinking",
+    "shortDescription": "Rebuild decisions from verified fundamentals",
+    "longDescription": "Challenge the proposed solution, current architecture, compatibility, and convention; then rebuild and verify the system required by irreducible outcomes and binding invariants.",
+    "developerName": "Support maintainers",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Re-derive this problem from first principles, even if the current design should be replaced.",
+      "Challenge every claimed constraint and rebuild the solution from verified fundamentals."
+    ]
+  }
+}

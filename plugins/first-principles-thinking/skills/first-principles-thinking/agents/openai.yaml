@@ -1,0 +1,7 @@
+interface:
+  display_name: "First Principles Thinking"
+  short_description: "Rebuild engineering decisions from fundamentals"
+  default_prompt: "Use $first-principles-thinking to challenge the current design and rebuild the solution from verified fundamentals."
+
+policy:
+  allow_implicit_invocation: true

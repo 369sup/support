@@ -1,0 +1,7 @@
+interface:
+  display_name: "Repomix Context"
+  short_description: "Generate bounded repository references safely"
+  default_prompt: "Use $repomix-context to prepare the smallest safe Repomix context for this task."
+
+policy:
+  allow_implicit_invocation: true

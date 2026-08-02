@@ -1,0 +1,30 @@
+{
+  "name": "repomix-context",
+  "version": "0.1.0",
+  "description": "Bundle bounded Repomix context governance with repository exploration workflows.",
+  "author": {
+    "name": "Support maintainers"
+  },
+  "repository": "https://github.com/369sup/support",
+  "keywords": [
+    "repomix",
+    "repository-analysis",
+    "context"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Repomix Context",
+    "shortDescription": "Bounded and verifiable repository context",
+    "longDescription": "Decide when Repomix is justified, constrain its scope, and explore generated repository context without treating snapshots as authoritative source.",
+    "developerName": "Support maintainers",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use Repomix Context to analyze this repository with the smallest safe scope.",
+      "Use Repomix Context to prepare a bounded reference for this cross-module question."
+    ]
+  }
+}

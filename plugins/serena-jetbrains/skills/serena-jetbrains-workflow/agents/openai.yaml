@@ -1,0 +1,11 @@
+interface:
+  display_name: "Serena JetBrains Workflow"
+  short_description: "Use Serena MCP with JetBrains code intelligence"
+  default_prompt: "Use $serena-jetbrains-workflow to inspect and modify this project with Serena JetBrains semantic tools."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "serena"
+      description: "Serena MCP with the JetBrains language backend"
+      transport: "stdio"

@@ -1,0 +1,27 @@
+{
+  "name": "serena-jetbrains",
+  "version": "0.1.0",
+  "description": "Run Serena MCP as a Codex-managed stdio subprocess with the JetBrains language backend.",
+  "author": {
+    "name": "Support maintainers"
+  },
+  "repository": "https://github.com/369sup/support",
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Serena JetBrains",
+    "shortDescription": "JetBrains semantic tools through Serena MCP",
+    "longDescription": "Registers a Codex-managed Serena MCP server and adds readiness, semantic-tool, fallback, and durable-memory workflow guardrails for JetBrains-backed coding tasks.",
+    "developerName": "Support maintainers",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Inspect this project with Serena JetBrains semantic tools.",
+      "Find this symbol and all references with Serena.",
+      "Refactor this code with JetBrains-aware Serena tools."
+    ]
+  }
+}
