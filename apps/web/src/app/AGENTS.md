@@ -16,6 +16,10 @@ general source directory.
 - Route files bind params, search params, cookies, headers, forms, and transport
   results to module public entrypoints. Business rules, persistence, provider
   calls, and reusable product UI remain in the owning context.
+- For a mutation, apply the canonical
+  [workflow-ownership rule](../../../../docs/architecture/architecture.md#context-admission-and-workflow-ownership):
+  bind one owning application operation and leave cross-context coordination in
+  its named application process.
 - Treat loading, error, not-found, unauthorized, and empty states as explicit
   delivery behavior. Do not turn a planned, deferred, unowned, or excluded
   route into an active capability.

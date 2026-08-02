@@ -10,6 +10,24 @@ Every catalog context has exactly one design README at
 `pnpm architecture:contexts` only to scaffold a missing README; the command
 never overwrites an existing semantic model.
 
+## Context admission checklist
+
+Before adding a context to `module-map.json` or scaffolding its README, apply
+the canonical boundary rule in
+[`architecture.md`](architecture.md#context-admission-and-workflow-ownership):
+
+1. name the stable vocabulary and distinct state, lifecycle, invariants, or
+   consistency decisions the context owns;
+2. show why an existing context cannot own them without coupling independent
+   change;
+3. identify the first named user goal and its command or query contract; and
+4. when the goal spans contexts, name the application process owner and the
+   participant public contracts.
+
+This is an admission checklist, not an additional required README heading. A
+page, route, entity, table, or documentation section alone does not qualify as
+a context.
+
 ## Lifecycle and source shape
 
 A planned context directory contains `README.md` only. Source files, layers,
@@ -150,8 +168,11 @@ for activation or cross-decision architecture review.
 Authorization records the actor source, resource or tenant scope, policy owner,
 and denial model when protection is required. Persistence records data and
 migration ownership, transaction scope, cross-context consistency, and
-idempotency. Events record delivery, ordering, retry, outbox, and consumer
-failure behavior where applicable.
+idempotency. For an active context, persistence text names the adapter selected
+by production composition. In-memory adapters must be identified as
+development or test alternatives rather than described as the active runtime.
+Events record delivery, ordering, retry, outbox, and consumer failure behavior
+where applicable.
 
 ## Events and public contracts
 

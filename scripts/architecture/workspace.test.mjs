@@ -103,6 +103,52 @@ test("accepts the canonical workspace package graph", () => {
   }
 });
 
+test("allows package-owned configuration to select package-owned assets", () => {
+  const rootDir = createWorkspaceFixture();
+
+  try {
+    writeFixture(
+      rootDir,
+      "packages/shadcn/src/styles/globals.css",
+      ":root {}\n",
+    );
+    writeFixture(
+      rootDir,
+      "packages/shadcn/components.json",
+      '{"tailwind":{"css":"./src/styles/globals.css"}}\n',
+    );
+
+    strict.deepEqual(validate(rootDir), []);
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("rejects package-owned configuration that selects an application path", () => {
+  const rootDir = createWorkspaceFixture();
+
+  try {
+    writeFixture(
+      rootDir,
+      "packages/shadcn/components.json",
+      '{"tailwind":{"css":"../../apps/web/styles/globals.css"}}\n',
+    );
+
+    const errors = validate(rootDir);
+    strict.equal(includesRule(errors, "ARCH-PKG-012"), true);
+    strict.equal(
+      errors.some((error) =>
+        error.includes(
+          "packages/shadcn/components.json selects application-owned path ../../apps/web/styles/globals.css",
+        ),
+      ),
+      true,
+    );
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
 test("rejects package-to-app dependencies and invalid dependency sections", () => {
   const rootDir = createWorkspaceFixture();
 

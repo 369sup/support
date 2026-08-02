@@ -36,6 +36,18 @@ const sourceExtensions = new Set([
   ".mts",
   ".cts",
 ]);
+const packageBoundaryTextExtensions = new Set([
+  ".css",
+  ".json",
+  ".jsonc",
+  ".less",
+  ".sass",
+  ".scss",
+  ".yaml",
+  ".yml",
+]);
+const packageBoundaryScriptName =
+  /(?:^|[.-])(?:build|config|generate|generator)(?:[.-]|$)/i;
 const ignoredDirectories = new Set([
   ".git",
   ".next",
@@ -119,6 +131,91 @@ function listSourceFiles(directory) {
   }
 
   return files;
+}
+
+function listPackageBoundaryFiles(directory) {
+  if (!existsSync(directory)) {
+    return [];
+  }
+
+  const files = [];
+
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (entry.isDirectory() && ignoredDirectories.has(entry.name)) {
+      continue;
+    }
+
+    const entryPath = join(directory, entry.name);
+
+    if (entry.isDirectory()) {
+      files.push(...listPackageBoundaryFiles(entryPath));
+      continue;
+    }
+
+    const extension = extname(entry.name).toLowerCase();
+    if (
+      entry.isFile() &&
+      (
+        packageBoundaryTextExtensions.has(extension) ||
+        (
+          sourceExtensions.has(extension) &&
+          packageBoundaryScriptName.test(entry.name)
+        )
+      )
+    ) {
+      files.push(entryPath);
+    }
+  }
+
+  return files;
+}
+
+function applicationPathReferences(filePath, repositoryRoot) {
+  const contents = readFileSync(filePath, "utf8");
+  const references = new Set();
+  const applicationRoot = join(repositoryRoot, "apps");
+  const quotedValue = /["'`]([^"'`\r\n]+)["'`]/g;
+
+  for (const match of contents.matchAll(quotedValue)) {
+    const reference = match[1];
+    const normalizedReference = reference.replaceAll("\\", "/");
+    let resolvedReference;
+
+    if (normalizedReference.startsWith("apps/")) {
+      resolvedReference = resolve(repositoryRoot, normalizedReference);
+    } else if (
+      normalizedReference.startsWith("./") ||
+      normalizedReference.startsWith("../")
+    ) {
+      resolvedReference = resolve(dirname(filePath), normalizedReference);
+    } else {
+      continue;
+    }
+
+    if (isWithin(resolvedReference, applicationRoot)) {
+      references.add(reference);
+    }
+  }
+
+  return [...references];
+}
+
+function validatePackageConfigurationBoundaries(
+  workspace,
+  repositoryRoot,
+  errors,
+) {
+  if (workspace.kind === "root" || workspace.kind === "app") {
+    return;
+  }
+
+  for (const filePath of listPackageBoundaryFiles(workspace.root)) {
+    for (const reference of applicationPathReferences(filePath, repositoryRoot)) {
+      errors.push(
+        `[ARCH-PKG-012] ${projectRelative(repositoryRoot, filePath)} selects application-owned path ${reference}. Package configuration, styles, assets, and generators must remain package-owned.`,
+      );
+    }
+  }
 }
 
 function dependencyEntries(manifest) {
@@ -516,6 +613,7 @@ export function validateWorkspacePackages(repositoryRoot, errors) {
   for (const workspace of workspaces) {
     validateSupabaseSdkDependencies(workspace, errors);
     validateExportTargets(workspace, repositoryRoot, errors);
+    validatePackageConfigurationBoundaries(workspace, repositoryRoot, errors);
     const dependencyNames = new Set();
 
     for (const dependency of internalDependencyEntries(workspace.manifest)) {

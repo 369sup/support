@@ -246,6 +246,7 @@ const ruleEntries = [
   rule("ARCH-PKG-009", "workspace", "required", "checker", "Exclusive dependency capabilities use one provider across the workspace."),
   rule("ARCH-PKG-010", "workspace", "required", "checker", "The package manager, lockfile, install scripts, and CI install mode are pinned."),
   rule("ARCH-PKG-011", "workspace", "required", "checker", "Supabase SDK dependencies and imports are isolated behind the Supabase package."),
+  rule("ARCH-PKG-012", "workspace", "required", "checker", "Package-owned configuration and assets do not select application paths."),
   rule("ARCH-ROUTE-001", "route", "required", "checker", "The route catalog is valid and exactly covers App Router delivery files."),
   rule("ARCH-ROUTE-002", "route", "required", "checker", "Route identifiers, paths, files, and README outputs are unique."),
   rule("ARCH-ROUTE-003", "route", "required", "checker", "Filesystem paths and declared path and query schemas agree."),

@@ -82,6 +82,22 @@ audits may load the complete file.
   only their documented files, bounded contexts, public entrypoints, and
   canonical architecture layers.
 
+## Context admission and workflow ownership
+
+- Create a bounded context only when it owns a stable vocabulary plus a
+  distinct set of state, lifecycle, invariants, or consistency decisions that
+  cannot remain in an existing context without coupling independent change.
+  A page, route, entity, table, or documentation section alone is not a
+  boundary.
+- Admit one user goal as one named command or query with explicit input,
+  success, expected rejection, authorization, and transaction semantics before
+  activating source.
+- A mutating App Router boundary invokes one public application operation from
+  one owning context. When success spans contexts, a named application process
+  owned by the context responsible for the user goal coordinates participant
+  public contracts; the route does not implement the cross-context workflow or
+  take ownership of participant data and policy.
+
 ## Dependency direction
 
 - **ARCH-DEP-001:** App code imports a context through `server-api.ts`,
@@ -113,6 +129,9 @@ audits may load the complete file.
   relationship only. It does not authorize imports or runtime event handling;
   move the relationship to `dependencies` when its activation scope is
   implemented and both contexts are active.
+
+### Workspace package admission
+
 - **ARCH-PKG-001..008:** Workspace manifests, package kinds, dependency
   sections, declared imports, explicit exports, source-root isolation, and the
   internal package graph follow the shared package policy. Packages never
@@ -124,6 +143,13 @@ audits may load the complete file.
 - **ARCH-PKG-010:** The workspace pins an exact pnpm version, commits its
   lockfile, explicitly approves dependency build scripts with `allowBuilds`,
   and installs with `--frozen-lockfile` in CI.
+- Create or extract a workspace package only for a business-free capability
+  with either two current independent consumers or an independent provider or
+  tooling boundary with its own lifecycle, configuration, and verification.
+  Possible future reuse is insufficient.
+- **ARCH-PKG-012:** Package-owned configuration, styles, assets, and generators
+  never select an application-owned `apps/**` path. The package owns reusable
+  inputs and applications consume them through exported package contracts.
 
 | Exclusive capability | Current project selection |
 | --- | --- |
