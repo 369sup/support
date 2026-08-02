@@ -67,7 +67,9 @@ grants repository access.
 
 ## Persistence and transactions
 
-Role assignments are deterministic in-memory fixtures.
+Production composition reads enterprise role assignments from context-owned
+PostgreSQL tables. In-memory fixtures remain isolated development and test
+alternatives.
 
 ## Data classification
 
@@ -75,7 +77,8 @@ Role assignment is security-sensitive authorization data.
 
 ## Retention and erasure
 
-Fixtures live for the process lifetime.
+Role assignments are durable in PostgreSQL; mutation and final retention
+behavior remain planned.
 
 ## Events and failure behavior
 

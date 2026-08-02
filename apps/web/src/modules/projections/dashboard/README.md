@@ -141,7 +141,9 @@ visibility is independently decided by repository access.
 
 ## Persistence and transactions
 
-A versioned process-local Map stores one selected context per session ID.
+Production composition stores one selected context per session ID in a
+context-owned PostgreSQL table. The in-memory adapter remains an isolated
+development and test alternative.
 
 ## Data classification
 
@@ -150,8 +152,8 @@ contain private/internal metadata only after access allows disclosure.
 
 ## Retention and erasure
 
-Selections live for the process lifetime and become unreachable when their
-session set is removed.
+Selections are durable in PostgreSQL and become invalid when their session set
+is removed; session cleanup must make stale selections unreachable.
 
 ## Events and failure behavior
 

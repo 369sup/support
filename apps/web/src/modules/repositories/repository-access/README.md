@@ -205,9 +205,11 @@ repository admin. A team maintainer may revoke only the team's direct grant.
 
 ## Persistence and transactions
 
-Direct and team grants are context-local versioned in-memory records.
-Permission aggregation is read-only and does not create a cross-context
-transaction.
+Production composition stores direct and team grants in context-owned
+PostgreSQL records and commits active grant events on the same checked-out
+connection and transaction. Permission aggregation is read-only and does not
+create a cross-context transaction. In-memory adapters remain isolated
+development and test alternatives.
 
 ## Data classification
 
@@ -215,8 +217,8 @@ Repository grants and permission sources are authorization-sensitive data.
 
 ## Retention and erasure
 
-Fixtures live for the process lifetime. Durable grant lifecycle remains
-planned.
+Revoked grants remain durable lifecycle records and stop contributing to
+permission decisions. Final erasure scheduling remains planned.
 
 ## Events and failure behavior
 

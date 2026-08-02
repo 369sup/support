@@ -35,7 +35,7 @@ issues after delivery has established repository visibility.
 - **Success result:** Ordered issue summaries for that repository.
 - **Expected rejections:** `invalid-repository-id`
 - **Authorization:** Delivery must establish repository read access; this context filters only by repository ID.
-- **Transaction:** Read-only process-local snapshot.
+- **Transaction:** Read-only query over the context-owned PostgreSQL store.
 - **Idempotency:** Query.
 - **Dependencies:** `none`
 - **Published events:** `none`
@@ -51,7 +51,7 @@ issues after delivery has established repository visibility.
 - **Success result:** `found` with the issue.
 - **Expected rejections:** `invalid-issue-number`, `issue-not-found`
 - **Authorization:** Delivery must establish repository read access.
-- **Transaction:** Read-only process-local lookup.
+- **Transaction:** Read-only query over the context-owned PostgreSQL store.
 - **Idempotency:** Query.
 - **Dependencies:** `none`
 - **Published events:** `none`
@@ -106,8 +106,9 @@ boundary before external callers are admitted.
 
 ## Persistence and transactions
 
-An in-memory process store owns repository-scoped numbering and record insert.
-It is not durable or cross-instance consistent.
+Production composition uses a context-owned PostgreSQL adapter for
+repository-scoped numbering, inserts, and queries. The in-memory adapter
+remains an isolated development and test alternative.
 
 ## Data classification
 
@@ -116,8 +117,8 @@ collaboration data. Repository permission determines visibility.
 
 ## Retention and erasure
 
-Fixtures live for the process lifetime. Durable deletion, transfer, and
-retention remain planned.
+Issue records are durable in PostgreSQL. Deletion, transfer, and final
+retention policies remain planned.
 
 ## Events and failure behavior
 

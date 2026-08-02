@@ -94,7 +94,7 @@ delete, restore, and repository profile updates without Git content.
 - **Success result:** `created` with an active empty repository management record.
 - **Expected rejections:** `permission-denied`, `invalid-name`, `invalid-description`, `invalid-visibility`, `internal-visibility-not-available`, `repository-name-conflict`
 - **Authorization:** A personal account may create for itself; an organization requires an active owner membership.
-- **Transaction:** Repository record and case-insensitive owner/name index update together in one process-local write.
+- **Transaction:** Repository record and case-insensitive owner/name index update together in one context-owned PostgreSQL operation.
 - **Idempotency:** Not idempotent; an owner/name conflict prevents duplicate creation.
 - **Dependencies:** `identity/accounts::AccountReference`, `organizations/organizations::OrganizationOwnerReference`, `organizations/organization-memberships::OrganizationMembershipReference`
 - **Published events:** `none`
@@ -238,7 +238,7 @@ delete, restore, and repository profile updates without Git content.
 - **Success result:** `deleted` with deletion time and 90-day restore deadline.
 - **Expected rejections:** `permission-denied`, `repository-not-found`, `confirmation-mismatch`, `invalid-state`
 - **Authorization:** Effective `admin` repository permission.
-- **Transaction:** Repository becomes a tombstone in one process-local update.
+- **Transaction:** Repository becomes a tombstone in one context-owned PostgreSQL update.
 - **Idempotency:** State-guarded; deleted repositories return `invalid-state`.
 - **Dependencies:** `identity/accounts::AccountReference`, `repositories/repository-access::EffectiveRepositoryPermissionDecision`
 - **Published events:** `none`
@@ -387,10 +387,12 @@ Administration queries and mutations require effective `admin` permission.
 
 ## Persistence and transactions
 
-A context-local in-memory adapter owns deterministic development fixtures,
-repository tombstones, and case-insensitive owner/name indexes. Profile changes
-also record a context-owned outbox envelope before returning success. Both
-stores remain process-local and non-durable.
+Production composition uses the context-owned PostgreSQL adapter for repository
+records, tombstones, case-insensitive owner/name indexes, and outbox envelopes.
+Profile changes commit the repository update and its context-owned outbox row
+on one checked-out connection in the same transaction before returning
+success. The in-memory adapter remains an isolated development and test
+alternative.
 
 ## Data classification
 
@@ -400,8 +402,8 @@ Git content, collaborator data, or private metadata is stored or returned.
 
 ## Retention and erasure
 
-Fixtures and mutations live for the process lifetime. Deleted records retain a
-90-day restore deadline; durable erasure scheduling remains deferred.
+Deleted PostgreSQL records retain a 90-day restore deadline. Final erasure
+scheduling after that deadline remains deferred.
 
 ## Events and failure behavior
 

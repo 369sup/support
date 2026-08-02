@@ -39,7 +39,7 @@ advanced discussion affordances.
 - **Success result:** `created` with the new numbered discussion.
 - **Expected rejections:** `invalid-discussion`
 - **Authorization:** Delivery establishes authenticated repository read access.
-- **Transaction:** Insert one process-local discussion.
+- **Transaction:** Insert one discussion through the context-owned PostgreSQL adapter.
 - **Idempotency:** Not idempotent; retries create another discussion.
 - **Dependencies:** `none`
 - **Published events:** `none`
@@ -106,7 +106,9 @@ category, answer, pin, transfer, and lifecycle operations remain planned.
 
 ## Persistence and transactions
 
-Discussions are process-local and non-durable; one command writes one record.
+Production composition stores discussions in context-owned PostgreSQL tables;
+one command writes one discussion record. The in-memory adapter remains an
+isolated development and test alternative.
 
 ## Data classification
 
@@ -114,7 +116,8 @@ Discussion content inherits repository visibility.
 
 ## Retention and erasure
 
-Process lifetime only; durable deletion and transfer remain planned.
+Discussion records are durable in PostgreSQL; deletion and transfer behavior
+remain planned.
 
 ## Events and failure behavior
 

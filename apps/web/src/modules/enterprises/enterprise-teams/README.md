@@ -80,7 +80,7 @@ roles, licenses, and IdP synchronization remain separate capabilities.
 - **Success result:** Active organization grant, organization reference, current base repository permission, and synchronized organization memberships.
 - **Expected rejections:** `already-assigned`, `enterprise-not-found`, `organization-assignment-limit-reached`, `organization-not-found`, `permission-denied`, `team-not-found`
 - **Authorization:** Enterprise owner decision from `enterprises/enterprise-roles`; the target organization must belong to the same active enterprise.
-- **Transaction:** The process-local coordinator synchronizes all active team members into one assignment-scoped membership batch, then records the organization grant; a grant write failure compensates the membership batch.
+- **Transaction:** The application coordinator synchronizes all active team members through one assignment-scoped membership transaction, then records the organization grant; a grant write failure compensates the membership batch.
 - **Idempotency:** A duplicate active team and organization grant returns `already-assigned`.
 - **Dependencies:** `enterprises/enterprises::EnterpriseReference`, `enterprises/enterprise-roles::EnterpriseAdministrationDecision`, `organizations/organizations::OrganizationReference`, `organizations/organization-memberships::OrganizationMembershipReference`, `organizations/organization-policies::BaseRepositoryPermission`
 - **Published events:** `none`
@@ -125,7 +125,7 @@ roles, licenses, and IdP synchronization remain separate capabilities.
 - **Application boundary:** `DeleteEnterpriseTeamUseCase.deleteEnterpriseTeam()`
 - **Public entrypoint:** `server-api.ts#deleteEnterpriseTeam`
 - **Input:** Verified actor account ID, enterprise slug, and enterprise team ID.
-- **Success result:** `deleted` with the process-local lifecycle record.
+- **Success result:** `deleted` with the durable lifecycle record.
 - **Expected rejections:** `enterprise-not-found`, `permission-denied`, `team-not-found`
 - **Authorization:** Enterprise owner decision from `enterprises/enterprise-roles`.
 - **Transaction:** One context-local team lifecycle transition.
@@ -208,7 +208,7 @@ roles, licenses, and IdP synchronization remain separate capabilities.
 - **Success result:** Revoked organization grant after assignment-scoped membership synchronization.
 - **Expected rejections:** `assignment-not-found`, `enterprise-not-found`, `permission-denied`, `team-not-found`
 - **Authorization:** Enterprise owner decision from `enterprises/enterprise-roles`.
-- **Transaction:** The process-local coordinator revokes the grant and removes that grant's membership contribution; a membership synchronization failure restores the active grant.
+- **Transaction:** The application coordinator revokes the grant and removes that grant's membership contribution; a membership synchronization failure restores the active grant.
 - **Idempotency:** Repeating after revocation returns `assignment-not-found`.
 - **Dependencies:** `enterprises/enterprises::EnterpriseReference`, `enterprises/enterprise-roles::EnterpriseAdministrationDecision`, `organizations/organization-memberships::OrganizationMembershipReference`
 - **Published events:** `none`
@@ -253,9 +253,9 @@ server boundary; this context does not read account storage.
 
 Organization assignment resolves active enterprise organizations, delegates
 membership storage to `organizations/organization-memberships`, and reads base
-permission from `organizations/organization-policies`. The process-local
-coordinator compensates the other participant if a later write fails; no
-durable distributed transaction is claimed.
+permission from `organizations/organization-policies`. The application
+coordinator compensates the other durable participant if a later write fails;
+no distributed transaction is claimed.
 
 ## Authorization
 
@@ -268,10 +268,12 @@ team, managed-account, or organization-assignment data.
 
 ## Persistence and transactions
 
-The active slice uses one context-local process Map for team and membership
-records. Organization assignment uses an assignment-scoped membership batch
-and compensating writes within the same process. There is no durable
-transaction, cross-instance coordination, or IdP synchronization.
+Production composition stores teams, memberships, and organization grants in
+context-owned PostgreSQL tables. Organization assignment coordinates that
+store with the membership context through durable participant transactions and
+compensating writes; it is not a distributed transaction. In-memory adapters
+remain isolated development and test alternatives. IdP synchronization remains
+planned.
 
 ## Data classification
 
@@ -282,10 +284,9 @@ profile data are not stored.
 
 ## Retention and erasure
 
-Records live for the process lifetime. Deleted teams, removed memberships, and
-revoked organization grants remain as process-local lifecycle records until
-restart. Durable retention, eventual erasure, restore behavior, and IdP
-mapping cleanup remain planned.
+Deleted teams, removed memberships, and revoked organization grants remain as
+durable lifecycle records. Final retention, eventual erasure, restore behavior,
+and IdP mapping cleanup remain planned.
 
 ## Events and failure behavior
 

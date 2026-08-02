@@ -49,7 +49,7 @@ references and stable ordering.
 
 ## Dependencies and consistency
 
-No runtime dependency in the active fixture-backed slice.
+No runtime bounded-context dependency in the active slice.
 
 ## Authorization
 
@@ -57,7 +57,8 @@ Only public cards are returned.
 
 ## Persistence and transactions
 
-Read-only immutable in-memory fixture.
+Production composition reads the PostgreSQL discovery projection. The
+in-memory adapter remains an isolated development and test alternative.
 
 ## Data classification
 
@@ -65,7 +66,7 @@ Public repository and topic metadata.
 
 ## Retention and erasure
 
-Process lifetime only.
+Projection retention follows the public repository source lifecycle.
 
 ## Events and failure behavior
 

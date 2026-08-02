@@ -65,7 +65,7 @@ This context never makes the final product authorization decision.
 - **Dependencies:** `none`
 - **Published events:** `none`
 - **Official evidence:** `not-applicable`
-- **Local policy:** Removal is immediate in the process-local index.
+- **Local policy:** Removal is immediate in the context-owned index.
 
 ### `query-search-index` [active]
 
@@ -113,8 +113,9 @@ must resolve authoritative permission before presenting a result.
 
 ## Persistence and transactions
 
-The active adapter is a versioned, injectable, process-local Map. Every command
-changes at most one index record.
+Production composition uses a versioned PostgreSQL adapter. Every command
+changes at most one index record, and the in-memory adapter remains an isolated
+development and test alternative.
 
 ## Data classification
 
@@ -123,8 +124,8 @@ must not contain secrets, credentials, or full private payloads.
 
 ## Retention and erasure
 
-Source deletion must remove the document. Process restart removes all index
-data. Durable retention and rebuild orchestration remain planned.
+Source deletion must remove the durable index document. Retention and rebuild
+orchestration remain planned.
 
 ## Events and failure behavior
 
@@ -134,8 +135,11 @@ dependency-free; no failed update partially mutates a document.
 ## Official sources
 
 Not applicable; this is a technical capability governed by
-[ADR-0003](../../../../../../docs/architecture/decisions/ADR-0003-in-memory-event-and-policy-runtime.md).
+[ADR-0003](../../../../../../docs/architecture/decisions/ADR-0003-in-memory-event-and-policy-runtime.md)
+and
+[ADR-0004](../../../../../../docs/architecture/decisions/ADR-0004-production-runtime-adapters.md).
 
 ## Exceptions
 
-The in-memory index is non-durable, single-process, and restart-invalidated.
+No context-specific exception is declared. In-memory adapters are not selected
+by production composition.

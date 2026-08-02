@@ -116,8 +116,8 @@ Organization ID, login, and display name are public identifiers.
 
 ## Retention and erasure
 
-Fixtures live for the process lifetime. Durable lifecycle behavior remains
-planned.
+Organization identity and bootstrap ownership are durable in PostgreSQL.
+Additional lifecycle behavior and final erasure remain planned.
 
 ## Events and failure behavior
 

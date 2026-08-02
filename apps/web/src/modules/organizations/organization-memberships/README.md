@@ -247,7 +247,7 @@ membership source.
 - **Success result:** `synchronized` with the resulting active organization memberships.
 - **Expected rejections:** `none`
 - **Authorization:** A trusted server-side enterprise-team coordinator must authorize the assignment before invoking this boundary; it is not exposed through a route.
-- **Transaction:** Membership creation, activation, assignment-source replacement, removal, and pending-invitation cancellation commit from one cloned process-local store.
+- **Transaction:** Membership creation, activation, assignment-source replacement, removal, and pending-invitation cancellation commit in one context-owned PostgreSQL transaction.
 - **Idempotency:** Repeating the same assignment and account set preserves the same memberships and source associations.
 - **Dependencies:** `none`
 - **Published events:** `none`
@@ -283,9 +283,9 @@ the framework-free integration contracts.
 ## Dependencies and consistency
 
 References use stable Account and Organization IDs. Account lookup is a trusted
-server-side integration limited to active accounts. Enterprise-derived
-membership is represented by source but remains immutable until the planned
-enterprise-team assignment transaction is activated.
+server-side integration limited to active accounts. Enterprise-team assignment
+uses the public synchronization boundary and records its assignment source
+without exposing membership persistence.
 
 ## Authorization
 
@@ -297,12 +297,14 @@ authority.
 
 ## Persistence and transactions
 
-Context-local process Maps store memberships and invitations. The repository
-port provides one atomic save boundary for an invitation and its corresponding
-membership. Enterprise assignments replace one complete assignment source set
-using a cloned store, then commit all affected memberships and invitation
-decisions together. Role changes and direct member removal update one membership.
-Expiration uses an injected clock, and identifiers use an injected generator.
+Production composition stores memberships, invitations, and enterprise-team
+assignment sources in context-owned PostgreSQL tables. The repository port
+provides one atomic boundary for an invitation and its corresponding
+membership. Enterprise assignments use an advisory lock and one database
+transaction to replace the complete assignment source set and related pending
+invitation decisions. Role changes and direct member removal update one
+membership. In-memory adapters remain isolated development and test
+alternatives.
 
 ## Data classification
 
@@ -312,9 +314,8 @@ addresses are stored here.
 
 ## Retention and erasure
 
-Fixtures and invitation history live for the process lifetime and reset on
-server restart. Terminal invitation states remain inspectable until that reset.
-Durable retention and erasure policy require a future persistence slice.
+Membership and invitation history is durable in PostgreSQL. Terminal invitation
+states remain inspectable; final retention and erasure policy remains planned.
 
 ## Events and failure behavior
 

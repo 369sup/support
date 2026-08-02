@@ -30,7 +30,7 @@ Own repository watch preferences and future conversation subscription rules.
 - **Success result:** `updated` with current subscription state.
 - **Expected rejections:** `invalid-subscription`
 - **Authorization:** Delivery establishes authenticated repository read access.
-- **Transaction:** Add or remove one process-local watch preference.
+- **Transaction:** Add or remove one watch preference through the context-owned PostgreSQL adapter.
 - **Idempotency:** Not idempotent; each call toggles.
 - **Dependencies:** `none`
 - **Published events:** `none`
@@ -77,7 +77,9 @@ Only the authenticated actor mutates its own watch.
 
 ## Persistence and transactions
 
-Watches are process-local and non-durable.
+Production composition stores watch preferences in a context-owned PostgreSQL
+table. The in-memory adapter remains an isolated development and test
+alternative.
 
 ## Data classification
 
@@ -85,7 +87,8 @@ Subscription relations are engagement preference data.
 
 ## Retention and erasure
 
-Process lifetime only; visibility cleanup remains planned.
+Watch preferences are durable in PostgreSQL; visibility cleanup remains
+planned.
 
 ## Events and failure behavior
 

@@ -35,7 +35,7 @@ subjects.
 - **Success result:** Ordered comments and reaction counts.
 - **Expected rejections:** `invalid-subject`
 - **Authorization:** The owning subject delivery establishes read access.
-- **Transaction:** Read-only process-local snapshot.
+- **Transaction:** Read-only query over the context-owned PostgreSQL store.
 - **Idempotency:** Query.
 - **Dependencies:** `none`
 - **Published events:** `none`
@@ -93,7 +93,7 @@ This context owns `Conversation`, `Comment`, `Reply`, `Reaction`, `Mention`,
 
 ## Dependencies and consistency
 
-The active process store accepts stable subject references after delivery has
+The context store accepts stable subject references after delivery has
 validated the owning subject and permission.
 
 ## Authorization
@@ -103,8 +103,10 @@ Conversation-local lock and duplicate-reaction rules are enforced here.
 
 ## Persistence and transactions
 
-Comments and actor reaction tuples use a process-local store. There is no
-durable transaction or cross-instance ordering guarantee.
+Production composition stores comments and actor reaction tuples in
+context-owned PostgreSQL tables. Each command changes only this context; no
+cross-context transaction or global ordering guarantee is implied. The
+in-memory adapter remains an isolated development and test alternative.
 
 ## Data classification
 
@@ -113,8 +115,8 @@ collaboration data.
 
 ## Retention and erasure
 
-Data lives for the process lifetime. Durable revision, deletion, mention, and
-erasure behavior remains planned.
+Comment and reaction records are durable in PostgreSQL. Revision, deletion,
+mention, and final erasure behavior remains planned.
 
 ## Events and failure behavior
 

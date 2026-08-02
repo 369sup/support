@@ -65,7 +65,9 @@ Enterprise administration always requires a separate role decision.
 
 ## Persistence and transactions
 
-A context-local process Map indexes affiliations by account ID.
+Production composition reads affiliations from context-owned PostgreSQL tables
+indexed by account ID. The in-memory adapter remains an isolated development
+and test alternative.
 
 ## Data classification
 
@@ -73,7 +75,8 @@ Affiliation is account-associated product data.
 
 ## Retention and erasure
 
-Fixtures live for the process lifetime.
+Affiliations are durable in PostgreSQL; invitation and guest lifecycle
+retention remains planned.
 
 ## Events and failure behavior
 

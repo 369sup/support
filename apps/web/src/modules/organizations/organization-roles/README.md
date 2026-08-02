@@ -168,9 +168,11 @@ contract rather than assignment storage.
 
 ## Persistence and transactions
 
-Definitions are immutable code data. Assignments use a versioned process-local
-store indexed by organization, subject, and role. Commands mutate only this
-store.
+Definitions are immutable code data. Production composition stores assignments
+in context-owned PostgreSQL tables indexed by organization, subject, and role,
+and commits active assignment events on the same checked-out connection and
+transaction. Commands mutate only this store; in-memory adapters remain
+isolated development and test alternatives.
 
 ## Data classification
 
@@ -179,8 +181,9 @@ organization data.
 
 ## Retention and erasure
 
-Revoked assignments remain process-local tombstones and stop contributing.
-Assignments whose subject becomes ineligible also stop contributing.
+Revoked assignments remain durable lifecycle records and stop contributing.
+Assignments whose subject becomes ineligible also stop contributing. Final
+erasure scheduling remains planned.
 
 ## Events and failure behavior
 

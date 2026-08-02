@@ -67,8 +67,9 @@ blocks, and interaction limits remain planned moderator operations.
 
 ## Persistence and transactions
 
-Open reports use a process-local store with duplicate detection. It is not
-durable or cross-instance consistent.
+Production composition stores open reports in a context-owned PostgreSQL table
+with duplicate detection. The in-memory adapter remains an isolated
+development and test alternative.
 
 ## Data classification
 
@@ -77,8 +78,8 @@ moderation data and must not be displayed publicly.
 
 ## Retention and erasure
 
-Reports live for the process lifetime. Durable retention and reviewer access
-policy remain blocked.
+Reports are durable in PostgreSQL. Final retention and reviewer access policy
+remain blocked.
 
 ## Events and failure behavior
 

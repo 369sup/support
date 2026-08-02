@@ -48,8 +48,8 @@ or final authorization truth.
 
 ## Dependencies and consistency
 
-The query uses the public `platform/search-index` entrypoint. The process-local
-index is eventually consistent by design.
+The query uses the public `platform/search-index` entrypoint. The durable index
+is eventually consistent with its source contexts by design.
 
 ## Authorization
 
@@ -58,7 +58,8 @@ not in the active scope.
 
 ## Persistence and transactions
 
-Read-only over a process-local, non-durable index.
+Read-only over the production PostgreSQL search index through the platform
+context's public entrypoint.
 
 ## Data classification
 
@@ -66,7 +67,7 @@ Only public fixture metadata is returned.
 
 ## Retention and erasure
 
-Process lifetime only.
+Result lifetime follows source-document removal and index rebuild policy.
 
 ## Events and failure behavior
 

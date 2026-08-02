@@ -148,8 +148,8 @@ product identifiers.
 
 ## Retention and erasure
 
-Fixtures live for the process lifetime. Durable lifecycle transitions remain
-planned.
+Enterprise identity and organization links are durable in PostgreSQL.
+Additional lifecycle transitions and final erasure remain planned.
 
 ## Events and failure behavior
 

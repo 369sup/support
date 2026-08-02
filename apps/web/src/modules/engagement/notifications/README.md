@@ -31,7 +31,7 @@ Own recipient-specific notification records and inbox triage.
 - **Success result:** `found` with recipient notifications newest first.
 - **Expected rejections:** `invalid-recipient`
 - **Authorization:** Recipient ID is resolved from the HttpOnly session.
-- **Transaction:** Read-only process-local snapshot.
+- **Transaction:** Read-only query over the context-owned PostgreSQL store.
 - **Idempotency:** Query.
 - **Dependencies:** `none`
 - **Published events:** `none`
@@ -47,7 +47,7 @@ Own recipient-specific notification records and inbox triage.
 - **Success result:** `read`.
 - **Expected rejections:** `notification-not-found`
 - **Authorization:** Recipient ownership is checked in the repository lookup.
-- **Transaction:** Replace one process-local notification.
+- **Transaction:** Replace one notification through the context-owned PostgreSQL adapter.
 - **Idempotency:** Marking an already-read notification remains `read`.
 - **Dependencies:** `none`
 - **Published events:** `none`
@@ -71,8 +71,9 @@ recipient.
 
 ## Dependencies and consistency
 
-The active inbox uses fixtures; upstream subscription and event consumption
-remain planned and no synthetic real-time delivery is claimed.
+The active inbox uses persisted notification records; upstream subscription
+and event consumption remain planned and no synthetic real-time delivery is
+claimed.
 
 ## Authorization
 
@@ -80,7 +81,9 @@ The authenticated recipient account ID scopes every query and mutation.
 
 ## Persistence and transactions
 
-Notifications are process-local and non-durable.
+Production composition stores notifications in context-owned PostgreSQL
+tables. The in-memory adapter remains an isolated development and test
+alternative.
 
 ## Data classification
 
@@ -89,8 +92,8 @@ must remain recipient-scoped.
 
 ## Retention and erasure
 
-Process lifetime only. Durable implementation must apply the documented
-five-month and saved-notification retention rules.
+Notification records are durable in PostgreSQL. Automated enforcement of the
+documented five-month and saved-notification retention rules remains planned.
 
 ## Events and failure behavior
 

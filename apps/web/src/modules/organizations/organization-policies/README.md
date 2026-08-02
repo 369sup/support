@@ -114,9 +114,10 @@ Outside-collaborator and sensitive-permission gates are evaluated as policy deci
 
 ## Persistence and transactions
 
-Persistent policy state is not implemented in this phase. In-memory adapters
-store development base-permission facts and app-access policies; absent base
-permission contributes no repository access.
+Production composition reads base-permission facts and app-access policies from
+context-owned PostgreSQL tables. Policy mutation commands remain planned;
+absent base permission contributes no repository access. In-memory adapters
+remain isolated development and test alternatives.
 
 ## Data classification
 

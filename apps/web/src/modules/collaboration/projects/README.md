@@ -66,7 +66,7 @@ workflows, charts, templates, and status updates.
 - **Success result:** `updated` with the project snapshot.
 - **Expected rejections:** `project-not-found`, `item-not-found`, `forbidden`
 - **Authorization:** The actor must own the project.
-- **Transaction:** Replace one process-local project.
+- **Transaction:** Replace one project through the context-owned PostgreSQL adapter.
 - **Idempotency:** Setting the same status is state-idempotent.
 - **Dependencies:** `none`
 - **Published events:** `none`
@@ -90,7 +90,7 @@ Account and repository list queries plus owner-authorized item status updates.
 
 ## Dependencies and consistency
 
-The active in-memory slice has no runtime context dependency.
+The active slice has no runtime context dependency.
 
 ## Authorization
 
@@ -99,7 +99,9 @@ project ownership.
 
 ## Persistence and transactions
 
-Projects are process-local and non-durable.
+Production composition stores projects and item status in context-owned
+PostgreSQL tables. The in-memory adapter remains an isolated development and
+test alternative.
 
 ## Data classification
 
@@ -107,7 +109,8 @@ Project planning metadata may reference repository resources.
 
 ## Retention and erasure
 
-Process lifetime only; durable retention and deletion remain planned.
+Project records are durable in PostgreSQL; final retention and deletion
+behavior remain planned.
 
 ## Events and failure behavior
 

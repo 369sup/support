@@ -29,7 +29,7 @@ Own repository stars and future public star lists.
 - **Success result:** `updated` with current star state.
 - **Expected rejections:** `invalid-star`
 - **Authorization:** Delivery establishes authenticated repository read access.
-- **Transaction:** Add or remove one process-local star.
+- **Transaction:** Add or remove one star through the context-owned PostgreSQL adapter.
 - **Idempotency:** Not idempotent; each call toggles.
 - **Dependencies:** `none`
 - **Published events:** `none`
@@ -76,7 +76,8 @@ Only the authenticated actor mutates its own star.
 
 ## Persistence and transactions
 
-Stars are process-local and non-durable.
+Production composition stores stars in a context-owned PostgreSQL table. The
+in-memory adapter remains an isolated development and test alternative.
 
 ## Data classification
 
@@ -84,7 +85,7 @@ Star relations are engagement data; private repository visibility is inherited.
 
 ## Retention and erasure
 
-Process lifetime only; visibility cleanup remains planned.
+Star records are durable in PostgreSQL; visibility cleanup remains planned.
 
 ## Events and failure behavior
 

@@ -38,7 +38,7 @@ and trusted user-account candidates.
     - Personal account deletion [active]
       - Use case: `delete-personal-account`
       - Only the active personal account owner can delete the account.
-      - The process-local record transitions to `deleted` and is no longer
+      - The persisted record transitions to `deleted` and is no longer
         discoverable.
       - Delivery signs out the browser session set after deletion.
       - `AccountDeleted@1` remains planned until transactional publication is
@@ -87,7 +87,7 @@ and trusted user-account candidates.
 - **Success result:** `deleted`.
 - **Expected rejections:** `account-not-found`, `forbidden`, `unsupported-account-type`
 - **Authorization:** Owner-only account lifecycle policy in the application handler.
-- **Transaction:** One process-local account record transition to `deleted`.
+- **Transaction:** One context-owned PostgreSQL account transition to `deleted`.
 - **Idempotency:** Repeating after deletion returns `account-not-found`.
 - **Dependencies:** `none`
 - **Published events:** `none`
@@ -192,9 +192,10 @@ session boundary is not an authorization source.
 
 ## Persistence and transactions
 
-The active slice uses a context-local in-memory adapter with deterministic
-development fixtures. Deletion replaces one record inside the process store.
-There is no durable or cross-instance transaction.
+Production composition uses a context-owned PostgreSQL adapter for account
+identity, username reservations, reversible transaction metadata, and
+lifecycle state. The in-memory adapter remains an isolated development and
+test alternative.
 
 ## Data classification
 
@@ -205,10 +206,9 @@ data are not stored or returned.
 
 ## Retention and erasure
 
-The in-memory fixture lives for the process lifetime. A deleted record is
-retained until process restart so lookups can reject it. Durable adapters must
-implement ghost attribution, downstream erasure, and username-release timing
-before production activation.
+Deleted records remain durable and are excluded from active lookups. Ghost
+attribution, downstream erasure, and username-release timing remain planned
+and must be defined before final deletion is activated.
 
 ## Events and failure behavior
 

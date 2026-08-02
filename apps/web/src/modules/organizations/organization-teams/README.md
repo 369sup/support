@@ -266,9 +266,11 @@ semantics.
 
 ## Persistence and transactions
 
-The adapter uses a versioned process-local store with indexes by ID,
-organization and slug, parent, account, and maintainer. Each command writes only
-the organization-team store.
+Production composition uses context-owned PostgreSQL tables indexed by ID,
+organization and slug, parent, account, and maintainer. Each command writes
+only the organization-team store and commits its context-owned outbox row on
+the same checked-out connection and transaction. In-memory adapters remain
+isolated development and test alternatives.
 
 ## Data classification
 
@@ -277,8 +279,9 @@ organization data and must not be logged in full.
 
 ## Retention and erasure
 
-Teams are soft deleted for the process lifetime. Deleted teams, removed
-memberships, and revoked maintainers do not contribute authorization.
+Teams are soft deleted durably. Deleted teams, removed memberships, and revoked
+maintainers do not contribute authorization. Final erasure scheduling remains
+planned.
 
 ## Events and failure behavior
 

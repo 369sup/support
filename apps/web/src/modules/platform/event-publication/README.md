@@ -171,9 +171,11 @@ No browser route is active in this slice.
 
 ## Persistence and transactions
 
-Publication attempts, receipts, and dead letters use a versioned process-local
-store. Source outboxes are separate stores committed with their source
-commands. Publication is never part of the source transaction.
+Production composition stores publication attempts, receipts, and dead letters
+in context-owned PostgreSQL tables. Source outboxes remain separate stores
+committed with their source commands; publication is never part of the source
+transaction. The source registry is intentionally process-local composition
+state, not durable product state.
 
 ## Data classification
 
@@ -182,9 +184,9 @@ list and metrics expose metadata only.
 
 ## Retention and erasure
 
-Successful receipts are retained for the process lifetime to suppress
-duplicates. Dead-letter payloads are retained until successful redelivery or
-scenario reset. Durable retention and erasure schedules remain deferred.
+Successful receipts are retained durably to suppress duplicates. Dead-letter
+payloads are retained until successful redelivery. Explicit retention and
+erasure schedules remain deferred.
 
 ## Events and failure behavior
 
@@ -194,11 +196,13 @@ failure is retried up to three attempts and then retained as a dead letter.
 
 ## Exceptions
 
-The in-memory adapter is process-local, restart-invalidated, non-durable, and
-not horizontally consistent. The simulated delivery adapter performs no
-external I/O.
+The simulated delivery adapter performs no external I/O. The process-local
+source registry must be rebuilt by each application instance during
+composition; durable publication state remains in PostgreSQL.
 
 ## Official sources
 
 Not applicable; this is a technical capability governed by
-[ADR-0003](../../../../../../docs/architecture/decisions/ADR-0003-in-memory-event-and-policy-runtime.md).
+[ADR-0003](../../../../../../docs/architecture/decisions/ADR-0003-in-memory-event-and-policy-runtime.md)
+and
+[ADR-0004](../../../../../../docs/architecture/decisions/ADR-0004-production-runtime-adapters.md).

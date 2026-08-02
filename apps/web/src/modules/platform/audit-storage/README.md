@@ -10,8 +10,8 @@
 ## Purpose
 
 Store immutable, scope-indexed audit records, create simulated exports, and
-apply idempotent retention executions. The current adapter is process-local
-and does not claim durable production storage.
+apply idempotent retention executions. Production storage is durable and
+context-owned; export delivery remains simulated.
 
 ## Context content tree
 
@@ -149,9 +149,10 @@ export. Audit storage never infers authorization from record presence.
 
 ## Persistence and transactions
 
-The active adapter uses versioned, injectable, process-local Maps. Records are
-immutable version 1 values. Process restart removes records, export jobs, and
-retention receipts.
+Production composition uses a context-owned PostgreSQL adapter. Records are
+immutable version 1 values, and retention receipts provide durable
+idempotency. The in-memory adapter remains an isolated development and test
+alternative.
 
 ## Data classification
 
@@ -162,9 +163,9 @@ tokens.
 
 ## Retention and erasure
 
-Retention removes records strictly older than the cutoff and records an
-idempotent execution receipt. Durable retention scheduling, legal hold, and
-erasure policy remain outside this in-memory slice.
+Retention removes records strictly older than the cutoff and records a durable
+idempotent execution receipt. Retention scheduling, legal hold, and erasure
+policy remain outside this active slice.
 
 ## Events and failure behavior
 
@@ -175,11 +176,13 @@ Export is simulated and has no external side effect.
 ## Official sources
 
 Not applicable; this is a technical capability governed by
-[ADR-0003](../../../../../../docs/architecture/decisions/ADR-0003-in-memory-event-and-policy-runtime.md).
+[ADR-0003](../../../../../../docs/architecture/decisions/ADR-0003-in-memory-event-and-policy-runtime.md)
+and
+[ADR-0004](../../../../../../docs/architecture/decisions/ADR-0004-production-runtime-adapters.md).
 
 ## Exceptions
 
-The in-memory adapter is non-durable, single-process, and
-restart-invalidated. The central
+No context-specific exception is declared. The simulated export creates only
+metadata and performs no external file or provider I/O. The central
 [exception registry](../../../../../../docs/architecture/exceptions/registry.json)
 remains authoritative.
