@@ -51,9 +51,13 @@ function composeOrganizationRolesServerFacade(): OrganizationRolesServerFacade {
     listOrganizationRoleAssignments: (query) =>
       listAssignments.listOrganizationRoleAssignments(query),
     assignOrganizationRole: (command) =>
-      assign.assignOrganizationRole(command),
+      database.transaction(() =>
+        assign.assignOrganizationRole(command),
+      ),
     revokeOrganizationRole: (command) =>
-      revoke.revokeOrganizationRole(command),
+      database.transaction(() =>
+        revoke.revokeOrganizationRole(command),
+      ),
     resolveOrganizationRepositoryRoleContributions: (query) =>
       resolve.resolveOrganizationRepositoryRoleContributions(query),
   };

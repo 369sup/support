@@ -211,7 +211,9 @@ function composeRepositoriesServerFacade(): RepositoriesServerFacade {
     unarchiveRepository: (command) =>
       unarchive.unarchiveRepository(command),
     updateRepositoryProfile: (command) =>
-      updateProfile.updateRepositoryProfile(command),
+      database.transaction(() =>
+        updateProfile.updateRepositoryProfile(command),
+      ),
   };
 }
 

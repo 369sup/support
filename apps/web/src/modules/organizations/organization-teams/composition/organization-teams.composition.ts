@@ -69,20 +69,33 @@ function composeOrganizationTeamsServerFacade(): OrganizationTeamsServerFacade {
 
   return {
     createOrganizationTeam: (command) =>
-      create.createOrganizationTeam(command),
+      database.transaction(() =>
+        create.createOrganizationTeam(command),
+      ),
     getOrganizationTeam: (query) => get.getOrganizationTeam(query),
     listOrganizationTeams: (query) => list.listOrganizationTeams(query),
     updateOrganizationTeam: (command) =>
-      update.updateOrganizationTeam(command),
+      database.transaction(() =>
+        update.updateOrganizationTeam(command),
+      ),
     deleteOrganizationTeam: (command) =>
-      remove.deleteOrganizationTeam(command),
-    addTeamMember: (command) => addMember.addTeamMember(command),
+      database.transaction(() =>
+        remove.deleteOrganizationTeam(command),
+      ),
+    addTeamMember: (command) =>
+      database.transaction(() => addMember.addTeamMember(command)),
     removeTeamMember: (command) =>
-      removeMember.removeTeamMember(command),
+      database.transaction(() =>
+        removeMember.removeTeamMember(command),
+      ),
     assignTeamMaintainer: (command) =>
-      assignMaintainer.assignTeamMaintainer(command),
+      database.transaction(() =>
+        assignMaintainer.assignTeamMaintainer(command),
+      ),
     revokeTeamMaintainer: (command) =>
-      revokeMaintainer.revokeTeamMaintainer(command),
+      database.transaction(() =>
+        revokeMaintainer.revokeTeamMaintainer(command),
+      ),
     listTeamMembers: (query) => listMembers.listTeamMembers(query),
     resolveAccountTeamMemberships: (query) =>
       resolveMemberships.resolveAccountTeamMemberships(query),

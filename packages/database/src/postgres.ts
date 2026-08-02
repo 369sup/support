@@ -1,3 +1,5 @@
+import { AsyncLocalStorage } from "node:async_hooks";
+
 import {
   Pool,
   type PoolConfig,
@@ -128,6 +130,8 @@ class NodePostgresPoolAdapter implements PostgresPoolPort {
 
 export class PostgresDatabase implements TransactionalSqlExecutor {
   private readonly pool: PostgresPoolPort;
+  private readonly transactionConnection =
+    new AsyncLocalStorage<SqlExecutor>();
 
   constructor(pool: PostgresPoolPort) {
     this.pool = pool;
@@ -141,16 +145,27 @@ export class PostgresDatabase implements TransactionalSqlExecutor {
     text: string,
     values?: readonly SqlValue[],
   ): Promise<SqlQueryResult<Row>> {
+    const connection = this.transactionConnection.getStore();
+    if (connection !== undefined) {
+      return connection.query<Row>(text, values);
+    }
     return this.pool.query<Row>(text, values);
   }
 
   async transaction<Result>(
     work: (connection: SqlExecutor) => Promise<Result>,
   ): Promise<Result> {
+    const activeConnection = this.transactionConnection.getStore();
+    if (activeConnection !== undefined) {
+      return work(activeConnection);
+    }
     const connection = await this.pool.connect();
     try {
       await connection.query("begin");
-      const result = await work(connection);
+      const result = await this.transactionConnection.run(
+        connection,
+        () => work(connection),
+      );
       await connection.query("commit");
       return result;
     } catch (error) {

@@ -127,30 +127,36 @@ function composeRepositoryAccessServerFacade(): RepositoryAccessServerFacade {
         accountId: actor.accountId,
       }),
     grantTeamRepositoryAccess: ({ repository, actor, teamId, permission }) =>
-      grant.grantTeamRepositoryAccess({
-        repository: mapRepository(repository),
-        actorAccountId: actor.accountId,
-        teamId,
-        permission,
-      }),
+      database.transaction(() =>
+        grant.grantTeamRepositoryAccess({
+          repository: mapRepository(repository),
+          actorAccountId: actor.accountId,
+          teamId,
+          permission,
+        }),
+      ),
     changeTeamRepositoryAccess: ({
       repository,
       actor,
       teamId,
       permission,
     }) =>
-      change.changeTeamRepositoryAccess({
-        repository: mapRepository(repository),
-        actorAccountId: actor.accountId,
-        teamId,
-        permission,
-      }),
+      database.transaction(() =>
+        change.changeTeamRepositoryAccess({
+          repository: mapRepository(repository),
+          actorAccountId: actor.accountId,
+          teamId,
+          permission,
+        }),
+      ),
     revokeTeamRepositoryAccess: ({ repository, actor, teamId }) =>
-      revoke.revokeTeamRepositoryAccess({
-        repository: mapRepository(repository),
-        actorAccountId: actor.accountId,
-        teamId,
-      }),
+      database.transaction(() =>
+        revoke.revokeTeamRepositoryAccess({
+          repository: mapRepository(repository),
+          actorAccountId: actor.accountId,
+          teamId,
+        }),
+      ),
   };
 }
 
